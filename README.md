@@ -35,20 +35,37 @@ You play Arin, the young lamplighter of Brightwater. When the Ember Lantern goes
 
 ## Features
 
-- **Overworld** with forests, mountains, snowfields, rivers, a corrupted island, and a **ship** you can sail once you earn it
-- **3 towns** (Brightwater, Port Halden, Ironhold) with inns, item shops, armorers, a chapel and around 20 NPCs whose dialogue changes as the story progresses
-- **4 dungeons, 10 floors** (Whisperwood Hollow, Sunken Shrine, Emberdeep Mines, Hollow Spire) with torchlight, treasure chests, and a Lantern to relight at each one's heart
-- **Classic turn-based battles** in side view: Attack / Skill / Item / Defend / Run, elemental weaknesses, critical hits, poison, buffs, stealing, and floating damage numbers
-- **About 35 monsters** in 15 drawn families, plus 5 boss fights including a two-phase final battle
-- Levels and XP, learned spells, weapon and armor slots per character, stat-compare when shopping
+- **Overworld** with forests, mountains, snowfields, rivers, a corrupted island, a hidden star-island, and a **ship** you can sail once you earn it
+- **4 towns** (Brightwater, Port Halden, Ironhold, snowbound Frostmere) with inns, item shops, armorers, a chapel and around 30 NPCs whose dialogue changes as the story progresses
+- **5 dungeons, 13 floors** (Whisperwood Hollow, Sunken Shrine, Emberdeep Mines, Hollow Spire and the optional Starfall Observatory) with torchlight, treasure chests, and a Lantern to relight at each one's heart
+- **Classic turn-based battles** in side view: Attack / Skill / Item / Defend / Run, elemental weaknesses, critical hits, stealing, buffs, and floating damage numbers
+- **Status effects:** poison, sleep, silence and regen, with accessories that grant immunity
+- **42 monsters** in 16 drawn families, plus 7 boss fights: a two-phase final battle, a sea-monster bounty, and an optional superboss dragon
+- Levels and XP, learned spells, **weapon / armor / accessory** slots, 14 accessories, stat-compare when shopping
+- **6 side quests** tracked in a **quest log**, with the main objective always shown
+- A **bestiary** that records every creature you meet, with stats, weaknesses, steals and skills
+- A **world map** showing the places you've visited, your ship, and an arrow to your next objective
 - An **original chiptune soundtrack** (title, overworld, sea, town, dungeon, battle, boss, final battle, victory, ending), sequenced live in Web Audio
 - A full ending with an epilogue for each character
+
+### Side quests
+
+| Quest | Where it starts | Reward |
+| --- | --- | --- |
+| The Lost Cat | Pip, Brightwater | Pip's Candle |
+| Nell's Locket | Nell, Port Halden | Tide Pendant |
+| The Stonebrand | Orrin, Ironhold | Dwarven Band |
+| Bounty: Leviathan | Brann, Port Halden (after you get the ship) | 4000 gold, Sailor's Compass |
+| Stars Over Frostmere | Wren, Frostmere | Opens the Starfall Observatory and its superboss |
+| Monster Scholar | Sable, Frostmere | Silk Ribbon |
 
 | | |
 | --- | --- |
 | ![Town](docs/screenshots/town.png) | ![Overworld](docs/screenshots/overworld.png) |
 | ![Dungeon](docs/screenshots/dungeon.png) | ![Battle](docs/screenshots/battle.png) |
 | ![Final boss](docs/screenshots/final-boss.png) | ![Ending](docs/screenshots/ending.png) |
+| ![Frostmere](docs/screenshots/frostmere.png) | ![Astral Wyrm](docs/screenshots/astral-wyrm.png) |
+| ![World map](docs/screenshots/world-map.png) | ![Bestiary](docs/screenshots/bestiary.png) |
 
 ## Code layout
 
@@ -63,8 +80,8 @@ You play Arin, the young lamplighter of Brightwater. When the Ember Lantern goes
 | `src/party.js` | Party stats, leveling, inventory, save/load |
 | `src/field.js` | Exploration: movement, ship, camera, NPCs, chests, stairs, random encounters, dungeon lighting |
 | `src/battle.js` | Turn-based combat, targeting, damage formulas, spell effects, rewards |
-| `src/menu.js` | Field menu (items, magic, equip, status, save), shops, inns |
-| `src/story.js` | NPC dialogue, cutscenes, story flags, boss events, title screen, ending, main loop |
+| `src/menu.js` | Field menu (items, magic, equip, status, quests, bestiary, world map, save), shops, inns |
+| `src/story.js` | NPC dialogue, cutscenes, story flags, side quests, boss events, title screen, ending, main loop |
 
 Story events are written as plain `async` functions (`await say(...)`, `await startBattle(...)`), so adding a scene or quest is mostly writing dialogue.
 

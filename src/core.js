@@ -328,7 +328,7 @@ class ListMenu {
     if (end < this.items.length) { g.fillStyle = '#fff'; g.beginPath(); const cx = this.x + this.w / 2, by = this.y + this.h - 8; g.moveTo(cx - 6, by); g.lineTo(cx + 6, by); g.lineTo(cx, by + 6); g.fill(); }
     if (this.help && active) {
       const s = this.help(this.index);
-      if (s) { drawWindow(g, 12, 12, W - 24, 40); text(g, s, 28, 23, { size: 15 }); }
+      if (s) { const hy = this.helpY || 12; drawWindow(g, 12, hy, W - 24, 40); text(g, s, 28, hy + 11, { size: 15 }); }
     }
   }
 }

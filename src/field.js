@@ -27,6 +27,7 @@ function populate(map) {
       map.entities.push({ kind: 'chest', x: c.x, y: c.y, key, loot: c.loot, opened: !!G.flags[key] });
     }
     if (map.extras.lantern) map.entities.push({ kind: 'lantern', x: map.extras.lantern.x, y: map.extras.lantern.y, did, lit: !!G.flags['lantern_' + did], col: def.lanternCol });
+    for (const q of questEntities(map)) map.entities.push(q);
     if (map.extras.boss && !G.flags['boss_' + did]) map.entities.push({ kind: 'boss', x: map.extras.boss.x, y: map.extras.boss.y, did, def: MONSTERS[def.boss] });
   }
 }
@@ -41,7 +42,7 @@ const Field = {
     populate(map);
     G.scene = this;
     this.playMusic();
-    if (map.kind !== 'world') this.banner = { text: map.name, t: 2.6 };
+    this.banner = map.kind !== 'world' ? { text: map.name, t: 2.6 } : null;
   },
   playMusic() {
     const m = this.map;
@@ -71,8 +72,8 @@ const Field = {
     const tx = G.x + dx, ty = G.y + dy;
     const e = this.entityAt(tx, ty);
     if (e) {
-      if (e.kind === 'npc' && e.talk) {
-        e.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[G.dir];
+      if (e.talk) {
+        if (e.kind === 'npc') e.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[G.dir];
         runScript(async () => { await e.talk(e); refreshEntities(); });
       } else if (e.kind === 'chest') runScript(() => openChest(e));
       else if (e.kind === 'lantern') runScript(() => examineLantern(e));
@@ -168,7 +169,8 @@ const Field = {
     const m = this.map;
     if (m.kind === 'world') {
       const c = m.at(G.x, G.y);
-      if (/[A-C1-4]/.test(c) && !G.onShip) { runScript(() => enterLocation(c)); return; }
+      if (/[A-D1-5]/.test(c) && !G.onShip) { runScript(() => enterLocation(c)); return; }
+      if (G.onShip && m.whirl && G.x === m.whirl.x && G.y === m.whirl.y && !G.flags.leviathan) { runScript(whirlpoolEvent); return; }
       this.encounterCheck(c === 'T' || c === 'P' || c === 'd' || c === 'n' ? 1.5 : 1);
     } else if (m.kind === 'dungeon') {
       const c = m.at(G.x, G.y);
@@ -181,7 +183,7 @@ const Field = {
   },
   encounterCheck(w) {
     if (NO_ENC || G.flags.noEnc) return;
-    G.encSteps -= w;
+    G.encSteps -= partyHasAcc('fewer') ? w * 0.5 : w;
     if (G.encSteps > 0) return;
     G.encSteps = irnd(14, 30);
     const m = this.map;
@@ -226,6 +228,7 @@ const Field = {
       const sx = ex * TS - cx + TS / 2, sy = ey * TS - cy + TS - 2;
       list.push({ y: ey * TS + TS / 2, draw: () => drawEntity(g, e, sx, sy, t) });
     }
+    if (m.kind === 'world' && m.whirl && !G.flags.leviathan) { const wx = m.whirl.x * TS - cx + 16, wy = m.whirl.y * TS - cy + 16; if (wx > -40 && wy > -40 && wx < W + 40 && wy < H + 40) list.push({ y: -1e6, draw: () => drawWhirl(g, wx, wy, t) }); }
     if (m.kind === 'world' && G.ship && G.flags.ship && !G.onShip) {
       const sx = G.ship.x * TS - cx + TS / 2, sy = G.ship.y * TS - cy + TS - 4;
       list.push({ y: G.ship.y * TS + 10, draw: () => drawShip(g, sx, sy, t, G.ship.dir) });
@@ -284,6 +287,8 @@ function drawEntity(g, e, sx, sy, t) {
     if (e.mark) { const b = Math.sin(t * 5) * 2; rrect(g, sx - 8, sy - 74 + b, 16, 20, 6, '#fff8d0', OUT, 1.5); poly(g, [sx - 3, sy - 55 + b, sx + 3, sy - 55 + b, sx, sy - 50 + b], '#fff8d0'); text(g, '!', sx, sy - 72 + b, { size: 15, bold: true, align: 'center', color: '#c0302a', shadow: false }); }
   } else if (e.kind === 'chest') drawChest(g, sx, sy + 1, e.opened);
   else if (e.kind === 'lantern') drawLantern(g, sx, sy + 2, e.lit, t, e.col);
+  else if (e.kind === 'cat') drawCat(g, sx, sy, t);
+  else if (e.kind === 'glint') drawGlint(g, sx, sy, t);
   else if (e.kind === 'boss') {
     const s = 0.45;
     drawMonster(g, e.def, sx, sy + 2, { t, scale: s });
@@ -306,6 +311,7 @@ function freeNeighbor(map, x, y) {
 }
 async function enterLocation(ch) {
   const L = WORLD_LOC[ch];
+  G.flags['visit_' + ch] = true;
   if (L.town) {
     const d = TOWN_DEFS[L.town];
     const [ex, ey] = d.exits[0];

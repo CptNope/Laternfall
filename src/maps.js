@@ -21,10 +21,12 @@ const WORLD_LOC = {
   A: { x: 14, y: 43, town: 'brightwater', name: 'Brightwater' },
   B: { x: 38, y: 38, town: 'halden', name: 'Port Halden' },
   C: { x: 40, y: 15, town: 'ironhold', name: 'Ironhold' },
+  D: { x: 28, y: 8, town: 'frostmere', name: 'Frostmere' },
   1: { x: 8, y: 31, dungeon: 'hollow', name: 'Whisperwood Hollow' },
   2: { x: 35, y: 50, dungeon: 'shrine', name: 'Sunken Shrine' },
   3: { x: 52, y: 6, dungeon: 'mine', name: 'Emberdeep Mines' },
-  4: { x: 60, y: 40, dungeon: 'spire', name: 'Hollow Spire' }
+  4: { x: 60, y: 40, dungeon: 'spire', name: 'Hollow Spire' },
+  5: { x: 9, y: 12, dungeon: 'observatory', name: 'Starfall Observatory' }
 };
 const SHIP_HOME = { x: 40, y: 38 };
 const BRIDGE_Y = 43;
@@ -36,7 +38,8 @@ function genWorld() {
   const blobs = [
     { id: 'A', cx: 21, cy: 39, rx: 20, ry: 13, ok: (x, y) => y >= 25 && x <= 45 },
     { id: 'B', cx: 44, cy: 12, rx: 24, ry: 8.5, ok: (x, y) => y <= 21 },
-    { id: 'C', cx: 60, cy: 40, rx: 7.5, ry: 6.5, ok: (x, y) => x >= 52 && y >= 32 }
+    { id: 'C', cx: 60, cy: 40, rx: 7.5, ry: 6.5, ok: (x, y) => x >= 52 && y >= 32 },
+    { id: 'E', cx: 9, cy: 12, rx: 5.5, ry: 4.5, ok: (x, y) => x <= 15 && y <= 20 }
   ];
   for (let y = 0; y < h; y++) {
     tiles.push([]); region.push([]);
@@ -93,7 +96,7 @@ function genWorld() {
     let x = x0, y = y0;
     const step = () => {
       const c = at(x, y);
-      if (/[A-C1-4]/.test(c)) return;
+      if (/[A-D1-5]/.test(c)) return;
       if (c === '~' || c === 'r') { if (allowWater && c === '~') { set(x, y, '='); region[y][x] = region[y][x] || 'A'; } return; }
       set(x, y, '=');
     };
@@ -133,6 +136,7 @@ function genWorld() {
   road(rx + 2, BRIDGE_Y, 37, 38);            // bridge -> Halden
   road(38, 39, 35, 49, true, true);           // Halden -> Shrine
   road(40, 16, 51, 6, false, false);          // Ironhold -> Mines
+  road(39, 15, 29, 8, false, true);           // Ironhold -> Frostmere
   // mountain ring for the mines
   for (let y = 2; y <= 10; y++) for (let x = 47; x <= 58; x++) {
     const d = Math.hypot(x - 52, y - 6);
@@ -144,7 +148,16 @@ function genWorld() {
     if (d > 1.5 && d < 2.6 && !(x < 60 && Math.abs(y - 40) <= 1) && region[y][x] === 'C' && tiles[y][x] !== '~') tiles[y][x] = '^';
   }
   road(54, 40, 59, 40);
-  const m = new GameMap({ id: 'world', kind: 'world', w, h, tiles, region, name: 'World' });
+  // the Leviathan's whirlpool: open sea nearest a fixed point
+  let whirl = null, wd = 1e9;
+  for (let y = 3; y < h - 3; y++) for (let x = 3; x < w - 3; x++) {
+    let open = true;
+    for (let dy = -2; dy <= 2 && open; dy++) for (let dx = -2; dx <= 2; dx++) if (at(x + dx, y + dy) !== '~') { open = false; break; }
+    if (!open) continue;
+    const d = Math.hypot(x - 50, y - 29);
+    if (d < wd) { wd = d; whirl = { x, y }; }
+  }
+  const m = new GameMap({ id: 'world', kind: 'world', w, h, tiles, region, name: 'World', whirl });
   return m;
 }
 function worldRegionAt(map, x, y) {
@@ -154,6 +167,7 @@ function worldRegionAt(map, x, y) {
   if (reg === 'A') return x < riverX(y) ? 'r1' : 'r2';
   if (reg === 'B') return 'r3';
   if (reg === 'C') return 'r4';
+  if (reg === 'E') return 'r3';
   return 'r1';
 }
 function worldBattleBG(map, x, y) {
@@ -198,6 +212,20 @@ const TOWN_DEFS = {
     piers: [[21, 9, 4, 2], [21, 15, 3, 1]],
     decor: [[20, 11, 'c'], [20, 8, 'c'], [13, 8, 'l'], [5, 8, 'l'], [16, 18, 'f'], [17, 18, 'f'], [3, 18, 'f'], [8, 18, 'g']]
   },
+  frostmere: {
+    name: 'Frostmere', w: 24, h: 18, border: 'P', theme: 'snow', music: 'town', loc: 'D',
+    exits: [[11, 17], [12, 17]],
+    buildings: [
+      { x: 2, y: 2, w: 6, h: 4, kind: 'inn', roof: '#4a6a9a', sign: 'inn', id: 'inn', price: 120, chimney: true },
+      { x: 10, y: 1, w: 5, h: 5, kind: 'house', roof: '#3a3a6a', id: 'wren', chimney: true },
+      { x: 17, y: 2, w: 5, h: 4, kind: 'shop', roof: '#3a7a6a', sign: 'item', id: 'items', shop: 'frostmere_items' },
+      { x: 2, y: 10, w: 5, h: 4, kind: 'shop', roof: '#7a4a3a', sign: 'arms', id: 'arms', shop: 'frostmere_arms', chimney: true },
+      { x: 17, y: 10, w: 5, h: 4, kind: 'house', roof: '#8a6a3a', id: 'sable', chimney: true }
+    ],
+    paths: [[11, 6, 12, 17], [3, 6, 20, 7], [4, 14, 19, 14]],
+    water: [[15, 15, 3, 2]],
+    decor: [[9, 9, 'l'], [14, 9, 'l'], [14, 12, 'w'], [7, 15, 'c'], [20, 16, 'P'], [3, 16, 'P'], [9, 12, 'P']]
+  },
   ironhold: {
     name: 'Ironhold', w: 26, h: 20, border: 'r', theme: 'stone', music: 'town', loc: 'C',
     exits: [[12, 19], [13, 19]],
@@ -231,6 +259,7 @@ function buildTown(id) {
   for (const [x, y, c] of d.decor || []) tiles[y][x] = c;
   for (const [x, y] of d.exits) tiles[y][x] = ':';
   const buildings = d.buildings.map(b => ({ ...b, doorX: b.x + Math.floor(b.w / 2) }));
+  if (d.theme === 'snow') for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) if (tiles[y][x] === 'f') tiles[y][x] = '.';
   const m = new GameMap({ id, kind: 'town', w: d.w, h: d.h, tiles, buildings, theme: d.theme, name: d.name, music: d.music, loc: d.loc });
   return m;
 }
@@ -244,7 +273,9 @@ const DUNGEONS = {
   mine: { name: 'Emberdeep Mines', theme: 'mine', floors: 3, w: 38, h: 28, seed: 303, enc: 'd3', bg: 'mine', loc: '3', deco: 'L',
     loot: [['hipotion', 'hipotion', 'gold:900', 'bomb'], ['mythril_sword', 'star_rod', 'ether', 'plume'], ['mythril_mail', 'mythril_knife', 'elixir', 'star_robe']], boss: 'vesper', lantern: 'stone', lanternCol: '#ff6a2a' },
   spire: { name: 'Hollow Spire', theme: 'spire', floors: 3, w: 36, h: 28, seed: 404, enc: 'd4', bg: 'spire', loc: '4', deco2: 'k',
-    loot: [['xpotion', 'hiether', 'shadow_garb', 'gold:3000'], ['dawn_plate', 'seraph_mace', 'ember_scepter', 'elixir'], ['dawnblade', 'shadow_fang', 'megalixir', 'xpotion']], boss: 'king', lantern: 'dawn', lanternCol: '#ffe08a' }
+    loot: [['xpotion', 'hiether', 'shadow_garb', 'gold:3000'], ['dawn_plate', 'seraph_mace', 'ember_scepter', 'elixir'], ['dawnblade', 'shadow_fang', 'megalixir', 'xpotion']], boss: 'king', lantern: 'dawn', lanternCol: '#ffe08a' },
+  observatory: { name: 'Starfall Observatory', theme: 'astral', floors: 3, w: 36, h: 28, seed: 505, enc: 'd5', bg: 'astral', loc: '5', deco2: 'k',
+    loot: [['swift_boots', 'megalixir', 'gold:8000', 'xpotion'], ['ember_heart', 'celestia', 'astral_mace', 'elixir'], ['lightbringer', 'comet_edge', 'megalixir', 'hiether']], boss: 'wyrm', lantern: 'fifth', lanternCol: '#a8d8ff' }
 };
 const DUNGEON_SOLID = new Set(['#', '~', 'L', 'o', 'k']);
 function genDungeonFloor(did, f) {
@@ -361,6 +392,17 @@ function genDungeonFloor(did, f) {
     if (!reachableAll()) { T[y][x] = '.'; continue; }
     extras.chests.push({ x, y, loot: loot[li] });
     li++;
+  }
+  // a free corner tile for quest objects
+  for (const r of rooms) {
+    if (extras.spot || r === start || r.boss || (end && r === end)) continue;
+    for (const [x, y] of [[r.x + r.w - 1, r.y], [r.x, r.y + r.h - 1], [r.x, r.y], [r.x + r.w - 1, r.y + r.h - 1]]) {
+      if (T[y][x] !== '.') continue;
+      T[y][x] = 'C';
+      const ok = reachableAll();
+      T[y][x] = '.';
+      if (ok) { extras.spot = { x, y }; break; }
+    }
   }
   // torches
   const torches = new Set();

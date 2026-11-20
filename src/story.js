@@ -20,7 +20,7 @@ function townNpcs(id) {
   if (id === 'brightwater') return [
     N(5, 8, 1, LOOKS.elder, talkElder, { mark: !f.q1 || (f.lantern1 && !f.bridge), name: 'Elder Maren' }),
     N(12, 8, 2, LOOKS.mother, talkMother),
-    N(8, 11, 3, { style: 'spiky', body: '#c08a3a' }, talkPip, { wander: true }),
+    N(8, 11, 3, { style: 'spiky', body: '#c08a3a' }, talkPip, { wander: true, mark: !f.q_cat || (f.cat_found && !f.cat_done) }),
     N(13, 16, 4, LOOKS.guard, talkTobin),
     N(18, 8, 5, { body: '#3a7a4a', hat: 'cap', accent: '#a07a3a' }, talkHob, { wander: true }),
     N(15, 10, 6, { hair: '#a0a0a0', style: 'bald', beard: true, body: '#7a6a5a' }, talkBram),
@@ -28,8 +28,8 @@ function townNpcs(id) {
   ];
   if (id === 'halden') {
     const l = [
-      N(20, 10, 11, LOOKS.sailor, talkBrann, { mark: f.lantern2 && !f.ship, name: 'Brann' }),
-      N(17, 18, 12, { style: 'bun', body: '#3a8a8a' }, talkNell, { wander: true }),
+      N(20, 10, 11, LOOKS.sailor, talkBrann, { mark: (f.lantern2 && !f.ship) || (f.ship && !f.bounty) || (f.leviathan && !f.bounty_done), name: 'Brann' }),
+      N(17, 18, 12, { style: 'bun', body: '#3a8a8a' }, talkNell, { wander: true, mark: !f.q_locket || (hasItem('locket') && !f.locket_done) }),
       N(6, 10, 13, LOOKS.sailor, talkSailor, { wander: true }),
       N(12, 17, 14, { style: 'spiky', body: '#c05a3a' }, talkKid, { wander: true }),
       N(4, 7, 15, { style: 'long', body: '#8a6a3a' }, talkMerchant),
@@ -42,7 +42,7 @@ function townNpcs(id) {
     const l = [
       N(5, 9, 21, LOOKS.captain, talkDunmar, { mark: f.metKestrel && !f.kestrel, name: 'Captain Dunmar' }),
       N(20, 7, 22, LOOKS.guard, talkJailGuard),
-      N(9, 9, 23, LOOKS.dwarf, talkOrrin),
+      N(9, 9, 23, LOOKS.dwarf, talkOrrin, { mark: !f.q_hammer || (hasItem('stonebrand') && !f.hammer_done) }),
       N(15, 14, 24, { ...LOOKS.dwarf, hair: '#e8c060', style: 'bun', beard: false, body: '#7a3a2a' }, talkHilda),
       N(6, 17, 25, { body: '#5a5a5a', hat: 'helm' }, talkMiner, { wander: true }),
       N(20, 17, 26, { style: 'spiky', body: '#3a5a8a' }, talkIronKid, { wander: true })
@@ -50,6 +50,14 @@ function townNpcs(id) {
     if (f.lantern3) l.push(N(13, 9, 27, LOOKS.selene, talkSelene, { name: 'Selene' }));
     return l;
   }
+  if (id === 'frostmere') return [
+    N(12, 8, 31, { skin: '#e8c8a8', hair: '#c8c8d8', style: 'long', body: '#2a3a6a', accent: '#e8d070', robe: true, beard: true }, talkWren, { mark: !f.q_stars || (f.lantern3 && !f.chart), name: 'Wren' }),
+    N(16, 13, 32, { skin: '#f1c9a0', hair: '#e8e0d0', style: 'bun', body: '#6a3a5a', accent: '#c0a040', robe: true }, talkSable, { mark: !f.q_scholar || (!f.scholar_done && seenCount() >= 30), name: 'Sable' }),
+    N(14, 16, 33, { body: '#5a6a7a', hat: 'cap', accent: '#c0c0c0' }, talkFisher),
+    N(8, 11, 34, { style: 'spiky', body: '#3a6a9a' }, talkFrostKid, { wander: true }),
+    N(20, 8, 35, { body: '#7a5a3a', hat: 'cap', accent: '#5a3a1f', beard: true }, talkTrapper, { wander: true }),
+    N(5, 8, 36, { ...LOOKS.guard, hair: '#a0a0a0', beard: true }, talkVeteran)
+  ];
   return [];
 }
 
@@ -98,8 +106,17 @@ async function talkMother() {
 }
 async function talkPip() {
   const f = G.flags;
-  if (!f.lantern1) await say('Pip', 'Is it true the sky went black over Whisperwood?! That is SO cool. ...And scary. Mostly cool.');
-  else await say('Pip', 'When I grow up I\'m gonna be a lamplighter too! I already have a candle. It\'s very small.');
+  if (!f.q_cat) {
+    await sayAll([['Pip', 'Arin! Have you seen Mittens? She ran into Whisperwood when the sky went black and she didn\'t come back!'], ['Pip', 'She\'s orange and she bites. Please find her? I\'ll give you my best thing ever.']]);
+    f.q_cat = true; toast('New quest: The Lost Cat'); return;
+  }
+  if (!f.cat_found) { await say('Pip', 'Mittens is somewhere in Whisperwood Hollow. Call her with a fish noise. That\'s "mrrp".'); return; }
+  if (!f.cat_done) {
+    await sayAll([['Pip', 'MITTENS!! You found her! She only bit you a little!'], ['Pip', 'Here. It\'s my candle. It\'s very small but it\'s REALLY brave.']]);
+    addItem('pip_candle'); f.cat_done = true; Audio_.sfx('chest');
+    await narrate('Received Pip\'s Candle! (Accessory: MAG +4, prevents sleep)'); return;
+  }
+  await say('Pip', f.lantern1 ? 'When I grow up I\'m gonna be a lamplighter too! Mittens says hi. Mittens says that by biting.' : 'Is it true the sky went black over Whisperwood?!');
 }
 async function talkTobin() {
   await say('Tobin', G.flags.lantern1 ? 'Roads are a little quieter now. Still — east of the river the beasts are bigger. Buy better gear in Port Halden.' : 'Monsters on the roads since the Lantern went out. West of the river it\'s mostly slimes, bats and goblins. If you get hurt, rest at the inn, or at home.');
@@ -109,7 +126,8 @@ async function talkAda() { await say('Ada', 'Tip from an old traveler: press Esc
 async function talkBram() {
   await sayAll([
     ['Old Bram', 'Ember in the wood, Tide beneath the sea, Stone in the mountain\'s heart... and Dawn above them all.'],
-    ['Old Bram', 'That\'s the old rhyme. Four Lanterns, lit by the first kings to chain the Hollow Night beneath the world. Nobody remembers where Dawn burns anymore.']
+    ['Old Bram', 'That\'s the old rhyme. Four Lanterns, lit by the first kings to chain the Hollow Night beneath the world. Nobody remembers where Dawn burns anymore.'],
+    ['Old Bram', 'My grandmother swore there was a fifth verse, about a flame among the stars. Nobody sings it now. Nobody remembers the tune.']
   ]);
 }
 // ------------- Port Halden -------------
@@ -143,9 +161,31 @@ async function talkBrann() {
     await say(OS, 'North across the sea lies Ironhold, the dwarf-forged city. The Stone Lantern burns in the mines beneath it.');
     return;
   }
-  await say('Brann', 'Treat her kindly. She leans a bit to port when she\'s sulking.');
+  if (!f.bounty) {
+    await sayAll([['Brann', 'One more thing. There\'s a whirlpool out in the open sea, east and north of here. Fishermen swear something lives in it.'], ['Brann', 'The Leviathan. It\'s been eating boats. The harbor guild will pay 4,000 gold to whoever puts it down. Interested?']]);
+    f.bounty = true; toast('New quest: Bounty — Leviathan');
+    await narrate('The whirlpool is marked on your world map (Menu → Map).'); return;
+  }
+  if (f.leviathan && !f.bounty_done) {
+    await sayAll([['Brann', 'The whirlpool\'s gone flat as a millpond! You actually did it!'], ['Brann', 'Here\'s the guild\'s gold. And this — my old compass. It always found the quiet water. Seems right it goes to you.']]);
+    G.gold += 4000; addItem('compass'); f.bounty_done = true; Audio_.sfx('chest');
+    await narrate('Received 4000 gold and the Sailor\'s Compass! (Accessory: halves random encounters)'); return;
+  }
+  await say('Brann', f.bounty_done ? 'The Dawnrunner\'s never sailed better. Must be the company.' : 'The Leviathan\'s whirlpool is out in the open sea. Bring a priest. Bring two.');
 }
-async function talkNell() { await say('Nell', G.flags.lantern2 ? 'Fish are back! Big ones, too.' : 'The Sunken Shrine is south of town, down the coast road. Old as the sea itself. My gran said only tide priests could open it.'); }
+async function talkNell() {
+  const f = G.flags;
+  if (!f.q_locket) {
+    await sayAll([['Nell', 'The Sunken Shrine is south of town, down the coast road. Old as the sea itself.'], ['Nell', 'When the sea went mad, a wave took my locket right off my neck and dragged it in there. It was my mother\'s. If you\'re going in... keep an eye out?']]);
+    f.q_locket = true; toast('New quest: Nell\'s Locket'); return;
+  }
+  if (hasItem('locket') && !f.locket_done) {
+    await sayAll([['Nell', 'My locket! Oh, the little gull\'s still inside. Thank you. Truly.'], ['Nell', 'Take this. My mother wore it at sea for forty years. The tide never once took her.']]);
+    addItem('locket', -1); addItem('tide_pendant'); f.locket_done = true; Audio_.sfx('chest');
+    await narrate('Received the Tide Pendant! (Accessory: DEF +6, MAG +6, prevents poison)'); return;
+  }
+  await say('Nell', f.locket_done ? 'Fish are back! Big ones, too. Mother would have loved it.' : 'The locket should be somewhere on the first level of the Shrine. The sea likes to keep things.');
+}
 async function talkSailor() { await say('Sailor', 'Ironhold lies north across the sea. Dwarves and stubborn men, and a mountain full of fire beneath them.'); }
 async function talkKid() { await say('Tess', 'I saw a woman in a black hood on the cliffs last night! She looked SO sad. Then she just... wasn\'t there.'); }
 async function talkMerchant() { await say('Merchant', 'Ember Bombs! Lovely for crowds of monsters. Weapons and armor next door. I recommend both. I recommend everything.'); }
@@ -181,6 +221,16 @@ async function talkDunmar() {
 }
 async function talkJailGuard() { await say('Guard', G.flags.kestrel ? 'The cell\'s empty and it\'s very peaceful. I hate it.' : 'Careful with the prisoner. She\'s already stolen my lunch. Twice. Through the bars.'); }
 async function talkOrrin() {
+  const f = G.flags;
+  if (!f.q_hammer) {
+    await sayAll([['Orrin', 'You\'re the ones going into Emberdeep? Then hear an old dwarf\'s request.'], ['Orrin', 'My family\'s forge-hammer, the Stonebrand, was left in the second hall when the shafts started screaming. Bring it home and I\'ll make it worth your while.']]);
+    f.q_hammer = true; toast('New quest: The Stonebrand'); return;
+  }
+  if (hasItem('stonebrand') && !f.hammer_done) {
+    await sayAll([['Orrin', 'The Stonebrand! Look at her. Not a scratch. Well — one scratch. That one\'s from my grandfather.'], ['Orrin', 'Take this band. Forged by my own hand, with this very hammer, a long time ago. It keeps a clear head.']]);
+    addItem('stonebrand', -1); addItem('dwarven_band'); f.hammer_done = true; Audio_.sfx('chest');
+    await narrate('Received the Dwarven Band! (Accessory: DEF +12, prevents sleep and silence)'); return;
+  }
   await sayAll([
     ['Orrin', 'My grandfather\'s grandfather carried the Stone Lantern down into Emberdeep. We built the city on top of it, so it would keep us warm forever.'],
     ['Orrin', G.flags.lantern3 ? 'And now it does again. Thank you, children.' : '"Forever." Ha. Now the halls are dark and something walks in them wearing our dead.']
@@ -233,11 +283,15 @@ async function doorEvent(townId, b) {
     return;
   }
   if (townId === 'ironhold' && b.id === 'barracks') return talkDunmar();
+  if (townId === 'frostmere' && b.id === 'wren') return talkWren();
+  if (townId === 'frostmere' && b.id === 'sable') return talkSable();
+  if (townId === 'ironhold' && b.id === 'house1' && hasItem('stonebrand')) return talkOrrin();
   await narrate(pick(['Nobody answers. You hear someone humming inside.', 'The door is locked. It smells of fresh bread.', 'A dog barks at you from behind the door.']));
 }
 async function onEnterTown(id) {
   const f = G.flags;
   if (id === 'halden' && !f.seenHalden) { f.seenHalden = true; await say(LY, 'Port Halden! Smell that salt air. Elder Maren said to look for a priest named Oswin — he must be near the chapel.'); }
+  if (id === 'frostmere' && !f.seenFrost) { f.seenFrost = true; await sayAll([[LY, 'A village up here? In all this snow?'], [OS, 'Frostmere. Star-watchers and trappers. They say the sky is clearer here than anywhere in the world.']]); }
   if (id === 'ironhold' && !f.seenIron) { f.seenIron = true; await say(OS, 'Ironhold. Mind your manners — dwarves remember every insult for three generations.'); }
 }
 
@@ -265,6 +319,10 @@ async function canEnterDungeon(did) {
     if (!f.kestrel) { await narrate('Great iron gates seal the mountain. A plaque reads: "SEALED BY ORDER OF THE THANE OF IRONHOLD."'); return false; }
     if (!f.mineOpen) { await say(KE, 'Not the front door, genius. This way — behind the boulder. Mind the bats.'); f.mineOpen = true; }
   }
+  if (did === 'observatory') {
+    if (!f.chart) { await narrate('A domed door of pale stone, carved with constellations. One star is missing from the carving, as if someone pried it out.'); return false; }
+    if (!f.obsOpen) { await narrate('You hold up Wren\'s Star Chart. The circled star glows — and so does the empty socket in the door. With a sound like a struck bell, the dome opens.'); Audio_.sfx('lantern'); f.obsOpen = true; }
+  }
   if (did === 'spire') {
     if (!f.dawnkey) { await narrate('A door of black glass, with no handle. Only a keyhole shaped like a rising sun.'); return false; }
     if (!f.spireOpen) {
@@ -283,10 +341,11 @@ async function onEnterDungeon(did) {
   if (did === 'hollow') await sayAll([[LY, 'It\'s so dark... the trees have grown right down into the earth.'], [A, 'Stay close. The Lantern should be at the deepest point of the Hollow.']]);
   if (did === 'shrine') await say(OS, 'Built by my order a thousand years ago, when the sea was young and priests were taller. Watch the pools.');
   if (did === 'mine') await say(KE, 'Emberdeep. Three levels down to the Stone Lantern. Whatever you hear down here — don\'t answer it.');
+  if (did === 'observatory') await sayAll([[LY, 'Look up. There\'s no ceiling. Just... stars.'], [OS, 'The first kings built this. Whatever they kept here, they wanted the sky to watch over it.']]);
   if (did === 'spire') await sayAll([[LY, 'I can feel him. Like cold water poured down my spine.'], [OS, 'Then we are close. Courage, children. Light is only ever a small thing, until it isn\'t.']]);
 }
 async function examineLantern(e) {
-  const names = { hollow: 'Ember', shrine: 'Tide', mine: 'Stone', spire: 'Dawn' };
+  const names = { hollow: 'Ember', shrine: 'Tide', mine: 'Stone', spire: 'Dawn', observatory: 'Fifth' };
   if (e.lit) await narrate(`The ${names[e.did]} Lantern burns warm and steady. You feel safe here.`);
   else await narrate(`The ${names[e.did]} Lantern is cold and dark.`);
 }
@@ -389,6 +448,28 @@ async function bossEncounter(did) {
     ]);
     return;
   }
+  if (did === 'observatory') {
+    await sayAll([
+      ['Astral Wyrm', 'LAMPLIGHTER. I SMELL THE FLAME ON YOUR HANDS.'],
+      ['Astral Wyrm', 'The first kings lit five flames. The fifth burned among the stars — and they could not keep it. They left me to guard its ashes, and the Night has been whispering to me ever since.'],
+      ['Astral Wyrm', 'I am so tired of listening. SHOW ME YOUR LIGHT IS STRONGER THAN HIS VOICE.'],
+      [KE, 'Why is it always the dragons who want a fight?'],
+      [A, 'Then we\'ll show it.']
+    ]);
+    const r = await startBattle(['wyrm'], { boss: true, bg: 'astral' });
+    if (r === 'lose') return gameOver();
+    f.boss_observatory = true; refreshEntities();
+    await sayAll([
+      ['Astral Wyrm', '...Quiet. For the first time in a thousand years, the whispering is quiet.'],
+      ['Astral Wyrm', 'Light it, little lamplighter. Light the one they could not. Then I may finally sleep.']
+    ]);
+    await relightLantern('observatory');
+    f.lantern5 = true;
+    addItem('fifth_flame'); Audio_.sfx('chest');
+    await narrate('The Fifth Flame burns again among the stars. A spark of it settles into Arin\'s palm — received The Fifth Flame! (Accessory: all stats +15, regen, prevents all ailments)');
+    await sayAll([[LY, 'A fifth Lantern. Old Bram\'s rhyme had a fifth verse after all.'], [OS, 'And now someone will remember the tune.']]);
+    return;
+  }
   if (did === 'spire') {
     Audio_.stopMusic();
     await sayAll([
@@ -423,6 +504,97 @@ async function bossEncounter(did) {
     f.lantern4 = true;
     await runEnding();
   }
+}
+
+// ------------- Frostmere -------------
+function seenCount() { return Object.keys(MONSTERS).filter(id => G.seen[id]).length; }
+async function talkWren() {
+  const f = G.flags;
+  if (!f.q_stars) {
+    await sayAll([
+      ['Wren', 'Visitors! Mind the telescope. And the other telescope. And — never mind, mind everything.'],
+      ['Wren', 'I am Wren, and I map the sky. Or I did, until the Lanterns began to fail. Now the dark eats the stars before I can count them.'],
+      ['Wren', 'Bring back the light, lamplighters. When three Lanterns burn, the sky will be clear enough, and I will show you something no one has seen in a thousand years.']
+    ]);
+    f.q_stars = true; toast('New quest: Stars Over Frostmere'); return;
+  }
+  if (!f.lantern3) { await say('Wren', 'Still too dark. Three Lanterns, lamplighter. I\'ll be here, counting.'); return; }
+  if (!f.chart) {
+    await sayAll([
+      ['Wren', 'Look! LOOK! Three Lanterns, and the whole sky has come back. There — do you see the gap in the Lamplighter constellation?'],
+      ['Wren', 'Every old chart has a fifth star there. The Fifth Flame. The first kings kept it in an observatory on the island west of here, and then... they stopped talking about it.'],
+      ['Wren', 'Take my chart. The observatory door is carved with that same sky — it will know the missing star when it sees it.']
+    ]);
+    addItem('star_chart'); f.chart = true; Audio_.sfx('chest');
+    await narrate('Received the Star Chart! The Starfall Observatory lies on the small island west of Frostmere.');
+    return;
+  }
+  if (!f.lantern5) { await say('Wren', 'Be careful in the Observatory. The old songs say a great wyrm sleeps beside the Fifth Flame. They don\'t say whether it sleeps lightly.'); return; }
+  await say('Wren', 'Five stars in the Lamplighter now. I\'ve redrawn every chart I own. Twice. I\'m going to name a comet after you.');
+}
+async function talkSable() {
+  const f = G.flags;
+  const n = seenCount(), total = Object.keys(MONSTERS).length;
+  if (!f.q_scholar) {
+    await sayAll([['Sable', 'Come in out of the cold, dears. I write the bestiaries for the Frostmere archive, but my knees won\'t take me past the gate anymore.'], ['Sable', 'Be my eyes. Record at least 30 different creatures in your bestiary and come tell me about them. I pay in very good things.']]);
+    f.q_scholar = true; toast('New quest: Monster Scholar'); return;
+  }
+  if (!f.scholar_done && n >= 30) {
+    await sayAll([['Sable', `${n} creatures! Oh, the Snow Imp ones are going straight on the cover.`], ['Sable', 'As promised. I wove this ribbon from moth-silk and old charms. Nothing nasty will stick to whoever wears it.']]);
+    addItem('silk_ribbon'); f.scholar_done = true; Audio_.sfx('chest');
+    await narrate('Received the Silk Ribbon! (Accessory: DEF +8, MAG +8, prevents all ailments)'); return;
+  }
+  await say('Sable', f.scholar_done ? `Every creature you\'ve met is in my book now. ${n} of ${total}. Go and find me the rest, won\'t you?` : `You\'ve recorded ${n} creatures so far. Thirty, dear. Check your bestiary in the menu.`);
+}
+async function talkFisher() { await say('Ice Fisher', 'Fish don\'t mind the cold. Neither do I. We understand each other, the fish and me. Mostly they understand that I\'m hungry.'); }
+async function talkFrostKid() { await say('Tamsin', 'Wren lets me look through the big telescope sometimes! I saw a star that moved. He said it was a comet. I think it was a dragon.'); }
+async function talkTrapper() { await say('Trapper', G.flags.chart ? 'Heading to the island, eh? Sail west from here. You\'ll see the dome before you see the shore.' : 'On clear nights you can see a dome on that little island to the west. Nobody goes there. No reason to. Or so we tell ourselves.'); }
+async function talkVeteran() { await say('Old Soldier', 'Accessories, friend! A good charm on your wrist keeps you awake when the imps start singing. Buy one at the trinket shop.'); }
+
+// ------------- sea bounty -------------
+async function whirlpoolEvent() {
+  const f = G.flags;
+  await narrate('A vast whirlpool churns beneath the hull. The Dawnrunner groans as the current drags her in — and something huge rises from the deep.');
+  const c = await choose(null, 'Fight the thing in the whirlpool?', ['Fight!', 'Steer away'], 1);
+  if (c !== 0) { await narrate('You haul the wheel hard and break free of the current.'); return; }
+  const r = await startBattle(['leviathan'], { boss: true, bg: 'sea' });
+  if (r === 'lose') return gameOver();
+  f.leviathan = true;
+  await narrate('The Leviathan sinks into the dark water. Slowly, the whirlpool falls still.');
+  if (f.bounty) await say(OS, 'Brann will want to hear about this. And pay for it, I hope.');
+}
+
+// ------------- quests -------------
+function questEntities(map) {
+  const f = G.flags, out = [], sp = map.extras && map.extras.spot;
+  if (!sp) return out;
+  if (map.id === 'hollow:0' && f.q_cat && !f.cat_found) out.push({ kind: 'cat', x: sp.x, y: sp.y, talk: async () => { await say('Mittens', 'Mrrp!'); await narrate('Mittens bites your thumb, then climbs into Lyra\'s hat as if she owns it. Found Mittens!'); f.cat_found = true; Audio_.sfx('item'); } });
+  if (map.id === 'shrine:0' && f.q_locket && !hasItem('locket') && !f.locket_done) out.push({ kind: 'glint', x: sp.x, y: sp.y, talk: async () => { addItem('locket'); Audio_.sfx('chest'); await narrate('Something silver glints among the shells... Found Nell\'s Locket!'); } });
+  if (map.id === 'mine:1' && f.q_hammer && !hasItem('stonebrand') && !f.hammer_done) out.push({ kind: 'glint', x: sp.x, y: sp.y, talk: async () => { addItem('stonebrand'); Audio_.sfx('chest'); await narrate('Half-buried in cinders lies a great runed hammer. Found the Stonebrand!'); } });
+  return out;
+}
+function questList() {
+  const f = G.flags, q = [];
+  if (f.q_cat) q.push({ title: 'The Lost Cat', giver: 'Pip, Brightwater', done: !!f.cat_done, reward: 'Pip\'s Candle', desc: f.cat_done ? 'Mittens is home, and only bit you a little.' : f.cat_found ? 'You found Mittens! Bring her back to Pip in Brightwater.' : 'Pip\'s cat Mittens ran into Whisperwood Hollow. Search the first level of the Hollow.' });
+  if (f.q_locket) q.push({ title: 'Nell\'s Locket', giver: 'Nell, Port Halden', done: !!f.locket_done, reward: 'Tide Pendant', desc: f.locket_done ? 'Nell has her mother\'s locket back.' : hasItem('locket') ? 'You have the locket. Return it to Nell in Port Halden.' : 'A wave dragged Nell\'s locket into the Sunken Shrine. Look on the first level.' });
+  if (f.q_hammer) q.push({ title: 'The Stonebrand', giver: 'Orrin, Ironhold', done: !!f.hammer_done, reward: 'Dwarven Band', desc: f.hammer_done ? 'The Stonebrand hangs over Orrin\'s forge again.' : hasItem('stonebrand') ? 'Bring the Stonebrand back to Orrin in Ironhold.' : 'Orrin\'s ancestral hammer lies in the second hall (2F) of Emberdeep Mines.' });
+  if (f.bounty) q.push({ title: 'Bounty: Leviathan', giver: 'Brann, Port Halden', done: !!f.bounty_done, reward: '4000 gold, Sailor\'s Compass', desc: f.bounty_done ? 'The harbor guild paid up. The seas are safer.' : f.leviathan ? 'The Leviathan is defeated. Collect your bounty from Brann.' : 'Sail into the whirlpool in the open sea (marked on your map) and defeat the Leviathan. Recommended level: 16+.' });
+  if (f.q_stars) q.push({ title: 'Stars Over Frostmere', giver: 'Wren, Frostmere', done: !!f.lantern5, reward: 'The Fifth Flame', desc: f.lantern5 ? 'The Fifth Flame burns among the stars once more.' : f.chart ? 'Use the Star Chart to open the Starfall Observatory on the island west of Frostmere, and find the Fifth Flame. Recommended level: 32+.' : 'Wren needs a clear sky. Relight three Lanterns, then return to him.' });
+  if (f.q_scholar) q.push({ title: 'Monster Scholar', giver: 'Sable, Frostmere', done: !!f.scholar_done, reward: 'Silk Ribbon', desc: f.scholar_done ? 'Your notes are in Sable\'s bestiary.' : `Record 30 different creatures in your bestiary, then visit Sable. (${seenCount()}/30)` });
+  return q;
+}
+function mainObjective() {
+  const f = G.flags;
+  if (!f.q1) return { text: 'Speak with Elder Maren in Brightwater.', loc: 'A' };
+  if (!f.lantern1) return { text: 'Relight the Ember Lantern in Whisperwood Hollow, northwest of Brightwater.', loc: '1' };
+  if (!f.bridge) return { text: 'Return to Elder Maren in Brightwater.', loc: 'A' };
+  if (!f.oswin) return { text: 'Cross the river bridge east and find Oswin in Port Halden.', loc: 'B' };
+  if (!f.lantern2) return { text: 'Relight the Tide Lantern in the Sunken Shrine, south of Port Halden.', loc: '2' };
+  if (!f.ship) return { text: 'Ask harbor master Brann in Port Halden about a ship.', loc: 'B' };
+  if (!f.kestrel) return { text: f.metKestrel ? 'Ask Captain Dunmar in Ironhold to release Kestrel.' : 'Sail north to Ironhold and find a way into Emberdeep.', loc: 'C' };
+  if (!f.lantern3) return { text: 'Relight the Stone Lantern deep in Emberdeep Mines.', loc: '3' };
+  if (!f.ending) return { text: 'Sail east to the Isle of Dusk and climb the Hollow Spire.', loc: '4' };
+  return { text: 'The Lanterns burn. The world is at peace.', loc: null };
 }
 
 // ------------- title -------------
