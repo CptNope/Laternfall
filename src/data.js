@@ -38,6 +38,15 @@ const HEROES = {
     look: { skin: '#c98e62', hair: '#1f1b2e', style: 'pony', body: '#2f6b4a', accent: '#c7c7c7', hood: true, weapon: 'dagger' },
     start: { weapon: 'steel_dagger', armor: 'thief_vest' },
     bio: 'A quick-fingered thief from the Ironhold undercity. Owes nobody.'
+  },
+  selene: {
+    name: 'Selene', cls: 'Duskmage', skill: 'Dusk',
+    base: { hp: 46, mp: 24, str: 7, def: 6, mag: 14, spd: 11 },
+    grow: { hp: 10.5, mp: 4, str: 1.1, def: 1.2, mag: 2.75, spd: 1.3 },
+    spells: [['shade', 1], ['drain', 1], ['gravity', 1], ['nightfall', 1], ['requiem', 28]],
+    look: { skin: '#f6d6b8', hair: '#a03a2a', style: 'long', body: '#3a2a5a', accent: '#c04aa8', robe: true, weapon: 'staff' },
+    start: { weapon: 'crescent_rod', armor: 'sage_robe' },
+    bio: 'Lyra\'s elder sister. Seven years in the dark taught her its spells — and how to turn them back on it.'
   }
 };
 
@@ -63,6 +72,11 @@ const SPELLS = {
   thundara: { name: 'Thundara', mp: 12, type: 'dmg', elem: 'bolt', power: 30, target: 'enemies', fx: 'bolt', desc: 'Lightning on all foes.' },
   flare: { name: 'Flare', mp: 24, type: 'dmg', elem: 'none', power: 120, target: 'enemy', fx: 'flare', desc: 'A star\'s heart, unleashed.' },
   starfall: { name: 'Starfall', mp: 36, type: 'dmg', elem: 'none', power: 85, target: 'enemies', fx: 'flare', desc: 'Call down the sky.' },
+  shade: { name: 'Shade', mp: 6, type: 'dmg', elem: 'dark', power: 30, target: 'enemy', fx: 'dark', desc: 'A lance of shadow.' },
+  drain: { name: 'Drain', mp: 9, type: 'dmg', elem: 'dark', power: 26, drain: true, target: 'enemy', fx: 'dark', desc: 'Steal HP from a foe.' },
+  gravity: { name: 'Gravity', mp: 12, type: 'gravity', target: 'enemy', fx: 'dark', desc: 'Crush a foe for a quarter of its HP (less on bosses).' },
+  nightfall: { name: 'Nightfall', mp: 16, type: 'dmg', elem: 'dark', power: 42, target: 'enemies', fx: 'dark', desc: 'Darkness falls on all foes.' },
+  requiem: { name: 'Requiem', mp: 34, type: 'dmg', elem: 'dark', power: 105, target: 'enemies', fx: 'dark', desc: 'The last song of the night.' },
   steal: { name: 'Steal', mp: 0, type: 'steal', target: 'enemy', fx: 'none', desc: 'Lift an item from a foe.' },
   twin: { name: 'Twin Strike', mp: 4, type: 'phys', hits: 2, power: 0.8, target: 'enemy', fx: 'slash', desc: 'Two quick cuts.' },
   smoke: { name: 'Smoke Bomb', mp: 3, type: 'escape', target: 'self', fx: 'none', desc: 'Guaranteed escape (not from bosses).' },
@@ -92,6 +106,8 @@ const SPELLS = {
   e_meteor: { name: 'Meteor Rain', type: 'dmg', elem: 'none', power: 28, target: 'allies', fx: 'flare' },
   e_starbreath: { name: 'Starfire Breath', type: 'dmg', elem: 'fire', power: 25, target: 'allies', fx: 'fire' },
   e_crush: { name: 'Crushing Coil', type: 'phys', power: 1.7, target: 'ally', fx: 'hit' },
+  e_needles: { name: 'Needle Storm', type: 'phys', power: 0.7, target: 'allies', fx: 'slash' },
+  e_sandstorm: { name: 'Sandstorm', type: 'dmg', elem: 'none', power: 12, target: 'allies', fx: 'sand' },
   e_whirl: { name: 'Maelstrom', type: 'dmg', elem: 'water', power: 18, target: 'allies', fx: 'water' }
 };
 
@@ -112,8 +128,15 @@ const ITEMS = {
   // key items
   locket: { name: 'Nell\'s Locket', price: 0, kind: 'key', desc: 'A silver locket with a tiny painted gull inside.' },
   stonebrand: { name: 'Stonebrand', price: 0, kind: 'key', desc: 'Orrin\'s ancestral forge-hammer. Heavier than it looks.' },
+  sun_seal: { name: 'Sun Seal', price: 0, kind: 'key', desc: 'The royal seal of Mirage. It opens the First King\'s tomb.' },
   star_chart: { name: 'Star Chart', price: 0, kind: 'key', desc: 'Wren\'s chart. One constellation is circled: the Fifth Flame.' },
   // accessories (anyone can wear)
+  gale_sandals: { name: 'Gale Sandals', price: 0, kind: 'acc', spd: 12, desc: 'SPD +12. Arena prize.' },
+  champion_belt: { name: 'Champion Belt', price: 0, kind: 'acc', atk: 12, def: 12, desc: 'ATK +12, DEF +12. Arena prize.' },
+  sage_circlet: { name: 'Sage Circlet', price: 0, kind: 'acc', mag: 22, immune: ['silence'], desc: 'MAG +22. Prevents silence. Arena prize.' },
+  phoenix_charm: { name: 'Phoenix Charm', price: 0, kind: 'acc', def: 6, reraise: true, desc: 'DEF +6. Revives the wearer once per battle. Arena prize.' },
+  lantern_crown: { name: 'Lantern Crown', price: 0, kind: 'acc', all: 20, regen: true, xp: 1.5, immune: ['poison', 'sleep', 'silence'], desc: 'All +20, regen, +50% EXP, no ailments. Grand Champion\'s prize.' },
+  desert_veil: { name: 'Desert Veil', price: 2400, kind: 'acc', def: 8, immune: ['poison'], desc: 'DEF +8. Prevents poison.' },
   power_ring: { name: 'Power Ring', price: 600, kind: 'acc', atk: 6, desc: 'ATK +6.' },
   guard_ring: { name: 'Guard Ring', price: 600, kind: 'acc', def: 6, desc: 'DEF +6.' },
   mage_ring: { name: 'Mage Ring', price: 1400, kind: 'acc', mag: 8, desc: 'MAG +8.' },
@@ -150,16 +173,23 @@ const ITEMS = {
   mythril_knife: { name: 'Mythril Knife', price: 0, kind: 'weapon', who: ['kestrel'], atk: 32, spd: 3, desc: 'A whisper of an edge.' },
   comet_edge: { name: 'Comet Edge', price: 0, kind: 'weapon', who: ['kestrel'], atk: 62, spd: 10, desc: 'Gone before you see it.' },
   shadow_fang: { name: 'Shadow Fang', price: 0, kind: 'weapon', who: ['kestrel'], atk: 46, spd: 6, desc: 'Cuts the space between moments.' },
+  crescent_rod: { name: 'Crescent Rod', price: 0, kind: 'weapon', who: ['selene'], atk: 8, mag: 20, desc: 'Vesper\'s staff, cleansed.' },
+  moon_scepter: { name: 'Moon Scepter', price: 6000, kind: 'weapon', who: ['selene'], atk: 12, mag: 32, desc: 'Silver and patient.' },
+  nocturne: { name: 'Nocturne', price: 0, kind: 'weapon', who: ['selene'], atk: 16, mag: 46, desc: 'Plays the dark like an instrument.' },
+  sunsteel_blade: { name: 'Sunsteel Blade', price: 9000, kind: 'weapon', who: ['arin'], atk: 46, desc: 'Forged in desert heat.' },
+  sky_staff: { name: 'Sky Staff', price: 8500, kind: 'weapon', who: ['lyra'], atk: 12, mag: 34, desc: 'Light as a cloud.' },
+  pharaoh_mace: { name: 'Gilded Mace', price: 0, kind: 'weapon', who: ['oswin'], atk: 34, mag: 22, desc: 'Gold from the First King\'s tomb.' },
+  sand_kris: { name: 'Sand Kris', price: 0, kind: 'weapon', who: ['kestrel'], atk: 40, spd: 5, desc: 'Wavy and wicked.' },
   // armor
   leather: { name: 'Leather Armor', price: 50, kind: 'armor', who: ['arin', 'kestrel', 'oswin'], def: 3, desc: 'Basic protection.' },
-  cloth_robe: { name: 'Cloth Robe', price: 40, kind: 'armor', who: ['lyra', 'oswin'], def: 2, mag: 1, desc: 'Simple robe.' },
+  cloth_robe: { name: 'Cloth Robe', price: 40, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 2, mag: 1, desc: 'Simple robe.' },
   chain_mail: { name: 'Chain Mail', price: 450, kind: 'armor', who: ['arin', 'oswin'], def: 9, desc: 'Rings of iron.' },
-  silk_robe: { name: 'Silk Robe', price: 340, kind: 'armor', who: ['lyra', 'oswin'], def: 6, mag: 3, desc: 'Fine silk, lightly warded.' },
+  silk_robe: { name: 'Silk Robe', price: 340, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 6, mag: 3, desc: 'Fine silk, lightly warded.' },
   plate: { name: 'Plate Armor', price: 2000, kind: 'armor', who: ['arin', 'oswin'], def: 16, desc: 'Full plate.' },
-  sage_robe: { name: 'Sage Robe', price: 1500, kind: 'armor', who: ['lyra', 'oswin'], def: 12, mag: 7, desc: 'Woven with wisdom.' },
+  sage_robe: { name: 'Sage Robe', price: 1500, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 12, mag: 7, desc: 'Woven with wisdom.' },
   thief_vest: { name: 'Thief Vest', price: 1300, kind: 'armor', who: ['kestrel'], def: 12, spd: 3, desc: 'Lots of pockets.' },
   mythril_mail: { name: 'Mythril Mail', price: 0, kind: 'armor', who: ['arin', 'oswin'], def: 25, desc: 'Shimmering mail.' },
-  star_robe: { name: 'Star Robe', price: 0, kind: 'armor', who: ['lyra', 'oswin'], def: 20, mag: 14, desc: 'The night sky, sewn.' },
+  star_robe: { name: 'Star Robe', price: 0, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 20, mag: 14, desc: 'The night sky, sewn.' },
   shadow_garb: { name: 'Shadow Garb', price: 0, kind: 'armor', who: ['kestrel'], def: 22, spd: 7, desc: 'Drinks the light.' },
   dawn_plate: { name: 'Dawn Plate', price: 0, kind: 'armor', who: ['arin', 'oswin'], def: 35, desc: 'Warm to the touch.' }
 };
@@ -206,6 +236,16 @@ const MONSTERS = {
   nebulaslime: { name: 'Nebula Slime', fam: 'slime', c: ['#c070ff', '#3a1a7a'], hp: 1000, atk: 160, def: 80, mag: 140, spd: 16, xp: 480, gold: 360, weak: ['ice'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_hush' }, { w: 1, a: 'e_shadow' }], steal: 'hiether' },
   voiddrake: { name: 'Void Drake', fam: 'wyrm', size: 0.7, c: ['#3a2a6a', '#140a2a', '#c070ff'], hp: 1500, atk: 175, def: 84, mag: 130, spd: 20, xp: 650, gold: 480, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_starbreath' }], steal: 'xpotion' },
   cometimp: { name: 'Comet Imp', fam: 'imp', c: ['#ffb04a', '#8a3a1a'], hp: 900, atk: 140, def: 66, mag: 150, spd: 30, xp: 450, gold: 340, weak: ['ice'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_fire' }, { w: 1, a: 'e_lullaby' }], steal: 'elixir' },
+  sandworm: { name: 'Sandworm', fam: 'serpent', size: 1.2, c: ['#d8a860', '#8a6030'], hp: 420, atk: 96, def: 40, mag: 30, spd: 12, xp: 170, gold: 120, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_crush' }], steal: 'hipotion' },
+  scorpion: { name: 'Death Scorpion', fam: 'crab', c: ['#8a2a1a', '#3a0a0a'], hp: 330, atk: 100, def: 58, mag: 20, spd: 14, xp: 160, gold: 110, weak: ['ice'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_bite' }], steal: 'antidote' },
+  bandit: { name: 'Sand Bandit', fam: 'goblin', c: ['#c89a6a', '#5a3a2a'], hp: 360, atk: 98, def: 40, mag: 20, spd: 20, xp: 165, gold: 220, drop: ['hipotion', 0.3], steal: 'bomb' },
+  cactoid: { name: 'Cactoid', fam: 'plant', c: ['#ff8ab0', '#4a9a4a'], hp: 300, atk: 90, def: 48, mag: 40, spd: 10, xp: 150, gold: 100, weak: ['fire'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_needles' }], steal: 'remedy' },
+  mummy: { name: 'Mummy', fam: 'skeleton', c: ['#e0d0a8', '#7a6a4a'], hp: 640, atk: 128, def: 66, mag: 60, spd: 10, xp: 260, gold: 180, weak: ['fire', 'holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_hush' }], steal: 'remedy' },
+  scarab: { name: 'Gilded Scarab', fam: 'crab', size: 0.85, c: ['#e8c84a', '#3a5a2a'], hp: 520, atk: 120, def: 96, mag: 30, spd: 18, xp: 240, gold: 260, weak: ['ice'], steal: 'hiether' },
+  sphinx: { name: 'Sphinx', fam: 'beast', size: 1.3, c: ['#e0b860', '#8a5a2a'], hp: 940, atk: 142, def: 70, mag: 120, spd: 20, xp: 320, gold: 240, weak: ['bolt'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_bolt' }, { w: 1, a: 'e_hush' }], steal: 'xpotion' },
+  tombpriest: { name: 'Cursed Priest', fam: 'witch', c: ['#2a2010', '#e8c84a', '#ffe8a0'], hp: 680, atk: 90, def: 54, mag: 132, spd: 16, xp: 280, gold: 230, weak: ['holy'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_heal' }, { w: 1, a: 'e_lullaby' }], steal: 'elixir' },
+  gildedgolem: { name: 'Gilded Golem', fam: 'golem', c: ['#c8a040', '#6a5020', '#ffe080'], hp: 1050, atk: 146, def: 110, mag: 40, spd: 8, xp: 340, gold: 400, weak: ['bolt'], steal: 'xpotion' },
+  firstking: { name: 'Ozymar, the First King', fam: 'king', boss: true, size: 1.1, c: ['#3a2a10', '#e8c84a', '#ffb040'], hp: 6200, atk: 138, def: 74, mag: 110, spd: 24, xp: 9000, gold: 6000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_sandstorm' }, { w: 1, a: 'e_hush' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_cleave' }], steal: 'megalixir' },
   wyrm: { name: 'Astral Wyrm', fam: 'wyrm', boss: true, size: 1.35, c: ['#1a2a5a', '#0a1028', '#9ad8ff'], hp: 12000, atk: 182, def: 88, mag: 150, spd: 30, xp: 20000, gold: 10000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_meteor' }, { w: 2, a: 'e_starbreath' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_dreamfog' }, { w: 1, a: 'e_crush' }], steal: 'megalixir' },
   king: { name: 'The Hollow King', fam: 'king', boss: true, size: 1.3, c: ['#120a20', '#e8c84a', '#8a3aff'], hp: 6500, atk: 165, def: 82, mag: 135, spd: 28, xp: 0, gold: 0, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_cleave' }], steal: 'megalixir' },
   king2: { name: 'Hollow King, Unbound', fam: 'king2', boss: true, size: 1.3, c: ['#05020a', '#ff5ac8', '#5affe8'], hp: 5200, atk: 175, def: 78, mag: 148, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_blaze' }], steal: 'megalixir' }
@@ -220,6 +260,8 @@ const ENCOUNTERS = {
   r3: [{ w: 3, g: ['frostwolf', 'frostwolf'] }, { w: 2, g: ['icegolem'] }, { w: 2, g: ['snowimp', 'snowimp'] }, { w: 2, g: ['ogre'] }, { w: 1, g: ['ogre', 'snowimp'] }, { w: 1, g: ['frostwolf', 'snowimp', 'frostwolf'] }],
   d3: [{ w: 3, g: ['magmaslime', 'firebat'] }, { w: 2, g: ['revenant'] }, { w: 2, g: ['firebat', 'firebat'] }, { w: 2, g: ['embergolem'] }, { w: 1, g: ['revenant', 'magmaslime'] }, { w: 1, g: ['revenant', 'revenant'] }],
   r4: [{ w: 3, g: ['hollowknight'] }, { w: 2, g: ['nightgaze', 'wraith'] }, { w: 2, g: ['wraith', 'wraith'] }, { w: 2, g: ['chimera'] }, { w: 1, g: ['hollowknight', 'nightgaze'] }],
+  r5: [{ w: 3, g: ['sandworm'] }, { w: 2, g: ['scorpion', 'scorpion'] }, { w: 2, g: ['bandit', 'bandit'] }, { w: 2, g: ['cactoid', 'cactoid', 'cactoid'] }, { w: 1, g: ['bandit', 'scorpion', 'cactoid'] }],
+  d6: [{ w: 3, g: ['mummy', 'mummy'] }, { w: 2, g: ['scarab', 'scarab'] }, { w: 2, g: ['sphinx'] }, { w: 2, g: ['tombpriest', 'mummy'] }, { w: 1, g: ['gildedgolem'] }, { w: 1, g: ['gildedgolem', 'tombpriest'] }],
   d5: [{ w: 3, g: ['starspawn', 'astralknight'] }, { w: 2, g: ['voiddrake'] }, { w: 2, g: ['nebulaslime', 'cometimp', 'nebulaslime'] }, { w: 2, g: ['astralknight', 'cometimp'] }, { w: 1, g: ['voiddrake', 'starspawn'] }],
   d4: [{ w: 3, g: ['voidslime', 'wraith'] }, { w: 2, g: ['dreadknight'] }, { w: 2, g: ['nightgaze', 'nightgaze'] }, { w: 2, g: ['hollowknight', 'voidslime'] }, { w: 1, g: ['chimera', 'nightgaze'] }, { w: 1, g: ['dreadknight', 'wraith'] }]
 };
@@ -231,9 +273,34 @@ const SHOPS = {
   halden_arms: ['iron_sword', 'mage_staff', 'iron_mace', 'chain_mail', 'silk_robe', 'power_ring', 'guard_ring'],
   ironhold_items: ['hipotion', 'xpotion', 'ether', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
   ironhold_arms: ['steel_sword', 'rune_staff', 'steel_mace', 'steel_dagger', 'plate', 'sage_robe', 'thief_vest', 'mage_ring', 'wake_charm'],
+  mirage_items: ['hipotion', 'xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
+  mirage_arms: ['sunsteel_blade', 'sky_staff', 'desert_veil', 'swift_boots', 'mage_ring', 'wake_charm'],
+  aerie_items: ['xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
+  aerie_arms: ['moon_scepter', 'sunsteel_blade', 'sky_staff', 'scholar_lens', 'echo_bell', 'desert_veil'],
   frostmere_items: ['hipotion', 'xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
   frostmere_arms: ['swift_boots', 'echo_bell', 'wake_charm', 'scholar_lens', 'guard_ring', 'power_ring']
 };
 
 function xpForLevel(L) { return L <= 1 ? 0 : Math.round(8 * Math.pow(L - 1, 2.3) + 12 * (L - 1)); }
 const MAX_LEVEL = 40;
+
+// Combo techs: members must all be in the battle party, awake, unsilenced and have the MP.
+const COMBOS = [
+  { id: 'flame_edge', name: 'Flame Edge', members: ['arin', 'lyra'], mp: [6, 6], type: 'phys', elem: 'fire', power: 2.6, target: 'enemy', fx: 'fire', desc: 'Lyra sets Arin\'s blade alight.' },
+  { id: 'sacred_cross', name: 'Sacred Cross', members: ['arin', 'oswin'], mp: [8, 10], type: 'dmg', elem: 'holy', power: 55, heal: 0.15, target: 'enemies', fx: 'holy', desc: 'Holy damage to all foes; heals the party a little.' },
+  { id: 'crossfang', name: 'Crossfang', members: ['arin', 'kestrel'], mp: [6, 6], type: 'phys', power: 1.5, hits: 3, target: 'enemy', fx: 'slash', desc: 'Three crossing strikes.' },
+  { id: 'prism_nova', name: 'Prism Nova', members: ['lyra', 'oswin'], mp: [12, 10], type: 'dmg', elem: 'none', power: 70, target: 'enemies', fx: 'flare', desc: 'Light split into every color.' },
+  { id: 'firestorm', name: 'Firestorm', members: ['lyra', 'kestrel'], mp: [10, 6], type: 'dmg', elem: 'fire', power: 52, target: 'enemies', fx: 'fire', desc: 'Kestrel scatters bombs; Lyra lights them.' },
+  { id: 'tidebreaker', name: 'Tidebreaker', members: ['oswin', 'kestrel'], mp: [8, 6], type: 'phys', elem: 'water', power: 2.3, target: 'enemy', fx: 'water', desc: 'A wave with a knife in it.' },
+  { id: 'eclipse_blade', name: 'Eclipse Blade', members: ['arin', 'selene'], mp: [8, 10], type: 'phys', elem: 'dark', power: 3.0, target: 'enemy', fx: 'dark', desc: 'A blade of night, swung by daylight.' },
+  { id: 'twin_stars', name: 'Twin Stars', members: ['lyra', 'selene'], mp: [16, 16], type: 'dmg', elem: 'none', power: 120, target: 'enemies', fx: 'flare', desc: 'The sisters\' song. Devastates all foes.' },
+  { id: 'lantern_light', name: 'Lantern Light', members: ['arin', 'lyra', 'oswin'], mp: [14, 18, 18], type: 'dmg', elem: 'holy', power: 160, heal: 0.4, target: 'enemies', fx: 'holy', desc: 'The first flame, remembered. Heals the party.' }
+];
+// Arena cups at Aerie
+const ARENA_CUPS = [
+  { id: 'bronze', name: 'Bronze Cup', level: 24, rounds: [['hobgoblin', 'hobgoblin', 'hobgoblin'], ['ogre', 'ogre'], ['magmaslime', 'firebat', 'magmaslime']], prize: 'gale_sandals', gold: 2000 },
+  { id: 'silver', name: 'Silver Cup', level: 28, rounds: [['revenant', 'revenant'], ['embergolem', 'sphinx'], ['mummy', 'tombpriest', 'mummy']], prize: 'champion_belt', gold: 4000 },
+  { id: 'gold', name: 'Gold Cup', level: 32, rounds: [['hollowknight', 'nightgaze'], ['chimera', 'wraith'], ['dreadknight', 'dreadknight']], prize: 'sage_circlet', gold: 7000 },
+  { id: 'platinum', name: 'Platinum Cup', level: 36, rounds: [['astralknight', 'starspawn'], ['voiddrake', 'voiddrake'], ['firstking']], prize: 'phoenix_charm', gold: 12000 },
+  { id: 'champion', name: 'Grand Champion', level: 42, rounds: [['warden'], ['vesper'], ['leviathan', 'leviathan'], ['wyrm']], prize: 'lantern_crown', gold: 30000 }
+];

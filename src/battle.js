@@ -3,23 +3,28 @@
 //  BATTLE — classic turn-based, side view
 // ============================================================
 const BATTLE_GROUND = 300;
+const BG_SHIFT = 84; // raise the horizon so everyone stands on the ground
+let BATTLE_PARTY = null;
+function BP() { return BATTLE_PARTY || G.party; }
 class Battle {
   constructor(ids, opts) {
+    BATTLE_PARTY = G.party.slice(0, 4);
     this.opts = opts; this.bg = opts.bg || 'plains'; this.t = 0;
     this.fx = []; this.nums = []; this.msg = null; this.active = -1; this.flash = null; this.shake = 0;
     const counts = {};
     ids.forEach(id => counts[id] = (counts[id] || 0) + 1);
     const seen = {};
     this.enemies = ids.map(id => {
-      const d = MONSTERS[id];
+      const d = ngScale(MONSTERS[id]);
       seen[id] = (seen[id] || 0) + 1;
       const name = counts[id] > 1 ? `${d.name} ${String.fromCharCode(64 + seen[id])}` : d.name;
       return { id, def: d, name, bs: d.boss ? (d.fam === 'king' || d.fam === 'king2' ? 1 : 1.15) : 1.35, hp: d.hp, maxhp: d.hp, alive: true, flash: 0, shake: 0, alpha: 1, dying: 0, status: {}, lunge: 0, stolen: false };
     });
     this.layout();
     ids.forEach(id => G.seen[id] = 1);
-    this.pa = G.party.map(() => ({ dx: 0, pose: null, flash: 0, shake: 0, defend: false, jump: 0 }));
+    this.pa = BP().map(() => ({ dx: 0, pose: null, flash: 0, shake: 0, defend: false, jump: 0 }));
     this.buffs = { rally: 0, barrier: 0 };
+    this.reraised = new Set();
     this.intro = 0;
   }
   layout() {
@@ -35,11 +40,11 @@ class Battle {
       x += widths[i] * k;
     });
   }
-  partyXY(i) { const n = G.party.length; const y0 = n >= 4 ? 166 : 186; return { x: 486 + i * 16, y: y0 + i * 50 }; }
+  partyXY(i) { const n = BP().length; const gap = n >= 4 ? 40 : 48; const y0 = n >= 4 ? 214 : 228; return { x: 466 + i * 26, y: y0 + i * gap }; }
   enemyCenter(e) { return { x: e.x, y: e.y - monsterHeight(e.def) * e.bs * 0.5 }; }
-  memberCenter(i) { const p = this.partyXY(i); return { x: p.x + this.pa[i].dx, y: p.y - 30 }; }
+  memberCenter(i) { const p = this.partyXY(i); return { x: p.x + this.pa[i].dx, y: p.y - 28 }; }
   liveEnemies() { return this.enemies.filter(e => e.alive); }
-  liveParty() { return G.party.filter(alive); }
+  liveParty() { return BP().filter(alive); }
   tick(dt) {
     this.t += dt; this.intro = Math.min(1, this.intro + dt * 2.5);
     for (const e of this.enemies) {
@@ -57,7 +62,8 @@ class Battle {
   draw(g) {
     g.save();
     if (this.shake > 0) g.translate(rnd(-4, 4) * this.shake * 3, rnd(-3, 3) * this.shake * 3);
-    drawBattleBG(g, this.bg, this.t);
+    g.fillStyle = '#0a0812'; g.fillRect(0, 0, W, H);
+    g.save(); g.translate(0, -BG_SHIFT); drawBattleBG(g, this.bg, this.t); g.restore();
     // enemies
     const sorted = this.enemies.map((e, i) => ({ e, i })).sort((a, b) => a.e.y - b.e.y);
     for (const { e } of sorted) {
@@ -77,7 +83,7 @@ class Battle {
       if (e.status.poison && e.alive) { const c = this.enemyCenter(e); circle(g, c.x + 18 + Math.sin(this.t * 4) * 3, c.y - 20 - (this.t * 20 % 20), 3, 'rgba(140,255,120,.8)'); }
     }
     // party
-    G.party.forEach((m, i) => {
+    BP().forEach((m, i) => {
       const p = this.partyXY(i), a = this.pa[i];
       const L = HEROES[m.id].look;
       let pose = a.pose;
@@ -94,9 +100,9 @@ class Battle {
         if (pose === 'attack') ang = -2.2 + clamp(a.swing || 0, 0, 1) * 2.6;
         if (pose === 'cast') ang = -0.1;
         if (pose === 'victory') ang = 0.5;
-        drawWeapon(g, wk, x - 14, y - 22 - (pose === 'cast' ? 8 : 0), ang, 1.4);
+        drawWeapon(g, wk, x - 13, y - 20 - (pose === 'cast' ? 7 : 0), ang, 1.3);
       }
-      drawChar(g, L, x, y, 'left', 0, 1.55, pose === 'victory' ? 'cast' : pose, this.t);
+      drawChar(g, L, x, y, 'left', 0, 1.42, pose === 'victory' ? 'cast' : pose, this.t);
       g.restore();
       if (m.status.poison && alive(m)) circle(g, x - 10, y - 70 - (this.t * 20 % 16), 3, 'rgba(140,255,120,.85)');
       if (m.status.sleep && alive(m)) text(g, 'z', x - 20 + Math.sin(this.t * 3) * 3, y - 74 - (this.t * 14 % 14), { size: 17, bold: true, color: '#c8b8ff' });
@@ -126,7 +132,7 @@ class Battle {
     if (this.active < 0) for (const e of this.enemies) if (e.alive) names.push(e.name);
     names.slice(0, 5).forEach((n, i) => text(g, n, 22, 354 + i * 23, { size: 15 }));
     drawWindow(g, 214, 344, 418, 128);
-    G.party.forEach((m, i) => {
+    BP().forEach((m, i) => {
       const y = 352 + i * 29;
       const col = !alive(m) ? '#ff7a7a' : m.hp / maxHp(m) < 0.25 ? '#ffd27a' : '#fff';
       if (i === this.active) { g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(222, y - 2, 402, 27); }
@@ -300,6 +306,14 @@ class Battle {
         }
         await wait(650); break;
       }
+      case 'sand': {
+        Audio_.sfx('water');
+        this.addFx(0.9, (g, k) => {
+          g.save(); g.globalAlpha = Math.sin(k * Math.PI) * 0.55; g.fillStyle = '#d8a860'; g.fillRect(0, 0, W, H); g.restore();
+          for (let i = 0; i < 40; i++) { const y = hash(i, 3) * 340, x = ((hash(i, 4) * W + k * 900 + i * 13) % (W + 100)) - 50; line(g, x, y, x + 26, y + 3, 'rgba(255,230,180,.8)', 2); }
+        });
+        await wait(850); break;
+      }
       case 'flare': {
         Audio_.sfx('boom');
         for (const p of targets) {
@@ -319,8 +333,8 @@ class Battle {
   // ---------------- math ----------------
   weakMult(def, elem) { return elem && def.weak && def.weak.includes(elem) ? 1.6 : 1; }
   physDamage(atk, def, mult = 1) { return Math.max(1, Math.round((atk - def / 2) * mult * rnd(0.88, 1.12))); }
-  memberAtk(i) { const m = G.party[i]; return stat(m, 'str') * (this.buffs.rally > 0 ? 1.35 : 1); }
-  memberDef(i) { const m = G.party[i]; return stat(m, 'def') * (this.buffs.barrier > 0 ? 1.4 : 1); }
+  memberAtk(i) { const m = BP()[i]; return stat(m, 'str') * (this.buffs.rally > 0 ? 1.35 : 1); }
+  memberDef(i) { const m = BP()[i]; return stat(m, 'def') * (this.buffs.barrier > 0 ? 1.4 : 1); }
   // ---------------- flow ----------------
   async run() {
     Audio_.sfx('encounter');
@@ -354,7 +368,7 @@ class Battle {
       }
       // build order
       const order = [];
-      party.forEach((c, i) => { if (c) order.push({ side: 'p', i, c, spd: stat(G.party[i], 'spd') * rnd(0.8, 1.2) + (c.type === 'defend' ? 999 : 0) }); });
+      party.forEach((c, i) => { if (c && c.type !== 'partner') order.push({ side: 'p', i, c, spd: stat(BP()[i], 'spd') * rnd(0.8, 1.2) + (c.type === 'defend' ? 999 : 0) }); });
       if (!this.preempt) this.enemies.forEach((e, i) => { if (e.alive) order.push({ side: 'e', i, spd: e.def.spd * rnd(0.8, 1.2) }); });
       this.preempt = false;
       order.sort((a, b) => b.spd - a.spd);
@@ -363,7 +377,7 @@ class Battle {
       for (const o of order) {
         if (this.liveEnemies().length === 0 || this.liveParty().length === 0) break;
         if (o.side === 'p') {
-          if (!alive(G.party[o.i])) continue;
+          if (!alive(BP()[o.i])) continue;
           const r = await this.partyAct(o.i, o.c);
           if (r === 'escape') { result = 'run'; break; }
         } else {
@@ -374,12 +388,12 @@ class Battle {
       }
       if (result) break;
       // end of round
-      for (let i = 0; i < G.party.length; i++) {
-        const m = G.party[i];
+      for (let i = 0; i < BP().length; i++) {
+        const m = BP()[i];
         if (alive(m) && m.status.poison) { const d = Math.max(1, Math.floor(maxHp(m) * 0.06)); m.hp = Math.max(1, m.hp - d); const c = this.memberCenter(i); this.num(c.x, c.y, d, '#8aff7a'); }
       }
-      for (let i = 0; i < G.party.length; i++) {
-        const m = G.party[i]; if (!alive(m)) continue;
+      for (let i = 0; i < BP().length; i++) {
+        const m = BP()[i]; if (!alive(m)) continue;
         const a = accOf(m);
         if (m.status.regen > 0 || (a && a.regen)) { const h = Math.min(maxHp(m) - m.hp, Math.max(1, Math.floor(maxHp(m) * (m.status.regen > 0 ? 0.08 : 0.05)))); if (h > 0) { m.hp += h; const c = this.memberCenter(i); this.num(c.x + 14, c.y + 10, h, '#7aff9a'); } }
         for (const st of ['sleep', 'silence', 'regen']) if (m.status[st] > 0) m.status[st]--;
@@ -396,27 +410,35 @@ class Battle {
     if (result === 'win' && !this.opts.noVictory) await this.victory();
     if (result === 'win' && this.opts.noVictory) await wait(900);
     if (result === 'lose') { this.msg = null; await wait(600); }
-    for (const m of G.party) m.status = {};
+    for (const m of BP()) m.status = {};
     return result;
   }
   async commandPhase() {
     const cmds = [];
     let i = 0;
-    const n = G.party.length;
+    const n = BP().length;
     while (i < n) {
-      const m = G.party[i];
+      const m = BP()[i];
       if (!alive(m) || m.status.sleep) { cmds[i] = null; i++; continue; }
+      if (cmds[i] && cmds[i].type === 'partner') { i++; continue; }
       this.active = i;
       this.pa[i].dx = -14;
       const c = await this.chooseCommand(m, i);
       this.pa[i].dx = 0;
       if (c === 'back') {
-        let j = i - 1; while (j >= 0 && !alive(G.party[j])) j--;
-        if (j >= 0) i = j;
+        let j = i - 1; while (j >= 0 && (!alive(BP()[j]) || BP()[j].status.sleep)) j--;
+        if (j >= 0 && cmds[j] && cmds[j].type === 'partner') j = cmds[j].from;
+        if (j >= 0) { for (let k = 0; k < cmds.length; k++) if (cmds[k] && cmds[k].type === 'partner' && cmds[k].from === j) cmds[k] = null; i = j; }
         continue;
       }
       if (c.type === 'run') return { run: true };
-      cmds[i] = c; i++;
+      for (let k = 0; k < cmds.length; k++) if (cmds[k] && cmds[k].type === 'partner' && cmds[k].from === i) cmds[k] = null;
+      cmds[i] = c;
+      if (c.type === 'combo') {
+        const cb = COMBOS.find(x => x.id === c.combo);
+        for (const id of cb.members) { const j = BP().findIndex(p => p.id === id); if (j !== i) cmds[j] = { type: 'partner', from: i }; }
+      }
+      i++;
     }
     return cmds;
   }
@@ -428,11 +450,12 @@ class Battle {
       const items = [
         { label: 'Attack' },
         { label: m.status.silence ? d.skill + ' (silenced)' : d.skill, disabled: !spells.length || !!m.status.silence },
+        { label: 'Combo', disabled: !this.combosFor(m).length },
         { label: 'Item', disabled: !usable.length },
         { label: 'Defend' },
         { label: 'Run', disabled: !!this.opts.boss }
       ];
-      const k = await listMenu({ x: 8, y: 344, w: 200, rows: 5, rowH: 22, items, index: this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: 15 });
+      const k = await listMenu({ x: 8, y: 330, w: 200, rows: 6, rowH: 21, items, index: this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: 15 });
       this.lastCmd = this.lastCmd || {}; if (k >= 0) this.lastCmd[idx] = k;
       if (k < 0) return 'back';
       if (k === 0) { const tg = await this.pickTarget('enemy'); if (tg !== null && tg !== undefined) return { type: 'attack', target: tg }; continue; }
@@ -449,6 +472,19 @@ class Battle {
         continue;
       }
       if (k === 2) {
+        const cs = this.combosFor(m);
+        const ci = await listMenu({
+          x: 8, y: 150, w: 330, rows: 7, rowH: 24, title: 'Combo Techs',
+          items: cs.map(c => ({ label: c.name, right: c.members.map(id => HEROES[id].name[0]).join('+') })),
+          help: i => `${cs[i].desc}  (MP: ${cs[i].members.map((id, j) => HEROES[id].name + ' ' + cs[i].mp[j]).join(', ')})`
+        });
+        if (ci < 0) continue;
+        const c = cs[ci];
+        const tg = c.target === 'enemy' ? await this.pickTarget('enemy') : 'all';
+        if (tg !== null && tg !== undefined) return { type: 'combo', combo: c.id, target: tg };
+        continue;
+      }
+      if (k === 3) {
         const it = await listMenu({
           x: 8, y: 150, w: 290, rows: 7, rowH: 24, title: 'Items',
           items: usable.map(u => ({ label: ITEMS[u].name, right: '×' + G.inv[u] })),
@@ -460,8 +496,8 @@ class Battle {
         if (tg !== null && tg !== undefined) return { type: 'item', item: usable[it], target: tg };
         continue;
       }
-      if (k === 3) return { type: 'defend' };
-      if (k === 4) return { type: 'run' };
+      if (k === 4) return { type: 'defend' };
+      if (k === 5) return { type: 'run' };
     }
   }
   pickTarget(kind, dead = false) {
@@ -471,7 +507,7 @@ class Battle {
       kind, idx: 0,
       list() {
         if (kind === 'enemy' || kind === 'enemies') return self.enemies.filter(e => e.alive);
-        return G.party.map((m, i) => i).filter(i => dead ? true : alive(G.party[i]));
+        return BP().map((m, i) => i).filter(i => dead ? true : alive(BP()[i]));
       },
       update() {
         const L = this.list();
@@ -487,7 +523,7 @@ class Battle {
         const pts = [];
         const sel = (kind === 'enemy' || kind === 'ally') ? [L[this.idx]] : L;
         for (const s of sel) {
-          if (typeof s === 'number') { const c = self.memberCenter(s); pts.push({ x: c.x - 34, y: c.y - 6, name: memberName(G.party[s]), left: true }); }
+          if (typeof s === 'number') { const c = self.memberCenter(s); pts.push({ x: c.x - 34, y: c.y - 6, name: memberName(BP()[s]), left: true }); }
           else if (s) { const c = self.enemyCenter(s); pts.push({ x: c.x + monsterWidth(s.def) * s.bs * 0.45, y: c.y, name: s.name }); }
         }
         const tt = performance.now() / 1000;
@@ -508,7 +544,7 @@ class Battle {
       // default to the most hurt ally
       const L = comp.list();
       let best = 0, bv = 2;
-      L.forEach((i, j) => { const m = G.party[i]; const v = dead && !alive(m) ? -1 : m.hp / maxHp(m); if (v < bv) { bv = v; best = j; } });
+      L.forEach((i, j) => { const m = BP()[i]; const v = dead && !alive(m) ? -1 : m.hp / maxHp(m); if (v < bv) { bv = v; best = j; } });
       comp.idx = best;
     }
     return UI.push(comp);
@@ -520,7 +556,7 @@ class Battle {
       if (target && target.alive) return [target];
       const L = this.liveEnemies(); return L.length ? [pick(L)] : [];
     } else {
-      if (target === 'all') return G.party.map((m, i) => i).filter(i => alive(G.party[i]));
+      if (target === 'all') return BP().map((m, i) => i).filter(i => alive(BP()[i]));
       if (typeof target === 'number') return [target];
       return [];
     }
@@ -540,24 +576,65 @@ class Battle {
   }
   kill(e) { e.hp = 0; e.alive = false; e.dying = 0; e.status = {}; G.killed[e.id] = (G.killed[e.id] || 0) + 1; Audio_.sfx('ko'); }
   damageMember(i, dmg) {
-    const m = G.party[i];
+    const m = BP()[i];
     m.hp = Math.max(0, m.hp - dmg);
     if (m.status.sleep && Math.random() < 0.6) m.status.sleep = 0;
     this.pa[i].flash = 0.4; this.pa[i].shake = 0.3;
     const c = this.memberCenter(i);
     this.num(c.x, c.y, dmg, '#fff');
-    if (m.hp <= 0) { m.status = {}; Audio_.sfx('ko'); }
+    if (m.hp <= 0) {
+      m.status = {}; Audio_.sfx('ko');
+      const a = accOf(m);
+      if (a && a.reraise && !this.reraised.has(m.id)) { this.reraised.add(m.id); m.hp = Math.floor(maxHp(m) * 0.3); setTimeout(() => this.num(c.x, c.y - 20, 'Phoenix!', '#ffb86a', true), 300); Audio_.sfx('holy'); }
+    }
   }
   healMember(i, n) {
-    const m = G.party[i];
+    const m = BP()[i];
     if (!alive(m)) return;
     const before = m.hp; m.hp = Math.min(maxHp(m), m.hp + n);
     const c = this.memberCenter(i); this.num(c.x, c.y, m.hp - before, '#7aff9a');
   }
+  combosFor(m) {
+    const P = BP();
+    return COMBOS.filter(c => c.members.includes(m.id) && c.members.every((id, j) => {
+      const p = P.find(x => x.id === id);
+      return p && alive(p) && !p.status.sleep && !p.status.silence && p.mp >= c.mp[j];
+    }));
+  }
+  async doCombo(i, c) {
+    const cb = COMBOS.find(x => x.id === c.combo), P = BP();
+    const idx = cb.members.map(id => P.findIndex(p => p.id === id));
+    if (idx.some(j => j < 0 || !alive(P[j]) || P[j].status.sleep || P[j].status.silence || P[j].mp < cb.mp[cb.members.indexOf(P[j].id)])) {
+      this.msg = 'The combo falls apart!'; Audio_.sfx('buzz'); await wait(800); this.msg = null; return;
+    }
+    idx.forEach((j, k) => P[j].mp -= cb.mp[k]);
+    this.msg = cb.name;
+    idx.forEach(j => { this.pa[j].pose = 'cast'; this.pa[j].dx = -20; });
+    this.screenFlash('#ffffff', 0.35, 0.3);
+    Audio_.sfx('levelup');
+    await wait(500);
+    const sumAtk = idx.reduce((a, j) => a + this.memberAtk(j), 0), sumMag = idx.reduce((a, j) => a + stat(P[j], 'mag'), 0);
+    const ts = this.resolveTargets('enemy', c.target);
+    if (cb.type === 'phys') {
+      const tg = ts[0];
+      if (tg) for (let h = 0; h < (cb.hits || 1) && tg.alive; h++) {
+        await this.playFx(cb.fx, [this.enemyCenter(tg)]);
+        this.damageEnemy(tg, this.physDamage(sumAtk * 0.75, tg.def.def, cb.power * this.weakMult(tg.def, cb.elem)), '#ffd27a', true);
+        await wait(120);
+      }
+    } else {
+      await this.playFx(cb.fx, ts.map(e => this.enemyCenter(e)));
+      for (const e of ts) this.damageEnemy(e, Math.max(1, Math.round((cb.power + sumMag * 0.75) * rnd(0.92, 1.08) * this.weakMult(e.def, cb.elem) - e.def.mag * 0.4)), '#ffd27a', true);
+    }
+    if (cb.heal) { const L = P.map((p, k) => k).filter(k => alive(P[k])); await this.playFx('heal', L.map(k => this.memberCenter(k))); for (const k of L) this.healMember(k, Math.round(maxHp(P[k]) * cb.heal)); }
+    idx.forEach(j => { this.pa[j].pose = null; this.pa[j].dx = 0; });
+    await wait(250); this.msg = null;
+  }
   async partyAct(i, c) {
-    const m = G.party[i], a = this.pa[i];
+    const m = BP()[i], a = this.pa[i];
     if (m.status.sleep) { const p = this.memberCenter(i); this.num(p.x, p.y, 'Asleep', '#c8b8ff'); await wait(300); return; }
     if (c.type === 'defend') return;
+    if (c.type === 'combo') return this.doCombo(i, c);
     if (c.type === 'attack') {
       const tg = this.resolveTargets('enemy', c.target)[0];
       if (!tg) return;
@@ -587,9 +664,9 @@ class Battle {
         await this.playFx('fire', ts.map(e => this.enemyCenter(e)));
         for (const e of ts) this.damageEnemy(e, Math.round(it.amount * this.weakMult(e.def, 'fire') * rnd(0.9, 1.1)));
       } else {
-        const ts = it.target === 'allies' ? G.party.map((_, k) => k) : [c.target];
+        const ts = it.target === 'allies' ? BP().map((_, k) => k) : [c.target];
         await this.playFx(it.effect === 'revive' ? 'holy' : 'heal', ts.map(k => this.memberCenter(k)));
-        for (const k of ts) applyItemEffect(c.item, G.party[k], this, k);
+        for (const k of ts) applyItemEffect(c.item, BP()[k], this, k);
       }
       a.pose = null; await wait(300); this.msg = null;
       return;
@@ -647,10 +724,17 @@ class Battle {
       if (s.type === 'dmg') {
         const ts = this.resolveTargets('enemy', c.target);
         await this.playFx(s.fx, ts.map(e => this.enemyCenter(e)));
+        let total = 0;
         for (const e of ts) {
           const dmg = Math.max(1, Math.round((s.power + stat(m, 'mag')) * rnd(0.92, 1.08) * this.weakMult(e.def, s.elem) - e.def.mag * 0.4));
+          total += Math.min(dmg, Math.max(0, e.hp));
           this.damageEnemy(e, dmg, this.weakMult(e.def, s.elem) > 1 ? '#ffd27a' : '#fff');
         }
+        if (s.drain) this.healMember(i, total);
+      } else if (s.type === 'gravity') {
+        const ts = this.resolveTargets('enemy', c.target);
+        await this.playFx('dark', ts.map(e => this.enemyCenter(e)));
+        for (const e of ts) this.damageEnemy(e, Math.max(1, Math.min(9999, Math.floor(e.hp * (e.def.boss ? 0.08 : 0.25)))), '#d8b8ff');
       } else if (s.type === 'heal') {
         const ts = this.resolveTargets('ally', c.target);
         await this.playFx('heal', ts.map(k => this.memberCenter(k)));
@@ -658,17 +742,17 @@ class Battle {
       } else if (s.type === 'revive') {
         const k = c.target;
         await this.playFx('holy', [this.memberCenter(k)]);
-        const t = G.party[k];
+        const t = BP()[k];
         if (!alive(t)) { t.hp = Math.floor(maxHp(t) * 0.35); const p = this.memberCenter(k); this.num(p.x, p.y, 'Revived', '#7aff9a'); }
         else { const p = this.memberCenter(k); this.num(p.x, p.y, 'No effect', '#cfd8ff'); }
       } else if (s.type === 'cure') {
         const k = c.target;
         await this.playFx('heal', [this.memberCenter(k)]);
-        G.party[k].status.poison = false; G.party[k].status.sleep = 0; G.party[k].status.silence = 0;
+        BP()[k].status.poison = false; BP()[k].status.sleep = 0; BP()[k].status.silence = 0;
       } else if (s.type === 'regen') {
         const k = c.target;
         await this.playFx('heal', [this.memberCenter(k)]);
-        if (alive(G.party[k])) { G.party[k].status.regen = 5; const p = this.memberCenter(k); this.num(p.x, p.y, 'Regen', '#9ad8ff'); }
+        if (alive(BP()[k])) { BP()[k].status.regen = 5; const p = this.memberCenter(k); this.num(p.x, p.y, 'Regen', '#9ad8ff'); }
       } else if (s.type === 'status') {
         const ts = this.resolveTargets('enemy', c.target);
         await this.playFx(s.fx, ts.map(e => this.enemyCenter(e)));
@@ -693,13 +777,13 @@ class Battle {
     if (e.status.silence && act !== 'attack' && SPELLS[act] && SPELLS[act].type !== 'phys') act = 'attack';
     const live = this.liveParty();
     if (!live.length) return;
-    const targetIdx = () => { const L = G.party.map((m, i) => i).filter(i => alive(G.party[i])); return pick(L); };
+    const targetIdx = () => { const L = BP().map((m, i) => i).filter(i => alive(BP()[i])); return pick(L); };
     if (act === 'attack') {
       const i = targetIdx();
       for (let k = 0; k < 5; k++) { e.lunge += 7; await wait(16); }
       const p = this.memberCenter(i);
       await this.playFx('hit', [p]);
-      const ms = stat(G.party[i], 'spd');
+      const ms = stat(BP()[i], 'spd');
       if (Math.random() < clamp(0.03 + (ms - e.def.spd) * 0.004, 0.02, 0.12)) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); }
       else {
         let dmg = this.physDamage(e.def.atk, this.memberDef(i), this.pa[i].defend ? 0.5 : 1);
@@ -719,11 +803,11 @@ class Battle {
       const c = this.enemyCenter(e); this.num(c.x, c.y, n, '#7aff9a');
       this.msg = null; return;
     }
-    const ts = s.target === 'allies' ? G.party.map((m, i) => i).filter(i => alive(G.party[i])) : [targetIdx()];
+    const ts = s.target === 'allies' ? BP().map((m, i) => i).filter(i => alive(BP()[i])) : [targetIdx()];
     if (s.type === 'status') {
       await this.playFx(s.fx, ts.map(i => this.memberCenter(i)));
       for (const i of ts) {
-        const m = G.party[i], p = this.memberCenter(i);
+        const m = BP()[i], p = this.memberCenter(i);
         if (immune(m, s.status)) this.num(p.x, p.y, 'Immune', '#cfd8ff');
         else if (Math.random() < s.chance) { m.status[s.status] = s.status === 'sleep' ? 2 : 3; this.num(p.x, p.y, s.status === 'sleep' ? 'Sleep' : 'Silence', '#c8b8ff'); }
         else this.num(p.x, p.y, 'Miss', '#cfd8ff');
@@ -737,7 +821,7 @@ class Battle {
       for (const i of ts) {
         const dmg = this.physDamage(e.def.atk, this.memberDef(i), s.power * (this.pa[i].defend ? 0.5 : 1));
         this.damageMember(i, dmg);
-        if (s.poison && alive(G.party[i]) && !immune(G.party[i], 'poison') && Math.random() < s.poison) G.party[i].status.poison = true;
+        if (s.poison && alive(BP()[i]) && !immune(BP()[i], 'poison') && Math.random() < s.poison) BP()[i].status.poison = true;
       }
       for (let k = 0; k < 5; k++) { e.lunge -= 8; await wait(16); }
       e.lunge = 0;
@@ -745,7 +829,7 @@ class Battle {
       await this.playFx(s.fx, ts.map(i => this.memberCenter(i)));
       let total = 0;
       for (const i of ts) {
-        const m = G.party[i];
+        const m = BP()[i];
         let dmg = (s.power + e.def.mag) * rnd(0.9, 1.1) - stat(m, 'mag') * 0.4;
         if (this.buffs.barrier > 0) dmg *= 0.6;
         if (this.pa[i].defend) dmg *= 0.6;
@@ -762,7 +846,7 @@ class Battle {
     this.msg = null;
     await wait(500);
     Audio_.play('victory', true);
-    this.pa.forEach((p, i) => { if (alive(G.party[i])) { p.pose = 'victory'; p.jump = 1; } });
+    this.pa.forEach((p, i) => { if (alive(BP()[i])) { p.pose = 'victory'; p.jump = 1; } });
     let xp = 0, gold = 0; const drops = [];
     for (const e of this.enemies) {
       xp += e.def.xp; gold += e.def.gold;
@@ -770,7 +854,8 @@ class Battle {
     }
     G.gold += gold;
     const msgs = [];
-    for (const m of G.party) if (alive(m)) { const a = accOf(m); msgs.push(...gainXp(m, Math.round(xp * (a && a.xp ? a.xp : 1)))); }
+    for (const m of BP()) if (alive(m)) { const a = accOf(m); msgs.push(...gainXp(m, Math.round(xp * (a && a.xp ? a.xp : 1)))); }
+    for (const m of G.party.slice(4)) msgs.push(...gainXp(m, Math.round(xp * 0.5)));
     if (xp || gold) await narrate(`Victory! Gained ${xp} EXP and ${gold} gold.`);
     else await wait(2200);
     for (const d of drops) { addItem(d); Audio_.sfx('item'); await narrate(`Found ${ITEMS[d].name}!`); }
@@ -782,7 +867,7 @@ async function startBattle(ids, opts = {}) {
   const prev = G.scene;
   const b = new Battle(ids, opts);
   const r = await b.run();
-  if (r !== 'lose' && !opts.keepScene) {
+  if ((r !== 'lose' || opts.arena) && !opts.keepScene) {
     await fadeTo(1, 220);
     G.scene = prev;
     if (prev && prev.playMusic) prev.playMusic();
@@ -803,4 +888,11 @@ function applyItemEffect(id, m, battle, idx) {
     case 'megalixir': if (alive(m)) { m.hp = maxHp(m); m.mp = maxMp(m); show('Full', '#7aff9a'); } return true;
   }
   return false;
+}
+
+function ngScale(d) {
+  const ng = (G.flags && G.flags.ngplus) || 0;
+  if (!ng) return d;
+  const k = ng;
+  return { ...d, hp: Math.round(d.hp * (1 + 0.6 * k)), atk: Math.round(d.atk * (1 + 0.22 * k)), mag: Math.round(d.mag * (1 + 0.22 * k)), def: Math.round(d.def * (1 + 0.12 * k)), xp: Math.round(d.xp * (1 + 0.5 * k)), gold: Math.round(d.gold * (1 + 0.5 * k)) };
 }

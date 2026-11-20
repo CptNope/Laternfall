@@ -452,6 +452,20 @@ const TRACKS = {
       { w: 'drum', g: 0.06, s: 'k:2 k:2 s:2 h:2 k:2 h:2 s:2 s:2 '.repeat(8) }
     ]
   },
+  desert: {
+    bpm: 108, voices: [
+      { w: 'square', g: 0.04, s: 'D5:4 Eb5:2 D5:2 A4:8 | Bb4:4 A4:2 G4:2 A4:8 | D5:4 F5:2 Eb5:2 D5:4 C5:4 | D5:12 r:4 | A5:4 G5:2 F5:2 Eb5:4 D5:4 | F5:4 Eb5:2 D5:2 C5:8 | Bb4:4 C5:4 D5:4 Eb5:4 | D5:16' },
+      { w: 'triangle', g: 0.13, s: pump(['D2', 'D2', 'Bb1', 'D2', 'D2', 'Bb1', 'C2', 'D2'], 'half') },
+      { w: 'drum', g: 0.045, s: 'k:4 h:2 h:2 s:4 h:4 '.repeat(8) }
+    ]
+  },
+  sky: {
+    bpm: 132, voices: [
+      { w: 'square', g: 0.04, s: 'F5:4 A5:4 C6:6 A5:2 | Bb5:4 G5:4 F5:8 | D5:4 F5:4 Bb5:6 A5:2 | G5:12 r:4 | F5:4 A5:4 C6:6 D6:2 | C6:4 Bb5:4 A5:4 G5:4 | F5:4 G5:4 A5:4 C6:4 | F5:12 r:4' },
+      { w: 'triangle', g: 0.13, s: pump(['F2', 'Bb2', 'Bb2', 'C3', 'F2', 'Bb2', 'C3', 'F2']) },
+      { w: 'drum', g: 0.045, s: 'k:4 h:4 s:4 h:4 '.repeat(8) }
+    ]
+  },
   victory: {
     bpm: 140, loop: false, voices: [
       { w: 'square', g: 0.05, s: 'G4:2 C5:2 E5:2 G5:6 E5:2 G5:2 C6:16' },

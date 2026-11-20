@@ -22,22 +22,26 @@ const WORLD_LOC = {
   B: { x: 38, y: 38, town: 'halden', name: 'Port Halden' },
   C: { x: 40, y: 15, town: 'ironhold', name: 'Ironhold' },
   D: { x: 28, y: 8, town: 'frostmere', name: 'Frostmere' },
+  E: { x: 79, y: 38, town: 'mirage', name: 'Mirage' },
+  F: { x: 87, y: 24, town: 'aerie', name: 'Aerie' },
   1: { x: 8, y: 31, dungeon: 'hollow', name: 'Whisperwood Hollow' },
   2: { x: 35, y: 50, dungeon: 'shrine', name: 'Sunken Shrine' },
   3: { x: 52, y: 6, dungeon: 'mine', name: 'Emberdeep Mines' },
   4: { x: 60, y: 40, dungeon: 'spire', name: 'Hollow Spire' },
-  5: { x: 9, y: 12, dungeon: 'observatory', name: 'Starfall Observatory' }
+  5: { x: 9, y: 12, dungeon: 'observatory', name: 'Starfall Observatory' },
+  6: { x: 85, y: 45, dungeon: 'tomb', name: 'Tomb of the First King' }
 };
 const SHIP_HOME = { x: 40, y: 38 };
 const BRIDGE_Y = 43;
 function riverX(y) { return 29 + Math.round(Math.sin(y * 0.35) * 1.2); }
 
 function genWorld() {
-  const w = 72, h = 56;
+  const w = 98, h = 56;
   const tiles = [], region = [];
   const blobs = [
     { id: 'A', cx: 21, cy: 39, rx: 20, ry: 13, ok: (x, y) => y >= 25 && x <= 45 },
-    { id: 'B', cx: 44, cy: 12, rx: 24, ry: 8.5, ok: (x, y) => y <= 21 },
+    { id: 'B', cx: 44, cy: 12, rx: 24, ry: 8.5, ok: (x, y) => y <= 21 && x <= 69 },
+    { id: 'F', cx: 84, cy: 33, rx: 11, ry: 15, ok: (x, y) => x >= 73 },
     { id: 'C', cx: 60, cy: 40, rx: 7.5, ry: 6.5, ok: (x, y) => x >= 52 && y >= 32 },
     { id: 'E', cx: 9, cy: 12, rx: 5.5, ry: 4.5, ok: (x, y) => x <= 15 && y <= 20 }
   ];
@@ -64,6 +68,7 @@ function genWorld() {
     const e = fbm(x * 0.13, y * 0.13, 11), m = fbm(x * 0.17, y * 0.17, 23);
     let c = '.';
     if (reg === 'C') c = e > 0.68 ? '^' : m > 0.5 ? 'd' : 'q';
+    else if (reg === 'F') c = e > 0.66 ? 'm' : hash(x, y, 91) < 0.07 ? 'v' : 'z';
     else if (reg === 'B') {
       const snow = y < 10;
       if (e > 0.62) c = snow ? 'M' : '^'; else if (e > 0.57) c = snow ? '*' : 'n'; else if (m > 0.55) c = snow ? 'P' : 'T'; else c = snow ? '*' : '.';
@@ -96,7 +101,7 @@ function genWorld() {
     let x = x0, y = y0;
     const step = () => {
       const c = at(x, y);
-      if (/[A-D1-5]/.test(c)) return;
+      if (/[A-F1-6]/.test(c)) return;
       if (c === '~' || c === 'r') { if (allowWater && c === '~') { set(x, y, '='); region[y][x] = region[y][x] || 'A'; } return; }
       set(x, y, '=');
     };
@@ -118,6 +123,18 @@ function genWorld() {
   for (let y = 26; y <= 36; y++) for (let x = 3; x <= 14; x++) {
     if (region[y][x] === 'A' && tiles[y][x] !== '~' && tiles[y][x] !== 'r' && Math.hypot(x - 8, y - 31) < 4.6 + hash(x, y, 4) * 1.5) tiles[y][x] = 'T';
   }
+  // Sunscar: oasis by Mirage, palm groves
+  for (let y = 34; y <= 42; y++) for (let x = 75; x <= 84; x++) {
+    if (region[y][x] !== 'F' || tiles[y][x] === '~') continue;
+    const d = Math.hypot(x - 81, y - 37);
+    if (d < 1.6) tiles[y][x] = '~'; else if (d < 3.2 && hash(x, y, 5) < 0.6) tiles[y][x] = 'T'; else if (tiles[y][x] === 'm') tiles[y][x] = 'z';
+  }
+  // Skyreach: a valley walled in by mesas — reachable only from the air
+  for (let y = 18; y <= 30; y++) for (let x = 80; x <= 94; x++) {
+    const d = Math.hypot(x - 87, (y - 24) * 1.1);
+    if (d < 2.6) { tiles[y][x] = '.'; region[y][x] = 'G'; }
+    else if (d < 4.4) { tiles[y][x] = 'm'; region[y][x] = 'F'; }
+  }
   // place locations
   for (const k in WORLD_LOC) {
     const L = WORLD_LOC[k];
@@ -137,6 +154,7 @@ function genWorld() {
   road(38, 39, 35, 49, true, true);           // Halden -> Shrine
   road(40, 16, 51, 6, false, false);          // Ironhold -> Mines
   road(39, 15, 29, 8, false, true);           // Ironhold -> Frostmere
+  road(80, 39, 84, 45, false, true);          // Mirage -> Tomb
   // mountain ring for the mines
   for (let y = 2; y <= 10; y++) for (let x = 47; x <= 58; x++) {
     const d = Math.hypot(x - 52, y - 6);
@@ -168,12 +186,14 @@ function worldRegionAt(map, x, y) {
   if (reg === 'B') return 'r3';
   if (reg === 'C') return 'r4';
   if (reg === 'E') return 'r3';
+  if (reg === 'F' || reg === 'G') return 'r5';
   return 'r1';
 }
 function worldBattleBG(map, x, y) {
   const c = map.at(x, y), reg = map.region[y] && map.region[y][x];
   if (c === '~' || c === 'r') return 'sea';
   if (reg === 'C') return 'dusk';
+  if (reg === 'F' || reg === 'G') return 'desert';
   if (c === '*' || c === 'P' || c === 'M') return 'snow';
   if (c === 'T') return 'forest';
   if (c === 's') return 'beach';
@@ -226,6 +246,34 @@ const TOWN_DEFS = {
     water: [[15, 15, 3, 2]],
     decor: [[9, 9, 'l'], [14, 9, 'l'], [14, 12, 'w'], [7, 15, 'c'], [20, 16, 'P'], [3, 16, 'P'], [9, 12, 'P']]
   },
+  mirage: {
+    name: 'Mirage', w: 24, h: 18, border: 'm', theme: 'sand', music: 'town', loc: 'E',
+    exits: [[11, 17], [12, 17]],
+    buildings: [
+      { x: 2, y: 2, w: 6, h: 4, kind: 'inn', roof: '#c06a3a', sign: 'inn', id: 'inn', price: 150, wall: '#e8c898' },
+      { x: 10, y: 1, w: 5, h: 5, kind: 'hall', roof: '#3a8a8a', sign: 'hall', id: 'palace', wall: '#e8d0a8' },
+      { x: 17, y: 2, w: 5, h: 4, kind: 'shop', roof: '#8a3a5a', sign: 'item', id: 'items', shop: 'mirage_items', wall: '#e8c898' },
+      { x: 2, y: 10, w: 5, h: 4, kind: 'shop', roof: '#6a4a8a', sign: 'arms', id: 'arms', shop: 'mirage_arms', wall: '#e8c898' },
+      { x: 17, y: 10, w: 5, h: 4, kind: 'house', roof: '#c08a3a', id: 'house1', wall: '#e8c898' }
+    ],
+    paths: [[11, 6, 12, 17], [3, 6, 20, 7], [4, 14, 19, 14]],
+    water: [[9, 9, 6, 3]],
+    decor: [[8, 9, 't'], [15, 9, 't'], [8, 11, 't'], [15, 11, 't'], [5, 16, 'c'], [20, 16, 'c'], [9, 15, 'l'], [14, 15, 'l']]
+  },
+  aerie: {
+    name: 'Aerie', w: 24, h: 18, border: 'm', theme: 'grass', music: 'town', loc: 'F',
+    exits: [[11, 17], [12, 17]],
+    buildings: [
+      { x: 2, y: 2, w: 6, h: 4, kind: 'inn', roof: '#5a8ad0', sign: 'inn', id: 'inn', price: 200, chimney: true },
+      { x: 9, y: 1, w: 7, h: 5, kind: 'arena', roof: '#a03a2a', sign: 'arena', id: 'arena', wall: '#d8cfc0' },
+      { x: 17, y: 2, w: 5, h: 4, kind: 'shop', roof: '#3a8a5a', sign: 'item', id: 'items', shop: 'aerie_items' },
+      { x: 2, y: 10, w: 5, h: 4, kind: 'shop', roof: '#8a5a2a', sign: 'arms', id: 'arms', shop: 'aerie_arms' },
+      { x: 17, y: 10, w: 5, h: 4, kind: 'house', roof: '#7a5a9a', id: 'house1', chimney: true }
+    ],
+    paths: [[11, 6, 12, 17], [3, 6, 20, 7], [4, 14, 19, 14]],
+    water: [],
+    decor: [[9, 9, 'w'], [14, 9, 'l'], [9, 12, 'f'], [14, 12, 'f'], [5, 16, 't'], [19, 16, 't'], [8, 16, 'f'], [15, 16, 'f']]
+  },
   ironhold: {
     name: 'Ironhold', w: 26, h: 20, border: 'r', theme: 'stone', music: 'town', loc: 'C',
     exits: [[12, 19], [13, 19]],
@@ -242,7 +290,7 @@ const TOWN_DEFS = {
     decor: [[16, 13, 'a'], [24, 14, 'c'], [1, 9, 'l'], [24, 9, 'l'], [9, 17, 'l'], [16, 17, 'l'], [7, 9, 'P'], [18, 9, 'P']]
   }
 };
-const TOWN_SOLID = new Set(['t', 'P', 'r', '~', 'F', 'w', 'c', 'a', 'g', 'l']);
+const TOWN_SOLID = new Set(['t', 'P', 'r', '~', 'F', 'w', 'c', 'a', 'g', 'l', 'm']);
 function buildTown(id) {
   const d = TOWN_DEFS[id];
   const tiles = [];
@@ -259,7 +307,7 @@ function buildTown(id) {
   for (const [x, y, c] of d.decor || []) tiles[y][x] = c;
   for (const [x, y] of d.exits) tiles[y][x] = ':';
   const buildings = d.buildings.map(b => ({ ...b, doorX: b.x + Math.floor(b.w / 2) }));
-  if (d.theme === 'snow') for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) if (tiles[y][x] === 'f') tiles[y][x] = '.';
+  if (d.theme === 'snow' || d.theme === 'sand') for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) if (tiles[y][x] === 'f') tiles[y][x] = '.';
   const m = new GameMap({ id, kind: 'town', w: d.w, h: d.h, tiles, buildings, theme: d.theme, name: d.name, music: d.music, loc: d.loc });
   return m;
 }
@@ -274,6 +322,8 @@ const DUNGEONS = {
     loot: [['hipotion', 'hipotion', 'gold:900', 'bomb'], ['mythril_sword', 'star_rod', 'ether', 'plume'], ['mythril_mail', 'mythril_knife', 'elixir', 'star_robe']], boss: 'vesper', lantern: 'stone', lanternCol: '#ff6a2a' },
   spire: { name: 'Hollow Spire', theme: 'spire', floors: 3, w: 36, h: 28, seed: 404, enc: 'd4', bg: 'spire', loc: '4', deco2: 'k',
     loot: [['xpotion', 'hiether', 'shadow_garb', 'gold:3000'], ['dawn_plate', 'seraph_mace', 'ember_scepter', 'elixir'], ['dawnblade', 'shadow_fang', 'megalixir', 'xpotion']], boss: 'king', lantern: 'dawn', lanternCol: '#ffe08a' },
+  tomb: { name: 'Tomb of the First King', theme: 'tomb', floors: 3, w: 36, h: 28, seed: 606, enc: 'd6', bg: 'tomb', loc: '6', deco2: 'o',
+    loot: [['hiether', 'gold:5000', 'xpotion', 'desert_veil'], ['pharaoh_mace', 'sand_kris', 'elixir', 'megalixir'], ['nocturne', 'xpotion', 'hiether']], boss: 'firstking', lantern: 'sun', lanternCol: '#ffc04a' },
   observatory: { name: 'Starfall Observatory', theme: 'astral', floors: 3, w: 36, h: 28, seed: 505, enc: 'd5', bg: 'astral', loc: '5', deco2: 'k',
     loot: [['swift_boots', 'megalixir', 'gold:8000', 'xpotion'], ['ember_heart', 'celestia', 'astral_mace', 'elixir'], ['lightbringer', 'comet_edge', 'megalixir', 'hiether']], boss: 'wyrm', lantern: 'fifth', lanternCol: '#a8d8ff' }
 };
