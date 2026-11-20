@@ -6,7 +6,9 @@ A classic 16-bit-style JRPG where **every pixel and every note is generated in c
 
 ## Play
 
-Open `index.html` in any modern browser. It's one self-contained file with no dependencies and no build step needed to play.
+**[Play free on itch.io](https://cptnope.itch.io/lanternfall)** in your browser, on desktop or mobile. More about the game, plus help and support, is on the [Lanternfall project page](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/). If you enjoy it, you can [support it with a donation on itch.io](https://cptnope.itch.io/lanternfall/purchase).
+
+To run it locally, open `index.html` in any modern browser. It's one self-contained file with no dependencies and no build step needed to play.
 
 To host it, enable **GitHub Pages** for this repo (Settings → Pages → deploy from branch `main`, root folder) and the game is served at `https://cptnope.github.io/Laternfall/`.
 
