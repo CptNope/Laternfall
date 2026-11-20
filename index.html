@@ -480,6 +480,20 @@ const TRACKS = {
       { w: 'drum', g: 0.06, s: 'k:2 k:2 s:2 h:2 k:2 h:2 s:2 s:2 '.repeat(8) }
     ]
   },
+  desert: {
+    bpm: 108, voices: [
+      { w: 'square', g: 0.04, s: 'D5:4 Eb5:2 D5:2 A4:8 | Bb4:4 A4:2 G4:2 A4:8 | D5:4 F5:2 Eb5:2 D5:4 C5:4 | D5:12 r:4 | A5:4 G5:2 F5:2 Eb5:4 D5:4 | F5:4 Eb5:2 D5:2 C5:8 | Bb4:4 C5:4 D5:4 Eb5:4 | D5:16' },
+      { w: 'triangle', g: 0.13, s: pump(['D2', 'D2', 'Bb1', 'D2', 'D2', 'Bb1', 'C2', 'D2'], 'half') },
+      { w: 'drum', g: 0.045, s: 'k:4 h:2 h:2 s:4 h:4 '.repeat(8) }
+    ]
+  },
+  sky: {
+    bpm: 132, voices: [
+      { w: 'square', g: 0.04, s: 'F5:4 A5:4 C6:6 A5:2 | Bb5:4 G5:4 F5:8 | D5:4 F5:4 Bb5:6 A5:2 | G5:12 r:4 | F5:4 A5:4 C6:6 D6:2 | C6:4 Bb5:4 A5:4 G5:4 | F5:4 G5:4 A5:4 C6:4 | F5:12 r:4' },
+      { w: 'triangle', g: 0.13, s: pump(['F2', 'Bb2', 'Bb2', 'C3', 'F2', 'Bb2', 'C3', 'F2']) },
+      { w: 'drum', g: 0.045, s: 'k:4 h:4 s:4 h:4 '.repeat(8) }
+    ]
+  },
   victory: {
     bpm: 140, loop: false, voices: [
       { w: 'square', g: 0.05, s: 'G4:2 C5:2 E5:2 G5:6 E5:2 G5:2 C6:16' },
@@ -680,6 +694,15 @@ const HEROES = {
     look: { skin: '#c98e62', hair: '#1f1b2e', style: 'pony', body: '#2f6b4a', accent: '#c7c7c7', hood: true, weapon: 'dagger' },
     start: { weapon: 'steel_dagger', armor: 'thief_vest' },
     bio: 'A quick-fingered thief from the Ironhold undercity. Owes nobody.'
+  },
+  selene: {
+    name: 'Selene', cls: 'Duskmage', skill: 'Dusk',
+    base: { hp: 46, mp: 24, str: 7, def: 6, mag: 14, spd: 11 },
+    grow: { hp: 10.5, mp: 4, str: 1.1, def: 1.2, mag: 2.75, spd: 1.3 },
+    spells: [['shade', 1], ['drain', 1], ['gravity', 1], ['nightfall', 1], ['requiem', 28]],
+    look: { skin: '#f6d6b8', hair: '#a03a2a', style: 'long', body: '#3a2a5a', accent: '#c04aa8', robe: true, weapon: 'staff' },
+    start: { weapon: 'crescent_rod', armor: 'sage_robe' },
+    bio: 'Lyra\'s elder sister. Seven years in the dark taught her its spells — and how to turn them back on it.'
   }
 };
 
@@ -705,6 +728,11 @@ const SPELLS = {
   thundara: { name: 'Thundara', mp: 12, type: 'dmg', elem: 'bolt', power: 30, target: 'enemies', fx: 'bolt', desc: 'Lightning on all foes.' },
   flare: { name: 'Flare', mp: 24, type: 'dmg', elem: 'none', power: 120, target: 'enemy', fx: 'flare', desc: 'A star\'s heart, unleashed.' },
   starfall: { name: 'Starfall', mp: 36, type: 'dmg', elem: 'none', power: 85, target: 'enemies', fx: 'flare', desc: 'Call down the sky.' },
+  shade: { name: 'Shade', mp: 6, type: 'dmg', elem: 'dark', power: 30, target: 'enemy', fx: 'dark', desc: 'A lance of shadow.' },
+  drain: { name: 'Drain', mp: 9, type: 'dmg', elem: 'dark', power: 26, drain: true, target: 'enemy', fx: 'dark', desc: 'Steal HP from a foe.' },
+  gravity: { name: 'Gravity', mp: 12, type: 'gravity', target: 'enemy', fx: 'dark', desc: 'Crush a foe for a quarter of its HP (less on bosses).' },
+  nightfall: { name: 'Nightfall', mp: 16, type: 'dmg', elem: 'dark', power: 42, target: 'enemies', fx: 'dark', desc: 'Darkness falls on all foes.' },
+  requiem: { name: 'Requiem', mp: 34, type: 'dmg', elem: 'dark', power: 105, target: 'enemies', fx: 'dark', desc: 'The last song of the night.' },
   steal: { name: 'Steal', mp: 0, type: 'steal', target: 'enemy', fx: 'none', desc: 'Lift an item from a foe.' },
   twin: { name: 'Twin Strike', mp: 4, type: 'phys', hits: 2, power: 0.8, target: 'enemy', fx: 'slash', desc: 'Two quick cuts.' },
   smoke: { name: 'Smoke Bomb', mp: 3, type: 'escape', target: 'self', fx: 'none', desc: 'Guaranteed escape (not from bosses).' },
@@ -734,6 +762,8 @@ const SPELLS = {
   e_meteor: { name: 'Meteor Rain', type: 'dmg', elem: 'none', power: 28, target: 'allies', fx: 'flare' },
   e_starbreath: { name: 'Starfire Breath', type: 'dmg', elem: 'fire', power: 25, target: 'allies', fx: 'fire' },
   e_crush: { name: 'Crushing Coil', type: 'phys', power: 1.7, target: 'ally', fx: 'hit' },
+  e_needles: { name: 'Needle Storm', type: 'phys', power: 0.7, target: 'allies', fx: 'slash' },
+  e_sandstorm: { name: 'Sandstorm', type: 'dmg', elem: 'none', power: 12, target: 'allies', fx: 'sand' },
   e_whirl: { name: 'Maelstrom', type: 'dmg', elem: 'water', power: 18, target: 'allies', fx: 'water' }
 };
 
@@ -754,8 +784,15 @@ const ITEMS = {
   // key items
   locket: { name: 'Nell\'s Locket', price: 0, kind: 'key', desc: 'A silver locket with a tiny painted gull inside.' },
   stonebrand: { name: 'Stonebrand', price: 0, kind: 'key', desc: 'Orrin\'s ancestral forge-hammer. Heavier than it looks.' },
+  sun_seal: { name: 'Sun Seal', price: 0, kind: 'key', desc: 'The royal seal of Mirage. It opens the First King\'s tomb.' },
   star_chart: { name: 'Star Chart', price: 0, kind: 'key', desc: 'Wren\'s chart. One constellation is circled: the Fifth Flame.' },
   // accessories (anyone can wear)
+  gale_sandals: { name: 'Gale Sandals', price: 0, kind: 'acc', spd: 12, desc: 'SPD +12. Arena prize.' },
+  champion_belt: { name: 'Champion Belt', price: 0, kind: 'acc', atk: 12, def: 12, desc: 'ATK +12, DEF +12. Arena prize.' },
+  sage_circlet: { name: 'Sage Circlet', price: 0, kind: 'acc', mag: 22, immune: ['silence'], desc: 'MAG +22. Prevents silence. Arena prize.' },
+  phoenix_charm: { name: 'Phoenix Charm', price: 0, kind: 'acc', def: 6, reraise: true, desc: 'DEF +6. Revives the wearer once per battle. Arena prize.' },
+  lantern_crown: { name: 'Lantern Crown', price: 0, kind: 'acc', all: 20, regen: true, xp: 1.5, immune: ['poison', 'sleep', 'silence'], desc: 'All +20, regen, +50% EXP, no ailments. Grand Champion\'s prize.' },
+  desert_veil: { name: 'Desert Veil', price: 2400, kind: 'acc', def: 8, immune: ['poison'], desc: 'DEF +8. Prevents poison.' },
   power_ring: { name: 'Power Ring', price: 600, kind: 'acc', atk: 6, desc: 'ATK +6.' },
   guard_ring: { name: 'Guard Ring', price: 600, kind: 'acc', def: 6, desc: 'DEF +6.' },
   mage_ring: { name: 'Mage Ring', price: 1400, kind: 'acc', mag: 8, desc: 'MAG +8.' },
@@ -792,16 +829,23 @@ const ITEMS = {
   mythril_knife: { name: 'Mythril Knife', price: 0, kind: 'weapon', who: ['kestrel'], atk: 32, spd: 3, desc: 'A whisper of an edge.' },
   comet_edge: { name: 'Comet Edge', price: 0, kind: 'weapon', who: ['kestrel'], atk: 62, spd: 10, desc: 'Gone before you see it.' },
   shadow_fang: { name: 'Shadow Fang', price: 0, kind: 'weapon', who: ['kestrel'], atk: 46, spd: 6, desc: 'Cuts the space between moments.' },
+  crescent_rod: { name: 'Crescent Rod', price: 0, kind: 'weapon', who: ['selene'], atk: 8, mag: 20, desc: 'Vesper\'s staff, cleansed.' },
+  moon_scepter: { name: 'Moon Scepter', price: 6000, kind: 'weapon', who: ['selene'], atk: 12, mag: 32, desc: 'Silver and patient.' },
+  nocturne: { name: 'Nocturne', price: 0, kind: 'weapon', who: ['selene'], atk: 16, mag: 46, desc: 'Plays the dark like an instrument.' },
+  sunsteel_blade: { name: 'Sunsteel Blade', price: 9000, kind: 'weapon', who: ['arin'], atk: 46, desc: 'Forged in desert heat.' },
+  sky_staff: { name: 'Sky Staff', price: 8500, kind: 'weapon', who: ['lyra'], atk: 12, mag: 34, desc: 'Light as a cloud.' },
+  pharaoh_mace: { name: 'Gilded Mace', price: 0, kind: 'weapon', who: ['oswin'], atk: 34, mag: 22, desc: 'Gold from the First King\'s tomb.' },
+  sand_kris: { name: 'Sand Kris', price: 0, kind: 'weapon', who: ['kestrel'], atk: 40, spd: 5, desc: 'Wavy and wicked.' },
   // armor
   leather: { name: 'Leather Armor', price: 50, kind: 'armor', who: ['arin', 'kestrel', 'oswin'], def: 3, desc: 'Basic protection.' },
-  cloth_robe: { name: 'Cloth Robe', price: 40, kind: 'armor', who: ['lyra', 'oswin'], def: 2, mag: 1, desc: 'Simple robe.' },
+  cloth_robe: { name: 'Cloth Robe', price: 40, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 2, mag: 1, desc: 'Simple robe.' },
   chain_mail: { name: 'Chain Mail', price: 450, kind: 'armor', who: ['arin', 'oswin'], def: 9, desc: 'Rings of iron.' },
-  silk_robe: { name: 'Silk Robe', price: 340, kind: 'armor', who: ['lyra', 'oswin'], def: 6, mag: 3, desc: 'Fine silk, lightly warded.' },
+  silk_robe: { name: 'Silk Robe', price: 340, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 6, mag: 3, desc: 'Fine silk, lightly warded.' },
   plate: { name: 'Plate Armor', price: 2000, kind: 'armor', who: ['arin', 'oswin'], def: 16, desc: 'Full plate.' },
-  sage_robe: { name: 'Sage Robe', price: 1500, kind: 'armor', who: ['lyra', 'oswin'], def: 12, mag: 7, desc: 'Woven with wisdom.' },
+  sage_robe: { name: 'Sage Robe', price: 1500, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 12, mag: 7, desc: 'Woven with wisdom.' },
   thief_vest: { name: 'Thief Vest', price: 1300, kind: 'armor', who: ['kestrel'], def: 12, spd: 3, desc: 'Lots of pockets.' },
   mythril_mail: { name: 'Mythril Mail', price: 0, kind: 'armor', who: ['arin', 'oswin'], def: 25, desc: 'Shimmering mail.' },
-  star_robe: { name: 'Star Robe', price: 0, kind: 'armor', who: ['lyra', 'oswin'], def: 20, mag: 14, desc: 'The night sky, sewn.' },
+  star_robe: { name: 'Star Robe', price: 0, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 20, mag: 14, desc: 'The night sky, sewn.' },
   shadow_garb: { name: 'Shadow Garb', price: 0, kind: 'armor', who: ['kestrel'], def: 22, spd: 7, desc: 'Drinks the light.' },
   dawn_plate: { name: 'Dawn Plate', price: 0, kind: 'armor', who: ['arin', 'oswin'], def: 35, desc: 'Warm to the touch.' }
 };
@@ -848,6 +892,16 @@ const MONSTERS = {
   nebulaslime: { name: 'Nebula Slime', fam: 'slime', c: ['#c070ff', '#3a1a7a'], hp: 1000, atk: 160, def: 80, mag: 140, spd: 16, xp: 480, gold: 360, weak: ['ice'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_hush' }, { w: 1, a: 'e_shadow' }], steal: 'hiether' },
   voiddrake: { name: 'Void Drake', fam: 'wyrm', size: 0.7, c: ['#3a2a6a', '#140a2a', '#c070ff'], hp: 1500, atk: 175, def: 84, mag: 130, spd: 20, xp: 650, gold: 480, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_starbreath' }], steal: 'xpotion' },
   cometimp: { name: 'Comet Imp', fam: 'imp', c: ['#ffb04a', '#8a3a1a'], hp: 900, atk: 140, def: 66, mag: 150, spd: 30, xp: 450, gold: 340, weak: ['ice'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_fire' }, { w: 1, a: 'e_lullaby' }], steal: 'elixir' },
+  sandworm: { name: 'Sandworm', fam: 'serpent', size: 1.2, c: ['#d8a860', '#8a6030'], hp: 420, atk: 96, def: 40, mag: 30, spd: 12, xp: 170, gold: 120, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_crush' }], steal: 'hipotion' },
+  scorpion: { name: 'Death Scorpion', fam: 'crab', c: ['#8a2a1a', '#3a0a0a'], hp: 330, atk: 100, def: 58, mag: 20, spd: 14, xp: 160, gold: 110, weak: ['ice'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_bite' }], steal: 'antidote' },
+  bandit: { name: 'Sand Bandit', fam: 'goblin', c: ['#c89a6a', '#5a3a2a'], hp: 360, atk: 98, def: 40, mag: 20, spd: 20, xp: 165, gold: 220, drop: ['hipotion', 0.3], steal: 'bomb' },
+  cactoid: { name: 'Cactoid', fam: 'plant', c: ['#ff8ab0', '#4a9a4a'], hp: 300, atk: 90, def: 48, mag: 40, spd: 10, xp: 150, gold: 100, weak: ['fire'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_needles' }], steal: 'remedy' },
+  mummy: { name: 'Mummy', fam: 'skeleton', c: ['#e0d0a8', '#7a6a4a'], hp: 640, atk: 128, def: 66, mag: 60, spd: 10, xp: 260, gold: 180, weak: ['fire', 'holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_hush' }], steal: 'remedy' },
+  scarab: { name: 'Gilded Scarab', fam: 'crab', size: 0.85, c: ['#e8c84a', '#3a5a2a'], hp: 520, atk: 120, def: 96, mag: 30, spd: 18, xp: 240, gold: 260, weak: ['ice'], steal: 'hiether' },
+  sphinx: { name: 'Sphinx', fam: 'beast', size: 1.3, c: ['#e0b860', '#8a5a2a'], hp: 940, atk: 142, def: 70, mag: 120, spd: 20, xp: 320, gold: 240, weak: ['bolt'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_bolt' }, { w: 1, a: 'e_hush' }], steal: 'xpotion' },
+  tombpriest: { name: 'Cursed Priest', fam: 'witch', c: ['#2a2010', '#e8c84a', '#ffe8a0'], hp: 680, atk: 90, def: 54, mag: 132, spd: 16, xp: 280, gold: 230, weak: ['holy'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_heal' }, { w: 1, a: 'e_lullaby' }], steal: 'elixir' },
+  gildedgolem: { name: 'Gilded Golem', fam: 'golem', c: ['#c8a040', '#6a5020', '#ffe080'], hp: 1050, atk: 146, def: 110, mag: 40, spd: 8, xp: 340, gold: 400, weak: ['bolt'], steal: 'xpotion' },
+  firstking: { name: 'Ozymar, the First King', fam: 'king', boss: true, size: 1.1, c: ['#3a2a10', '#e8c84a', '#ffb040'], hp: 6200, atk: 138, def: 74, mag: 110, spd: 24, xp: 9000, gold: 6000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_sandstorm' }, { w: 1, a: 'e_hush' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_cleave' }], steal: 'megalixir' },
   wyrm: { name: 'Astral Wyrm', fam: 'wyrm', boss: true, size: 1.35, c: ['#1a2a5a', '#0a1028', '#9ad8ff'], hp: 12000, atk: 182, def: 88, mag: 150, spd: 30, xp: 20000, gold: 10000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_meteor' }, { w: 2, a: 'e_starbreath' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_dreamfog' }, { w: 1, a: 'e_crush' }], steal: 'megalixir' },
   king: { name: 'The Hollow King', fam: 'king', boss: true, size: 1.3, c: ['#120a20', '#e8c84a', '#8a3aff'], hp: 6500, atk: 165, def: 82, mag: 135, spd: 28, xp: 0, gold: 0, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_cleave' }], steal: 'megalixir' },
   king2: { name: 'Hollow King, Unbound', fam: 'king2', boss: true, size: 1.3, c: ['#05020a', '#ff5ac8', '#5affe8'], hp: 5200, atk: 175, def: 78, mag: 148, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_blaze' }], steal: 'megalixir' }
@@ -862,6 +916,8 @@ const ENCOUNTERS = {
   r3: [{ w: 3, g: ['frostwolf', 'frostwolf'] }, { w: 2, g: ['icegolem'] }, { w: 2, g: ['snowimp', 'snowimp'] }, { w: 2, g: ['ogre'] }, { w: 1, g: ['ogre', 'snowimp'] }, { w: 1, g: ['frostwolf', 'snowimp', 'frostwolf'] }],
   d3: [{ w: 3, g: ['magmaslime', 'firebat'] }, { w: 2, g: ['revenant'] }, { w: 2, g: ['firebat', 'firebat'] }, { w: 2, g: ['embergolem'] }, { w: 1, g: ['revenant', 'magmaslime'] }, { w: 1, g: ['revenant', 'revenant'] }],
   r4: [{ w: 3, g: ['hollowknight'] }, { w: 2, g: ['nightgaze', 'wraith'] }, { w: 2, g: ['wraith', 'wraith'] }, { w: 2, g: ['chimera'] }, { w: 1, g: ['hollowknight', 'nightgaze'] }],
+  r5: [{ w: 3, g: ['sandworm'] }, { w: 2, g: ['scorpion', 'scorpion'] }, { w: 2, g: ['bandit', 'bandit'] }, { w: 2, g: ['cactoid', 'cactoid', 'cactoid'] }, { w: 1, g: ['bandit', 'scorpion', 'cactoid'] }],
+  d6: [{ w: 3, g: ['mummy', 'mummy'] }, { w: 2, g: ['scarab', 'scarab'] }, { w: 2, g: ['sphinx'] }, { w: 2, g: ['tombpriest', 'mummy'] }, { w: 1, g: ['gildedgolem'] }, { w: 1, g: ['gildedgolem', 'tombpriest'] }],
   d5: [{ w: 3, g: ['starspawn', 'astralknight'] }, { w: 2, g: ['voiddrake'] }, { w: 2, g: ['nebulaslime', 'cometimp', 'nebulaslime'] }, { w: 2, g: ['astralknight', 'cometimp'] }, { w: 1, g: ['voiddrake', 'starspawn'] }],
   d4: [{ w: 3, g: ['voidslime', 'wraith'] }, { w: 2, g: ['dreadknight'] }, { w: 2, g: ['nightgaze', 'nightgaze'] }, { w: 2, g: ['hollowknight', 'voidslime'] }, { w: 1, g: ['chimera', 'nightgaze'] }, { w: 1, g: ['dreadknight', 'wraith'] }]
 };
@@ -873,12 +929,37 @@ const SHOPS = {
   halden_arms: ['iron_sword', 'mage_staff', 'iron_mace', 'chain_mail', 'silk_robe', 'power_ring', 'guard_ring'],
   ironhold_items: ['hipotion', 'xpotion', 'ether', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
   ironhold_arms: ['steel_sword', 'rune_staff', 'steel_mace', 'steel_dagger', 'plate', 'sage_robe', 'thief_vest', 'mage_ring', 'wake_charm'],
+  mirage_items: ['hipotion', 'xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
+  mirage_arms: ['sunsteel_blade', 'sky_staff', 'desert_veil', 'swift_boots', 'mage_ring', 'wake_charm'],
+  aerie_items: ['xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
+  aerie_arms: ['moon_scepter', 'sunsteel_blade', 'sky_staff', 'scholar_lens', 'echo_bell', 'desert_veil'],
   frostmere_items: ['hipotion', 'xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
   frostmere_arms: ['swift_boots', 'echo_bell', 'wake_charm', 'scholar_lens', 'guard_ring', 'power_ring']
 };
 
 function xpForLevel(L) { return L <= 1 ? 0 : Math.round(8 * Math.pow(L - 1, 2.3) + 12 * (L - 1)); }
 const MAX_LEVEL = 40;
+
+// Combo techs: members must all be in the battle party, awake, unsilenced and have the MP.
+const COMBOS = [
+  { id: 'flame_edge', name: 'Flame Edge', members: ['arin', 'lyra'], mp: [6, 6], type: 'phys', elem: 'fire', power: 2.6, target: 'enemy', fx: 'fire', desc: 'Lyra sets Arin\'s blade alight.' },
+  { id: 'sacred_cross', name: 'Sacred Cross', members: ['arin', 'oswin'], mp: [8, 10], type: 'dmg', elem: 'holy', power: 55, heal: 0.15, target: 'enemies', fx: 'holy', desc: 'Holy damage to all foes; heals the party a little.' },
+  { id: 'crossfang', name: 'Crossfang', members: ['arin', 'kestrel'], mp: [6, 6], type: 'phys', power: 1.5, hits: 3, target: 'enemy', fx: 'slash', desc: 'Three crossing strikes.' },
+  { id: 'prism_nova', name: 'Prism Nova', members: ['lyra', 'oswin'], mp: [12, 10], type: 'dmg', elem: 'none', power: 70, target: 'enemies', fx: 'flare', desc: 'Light split into every color.' },
+  { id: 'firestorm', name: 'Firestorm', members: ['lyra', 'kestrel'], mp: [10, 6], type: 'dmg', elem: 'fire', power: 52, target: 'enemies', fx: 'fire', desc: 'Kestrel scatters bombs; Lyra lights them.' },
+  { id: 'tidebreaker', name: 'Tidebreaker', members: ['oswin', 'kestrel'], mp: [8, 6], type: 'phys', elem: 'water', power: 2.3, target: 'enemy', fx: 'water', desc: 'A wave with a knife in it.' },
+  { id: 'eclipse_blade', name: 'Eclipse Blade', members: ['arin', 'selene'], mp: [8, 10], type: 'phys', elem: 'dark', power: 3.0, target: 'enemy', fx: 'dark', desc: 'A blade of night, swung by daylight.' },
+  { id: 'twin_stars', name: 'Twin Stars', members: ['lyra', 'selene'], mp: [16, 16], type: 'dmg', elem: 'none', power: 120, target: 'enemies', fx: 'flare', desc: 'The sisters\' song. Devastates all foes.' },
+  { id: 'lantern_light', name: 'Lantern Light', members: ['arin', 'lyra', 'oswin'], mp: [14, 18, 18], type: 'dmg', elem: 'holy', power: 160, heal: 0.4, target: 'enemies', fx: 'holy', desc: 'The first flame, remembered. Heals the party.' }
+];
+// Arena cups at Aerie
+const ARENA_CUPS = [
+  { id: 'bronze', name: 'Bronze Cup', level: 24, rounds: [['hobgoblin', 'hobgoblin', 'hobgoblin'], ['ogre', 'ogre'], ['magmaslime', 'firebat', 'magmaslime']], prize: 'gale_sandals', gold: 2000 },
+  { id: 'silver', name: 'Silver Cup', level: 28, rounds: [['revenant', 'revenant'], ['embergolem', 'sphinx'], ['mummy', 'tombpriest', 'mummy']], prize: 'champion_belt', gold: 4000 },
+  { id: 'gold', name: 'Gold Cup', level: 32, rounds: [['hollowknight', 'nightgaze'], ['chimera', 'wraith'], ['dreadknight', 'dreadknight']], prize: 'sage_circlet', gold: 7000 },
+  { id: 'platinum', name: 'Platinum Cup', level: 36, rounds: [['astralknight', 'starspawn'], ['voiddrake', 'voiddrake'], ['firstking']], prize: 'phoenix_charm', gold: 12000 },
+  { id: 'champion', name: 'Grand Champion', level: 42, rounds: [['warden'], ['vesper'], ['leviathan', 'leviathan'], ['wyrm']], prize: 'lantern_crown', gold: 30000 }
+];
 
 'use strict';
 // ============================================================
@@ -924,6 +1005,7 @@ const WPAL = {
 };
 function isWaterCh(c) { return c === '~' || c === 'r'; }
 function groundOf(ch, reg) {
+  if (reg === 'F' || ch === 'z' || ch === 'v' || ch === 'm') return 'desert';
   if (ch === '*' || ch === 'P' || ch === 'M') return 'snow';
   if (ch === 'q' || ch === 'd' || reg === 'C') return 'q';
   if (ch === 's') return 'sand';
@@ -940,6 +1022,11 @@ function fillGround(g, kind, px, py, x, y) {
     g.beginPath(); const a = hash(x, y, 3); g.moveTo(px + a * 30, py); g.quadraticCurveTo(px + 16, py + 16, px + hash(x, y, 4) * 30, py + 32); g.stroke();
     const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 600 + x * 1.7 + y);
     if (hash(x, y, 5) < 0.4) circle(g, px + 6 + hash(x, y, 6) * 20, py + 6 + hash(x, y, 7) * 20, 1.6, `rgba(200,120,255,${0.3 + pulse * 0.5})`);
+  } else if (kind === 'desert') {
+    g.fillStyle = (x + y) % 2 ? '#e8c47a' : '#e4be72'; g.fillRect(px, py, TS, TS);
+    g.strokeStyle = 'rgba(160,110,50,.35)'; g.lineWidth = 1.3;
+    const o = hash(x, y, 3) * 10;
+    g.beginPath(); g.moveTo(px + 2, py + 12 + o); g.quadraticCurveTo(px + 16, py + 6 + o, px + 30, py + 12 + o); g.stroke();
   } else if (kind === 'sand') {
     g.fillStyle = WPAL.sand; g.fillRect(px, py, TS, TS);
     g.fillStyle = WPAL.sandD;
@@ -988,7 +1075,7 @@ function drawMountain(g, px, py, x, y, snowy, dark) {
   g.beginPath(); g.moveTo(px - 2, py + TS); g.lineTo(pk, top); g.lineTo(px + TS + 2, py + TS); g.stroke();
 }
 function roadLinks(map, x, y) {
-  const isR = (xx, yy) => { const c = map.at(xx, yy); return c === '=' || c === 'b' || c === 'x' || /[A-D1-5]/.test(c); };
+  const isR = (xx, yy) => { const c = map.at(xx, yy); return c === '=' || c === 'b' || c === 'x' || /[A-F1-6]/.test(c); };
   return [isR(x, y - 1), isR(x + 1, y), isR(x, y + 1), isR(x - 1, y)];
 }
 function drawWater(g, px, py, x, y, map, t) {
@@ -1040,6 +1127,7 @@ function drawWorldTile(g, map, x, y, px, py, t) {
   fillGround(g, gk, px, py, x, y);
   switch (ch) {
     case 'T': {
+      if (reg === 'F') { drawPalm(g, px + 10, py + 28, 1, x + y); drawPalm(g, px + 24, py + 22, 0.85, x * 3 + y); break; }
       const trees = [[9, 16], [23, 13], [15, 28], [27, 29], [4, 30]];
       for (let i = 0; i < trees.length; i++) {
         if (i > 2 && hash(x, y, 30 + i) < 0.5) continue;
@@ -1059,6 +1147,8 @@ function drawWorldTile(g, map, x, y, px, py, t) {
       break;
     }
     case '^': drawMountain(g, px, py, x, y, false, reg === 'C'); break;
+    case 'm': drawMesa(g, px, py, x, y); break;
+    case 'v': drawCactus(g, px + 10 + hash(x, y, 1) * 12, py + 28, 0.9); break;
     case 'M': drawMountain(g, px, py, x, y, true, false); break;
     case 'n': {
       ellipse(g, px + 16, py + 24, 15, 10, WPAL.grassD);
@@ -1066,8 +1156,8 @@ function drawWorldTile(g, map, x, y, px, py, t) {
       line(g, px + 8, py + 20, px + 12, py + 17, WPAL.grassL, 1.5);
       break;
     }
-    case '=': case 'A': case 'B': case 'C': case 'D': case '1': case '2': case '3': case '4': case '5': {
-      if (ch === '=' || /[ABCD]/.test(ch)) {
+    case '=': case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case '1': case '2': case '3': case '4': case '5': case '6': {
+      if (ch === '=' || /[ABCDEF]/.test(ch)) {
         const L = roadLinks(map, x, y);
         g.fillStyle = gk === 'snow' ? '#c8b89a' : gk === 'q' ? '#5a4a6a' : WPAL.dirt;
         const c = 10, cx = px + 16, cy = py + 16;
@@ -1116,6 +1206,28 @@ function drawLocationIcon(g, ch, px, py, t) {
       poly(g, [x - w / 2 + 1, y - 10, x, y - 16, x + w / 2 - 1, y - 10, x, y - 12], '#fff');
       g.fillStyle = `rgba(255,210,120,${0.6 + 0.3 * Math.sin(t * 3 + i)})`; g.fillRect(x - 1.5, y - 6, 3, 3);
     });
+  } else if (ch === 'E') {
+    [[-9, 0, 11], [7, 1, 12], [-1, -9, 12]].sort((a, b) => a[1] - b[1]).forEach(([dx, dy, w], i) => {
+      const x = cx + dx, y = by + dy;
+      rrect(g, x - w / 2, y - 10, w, 10, 1, '#e8c898', OUT, 1);
+      g.beginPath(); g.arc(x, y - 10, w / 2 - 1, Math.PI, 0); g.fillStyle = ['#3a8a8a', '#c06a3a', '#8a3a5a'][i]; g.fill(); g.strokeStyle = OUT; g.lineWidth = 1; g.stroke();
+      g.fillStyle = '#5a3a1f'; g.fillRect(x - 1.5, y - 5, 3, 5);
+    });
+    drawPalm(g, cx + 13, by + 2, 0.55, 3);
+  } else if (ch === 'F') {
+    [[-9, 0, 11], [7, 0, 11]].forEach(([dx, dy, w], i) => {
+      const x = cx + dx, y = by + dy;
+      rrect(g, x - w / 2, y - 9, w, 9, 1, '#f0e2c0', OUT, 1);
+      poly(g, [x - w / 2 - 2, y - 8, x, y - 16, x + w / 2 + 2, y - 8], ['#5a8ad0', '#7a5a9a'][i], OUT, 1);
+    });
+    ellipse(g, cx, by - 16, 10, 6, '#d8cfc0', OUT, 1.2); rrect(g, cx - 10, by - 16, 20, 8, 1, '#d8cfc0', OUT, 1);
+    line(g, cx, by - 22, cx, by - 32, '#333', 1.2); poly(g, [cx, by - 32, cx + 7 + Math.sin(t * 5) * 1.5, by - 30, cx, by - 28], '#a03a2a');
+  } else if (ch === '6') {
+    poly(g, [cx, by - 26, cx - 17, by + 1, cx + 17, by + 1], '#e0b860', OUT, 1.3);
+    poly(g, [cx, by - 26, cx + 17, by + 1, cx + 4, by + 1], '#b88a40');
+    for (let i = 1; i < 4; i++) line(g, cx - 17 + i * 4.2, by + 1 - i * 6.7, cx + 17 - i * 4.2, by + 1 - i * 6.7, 'rgba(90,60,20,.4)', 1);
+    rrect(g, cx - 3, by - 7, 6, 8, 2, '#1a1008');
+    circle(g, cx, by - 26, 2, `rgba(255,200,80,${0.5 + 0.5 * Math.sin(t * 3)})`);
   } else if (ch === '5') {
     rrect(g, cx - 13, by - 10, 26, 12, 1, '#c8d0e8', OUT, 1.2);
     g.beginPath(); g.arc(cx, by - 10, 13, Math.PI, 0); g.fillStyle = '#3a4a8a'; g.fill(); g.strokeStyle = OUT; g.lineWidth = 1.2; g.stroke();
@@ -1170,12 +1282,13 @@ function drawTownTile(g, map, x, y, px, py, t) {
   const grassC = theme === 'stone' ? '#8a8f86' : '#6dbb4f';
   const base = () => {
     if (theme === 'snow') { fillGround(g, 'snow', px, py, x, y); return; }
+    if (theme === 'sand') { fillGround(g, 'desert', px, py, x, y); return; }
     if (theme === 'stone') { g.fillStyle = (x + y) % 2 ? '#8e938a' : '#888d84'; g.fillRect(px, py, TS, TS); if (hash(x, y) < .3) { g.fillStyle = '#7a7f76'; g.fillRect(px + hash(x, y, 1) * 26, py + hash(x, y, 2) * 26, 4, 3); } }
     else fillGround(g, 'grass', px, py, x, y);
   };
   switch (ch) {
     case ':': {
-      g.fillStyle = theme === 'stone' ? '#a8a49a' : theme === 'snow' ? '#cfd6e2' : '#d6c8a6'; g.fillRect(px, py, TS, TS);
+      g.fillStyle = theme === 'stone' ? '#a8a49a' : theme === 'snow' ? '#cfd6e2' : theme === 'sand' ? '#d8b880' : '#d6c8a6'; g.fillRect(px, py, TS, TS);
       g.strokeStyle = theme === 'stone' ? '#8a867c' : theme === 'snow' ? '#aeb8c8' : '#b8a882'; g.lineWidth = 1;
       const o = (y % 2) * 8;
       g.beginPath();
@@ -1184,7 +1297,8 @@ function drawTownTile(g, map, x, y, px, py, t) {
       g.stroke();
       break;
     }
-    case 't': base(); drawTreeRound(g, px + 16, py + 30, 1.55, '#3f8a3a', '#2a6a2a', '#5fae50'); break;
+    case 't': base(); if (theme === 'sand') drawPalm(g, px + 16, py + 31, 1.5, x + y); else drawTreeRound(g, px + 16, py + 30, 1.55, '#3f8a3a', '#2a6a2a', '#5fae50'); break;
+    case 'm': { g.fillStyle = theme === 'sand' ? '#a8603a' : '#7a6a5a'; g.fillRect(px, py, TS, TS); poly(g, [px, py + TS, px + 4, py + 6, px + 28, py + 4, px + TS, py + TS], theme === 'sand' ? '#c8784a' : '#8f7f6f', OUT, 1); g.fillStyle = 'rgba(255,255,255,.15)'; g.fillRect(px + 6, py + 6, 20, 3); break; }
     case 'P': base(); drawPine(g, px + 16, py + 31, 1.35, '#3a7a5a', '#245a40', theme === 'stone' || theme === 'snow'); break;
     case 'f': {
       base();
@@ -1327,6 +1441,7 @@ function drawSignIcon(g, s, x, y) {
   else if (s === 'arms') { line(g, x - 6, y + 5, x + 6, y - 5, '#8a8a9a', 2.5); line(g, x - 6, y - 3, x - 2, y + 1, '#5a3a1f', 2); }
   else if (s === 'anchor') { line(g, x, y - 6, x, y + 5, '#3a3a50', 2); g.beginPath(); g.arc(x, y + 1, 5, 0.2, Math.PI - 0.2); g.strokeStyle = '#3a3a50'; g.lineWidth = 2; g.stroke(); circle(g, x, y - 6, 2, null, '#3a3a50', 1.5); }
   else if (s === 'jail') { for (let i = 0; i < 4; i++) line(g, x - 6 + i * 4, y - 6, x - 6 + i * 4, y + 6, '#3a3a40', 1.5); }
+  else if (s === 'arena') { line(g, x - 6, y + 5, x + 6, y - 5, '#8a8a9a', 2.2); line(g, x + 6, y + 5, x - 6, y - 5, '#8a8a9a', 2.2); circle(g, x, y, 2.5, '#c0302a'); }
   else if (s === 'hall') { poly(g, [x - 7, y - 1, x, y - 7, x + 7, y - 1], '#c0442e'); g.fillStyle = '#5a3a1f'; g.fillRect(x - 5, y - 1, 10, 7); }
 }
 
@@ -1335,6 +1450,7 @@ const DTHEME = {
   hollow: { wall: '#4a3f2e', top: '#352d1f', floor: '#5c5238', floor2: '#544a32', acc: '#6aa040', light: 245, bg: 'cave' },
   shrine: { wall: '#3a5a7a', top: '#22344a', floor: '#6a8aa6', floor2: '#5f7f9a', acc: '#5af0d0', light: 290, bg: 'shrine' },
   mine: { wall: '#5a3a2a', top: '#2e1e14', floor: '#6a4a36', floor2: '#5f4230', acc: '#ff8a2a', light: 240, bg: 'mine' },
+  tomb: { wall: '#a8844a', top: '#4a3418', floor: '#c8a868', floor2: '#bc9c5e', acc: '#ffc04a', light: 255, bg: 'tomb' },
   astral: { wall: '#2a3a6a', top: '#141e3c', floor: '#22305a', floor2: '#1e2a50', acc: '#a8d8ff', light: 280, bg: 'astral' },
   spire: { wall: '#3a2a4e', top: '#1c1228', floor: '#2e2440', floor2: '#281f38', acc: '#c070ff', light: 260, bg: 'spire' }
 };
@@ -1354,6 +1470,7 @@ function drawDungeonTile(g, map, x, y, px, py, t) {
       }
       g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(px, py, TS, 3);
       g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(px, py + TS - 4, TS, 4);
+      if (map.theme === 'tomb' && hash(x, y, 5) < 0.45) { g.strokeStyle = 'rgba(80,50,20,.55)'; g.lineWidth = 1.5; const k = Math.floor(hash(x, y, 6) * 3); g.beginPath(); if (k === 0) { g.arc(px + 16, py + 12, 4, 0, Math.PI * 2); g.moveTo(px + 16, py + 16); g.lineTo(px + 16, py + 26); } else if (k === 1) { g.moveTo(px + 9, py + 8); g.lineTo(px + 23, py + 8); g.lineTo(px + 16, py + 24); g.closePath(); } else { g.moveTo(px + 8, py + 20); g.quadraticCurveTo(px + 16, py + 4, px + 24, py + 20); g.moveTo(px + 16, py + 12); g.lineTo(px + 16, py + 26); } g.stroke(); }
       if (map.theme === 'hollow' && hash(x, y, 5) < 0.35) { // roots
         g.strokeStyle = '#7a5a2a'; g.lineWidth = 2; g.beginPath(); g.moveTo(px + 8 + hash(x, y, 6) * 16, py); g.quadraticCurveTo(px + 12, py + 16, px + 6 + hash(x, y, 7) * 20, py + 28); g.stroke();
       }
@@ -2069,6 +2186,33 @@ function drawBattleBG(g, kind, t) {
       ground('#3b2a4c', '#1a1024', 255);
       break;
     }
+    case 'desert': {
+      sky('#4a9ae0', '#f8e0b0');
+      circle(g, 520, 70, 34, 'rgba(255,250,220,.9)');
+      hills(200, 26, '#d89a5a', 7, 0.018); hills(230, 14, '#e8b878', 8);
+      ground('#e8c47a', '#c89a50', 258);
+      for (let i = 0; i < 5; i++) drawCactus(g, 30 + i * 140 + hash(i, 2) * 40, 262 + hash(i, 3) * 10, 1.8);
+      for (let i = 0; i < 20; i++) { const k = (t * 0.3 + hash(i, 4)) % 1; line(g, k * W, 280 + hash(i, 5) * 160, k * W + 20, 280 + hash(i, 5) * 160, 'rgba(255,240,200,.35)', 1.5); }
+      break;
+    }
+    case 'tomb': {
+      g.fillStyle = '#2a1c0c'; g.fillRect(0, 0, W, H);
+      for (let i = 0; i < 6; i++) { const x = 30 + i * 118; rrect(g, x - 18, 30, 36, 240, 2, '#8a6a3a', OUT, 1.5); for (let k = 0; k < 6; k++) { g.strokeStyle = 'rgba(40,25,10,.5)'; g.lineWidth = 1.5; g.beginPath(); g.arc(x, 60 + k * 36, 5, 0, Math.PI * 2); g.stroke(); line(g, x - 8, 72 + k * 36, x + 8, 72 + k * 36, 'rgba(40,25,10,.5)', 1.5); } }
+      ground('#a8844a', '#5a3a18', 262);
+      for (let i = 0; i < 6; i++) { const x = 30 + i * 118, f = Math.sin(t * 9 + i) * 2; g.save(); g.globalAlpha = 0.3; circle(g, x, 24, 22 + f, '#ffb04a'); g.restore(); poly(g, [x - 5, 30, x + f * 0.5, 14 - f, x + 5, 30], '#ffa030'); }
+      for (let i = 0; i < 10; i++) circle(g, hash(i, 4) * W, 300 + hash(i, 5) * 150, 3 + hash(i, 6) * 3, 'rgba(232,200,74,.5)');
+      break;
+    }
+    case 'arena': {
+      sky('#3a7ad0', '#c8e0ff');
+      g.fillStyle = '#b8a890'; g.beginPath(); g.ellipse(W / 2, 240, 420, 120, 0, Math.PI, 0); g.fill();
+      for (let r = 0; r < 4; r++) { g.fillStyle = r % 2 ? '#a89880' : '#c8b8a0'; g.beginPath(); g.ellipse(W / 2, 240, 400 - r * 30, 110 - r * 22, 0, Math.PI, 0); g.fill(); }
+      for (let i = 0; i < 60; i++) circle(g, W / 2 + Math.cos(Math.PI + i / 60 * Math.PI) * (360 - (i % 3) * 30), 240 + Math.sin(Math.PI + i / 60 * Math.PI) * (100 - (i % 3) * 20), 4, ['#c04a4a', '#4a6ac0', '#e8c24a', '#5aa05a'][i % 4]);
+      for (let i = 0; i < 7; i++) { const x = 40 + i * 94; line(g, x, 110, x, 70, '#5a4a3a', 2); poly(g, [x, 70, x + 18 + Math.sin(t * 4 + i) * 3, 76, x, 82], ['#c04a4a', '#4a6ac0', '#e8c24a'][i % 3]); }
+      ground('#d8b880', '#a8844a', 240);
+      g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 2; g.beginPath(); g.ellipse(W / 2, 330, 260, 60, 0, 0, Math.PI * 2); g.stroke();
+      break;
+    }
     case 'astral': {
       const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#04081c'); gr.addColorStop(0.6, '#142a5a'); gr.addColorStop(1, '#0a1430'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
       stars(140, 13);
@@ -2153,6 +2297,53 @@ function drawGlint(g, cx, by, t) {
   poly(g, [cx, by - 10 - r, cx + 2, by - 12, cx + r, by - 10, cx + 2, by - 8, cx, by - 10 + r, cx - 2, by - 8, cx - r, by - 10, cx - 2, by - 12], '#fffbe0');
 }
 
+function drawPalm(g, x, y, s, seed) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(-3, -10, 1, -20); g.strokeStyle = '#8a5a2a'; g.lineWidth = 3; g.lineCap = 'round'; g.stroke();
+  const t = performance.now() / 1000, sw = Math.sin(t * 1.5 + seed) * 0.08;
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI / 2 + (i - 2) * 0.75 + sw;
+    g.beginPath(); g.moveTo(1, -20);
+    g.quadraticCurveTo(1 + Math.cos(a) * 8, -20 + Math.sin(a) * 8 - 3, 1 + Math.cos(a) * 13, -20 + Math.sin(a) * 9 + 4);
+    g.strokeStyle = i % 2 ? '#3a8a3a' : '#2f7a35'; g.lineWidth = 3.2; g.stroke();
+  }
+  circle(g, 0, -19, 1.8, '#6a3a1a');
+  g.restore();
+}
+function drawCactus(g, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  rrect(g, -2.5, -16, 5, 16, 2.5, '#4a9a4a', OUT, 1);
+  rrect(g, -8, -11, 4, 7, 2, '#4a9a4a', OUT, 1); rrect(g, -6, -6, 4, 2.5, 1, '#4a9a4a');
+  rrect(g, 4, -13, 4, 6, 2, '#4a9a4a', OUT, 1); rrect(g, 2, -9, 4, 2.5, 1, '#4a9a4a');
+  circle(g, 0, -16.5, 1.5, '#ff8ab0');
+  g.restore();
+}
+function drawMesa(g, px, py, x, y) {
+  const h = hash(x, y, 13);
+  poly(g, [px - 1, py + TS, px + 3, py - 2 - h * 6, px + TS - 3, py - 4 - h * 4, px + TS + 1, py + TS], '#b8683a', OUT, 1.2);
+  poly(g, [px + 3, py - 2 - h * 6, px + TS - 3, py - 4 - h * 4, px + TS - 6, py + 4, px + 6, py + 5], '#d8884a');
+  line(g, px + 4, py + 14, px + TS - 4, py + 12, 'rgba(90,40,20,.4)', 1.5);
+  line(g, px + 5, py + 22, px + TS - 5, py + 21, 'rgba(90,40,20,.3)', 1.5);
+}
+function drawAirship(g, cx, by, t, dir, flying) {
+  const bob = flying ? Math.sin(t * 2.5) * 2 : 0;
+  g.save(); g.translate(cx, by + bob);
+  if (dir === 'left') g.scale(-1, 1);
+  // envelope
+  ellipse(g, 0, -34, 22, 10, '#c8443a', OUT, 1.5);
+  g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 1.2; g.beginPath(); g.ellipse(0, -34, 22, 4, 0, 0, Math.PI * 2); g.stroke();
+  line(g, -22, -34, 22, -34, 'rgba(0,0,0,.25)', 1);
+  poly(g, [-22, -34, -30, -42, -28, -34, -30, -26], '#e8c24a', OUT, 1);
+  // ropes & gondola
+  line(g, -10, -25, -9, -14, '#5a3a1f', 1); line(g, 10, -25, 9, -14, '#5a3a1f', 1);
+  poly(g, [-14, -14, 14, -14, 11, -6, -11, -6], '#8a5a2a', OUT, 1.2);
+  g.fillStyle = '#e8c24a'; g.fillRect(-13, -14, 26, 2);
+  // propeller
+  const pr = Math.sin(t * 40) * 6;
+  line(g, 15, -10, 18, -10, '#5a3a1f', 2); line(g, 19, -10 - pr, 19, -10 + pr, '#ddd', 2);
+  g.restore();
+}
+
 'use strict';
 // ============================================================
 //  MAPS — world generation, towns, dungeons
@@ -2177,22 +2368,26 @@ const WORLD_LOC = {
   B: { x: 38, y: 38, town: 'halden', name: 'Port Halden' },
   C: { x: 40, y: 15, town: 'ironhold', name: 'Ironhold' },
   D: { x: 28, y: 8, town: 'frostmere', name: 'Frostmere' },
+  E: { x: 79, y: 38, town: 'mirage', name: 'Mirage' },
+  F: { x: 87, y: 24, town: 'aerie', name: 'Aerie' },
   1: { x: 8, y: 31, dungeon: 'hollow', name: 'Whisperwood Hollow' },
   2: { x: 35, y: 50, dungeon: 'shrine', name: 'Sunken Shrine' },
   3: { x: 52, y: 6, dungeon: 'mine', name: 'Emberdeep Mines' },
   4: { x: 60, y: 40, dungeon: 'spire', name: 'Hollow Spire' },
-  5: { x: 9, y: 12, dungeon: 'observatory', name: 'Starfall Observatory' }
+  5: { x: 9, y: 12, dungeon: 'observatory', name: 'Starfall Observatory' },
+  6: { x: 85, y: 45, dungeon: 'tomb', name: 'Tomb of the First King' }
 };
 const SHIP_HOME = { x: 40, y: 38 };
 const BRIDGE_Y = 43;
 function riverX(y) { return 29 + Math.round(Math.sin(y * 0.35) * 1.2); }
 
 function genWorld() {
-  const w = 72, h = 56;
+  const w = 98, h = 56;
   const tiles = [], region = [];
   const blobs = [
     { id: 'A', cx: 21, cy: 39, rx: 20, ry: 13, ok: (x, y) => y >= 25 && x <= 45 },
-    { id: 'B', cx: 44, cy: 12, rx: 24, ry: 8.5, ok: (x, y) => y <= 21 },
+    { id: 'B', cx: 44, cy: 12, rx: 24, ry: 8.5, ok: (x, y) => y <= 21 && x <= 69 },
+    { id: 'F', cx: 84, cy: 33, rx: 11, ry: 15, ok: (x, y) => x >= 73 },
     { id: 'C', cx: 60, cy: 40, rx: 7.5, ry: 6.5, ok: (x, y) => x >= 52 && y >= 32 },
     { id: 'E', cx: 9, cy: 12, rx: 5.5, ry: 4.5, ok: (x, y) => x <= 15 && y <= 20 }
   ];
@@ -2219,6 +2414,7 @@ function genWorld() {
     const e = fbm(x * 0.13, y * 0.13, 11), m = fbm(x * 0.17, y * 0.17, 23);
     let c = '.';
     if (reg === 'C') c = e > 0.68 ? '^' : m > 0.5 ? 'd' : 'q';
+    else if (reg === 'F') c = e > 0.66 ? 'm' : hash(x, y, 91) < 0.07 ? 'v' : 'z';
     else if (reg === 'B') {
       const snow = y < 10;
       if (e > 0.62) c = snow ? 'M' : '^'; else if (e > 0.57) c = snow ? '*' : 'n'; else if (m > 0.55) c = snow ? 'P' : 'T'; else c = snow ? '*' : '.';
@@ -2251,7 +2447,7 @@ function genWorld() {
     let x = x0, y = y0;
     const step = () => {
       const c = at(x, y);
-      if (/[A-D1-5]/.test(c)) return;
+      if (/[A-F1-6]/.test(c)) return;
       if (c === '~' || c === 'r') { if (allowWater && c === '~') { set(x, y, '='); region[y][x] = region[y][x] || 'A'; } return; }
       set(x, y, '=');
     };
@@ -2273,6 +2469,18 @@ function genWorld() {
   for (let y = 26; y <= 36; y++) for (let x = 3; x <= 14; x++) {
     if (region[y][x] === 'A' && tiles[y][x] !== '~' && tiles[y][x] !== 'r' && Math.hypot(x - 8, y - 31) < 4.6 + hash(x, y, 4) * 1.5) tiles[y][x] = 'T';
   }
+  // Sunscar: oasis by Mirage, palm groves
+  for (let y = 34; y <= 42; y++) for (let x = 75; x <= 84; x++) {
+    if (region[y][x] !== 'F' || tiles[y][x] === '~') continue;
+    const d = Math.hypot(x - 81, y - 37);
+    if (d < 1.6) tiles[y][x] = '~'; else if (d < 3.2 && hash(x, y, 5) < 0.6) tiles[y][x] = 'T'; else if (tiles[y][x] === 'm') tiles[y][x] = 'z';
+  }
+  // Skyreach: a valley walled in by mesas — reachable only from the air
+  for (let y = 18; y <= 30; y++) for (let x = 80; x <= 94; x++) {
+    const d = Math.hypot(x - 87, (y - 24) * 1.1);
+    if (d < 2.6) { tiles[y][x] = '.'; region[y][x] = 'G'; }
+    else if (d < 4.4) { tiles[y][x] = 'm'; region[y][x] = 'F'; }
+  }
   // place locations
   for (const k in WORLD_LOC) {
     const L = WORLD_LOC[k];
@@ -2292,6 +2500,7 @@ function genWorld() {
   road(38, 39, 35, 49, true, true);           // Halden -> Shrine
   road(40, 16, 51, 6, false, false);          // Ironhold -> Mines
   road(39, 15, 29, 8, false, true);           // Ironhold -> Frostmere
+  road(80, 39, 84, 45, false, true);          // Mirage -> Tomb
   // mountain ring for the mines
   for (let y = 2; y <= 10; y++) for (let x = 47; x <= 58; x++) {
     const d = Math.hypot(x - 52, y - 6);
@@ -2323,12 +2532,14 @@ function worldRegionAt(map, x, y) {
   if (reg === 'B') return 'r3';
   if (reg === 'C') return 'r4';
   if (reg === 'E') return 'r3';
+  if (reg === 'F' || reg === 'G') return 'r5';
   return 'r1';
 }
 function worldBattleBG(map, x, y) {
   const c = map.at(x, y), reg = map.region[y] && map.region[y][x];
   if (c === '~' || c === 'r') return 'sea';
   if (reg === 'C') return 'dusk';
+  if (reg === 'F' || reg === 'G') return 'desert';
   if (c === '*' || c === 'P' || c === 'M') return 'snow';
   if (c === 'T') return 'forest';
   if (c === 's') return 'beach';
@@ -2381,6 +2592,34 @@ const TOWN_DEFS = {
     water: [[15, 15, 3, 2]],
     decor: [[9, 9, 'l'], [14, 9, 'l'], [14, 12, 'w'], [7, 15, 'c'], [20, 16, 'P'], [3, 16, 'P'], [9, 12, 'P']]
   },
+  mirage: {
+    name: 'Mirage', w: 24, h: 18, border: 'm', theme: 'sand', music: 'town', loc: 'E',
+    exits: [[11, 17], [12, 17]],
+    buildings: [
+      { x: 2, y: 2, w: 6, h: 4, kind: 'inn', roof: '#c06a3a', sign: 'inn', id: 'inn', price: 150, wall: '#e8c898' },
+      { x: 10, y: 1, w: 5, h: 5, kind: 'hall', roof: '#3a8a8a', sign: 'hall', id: 'palace', wall: '#e8d0a8' },
+      { x: 17, y: 2, w: 5, h: 4, kind: 'shop', roof: '#8a3a5a', sign: 'item', id: 'items', shop: 'mirage_items', wall: '#e8c898' },
+      { x: 2, y: 10, w: 5, h: 4, kind: 'shop', roof: '#6a4a8a', sign: 'arms', id: 'arms', shop: 'mirage_arms', wall: '#e8c898' },
+      { x: 17, y: 10, w: 5, h: 4, kind: 'house', roof: '#c08a3a', id: 'house1', wall: '#e8c898' }
+    ],
+    paths: [[11, 6, 12, 17], [3, 6, 20, 7], [4, 14, 19, 14]],
+    water: [[9, 9, 6, 3]],
+    decor: [[8, 9, 't'], [15, 9, 't'], [8, 11, 't'], [15, 11, 't'], [5, 16, 'c'], [20, 16, 'c'], [9, 15, 'l'], [14, 15, 'l']]
+  },
+  aerie: {
+    name: 'Aerie', w: 24, h: 18, border: 'm', theme: 'grass', music: 'town', loc: 'F',
+    exits: [[11, 17], [12, 17]],
+    buildings: [
+      { x: 2, y: 2, w: 6, h: 4, kind: 'inn', roof: '#5a8ad0', sign: 'inn', id: 'inn', price: 200, chimney: true },
+      { x: 9, y: 1, w: 7, h: 5, kind: 'arena', roof: '#a03a2a', sign: 'arena', id: 'arena', wall: '#d8cfc0' },
+      { x: 17, y: 2, w: 5, h: 4, kind: 'shop', roof: '#3a8a5a', sign: 'item', id: 'items', shop: 'aerie_items' },
+      { x: 2, y: 10, w: 5, h: 4, kind: 'shop', roof: '#8a5a2a', sign: 'arms', id: 'arms', shop: 'aerie_arms' },
+      { x: 17, y: 10, w: 5, h: 4, kind: 'house', roof: '#7a5a9a', id: 'house1', chimney: true }
+    ],
+    paths: [[11, 6, 12, 17], [3, 6, 20, 7], [4, 14, 19, 14]],
+    water: [],
+    decor: [[9, 9, 'w'], [14, 9, 'l'], [9, 12, 'f'], [14, 12, 'f'], [5, 16, 't'], [19, 16, 't'], [8, 16, 'f'], [15, 16, 'f']]
+  },
   ironhold: {
     name: 'Ironhold', w: 26, h: 20, border: 'r', theme: 'stone', music: 'town', loc: 'C',
     exits: [[12, 19], [13, 19]],
@@ -2397,7 +2636,7 @@ const TOWN_DEFS = {
     decor: [[16, 13, 'a'], [24, 14, 'c'], [1, 9, 'l'], [24, 9, 'l'], [9, 17, 'l'], [16, 17, 'l'], [7, 9, 'P'], [18, 9, 'P']]
   }
 };
-const TOWN_SOLID = new Set(['t', 'P', 'r', '~', 'F', 'w', 'c', 'a', 'g', 'l']);
+const TOWN_SOLID = new Set(['t', 'P', 'r', '~', 'F', 'w', 'c', 'a', 'g', 'l', 'm']);
 function buildTown(id) {
   const d = TOWN_DEFS[id];
   const tiles = [];
@@ -2414,7 +2653,7 @@ function buildTown(id) {
   for (const [x, y, c] of d.decor || []) tiles[y][x] = c;
   for (const [x, y] of d.exits) tiles[y][x] = ':';
   const buildings = d.buildings.map(b => ({ ...b, doorX: b.x + Math.floor(b.w / 2) }));
-  if (d.theme === 'snow') for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) if (tiles[y][x] === 'f') tiles[y][x] = '.';
+  if (d.theme === 'snow' || d.theme === 'sand') for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) if (tiles[y][x] === 'f') tiles[y][x] = '.';
   const m = new GameMap({ id, kind: 'town', w: d.w, h: d.h, tiles, buildings, theme: d.theme, name: d.name, music: d.music, loc: d.loc });
   return m;
 }
@@ -2429,6 +2668,8 @@ const DUNGEONS = {
     loot: [['hipotion', 'hipotion', 'gold:900', 'bomb'], ['mythril_sword', 'star_rod', 'ether', 'plume'], ['mythril_mail', 'mythril_knife', 'elixir', 'star_robe']], boss: 'vesper', lantern: 'stone', lanternCol: '#ff6a2a' },
   spire: { name: 'Hollow Spire', theme: 'spire', floors: 3, w: 36, h: 28, seed: 404, enc: 'd4', bg: 'spire', loc: '4', deco2: 'k',
     loot: [['xpotion', 'hiether', 'shadow_garb', 'gold:3000'], ['dawn_plate', 'seraph_mace', 'ember_scepter', 'elixir'], ['dawnblade', 'shadow_fang', 'megalixir', 'xpotion']], boss: 'king', lantern: 'dawn', lanternCol: '#ffe08a' },
+  tomb: { name: 'Tomb of the First King', theme: 'tomb', floors: 3, w: 36, h: 28, seed: 606, enc: 'd6', bg: 'tomb', loc: '6', deco2: 'o',
+    loot: [['hiether', 'gold:5000', 'xpotion', 'desert_veil'], ['pharaoh_mace', 'sand_kris', 'elixir', 'megalixir'], ['nocturne', 'xpotion', 'hiether']], boss: 'firstking', lantern: 'sun', lanternCol: '#ffc04a' },
   observatory: { name: 'Starfall Observatory', theme: 'astral', floors: 3, w: 36, h: 28, seed: 505, enc: 'd5', bg: 'astral', loc: '5', deco2: 'k',
     loot: [['swift_boots', 'megalixir', 'gold:8000', 'xpotion'], ['ember_heart', 'celestia', 'astral_mace', 'elixir'], ['lightbringer', 'comet_edge', 'megalixir', 'hiether']], boss: 'wyrm', lantern: 'fifth', lanternCol: '#a8d8ff' }
 };
@@ -2574,7 +2815,7 @@ function genDungeonFloor(did, f) {
 const G = {
   party: [], inv: {}, gold: 0, flags: {}, playTime: 0,
   mapId: 'world', x: 0, y: 0, dir: 'down',
-  ship: null, onShip: false, encSteps: 20, lastInn: null, seen: {}, killed: {},
+  ship: null, onShip: false, airship: null, inAir: false, carry: null, encSteps: 20, lastInn: null, seen: {}, killed: {},
   scene: null, maps: {}
 };
 function makeMember(id, level = 1) {
@@ -2607,6 +2848,7 @@ function inParty(id) { return G.party.some(m => m.id === id); }
 function partyLevel() { return Math.round(G.party.reduce((a, m) => a + m.level, 0) / G.party.length); }
 function addMember(id) {
   if (inParty(id)) return;
+  if (G.carry && G.carry[id]) { const m = { ...G.carry[id], status: {} }; m.hp = maxHp(m); m.mp = maxMp(m); G.party.push(m); return; }
   const lv = Math.max(1, partyLevel());
   G.party.push(makeMember(id, lv));
 }
@@ -2635,7 +2877,7 @@ function saveGame() {
     party: G.party.map(m => ({ id: m.id, level: m.level, xp: m.xp, hp: m.hp, mp: m.mp, weapon: m.weapon, armor: m.armor, acc: m.acc || null })),
     seen: G.seen, killed: G.killed,
     inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime,
-    mapId: G.mapId, x: G.x, y: G.y, dir: G.dir, ship: G.ship, onShip: G.onShip, lastInn: G.lastInn
+    mapId: G.mapId, x: G.x, y: G.y, dir: G.dir, ship: G.ship, onShip: G.onShip, lastInn: G.lastInn, airship: G.airship, inAir: G.inAir, carry: G.carry
   };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); return true; } catch (e) { return false; }
 }
@@ -2648,7 +2890,7 @@ function loadGame() {
   G.seen = d.seen || {}; G.killed = d.killed || {};
   G.inv = d.inv || {}; G.gold = d.gold || 0; G.flags = d.flags || {}; G.playTime = d.playTime || 0;
   G.mapId = d.mapId; G.x = d.x; G.y = d.y; G.dir = d.dir || 'down';
-  G.ship = d.ship || null; G.onShip = !!d.onShip; G.lastInn = d.lastInn || null;
+  G.ship = d.ship || null; G.onShip = !!d.onShip; G.lastInn = d.lastInn || null; G.airship = d.airship || null; G.inAir = !!d.inAir; G.carry = d.carry || null;
   return true;
 }
 function fmtTime(s) { s = Math.floor(s); const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60; return `${h}:${String(m).padStart(2, '0')}`; }
@@ -2666,6 +2908,7 @@ function getMap(id) {
   let m;
   if (id === 'world') m = genWorld();
   else if (TOWN_DEFS[id]) m = buildTown(id);
+  else if (id.startsWith('in:')) m = buildInterior(id);
   else { const [did, f] = id.split(':'); m = genDungeonFloor(did, parseInt(f)); }
   G.maps[id] = m;
   return m;
@@ -2673,6 +2916,9 @@ function getMap(id) {
 function populate(map) {
   map.entities = [];
   if (map.kind === 'world') applyWorldFlags(map);
+  if (map.kind === 'interior') {
+    for (const n of interiorNpcs(map)) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
+  }
   if (map.kind === 'town') {
     for (const n of townNpcs(map.id)) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
   } else if (map.kind === 'dungeon') {
@@ -2697,12 +2943,13 @@ const Field = {
     populate(map);
     G.scene = this;
     this.playMusic();
-    this.banner = map.kind !== 'world' ? { text: map.name, t: 2.6 } : null;
+    this.banner = map.kind === 'town' || map.kind === 'dungeon' ? { text: map.name, t: 2.6 } : null;
   },
   playMusic() {
     const m = this.map;
-    if (m.kind === 'world') Audio_.play(G.onShip ? 'sea' : 'world');
-    else if (m.kind === 'town') Audio_.play('town');
+    if (m.kind === 'world') { const reg = m.region[G.y] && m.region[G.y][G.x]; Audio_.play(G.inAir ? 'sky' : G.onShip ? 'sea' : (reg === 'F' || reg === 'G') ? 'desert' : 'world'); }
+    else if (m.kind === 'interior') Audio_.play('town');
+    else if (m.kind === 'town') Audio_.play(m.id === 'mirage' ? 'desert' : 'town');
     else Audio_.play(m.dungeon === 'spire' ? 'spire' : 'dungeon');
   },
   entityAt(x, y) { return this.map.entities.find(e => e.x === x && e.y === y && e.kind !== 'ghost'); },
@@ -2710,7 +2957,8 @@ const Field = {
   walkable(x, y) {
     const m = this.map, c = m.at(x, y);
     if (c === undefined) return false;
-    if (m.kind === 'world') return !(c === '~' || c === 'r' || c === '^' || c === 'M' || c === 'x');
+    if (m.kind === 'world') return !(c === '~' || c === 'r' || c === '^' || c === 'M' || c === 'x' || c === 'm');
+    if (m.kind === 'interior') return !INT_SOLID.has(c) && c !== '#';
     if (m.kind === 'town') return !TOWN_SOLID.has(c) && !this.buildingAt(x, y);
     return !DUNGEON_SOLID.has(c);
   },
@@ -2723,6 +2971,10 @@ const Field = {
     }
   },
   async interact() {
+    if (this.map.kind === 'world') {
+      if (G.inAir) { runScript(landAirship); return; }
+      if (G.airship && G.flags.airship && !G.onShip && G.airship.x === G.x && G.airship.y === G.y) { boardAirship(); return; }
+    }
     const [dx, dy] = DIRS[G.dir];
     const tx = G.x + dx, ty = G.y + dy;
     const e = this.entityAt(tx, ty);
@@ -2735,6 +2987,7 @@ const Field = {
       else if (e.kind === 'boss') runScript(() => bossEncounter(e.did));
       return;
     }
+    if (this.map.kind === 'interior') { runScript(() => interiorInteract(tx, ty, dx, dy)); return; }
     if (this.map.kind === 'town') {
       const b = this.buildingAt(tx, ty);
       if (b && tx === b.doorX && ty === b.y + b.h - 1) runScript(() => doorEvent(this.map.id, b));
@@ -2750,6 +3003,8 @@ const Field = {
     if (m.kind === 'world') {
       const c = m.at(nx, ny);
       if (c === undefined) return this.bump();
+      if (G.inAir) return this.startMove(nx, ny, 'air');
+      if (!G.onShip && G.flags.airship && G.airship && G.airship.x === nx && G.airship.y === ny && !/[A-F1-6]/.test(c)) { this.startMove(nx, ny); this._board = true; return; }
       if (G.onShip) {
         if (c === '~' || c === 'r') return this.startMove(nx, ny, true);
         if (this.walkable(nx, ny)) {
@@ -2780,7 +3035,7 @@ const Field = {
   bump() { if (this.t - (this._bt || 0) > 0.25) { Audio_.sfx('bump'); this._bt = this.t; } },
   startMove(nx, ny, ship = false) {
     const run = Input.h('run');
-    this.anim = { fx: G.x, fy: G.y, tx: nx, ty: ny, t: 0, dur: ship ? 0.11 : run ? 0.1 : 0.16 };
+    this.anim = { fx: G.x, fy: G.y, tx: nx, ty: ny, t: 0, dur: ship === 'air' ? 0.075 : ship ? 0.11 : run ? 0.1 : 0.16 };
   },
   tick(dt) {
     this.t += dt;
@@ -2792,12 +3047,14 @@ const Field = {
       if (this.anim.t >= 1) {
         G.x = this.anim.tx; G.y = this.anim.ty;
         if (G.onShip) G.ship = { x: G.x, y: G.y, dir: G.dir };
+        if (G.inAir) G.airship = { x: G.x, y: G.y, dir: G.dir };
         this.anim = null;
+        if (this._board) { this._board = false; boardAirship(); return; }
         this.onStep();
       }
     }
     // NPC wandering
-    if (this.map.kind === 'town') {
+    if (this.map.kind === 'town' || this.map.kind === 'interior') {
       for (const e of this.map.entities) {
         if (e.kind !== 'npc') continue;
         if (e.mv) {
@@ -2823,10 +3080,16 @@ const Field = {
   onStep() {
     const m = this.map;
     if (m.kind === 'world') {
+      if (G.inAir) return;
       const c = m.at(G.x, G.y);
-      if (/[A-D1-5]/.test(c) && !G.onShip) { runScript(() => enterLocation(c)); return; }
+      const reg = m.region[G.y] && m.region[G.y][G.x];
+      if (!G.onShip && Audio_.curName !== 'world' && Audio_.curName !== 'desert') this.playMusic();
+      else if (!G.onShip && ((reg === 'F' || reg === 'G') !== (Audio_.curName === 'desert'))) this.playMusic();
+      if (/[A-F1-6]/.test(c) && !G.onShip) { runScript(() => enterLocation(c)); return; }
       if (G.onShip && m.whirl && G.x === m.whirl.x && G.y === m.whirl.y && !G.flags.leviathan) { runScript(whirlpoolEvent); return; }
       this.encounterCheck(c === 'T' || c === 'P' || c === 'd' || c === 'n' ? 1.5 : 1);
+    } else if (m.kind === 'interior') {
+      if (m.at(G.x, G.y) === 'E') { runScript(exitInterior); return; }
     } else if (m.kind === 'dungeon') {
       const c = m.at(G.x, G.y);
       if (c === '<') { runScript(() => stairs(-1)); return; }
@@ -2865,13 +3128,14 @@ const Field = {
   draw(g) {
     const m = this.map, t = this.t;
     const { cx, cy, px, py } = this.camera();
-    g.fillStyle = m.kind === 'dungeon' ? '#000' : m.kind === 'town' ? (m.theme === 'stone' ? '#5f574f' : '#2f6a2a') : WPAL.water;
+    g.fillStyle = m.kind === 'dungeon' || m.kind === 'interior' ? '#000' : m.kind === 'town' ? (m.theme === 'stone' ? '#5f574f' : '#2f6a2a') : WPAL.water;
     g.fillRect(0, 0, W, H);
     const x0 = Math.floor(cx / TS) - 1, y0 = Math.floor(cy / TS) - 1, x1 = x0 + VW + 3, y1 = y0 + VH + 3;
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
       const sx = x * TS - cx, sy = y * TS - cy;
       if (m.kind === 'world') drawWorldTile(g, m, x, y, sx, sy, t);
       else if (m.kind === 'town') { if (m.at(x, y) !== undefined) drawTownTile(g, m, x, y, sx, sy, t); }
+      else if (m.kind === 'interior') { if (m.at(x, y) !== undefined) drawInteriorTile(g, m, x, y, sx, sy, t); }
       else drawDungeonTile(g, m, x, y, sx, sy, t);
     }
     // sortable drawables
@@ -2884,6 +3148,10 @@ const Field = {
       list.push({ y: ey * TS + TS / 2, draw: () => drawEntity(g, e, sx, sy, t) });
     }
     if (m.kind === 'world' && m.whirl && !G.flags.leviathan) { const wx = m.whirl.x * TS - cx + 16, wy = m.whirl.y * TS - cy + 16; if (wx > -40 && wy > -40 && wx < W + 40 && wy < H + 40) list.push({ y: -1e6, draw: () => drawWhirl(g, wx, wy, t) }); }
+    if (m.kind === 'world' && G.airship && G.flags.airship && !G.inAir) {
+      const sx = G.airship.x * TS - cx + TS / 2, sy = G.airship.y * TS - cy + TS - 2;
+      list.push({ y: G.airship.y * TS + 12, draw: () => { ellipse(g, sx, sy, 14, 4, 'rgba(0,0,0,.25)'); drawAirship(g, sx, sy - 4, t, G.airship.dir, false); } });
+    }
     if (m.kind === 'world' && G.ship && G.flags.ship && !G.onShip) {
       const sx = G.ship.x * TS - cx + TS / 2, sy = G.ship.y * TS - cy + TS - 4;
       list.push({ y: G.ship.y * TS + 10, draw: () => drawShip(g, sx, sy, t, G.ship.dir) });
@@ -2892,7 +3160,8 @@ const Field = {
     const psx = px - cx + TS / 2, psy = py - cy + TS - 2;
     list.push({
       y: py + TS / 2 + 0.5, draw: () => {
-        if (G.onShip) drawShip(g, psx, psy - 2, t, G.dir);
+        if (G.inAir) { ellipse(g, psx, psy, 16, 5, 'rgba(0,0,0,.25)'); drawAirship(g, psx, psy - 26, t, G.dir, true); }
+        else if (G.onShip) drawShip(g, psx, psy - 2, t, G.dir);
         else drawChar(g, HEROES[G.party[0].id].look, psx, psy, G.dir, step, 1, null, t);
       }
     });
@@ -2936,6 +3205,7 @@ const Field = {
   }
 };
 function drawEntity(g, e, sx, sy, t) {
+  if (e.kind === 'npc' && e.catSprite) { drawCat(g, sx, sy, t); return; }
   if (e.kind === 'npc') {
     const step = e.mv ? (Math.floor(t * 8) % 2 ? 1 : 2) : 0;
     drawChar(g, e.look, sx, sy, e.dir, step, 1, null, t);
@@ -3035,28 +3305,194 @@ const GameOverScene = {
   }
 };
 
+// ---------- airship ----------
+function boardAirship() {
+  G.inAir = true; G.onShip = false;
+  Audio_.sfx('buff'); Audio_.play('sky');
+  toast('Press Enter to land');
+}
+async function landAirship() {
+  const m = Field.map, c = m.at(G.x, G.y);
+  const okLand = Field.walkable(G.x, G.y) && c !== 'T' && c !== 'P' && c !== 'd';
+  if (!okLand) { Audio_.sfx('buzz'); toast(Field.walkable(G.x, G.y) ? "Can't land in a forest" : "Can't land here"); return; }
+  G.inAir = false; G.airship = { x: G.x, y: G.y, dir: G.dir };
+  Audio_.sfx('stairs');
+  Field.playMusic();
+  if (/[A-F1-6]/.test(c)) await enterLocation(c);
+}
+
+'use strict';
+// ============================================================
+//  INTERIORS — walk inside every building
+// ============================================================
+// Legend: # wall top, = wall face, w window, F fireplace, X shelf, M banner/painting
+//         . floor, R rug, K counter, B bed, T table, c chair, b barrel, p pot, P plant,
+//         x crate, A altar, W pew, I bars, O telescope, a anvil, E exit door
+const INT_SOLID = new Set(['#', '=', 'w', 'F', 'X', 'M', 'K', 'B', 'T', 'b', 'p', 'P', 'x', 'A', 'W', 'I', 'O', 'a']);
+const INT_TEMPLATES = {
+  inn: ['#############', '#X=w=F=w=X=M#', '#B.B........#', '#.......KKKK#', '#...........#', '#.TT....b..p#', '#.TT........#', '#.....RRR...#', '#.P...RRR..P#', '######E######'],
+  shop: ['#############', '#X=X=w=X=X=X#', '#x....k....x#', '#KKKKKKKKKKK#', '#...........#', '#.b.......x.#', '#...RRRRR...#', '#.p.RRRRR.P.#', '#...........#', '######E######'],
+  house: ['#############', '#X=w=F=w=X=M#', '#B......TT..#', '#B......cc..#', '#...........#', '#..RRRR...b.#', '#..RRRR.....#', '#.p.......P.#', '#...........#', '######E######'],
+  chapel: ['#############', '#=w=M=w=M=w=#', '#.....A.....#', '#...........#', '#.WWW...WWW.#', '#...........#', '#.WWW...WWW.#', '#...........#', '#.P..RRR..P.#', '######E######'],
+  hall: ['#############', '#X=X=M=M=X=X#', '#.....RR....#', '#..TTTTTT...#', '#..cccccc...#', '#.....RR....#', '#.x...RR..x.#', '#.P...RR..P.#', '#.....RR....#', '######E######'],
+  jail: ['#############', '#=====M=====#', '#B..I.......#', '#...I..TT...#', '#IIII..cc...#', '#...........#', '#.x.......x.#', '#...........#', '#.........b.#', '######E######'],
+  arena: ['#############', '#=M=w=M=w=M=#', '#x....k....x#', '#..KKKKKKK..#', '#...........#', '#.x.......x.#', '#.....RR....#', '#.P...RR..P.#', '#.....RR....#', '######E######'],
+  study: ['#############', '#X=X=w=w=X=X#', '#.....O.....#', '#.T.........#', '#.T......B..#', '#...........#', '#.x..RRR..p.#', '#....RRR....#', '#.P.......P.#', '######E######'],
+  forge: ['#############', '#X=X=F=F=X=X#', '#x....k...a.#', '#KKKKKKKKKKK#', '#...........#', '#.b.......x.#', '#...RRRRR...#', '#.x.RRRRR.b.#', '#...........#', '######E######']
+};
+function interiorKind(town, b) {
+  if (b.kind === 'inn') return 'inn';
+  if (b.kind === 'chapel') return 'chapel';
+  if (b.kind === 'jail') return 'jail';
+  if (b.kind === 'arena') return 'arena';
+  if (b.kind === 'hall') return 'hall';
+  if (b.id === 'wren') return 'study';
+  if (b.shop) return b.sign === 'arms' && (town === 'ironhold' || town === 'frostmere') ? 'forge' : 'shop';
+  return 'house';
+}
+function buildInterior(id) {
+  const [, town, bid] = id.split(':');
+  const b = TOWN_DEFS[town].buildings.find(x => x.id === bid);
+  const kind = interiorKind(town, b);
+  const tiles = INT_TEMPLATES[kind].map(r => r.split(''));
+  let keeper = null;
+  tiles.forEach((r, y) => r.forEach((c, x) => { if (c === 'k') { keeper = { x, y }; r[x] = '.'; } }));
+  const theme = TOWN_DEFS[town].theme === 'stone' || kind === 'jail' || kind === 'chapel' ? 'stone' : TOWN_DEFS[town].theme === 'sand' ? 'sand' : 'wood';
+  const names = { inn: 'Inn', shop: b.sign === 'arms' ? 'Armory' : 'Item Shop', chapel: 'Chapel', jail: 'Jail', arena: 'The Arena', hall: 'Hall', study: 'Observatory Hut', forge: 'Smithy', house: 'House' };
+  return new GameMap({ id, kind: 'interior', town, bid, building: b, ikind: kind, keeper, w: tiles[0].length, h: tiles.length, tiles, theme, name: names[kind] });
+}
+async function enterInterior(town, b) {
+  const m = getMap(`in:${town}:${b.id}`);
+  const ex = m.tiles[m.h - 1].indexOf('E');
+  await changeMap(m.id, ex, m.h - 2, 'up');
+}
+async function exitInterior() {
+  const m = Field.map, b = m.building;
+  await changeMap(m.town, b.x + Math.floor(b.w / 2), b.y + b.h, 'down');
+  Field.banner = null;
+}
+const SEARCH_POOLS = {
+  brightwater: ['potion', 'antidote', 'gold:30', 'potion'],
+  halden: ['hipotion', 'ether', 'gold:120', 'remedy'],
+  ironhold: ['hipotion', 'ether', 'gold:300', 'remedy', 'bomb'],
+  frostmere: ['xpotion', 'hiether', 'gold:500', 'remedy'],
+  mirage: ['xpotion', 'elixir', 'gold:800', 'hiether'],
+  aerie: ['elixir', 'xpotion', 'gold:1200', 'megalixir']
+};
+async function interiorInteract(tx, ty, dx, dy) {
+  const m = Field.map, c = m.at(tx, ty);
+  // talk across counters and bars
+  if (c === 'K' || c === 'I' || c === 'T') {
+    const e = Field.entityAt(tx + dx, ty + dy);
+    if (e && e.talk) { e.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[G.dir]; await e.talk(e); refreshEntities(); return; }
+    if (c !== 'T') { await narrate(c === 'K' ? 'A polished counter.' : 'Cold iron bars.'); return; }
+    await narrate('A sturdy table, set with plates and candles.'); return;
+  }
+  if (c === 'b' || c === 'p' || c === 'x') {
+    const key = `srch:${m.id}:${tx},${ty}`;
+    const what = { b: 'barrel', p: 'pot', x: 'crate' }[c];
+    if (G.flags[key] || hash(tx, ty, m.id.length * 7 + m.town.length) > 0.55) { G.flags[key] = true; await narrate(`You search the ${what}... nothing but dust.`); return; }
+    G.flags[key] = true;
+    const pool = SEARCH_POOLS[m.town] || SEARCH_POOLS.brightwater;
+    const loot = pool[Math.floor(hash(tx * 3, ty * 5, m.id.length) * pool.length)];
+    Audio_.sfx('chest');
+    if (loot.startsWith('gold:')) { const n = parseInt(loot.slice(5)); G.gold += n; await narrate(`You search the ${what}... found ${n} gold!`); }
+    else { addItem(loot); await narrate(`You search the ${what}... found ${ITEMS[loot].name}!`); }
+    return;
+  }
+  if (c === 'B') {
+    if (m.town === 'brightwater' && m.bid === 'arinhouse') {
+      const k = await choose(null, 'Your own bed. Rest a while?', ['Rest', 'Not now'], 1);
+      if (k === 0) { await fadeTo(1, 500); Audio_.sfx('inn'); healAll(); G.lastInn = { town: 'brightwater' }; await wait(1200); await fadeTo(0, 500); await narrate('You slept in your own bed. HP and MP restored.'); }
+      return;
+    }
+    await narrate(m.ikind === 'jail' ? 'A lumpy prison cot.' : 'A neatly made bed. It isn\'t yours.'); return;
+  }
+  if (c === 'O') { await narrate(G.flags.lantern3 ? 'Through the brass telescope the sky is crowded with stars. One constellation, the Lamplighter, has a gap where a fifth star should be.' + (G.flags.lantern5 ? ' ...No — it\'s there now, burning bright.' : '') : 'You peer through the telescope. Darkness. Wren has scribbled "TOO DARK!!" on a note beside it.'); return; }
+  if (c === 'X') { await narrate(pick(['Dusty books: "A History of the Four Flames", "Lamplighting for Beginners", "101 Uses for Goblin Teeth".', 'A shelf of jars, labels faded.', 'Old ledgers. Someone owes someone else a goat.'])); return; }
+  if (c === 'F') { await narrate('The fire crackles warmly.'); return; }
+  if (c === 'A') { await narrate('An altar to the Sea Mother, strewn with shells.'); return; }
+  if (c === 'a') { await narrate('A heavy anvil, still warm.'); return; }
+  if (c === 'M') { await narrate('A faded tapestry of four flames around a fifth.'); return; }
+  if (c === 'w') { await narrate('Through the window you can see the street outside.'); return; }
+}
+// ---------- drawing ----------
+const IPAL = {
+  wood: { floor: '#b88a56', floor2: '#ac7e4c', line: '#8a6038', top: '#3a2a1e', face: '#d8c098', trim: '#7a5030' },
+  stone: { floor: '#9a9a96', floor2: '#90908c', line: '#6a6a66', top: '#2a2a2e', face: '#b8b4a8', trim: '#6a6a72' },
+  sand: { floor: '#d8b880', floor2: '#cfae76', line: '#a8844a', top: '#5a3a1e', face: '#ecd6a8', trim: '#a06a3a' }
+};
+function drawInteriorTile(g, m, x, y, px, py, t) {
+  const P = IPAL[m.theme], c = m.at(x, y);
+  const floor = () => {
+    g.fillStyle = m.theme === 'wood' ? ((y % 2) ? P.floor : P.floor2) : ((x + y) % 2 ? P.floor : P.floor2); g.fillRect(px, py, TS, TS);
+    g.strokeStyle = P.line; g.lineWidth = 1;
+    if (m.theme === 'wood') { g.beginPath(); g.moveTo(px, py + 0.5); g.lineTo(px + TS, py + 0.5); const o = (y % 2) * 16 + 8; g.moveTo(px + o, py); g.lineTo(px + o, py + TS); g.stroke(); }
+    else g.strokeRect(px + 0.5, py + 0.5, TS - 1, TS - 1);
+    if (m.at(x, y - 1) && '#=wFXM'.includes(m.at(x, y - 1))) { g.fillStyle = 'rgba(0,0,0,.22)'; g.fillRect(px, py, TS, 6); }
+  };
+  if (c === '#') {
+    g.fillStyle = P.top; g.fillRect(px, py, TS, TS);
+    if (y === m.h - 1 || x === 0 || x === m.w - 1) { g.fillStyle = 'rgba(255,255,255,.05)'; g.fillRect(px, py, TS, 3); }
+    return;
+  }
+  if ('=wFXM'.includes(c)) {
+    g.fillStyle = P.face; g.fillRect(px, py, TS, TS);
+    g.fillStyle = P.trim; g.fillRect(px, py + TS - 9, TS, 9); g.fillRect(px, py, TS, 3);
+    if (m.theme === 'wood') { g.strokeStyle = 'rgba(120,80,40,.25)'; g.lineWidth = 1; for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(px + i * 8, py + 3); g.lineTo(px + i * 8, py + TS - 9); g.stroke(); } }
+    if (c === 'w') { rrect(g, px + 6, py + 4, 20, 15, 2, '#9ad0ff', P.trim, 2.5); line(g, px + 16, py + 4, px + 16, py + 19, P.trim, 1.5); line(g, px + 6, py + 11, px + 26, py + 11, P.trim, 1.5); }
+    if (c === 'X') { rrect(g, px + 2, py + 2, 28, 24, 1, '#6a4422', OUT, 1); for (let r = 0; r < 3; r++) { g.fillStyle = '#4a2a12'; g.fillRect(px + 3, py + 9 + r * 7, 26, 1.5); for (let k = 0; k < 6; k++) { g.fillStyle = ['#a03a2a', '#3a6aa0', '#3a8a4a', '#c0a040'][(k + r + x) % 4]; g.fillRect(px + 4 + k * 4, py + 3 + r * 7, 3, 6); } } }
+    if (c === 'F') { rrect(g, px + 2, py + 6, 28, 22, 2, '#8a7a6a', OUT, 1.2); rrect(g, px + 7, py + 12, 18, 16, 6, '#1a0c06'); const f = Math.sin(t * 12 + x) * 1.5; poly(g, [px + 10, py + 27, px + 16 + f, py + 14 - f, px + 22, py + 27], '#ff8a2a'); poly(g, [px + 13, py + 27, px + 16, py + 19, px + 19, py + 27], '#ffe08a'); g.save(); g.globalAlpha = 0.18; circle(g, px + 16, py + 22, 20, '#ffb04a'); g.restore(); }
+    if (c === 'M') { rrect(g, px + 6, py + 3, 20, 20, 1, '#8a3a3a', '#e8c24a', 1.5); for (let i = 0; i < 4; i++) circle(g, px + 10 + (i % 2) * 12, py + 8 + Math.floor(i / 2) * 10, 2, '#ffb04a'); circle(g, px + 16, py + 13, 2.4, '#a8d8ff'); }
+    return;
+  }
+  if (c === 'E') { g.fillStyle = P.top; g.fillRect(px, py, TS, TS); rrect(g, px + 4, py, TS - 8, TS - 2, 2, '#e8d8a8', null); g.fillStyle = 'rgba(255,240,200,.5)'; g.fillRect(px + 6, py + 2, TS - 12, TS - 6); poly(g, [px + 11, py + 12, px + 21, py + 12, px + 16, py + 20], '#8a6038'); return; }
+  floor();
+  switch (c) {
+    case 'R': { g.fillStyle = '#a03a3a'; g.fillRect(px, py, TS, TS); g.strokeStyle = '#e8c24a'; g.lineWidth = 1.5; const L = m.at(x - 1, y) !== 'R', Rr = m.at(x + 1, y) !== 'R', U = m.at(x, y - 1) !== 'R', D = m.at(x, y + 1) !== 'R'; g.beginPath(); if (L) { g.moveTo(px + 3, py); g.lineTo(px + 3, py + TS); } if (Rr) { g.moveTo(px + TS - 3, py); g.lineTo(px + TS - 3, py + TS); } if (U) { g.moveTo(px, py + 3); g.lineTo(px + TS, py + 3); } if (D) { g.moveTo(px, py + TS - 3); g.lineTo(px + TS, py + TS - 3); } g.stroke(); break; }
+    case 'K': { rrect(g, px, py + 6, TS, 24, 1, '#8a5a2a', OUT, 1); g.fillStyle = '#b07a3a'; g.fillRect(px, py + 6, TS, 7); if (hash(x, y, 2) < 0.4) { rrect(g, px + 8, py - 2, 8, 9, 3, '#3ab0e0', OUT, 1); } break; }
+    case 'B': { rrect(g, px + 3, py + 1, TS - 6, TS - 2, 3, '#7a4a22', OUT, 1.2); rrect(g, px + 5, py + 3, TS - 10, 8, 3, '#fff', null); rrect(g, px + 5, py + 12, TS - 10, TS - 15, 2, m.theme === 'stone' ? '#7a7a8a' : '#4a6ac0', null); break; }
+    case 'T': { const L = m.at(x - 1, y) === 'T', Rr = m.at(x + 1, y) === 'T'; g.fillStyle = '#8a5a2a'; g.fillRect(px + (L ? 0 : 3), py + 6, TS - (L ? 0 : 3) - (Rr ? 0 : 3), 18); g.fillStyle = '#a8743a'; g.fillRect(px + (L ? 0 : 3), py + 6, TS - (L ? 0 : 3) - (Rr ? 0 : 3), 5); if (!L) line(g, px + 5, py + 24, px + 5, py + 30, '#5a3a1a', 2.5); if (!Rr) line(g, px + TS - 5, py + 24, px + TS - 5, py + 30, '#5a3a1a', 2.5); if (hash(x, y, 4) < 0.5) { circle(g, px + 16, py + 10, 4, '#e8e0d0', OUT, 1); } break; }
+    case 'c': { rrect(g, px + 9, py + 10, 14, 12, 2, '#9a6a3a', OUT, 1); rrect(g, px + 9, py + 4, 14, 6, 2, '#7a4a22', OUT, 1); break; }
+    case 'b': { ellipse(g, px + 16, py + 28, 10, 3, 'rgba(0,0,0,.25)'); rrect(g, px + 6, py + 6, 20, 22, 6, '#9a6a3a', OUT, 1.2); line(g, px + 6, py + 12, px + 26, py + 12, '#5a3a1a', 2); line(g, px + 6, py + 22, px + 26, py + 22, '#5a3a1a', 2); break; }
+    case 'p': { ellipse(g, px + 16, py + 28, 9, 3, 'rgba(0,0,0,.25)'); g.beginPath(); g.moveTo(px + 11, py + 8); g.quadraticCurveTo(px + 4, py + 20, px + 10, py + 28); g.lineTo(px + 22, py + 28); g.quadraticCurveTo(px + 28, py + 20, px + 21, py + 8); g.closePath(); g.fillStyle = '#c06a3a'; g.fill(); g.strokeStyle = OUT; g.lineWidth = 1.2; g.stroke(); rrect(g, px + 10, py + 6, 12, 4, 2, '#a05a2a', OUT, 1); break; }
+    case 'x': { rrect(g, px + 4, py + 8, 24, 20, 1, '#b8844a', OUT, 1.2); line(g, px + 4, py + 8, px + 28, py + 28, '#7a5428', 1.2); line(g, px + 28, py + 8, px + 4, py + 28, '#7a5428', 1.2); break; }
+    case 'P': { rrect(g, px + 10, py + 18, 12, 11, 2, '#a0502a', OUT, 1); circle(g, px + 16, py + 12, 8, '#3f8a3a', OUT, 1); circle(g, px + 12, py + 9, 4, '#5fae50'); break; }
+    case 'A': { rrect(g, px + 2, py + 8, TS - 4, 20, 2, '#e8eef4', OUT, 1.2); g.fillStyle = '#3a8fd0'; g.fillRect(px + 2, py + 14, TS - 4, 3); circle(g, px + 16, py + 4, 4, `rgba(255,220,120,${0.6 + 0.4 * Math.sin(t * 3)})`); break; }
+    case 'W': { rrect(g, px, py + 10, TS, 10, 1, '#8a5a2a', OUT, 1); g.fillStyle = '#6a4020'; g.fillRect(px, py + 18, TS, 6); break; }
+    case 'I': { for (let i = 0; i < 4; i++) line(g, px + 4 + i * 8, py, px + 4 + i * 8, py + TS, '#5a5a66', 2.5); line(g, px, py + 4, px + TS, py + 4, '#5a5a66', 2.5); break; }
+    case 'O': { line(g, px + 10, py + 30, px + 16, py + 18, '#5a3a1f', 2); line(g, px + 22, py + 30, px + 16, py + 18, '#5a3a1f', 2); g.save(); g.translate(px + 16, py + 16); g.rotate(-0.7); rrect(g, -4, -16, 8, 22, 3, '#c8a040', OUT, 1.2); g.restore(); break; }
+    case 'a': { rrect(g, px + 6, py + 12, 20, 6, 2, '#3a3a40', OUT, 1); rrect(g, px + 12, py + 18, 8, 10, 1, '#2a2a30', OUT, 1); break; }
+  }
+}
+
 'use strict';
 // ============================================================
 //  BATTLE — classic turn-based, side view
 // ============================================================
 const BATTLE_GROUND = 300;
+const BG_SHIFT = 84; // raise the horizon so everyone stands on the ground
+let BATTLE_PARTY = null;
+function BP() { return BATTLE_PARTY || G.party; }
 class Battle {
   constructor(ids, opts) {
+    BATTLE_PARTY = G.party.slice(0, 4);
     this.opts = opts; this.bg = opts.bg || 'plains'; this.t = 0;
     this.fx = []; this.nums = []; this.msg = null; this.active = -1; this.flash = null; this.shake = 0;
     const counts = {};
     ids.forEach(id => counts[id] = (counts[id] || 0) + 1);
     const seen = {};
     this.enemies = ids.map(id => {
-      const d = MONSTERS[id];
+      const d = ngScale(MONSTERS[id]);
       seen[id] = (seen[id] || 0) + 1;
       const name = counts[id] > 1 ? `${d.name} ${String.fromCharCode(64 + seen[id])}` : d.name;
       return { id, def: d, name, bs: d.boss ? (d.fam === 'king' || d.fam === 'king2' ? 1 : 1.15) : 1.35, hp: d.hp, maxhp: d.hp, alive: true, flash: 0, shake: 0, alpha: 1, dying: 0, status: {}, lunge: 0, stolen: false };
     });
     this.layout();
     ids.forEach(id => G.seen[id] = 1);
-    this.pa = G.party.map(() => ({ dx: 0, pose: null, flash: 0, shake: 0, defend: false, jump: 0 }));
+    this.pa = BP().map(() => ({ dx: 0, pose: null, flash: 0, shake: 0, defend: false, jump: 0 }));
     this.buffs = { rally: 0, barrier: 0 };
+    this.reraised = new Set();
     this.intro = 0;
   }
   layout() {
@@ -3072,11 +3508,11 @@ class Battle {
       x += widths[i] * k;
     });
   }
-  partyXY(i) { const n = G.party.length; const y0 = n >= 4 ? 166 : 186; return { x: 486 + i * 16, y: y0 + i * 50 }; }
+  partyXY(i) { const n = BP().length; const gap = n >= 4 ? 40 : 48; const y0 = n >= 4 ? 214 : 228; return { x: 466 + i * 26, y: y0 + i * gap }; }
   enemyCenter(e) { return { x: e.x, y: e.y - monsterHeight(e.def) * e.bs * 0.5 }; }
-  memberCenter(i) { const p = this.partyXY(i); return { x: p.x + this.pa[i].dx, y: p.y - 30 }; }
+  memberCenter(i) { const p = this.partyXY(i); return { x: p.x + this.pa[i].dx, y: p.y - 28 }; }
   liveEnemies() { return this.enemies.filter(e => e.alive); }
-  liveParty() { return G.party.filter(alive); }
+  liveParty() { return BP().filter(alive); }
   tick(dt) {
     this.t += dt; this.intro = Math.min(1, this.intro + dt * 2.5);
     for (const e of this.enemies) {
@@ -3094,7 +3530,8 @@ class Battle {
   draw(g) {
     g.save();
     if (this.shake > 0) g.translate(rnd(-4, 4) * this.shake * 3, rnd(-3, 3) * this.shake * 3);
-    drawBattleBG(g, this.bg, this.t);
+    g.fillStyle = '#0a0812'; g.fillRect(0, 0, W, H);
+    g.save(); g.translate(0, -BG_SHIFT); drawBattleBG(g, this.bg, this.t); g.restore();
     // enemies
     const sorted = this.enemies.map((e, i) => ({ e, i })).sort((a, b) => a.e.y - b.e.y);
     for (const { e } of sorted) {
@@ -3114,7 +3551,7 @@ class Battle {
       if (e.status.poison && e.alive) { const c = this.enemyCenter(e); circle(g, c.x + 18 + Math.sin(this.t * 4) * 3, c.y - 20 - (this.t * 20 % 20), 3, 'rgba(140,255,120,.8)'); }
     }
     // party
-    G.party.forEach((m, i) => {
+    BP().forEach((m, i) => {
       const p = this.partyXY(i), a = this.pa[i];
       const L = HEROES[m.id].look;
       let pose = a.pose;
@@ -3131,9 +3568,9 @@ class Battle {
         if (pose === 'attack') ang = -2.2 + clamp(a.swing || 0, 0, 1) * 2.6;
         if (pose === 'cast') ang = -0.1;
         if (pose === 'victory') ang = 0.5;
-        drawWeapon(g, wk, x - 14, y - 22 - (pose === 'cast' ? 8 : 0), ang, 1.4);
+        drawWeapon(g, wk, x - 13, y - 20 - (pose === 'cast' ? 7 : 0), ang, 1.3);
       }
-      drawChar(g, L, x, y, 'left', 0, 1.55, pose === 'victory' ? 'cast' : pose, this.t);
+      drawChar(g, L, x, y, 'left', 0, 1.42, pose === 'victory' ? 'cast' : pose, this.t);
       g.restore();
       if (m.status.poison && alive(m)) circle(g, x - 10, y - 70 - (this.t * 20 % 16), 3, 'rgba(140,255,120,.85)');
       if (m.status.sleep && alive(m)) text(g, 'z', x - 20 + Math.sin(this.t * 3) * 3, y - 74 - (this.t * 14 % 14), { size: 17, bold: true, color: '#c8b8ff' });
@@ -3163,7 +3600,7 @@ class Battle {
     if (this.active < 0) for (const e of this.enemies) if (e.alive) names.push(e.name);
     names.slice(0, 5).forEach((n, i) => text(g, n, 22, 354 + i * 23, { size: 15 }));
     drawWindow(g, 214, 344, 418, 128);
-    G.party.forEach((m, i) => {
+    BP().forEach((m, i) => {
       const y = 352 + i * 29;
       const col = !alive(m) ? '#ff7a7a' : m.hp / maxHp(m) < 0.25 ? '#ffd27a' : '#fff';
       if (i === this.active) { g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(222, y - 2, 402, 27); }
@@ -3337,6 +3774,14 @@ class Battle {
         }
         await wait(650); break;
       }
+      case 'sand': {
+        Audio_.sfx('water');
+        this.addFx(0.9, (g, k) => {
+          g.save(); g.globalAlpha = Math.sin(k * Math.PI) * 0.55; g.fillStyle = '#d8a860'; g.fillRect(0, 0, W, H); g.restore();
+          for (let i = 0; i < 40; i++) { const y = hash(i, 3) * 340, x = ((hash(i, 4) * W + k * 900 + i * 13) % (W + 100)) - 50; line(g, x, y, x + 26, y + 3, 'rgba(255,230,180,.8)', 2); }
+        });
+        await wait(850); break;
+      }
       case 'flare': {
         Audio_.sfx('boom');
         for (const p of targets) {
@@ -3356,8 +3801,8 @@ class Battle {
   // ---------------- math ----------------
   weakMult(def, elem) { return elem && def.weak && def.weak.includes(elem) ? 1.6 : 1; }
   physDamage(atk, def, mult = 1) { return Math.max(1, Math.round((atk - def / 2) * mult * rnd(0.88, 1.12))); }
-  memberAtk(i) { const m = G.party[i]; return stat(m, 'str') * (this.buffs.rally > 0 ? 1.35 : 1); }
-  memberDef(i) { const m = G.party[i]; return stat(m, 'def') * (this.buffs.barrier > 0 ? 1.4 : 1); }
+  memberAtk(i) { const m = BP()[i]; return stat(m, 'str') * (this.buffs.rally > 0 ? 1.35 : 1); }
+  memberDef(i) { const m = BP()[i]; return stat(m, 'def') * (this.buffs.barrier > 0 ? 1.4 : 1); }
   // ---------------- flow ----------------
   async run() {
     Audio_.sfx('encounter');
@@ -3391,7 +3836,7 @@ class Battle {
       }
       // build order
       const order = [];
-      party.forEach((c, i) => { if (c) order.push({ side: 'p', i, c, spd: stat(G.party[i], 'spd') * rnd(0.8, 1.2) + (c.type === 'defend' ? 999 : 0) }); });
+      party.forEach((c, i) => { if (c && c.type !== 'partner') order.push({ side: 'p', i, c, spd: stat(BP()[i], 'spd') * rnd(0.8, 1.2) + (c.type === 'defend' ? 999 : 0) }); });
       if (!this.preempt) this.enemies.forEach((e, i) => { if (e.alive) order.push({ side: 'e', i, spd: e.def.spd * rnd(0.8, 1.2) }); });
       this.preempt = false;
       order.sort((a, b) => b.spd - a.spd);
@@ -3400,7 +3845,7 @@ class Battle {
       for (const o of order) {
         if (this.liveEnemies().length === 0 || this.liveParty().length === 0) break;
         if (o.side === 'p') {
-          if (!alive(G.party[o.i])) continue;
+          if (!alive(BP()[o.i])) continue;
           const r = await this.partyAct(o.i, o.c);
           if (r === 'escape') { result = 'run'; break; }
         } else {
@@ -3411,12 +3856,12 @@ class Battle {
       }
       if (result) break;
       // end of round
-      for (let i = 0; i < G.party.length; i++) {
-        const m = G.party[i];
+      for (let i = 0; i < BP().length; i++) {
+        const m = BP()[i];
         if (alive(m) && m.status.poison) { const d = Math.max(1, Math.floor(maxHp(m) * 0.06)); m.hp = Math.max(1, m.hp - d); const c = this.memberCenter(i); this.num(c.x, c.y, d, '#8aff7a'); }
       }
-      for (let i = 0; i < G.party.length; i++) {
-        const m = G.party[i]; if (!alive(m)) continue;
+      for (let i = 0; i < BP().length; i++) {
+        const m = BP()[i]; if (!alive(m)) continue;
         const a = accOf(m);
         if (m.status.regen > 0 || (a && a.regen)) { const h = Math.min(maxHp(m) - m.hp, Math.max(1, Math.floor(maxHp(m) * (m.status.regen > 0 ? 0.08 : 0.05)))); if (h > 0) { m.hp += h; const c = this.memberCenter(i); this.num(c.x + 14, c.y + 10, h, '#7aff9a'); } }
         for (const st of ['sleep', 'silence', 'regen']) if (m.status[st] > 0) m.status[st]--;
@@ -3433,27 +3878,35 @@ class Battle {
     if (result === 'win' && !this.opts.noVictory) await this.victory();
     if (result === 'win' && this.opts.noVictory) await wait(900);
     if (result === 'lose') { this.msg = null; await wait(600); }
-    for (const m of G.party) m.status = {};
+    for (const m of BP()) m.status = {};
     return result;
   }
   async commandPhase() {
     const cmds = [];
     let i = 0;
-    const n = G.party.length;
+    const n = BP().length;
     while (i < n) {
-      const m = G.party[i];
+      const m = BP()[i];
       if (!alive(m) || m.status.sleep) { cmds[i] = null; i++; continue; }
+      if (cmds[i] && cmds[i].type === 'partner') { i++; continue; }
       this.active = i;
       this.pa[i].dx = -14;
       const c = await this.chooseCommand(m, i);
       this.pa[i].dx = 0;
       if (c === 'back') {
-        let j = i - 1; while (j >= 0 && !alive(G.party[j])) j--;
-        if (j >= 0) i = j;
+        let j = i - 1; while (j >= 0 && (!alive(BP()[j]) || BP()[j].status.sleep)) j--;
+        if (j >= 0 && cmds[j] && cmds[j].type === 'partner') j = cmds[j].from;
+        if (j >= 0) { for (let k = 0; k < cmds.length; k++) if (cmds[k] && cmds[k].type === 'partner' && cmds[k].from === j) cmds[k] = null; i = j; }
         continue;
       }
       if (c.type === 'run') return { run: true };
-      cmds[i] = c; i++;
+      for (let k = 0; k < cmds.length; k++) if (cmds[k] && cmds[k].type === 'partner' && cmds[k].from === i) cmds[k] = null;
+      cmds[i] = c;
+      if (c.type === 'combo') {
+        const cb = COMBOS.find(x => x.id === c.combo);
+        for (const id of cb.members) { const j = BP().findIndex(p => p.id === id); if (j !== i) cmds[j] = { type: 'partner', from: i }; }
+      }
+      i++;
     }
     return cmds;
   }
@@ -3465,11 +3918,12 @@ class Battle {
       const items = [
         { label: 'Attack' },
         { label: m.status.silence ? d.skill + ' (silenced)' : d.skill, disabled: !spells.length || !!m.status.silence },
+        { label: 'Combo', disabled: !this.combosFor(m).length },
         { label: 'Item', disabled: !usable.length },
         { label: 'Defend' },
         { label: 'Run', disabled: !!this.opts.boss }
       ];
-      const k = await listMenu({ x: 8, y: 344, w: 200, rows: 5, rowH: 22, items, index: this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: 15 });
+      const k = await listMenu({ x: 8, y: 330, w: 200, rows: 6, rowH: 21, items, index: this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: 15 });
       this.lastCmd = this.lastCmd || {}; if (k >= 0) this.lastCmd[idx] = k;
       if (k < 0) return 'back';
       if (k === 0) { const tg = await this.pickTarget('enemy'); if (tg !== null && tg !== undefined) return { type: 'attack', target: tg }; continue; }
@@ -3486,6 +3940,19 @@ class Battle {
         continue;
       }
       if (k === 2) {
+        const cs = this.combosFor(m);
+        const ci = await listMenu({
+          x: 8, y: 150, w: 330, rows: 7, rowH: 24, title: 'Combo Techs',
+          items: cs.map(c => ({ label: c.name, right: c.members.map(id => HEROES[id].name[0]).join('+') })),
+          help: i => `${cs[i].desc}  (MP: ${cs[i].members.map((id, j) => HEROES[id].name + ' ' + cs[i].mp[j]).join(', ')})`
+        });
+        if (ci < 0) continue;
+        const c = cs[ci];
+        const tg = c.target === 'enemy' ? await this.pickTarget('enemy') : 'all';
+        if (tg !== null && tg !== undefined) return { type: 'combo', combo: c.id, target: tg };
+        continue;
+      }
+      if (k === 3) {
         const it = await listMenu({
           x: 8, y: 150, w: 290, rows: 7, rowH: 24, title: 'Items',
           items: usable.map(u => ({ label: ITEMS[u].name, right: '×' + G.inv[u] })),
@@ -3497,8 +3964,8 @@ class Battle {
         if (tg !== null && tg !== undefined) return { type: 'item', item: usable[it], target: tg };
         continue;
       }
-      if (k === 3) return { type: 'defend' };
-      if (k === 4) return { type: 'run' };
+      if (k === 4) return { type: 'defend' };
+      if (k === 5) return { type: 'run' };
     }
   }
   pickTarget(kind, dead = false) {
@@ -3508,7 +3975,7 @@ class Battle {
       kind, idx: 0,
       list() {
         if (kind === 'enemy' || kind === 'enemies') return self.enemies.filter(e => e.alive);
-        return G.party.map((m, i) => i).filter(i => dead ? true : alive(G.party[i]));
+        return BP().map((m, i) => i).filter(i => dead ? true : alive(BP()[i]));
       },
       update() {
         const L = this.list();
@@ -3524,7 +3991,7 @@ class Battle {
         const pts = [];
         const sel = (kind === 'enemy' || kind === 'ally') ? [L[this.idx]] : L;
         for (const s of sel) {
-          if (typeof s === 'number') { const c = self.memberCenter(s); pts.push({ x: c.x - 34, y: c.y - 6, name: memberName(G.party[s]), left: true }); }
+          if (typeof s === 'number') { const c = self.memberCenter(s); pts.push({ x: c.x - 34, y: c.y - 6, name: memberName(BP()[s]), left: true }); }
           else if (s) { const c = self.enemyCenter(s); pts.push({ x: c.x + monsterWidth(s.def) * s.bs * 0.45, y: c.y, name: s.name }); }
         }
         const tt = performance.now() / 1000;
@@ -3545,7 +4012,7 @@ class Battle {
       // default to the most hurt ally
       const L = comp.list();
       let best = 0, bv = 2;
-      L.forEach((i, j) => { const m = G.party[i]; const v = dead && !alive(m) ? -1 : m.hp / maxHp(m); if (v < bv) { bv = v; best = j; } });
+      L.forEach((i, j) => { const m = BP()[i]; const v = dead && !alive(m) ? -1 : m.hp / maxHp(m); if (v < bv) { bv = v; best = j; } });
       comp.idx = best;
     }
     return UI.push(comp);
@@ -3557,7 +4024,7 @@ class Battle {
       if (target && target.alive) return [target];
       const L = this.liveEnemies(); return L.length ? [pick(L)] : [];
     } else {
-      if (target === 'all') return G.party.map((m, i) => i).filter(i => alive(G.party[i]));
+      if (target === 'all') return BP().map((m, i) => i).filter(i => alive(BP()[i]));
       if (typeof target === 'number') return [target];
       return [];
     }
@@ -3577,24 +4044,65 @@ class Battle {
   }
   kill(e) { e.hp = 0; e.alive = false; e.dying = 0; e.status = {}; G.killed[e.id] = (G.killed[e.id] || 0) + 1; Audio_.sfx('ko'); }
   damageMember(i, dmg) {
-    const m = G.party[i];
+    const m = BP()[i];
     m.hp = Math.max(0, m.hp - dmg);
     if (m.status.sleep && Math.random() < 0.6) m.status.sleep = 0;
     this.pa[i].flash = 0.4; this.pa[i].shake = 0.3;
     const c = this.memberCenter(i);
     this.num(c.x, c.y, dmg, '#fff');
-    if (m.hp <= 0) { m.status = {}; Audio_.sfx('ko'); }
+    if (m.hp <= 0) {
+      m.status = {}; Audio_.sfx('ko');
+      const a = accOf(m);
+      if (a && a.reraise && !this.reraised.has(m.id)) { this.reraised.add(m.id); m.hp = Math.floor(maxHp(m) * 0.3); setTimeout(() => this.num(c.x, c.y - 20, 'Phoenix!', '#ffb86a', true), 300); Audio_.sfx('holy'); }
+    }
   }
   healMember(i, n) {
-    const m = G.party[i];
+    const m = BP()[i];
     if (!alive(m)) return;
     const before = m.hp; m.hp = Math.min(maxHp(m), m.hp + n);
     const c = this.memberCenter(i); this.num(c.x, c.y, m.hp - before, '#7aff9a');
   }
+  combosFor(m) {
+    const P = BP();
+    return COMBOS.filter(c => c.members.includes(m.id) && c.members.every((id, j) => {
+      const p = P.find(x => x.id === id);
+      return p && alive(p) && !p.status.sleep && !p.status.silence && p.mp >= c.mp[j];
+    }));
+  }
+  async doCombo(i, c) {
+    const cb = COMBOS.find(x => x.id === c.combo), P = BP();
+    const idx = cb.members.map(id => P.findIndex(p => p.id === id));
+    if (idx.some(j => j < 0 || !alive(P[j]) || P[j].status.sleep || P[j].status.silence || P[j].mp < cb.mp[cb.members.indexOf(P[j].id)])) {
+      this.msg = 'The combo falls apart!'; Audio_.sfx('buzz'); await wait(800); this.msg = null; return;
+    }
+    idx.forEach((j, k) => P[j].mp -= cb.mp[k]);
+    this.msg = cb.name;
+    idx.forEach(j => { this.pa[j].pose = 'cast'; this.pa[j].dx = -20; });
+    this.screenFlash('#ffffff', 0.35, 0.3);
+    Audio_.sfx('levelup');
+    await wait(500);
+    const sumAtk = idx.reduce((a, j) => a + this.memberAtk(j), 0), sumMag = idx.reduce((a, j) => a + stat(P[j], 'mag'), 0);
+    const ts = this.resolveTargets('enemy', c.target);
+    if (cb.type === 'phys') {
+      const tg = ts[0];
+      if (tg) for (let h = 0; h < (cb.hits || 1) && tg.alive; h++) {
+        await this.playFx(cb.fx, [this.enemyCenter(tg)]);
+        this.damageEnemy(tg, this.physDamage(sumAtk * 0.75, tg.def.def, cb.power * this.weakMult(tg.def, cb.elem)), '#ffd27a', true);
+        await wait(120);
+      }
+    } else {
+      await this.playFx(cb.fx, ts.map(e => this.enemyCenter(e)));
+      for (const e of ts) this.damageEnemy(e, Math.max(1, Math.round((cb.power + sumMag * 0.75) * rnd(0.92, 1.08) * this.weakMult(e.def, cb.elem) - e.def.mag * 0.4)), '#ffd27a', true);
+    }
+    if (cb.heal) { const L = P.map((p, k) => k).filter(k => alive(P[k])); await this.playFx('heal', L.map(k => this.memberCenter(k))); for (const k of L) this.healMember(k, Math.round(maxHp(P[k]) * cb.heal)); }
+    idx.forEach(j => { this.pa[j].pose = null; this.pa[j].dx = 0; });
+    await wait(250); this.msg = null;
+  }
   async partyAct(i, c) {
-    const m = G.party[i], a = this.pa[i];
+    const m = BP()[i], a = this.pa[i];
     if (m.status.sleep) { const p = this.memberCenter(i); this.num(p.x, p.y, 'Asleep', '#c8b8ff'); await wait(300); return; }
     if (c.type === 'defend') return;
+    if (c.type === 'combo') return this.doCombo(i, c);
     if (c.type === 'attack') {
       const tg = this.resolveTargets('enemy', c.target)[0];
       if (!tg) return;
@@ -3624,9 +4132,9 @@ class Battle {
         await this.playFx('fire', ts.map(e => this.enemyCenter(e)));
         for (const e of ts) this.damageEnemy(e, Math.round(it.amount * this.weakMult(e.def, 'fire') * rnd(0.9, 1.1)));
       } else {
-        const ts = it.target === 'allies' ? G.party.map((_, k) => k) : [c.target];
+        const ts = it.target === 'allies' ? BP().map((_, k) => k) : [c.target];
         await this.playFx(it.effect === 'revive' ? 'holy' : 'heal', ts.map(k => this.memberCenter(k)));
-        for (const k of ts) applyItemEffect(c.item, G.party[k], this, k);
+        for (const k of ts) applyItemEffect(c.item, BP()[k], this, k);
       }
       a.pose = null; await wait(300); this.msg = null;
       return;
@@ -3684,10 +4192,17 @@ class Battle {
       if (s.type === 'dmg') {
         const ts = this.resolveTargets('enemy', c.target);
         await this.playFx(s.fx, ts.map(e => this.enemyCenter(e)));
+        let total = 0;
         for (const e of ts) {
           const dmg = Math.max(1, Math.round((s.power + stat(m, 'mag')) * rnd(0.92, 1.08) * this.weakMult(e.def, s.elem) - e.def.mag * 0.4));
+          total += Math.min(dmg, Math.max(0, e.hp));
           this.damageEnemy(e, dmg, this.weakMult(e.def, s.elem) > 1 ? '#ffd27a' : '#fff');
         }
+        if (s.drain) this.healMember(i, total);
+      } else if (s.type === 'gravity') {
+        const ts = this.resolveTargets('enemy', c.target);
+        await this.playFx('dark', ts.map(e => this.enemyCenter(e)));
+        for (const e of ts) this.damageEnemy(e, Math.max(1, Math.min(9999, Math.floor(e.hp * (e.def.boss ? 0.08 : 0.25)))), '#d8b8ff');
       } else if (s.type === 'heal') {
         const ts = this.resolveTargets('ally', c.target);
         await this.playFx('heal', ts.map(k => this.memberCenter(k)));
@@ -3695,17 +4210,17 @@ class Battle {
       } else if (s.type === 'revive') {
         const k = c.target;
         await this.playFx('holy', [this.memberCenter(k)]);
-        const t = G.party[k];
+        const t = BP()[k];
         if (!alive(t)) { t.hp = Math.floor(maxHp(t) * 0.35); const p = this.memberCenter(k); this.num(p.x, p.y, 'Revived', '#7aff9a'); }
         else { const p = this.memberCenter(k); this.num(p.x, p.y, 'No effect', '#cfd8ff'); }
       } else if (s.type === 'cure') {
         const k = c.target;
         await this.playFx('heal', [this.memberCenter(k)]);
-        G.party[k].status.poison = false; G.party[k].status.sleep = 0; G.party[k].status.silence = 0;
+        BP()[k].status.poison = false; BP()[k].status.sleep = 0; BP()[k].status.silence = 0;
       } else if (s.type === 'regen') {
         const k = c.target;
         await this.playFx('heal', [this.memberCenter(k)]);
-        if (alive(G.party[k])) { G.party[k].status.regen = 5; const p = this.memberCenter(k); this.num(p.x, p.y, 'Regen', '#9ad8ff'); }
+        if (alive(BP()[k])) { BP()[k].status.regen = 5; const p = this.memberCenter(k); this.num(p.x, p.y, 'Regen', '#9ad8ff'); }
       } else if (s.type === 'status') {
         const ts = this.resolveTargets('enemy', c.target);
         await this.playFx(s.fx, ts.map(e => this.enemyCenter(e)));
@@ -3730,13 +4245,13 @@ class Battle {
     if (e.status.silence && act !== 'attack' && SPELLS[act] && SPELLS[act].type !== 'phys') act = 'attack';
     const live = this.liveParty();
     if (!live.length) return;
-    const targetIdx = () => { const L = G.party.map((m, i) => i).filter(i => alive(G.party[i])); return pick(L); };
+    const targetIdx = () => { const L = BP().map((m, i) => i).filter(i => alive(BP()[i])); return pick(L); };
     if (act === 'attack') {
       const i = targetIdx();
       for (let k = 0; k < 5; k++) { e.lunge += 7; await wait(16); }
       const p = this.memberCenter(i);
       await this.playFx('hit', [p]);
-      const ms = stat(G.party[i], 'spd');
+      const ms = stat(BP()[i], 'spd');
       if (Math.random() < clamp(0.03 + (ms - e.def.spd) * 0.004, 0.02, 0.12)) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); }
       else {
         let dmg = this.physDamage(e.def.atk, this.memberDef(i), this.pa[i].defend ? 0.5 : 1);
@@ -3756,11 +4271,11 @@ class Battle {
       const c = this.enemyCenter(e); this.num(c.x, c.y, n, '#7aff9a');
       this.msg = null; return;
     }
-    const ts = s.target === 'allies' ? G.party.map((m, i) => i).filter(i => alive(G.party[i])) : [targetIdx()];
+    const ts = s.target === 'allies' ? BP().map((m, i) => i).filter(i => alive(BP()[i])) : [targetIdx()];
     if (s.type === 'status') {
       await this.playFx(s.fx, ts.map(i => this.memberCenter(i)));
       for (const i of ts) {
-        const m = G.party[i], p = this.memberCenter(i);
+        const m = BP()[i], p = this.memberCenter(i);
         if (immune(m, s.status)) this.num(p.x, p.y, 'Immune', '#cfd8ff');
         else if (Math.random() < s.chance) { m.status[s.status] = s.status === 'sleep' ? 2 : 3; this.num(p.x, p.y, s.status === 'sleep' ? 'Sleep' : 'Silence', '#c8b8ff'); }
         else this.num(p.x, p.y, 'Miss', '#cfd8ff');
@@ -3774,7 +4289,7 @@ class Battle {
       for (const i of ts) {
         const dmg = this.physDamage(e.def.atk, this.memberDef(i), s.power * (this.pa[i].defend ? 0.5 : 1));
         this.damageMember(i, dmg);
-        if (s.poison && alive(G.party[i]) && !immune(G.party[i], 'poison') && Math.random() < s.poison) G.party[i].status.poison = true;
+        if (s.poison && alive(BP()[i]) && !immune(BP()[i], 'poison') && Math.random() < s.poison) BP()[i].status.poison = true;
       }
       for (let k = 0; k < 5; k++) { e.lunge -= 8; await wait(16); }
       e.lunge = 0;
@@ -3782,7 +4297,7 @@ class Battle {
       await this.playFx(s.fx, ts.map(i => this.memberCenter(i)));
       let total = 0;
       for (const i of ts) {
-        const m = G.party[i];
+        const m = BP()[i];
         let dmg = (s.power + e.def.mag) * rnd(0.9, 1.1) - stat(m, 'mag') * 0.4;
         if (this.buffs.barrier > 0) dmg *= 0.6;
         if (this.pa[i].defend) dmg *= 0.6;
@@ -3799,7 +4314,7 @@ class Battle {
     this.msg = null;
     await wait(500);
     Audio_.play('victory', true);
-    this.pa.forEach((p, i) => { if (alive(G.party[i])) { p.pose = 'victory'; p.jump = 1; } });
+    this.pa.forEach((p, i) => { if (alive(BP()[i])) { p.pose = 'victory'; p.jump = 1; } });
     let xp = 0, gold = 0; const drops = [];
     for (const e of this.enemies) {
       xp += e.def.xp; gold += e.def.gold;
@@ -3807,7 +4322,8 @@ class Battle {
     }
     G.gold += gold;
     const msgs = [];
-    for (const m of G.party) if (alive(m)) { const a = accOf(m); msgs.push(...gainXp(m, Math.round(xp * (a && a.xp ? a.xp : 1)))); }
+    for (const m of BP()) if (alive(m)) { const a = accOf(m); msgs.push(...gainXp(m, Math.round(xp * (a && a.xp ? a.xp : 1)))); }
+    for (const m of G.party.slice(4)) msgs.push(...gainXp(m, Math.round(xp * 0.5)));
     if (xp || gold) await narrate(`Victory! Gained ${xp} EXP and ${gold} gold.`);
     else await wait(2200);
     for (const d of drops) { addItem(d); Audio_.sfx('item'); await narrate(`Found ${ITEMS[d].name}!`); }
@@ -3819,7 +4335,7 @@ async function startBattle(ids, opts = {}) {
   const prev = G.scene;
   const b = new Battle(ids, opts);
   const r = await b.run();
-  if (r !== 'lose' && !opts.keepScene) {
+  if ((r !== 'lose' || opts.arena) && !opts.keepScene) {
     await fadeTo(1, 220);
     G.scene = prev;
     if (prev && prev.playMusic) prev.playMusic();
@@ -3842,30 +4358,39 @@ function applyItemEffect(id, m, battle, idx) {
   return false;
 }
 
+function ngScale(d) {
+  const ng = (G.flags && G.flags.ngplus) || 0;
+  if (!ng) return d;
+  const k = ng;
+  return { ...d, hp: Math.round(d.hp * (1 + 0.6 * k)), atk: Math.round(d.atk * (1 + 0.22 * k)), mag: Math.round(d.mag * (1 + 0.22 * k)), def: Math.round(d.def * (1 + 0.12 * k)), xp: Math.round(d.xp * (1 + 0.5 * k)), gold: Math.round(d.gold * (1 + 0.5 * k)) };
+}
+
 'use strict';
 // ============================================================
 //  MENUS — field menu, items, magic, equipment, status, shop, inn
 // ============================================================
 function drawPartyPanel(g, sel = -1) {
-  const x = 16, y = 16, w = 440, rowH = 100;
+  const x = 16, y = 16, w = 440, five = G.party.length > 4, rowH = five ? 88 : 100;
   drawWindow(g, x, y, w, 16 + G.party.length * rowH);
   G.party.forEach((m, i) => {
     const yy = y + 10 + i * rowH;
     if (i === sel) { g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(x + 8, yy, w - 16, rowH - 6); }
     const L = HEROES[m.id].look;
     g.save(); if (!alive(m)) g.globalAlpha = 0.5;
-    drawChar(g, L, x + 50, yy + 78, 'down', 0, 1.6, alive(m) ? null : 'ko');
+    drawChar(g, L, x + 50, yy + (five ? 70 : 78), 'down', 0, five ? 1.4 : 1.6, alive(m) ? null : 'ko');
+    if (i >= 4) text(g, 'Reserve', x + 98 + 120, yy + 30, { size: 12, color: '#ffb86a' });
     g.restore();
     text(g, memberName(m), x + 100, yy + 6, { size: 18, bold: true, color: alive(m) ? '#fff' : '#ff8a8a' });
     text(g, HEROES[m.id].cls, x + 100, yy + 30, { size: 13, color: '#b8c4ee' });
     text(g, `Lv ${m.level}`, x + 220, yy + 8, { size: 15, color: '#ffe9a8' });
     if (m.status.poison) text(g, 'Poison', x + 290, yy + 8, { size: 13, color: '#8aff7a' });
-    text(g, 'HP', x + 100, yy + 52, { size: 13, color: '#9adf9a' });
-    text(g, `${m.hp} / ${maxHp(m)}`, x + 250, yy + 50, { size: 15, align: 'right' });
-    bar(g, x + 126, yy + 70, 124, 4, m.hp / maxHp(m), '#6ae07a');
-    text(g, 'MP', x + 270, yy + 52, { size: 13, color: '#9ab0ff' });
-    text(g, `${m.mp} / ${maxMp(m)}`, x + 410, yy + 50, { size: 15, align: 'right' });
-    bar(g, x + 296, yy + 70, 114, 4, m.mp / Math.max(1, maxMp(m)), '#6aa8ff');
+    const oy = five ? -6 : 0;
+    text(g, 'HP', x + 100, yy + 52 + oy, { size: 13, color: '#9adf9a' });
+    text(g, `${m.hp} / ${maxHp(m)}`, x + 250, yy + 50 + oy, { size: 15, align: 'right' });
+    bar(g, x + 126, yy + 70 + oy, 124, 4, m.hp / maxHp(m), '#6ae07a');
+    text(g, 'MP', x + 270, yy + 52 + oy, { size: 13, color: '#9ab0ff' });
+    text(g, `${m.mp} / ${maxMp(m)}`, x + 410, yy + 50 + oy, { size: 15, align: 'right' });
+    bar(g, x + 296, yy + 70 + oy, 114, 4, m.mp / Math.max(1, maxMp(m)), '#6aa8ff');
     const nx = xpForLevel(m.level + 1) - m.xp;
     text(g, m.level >= MAX_LEVEL ? 'MAX' : `Next ${nx}`, x + 410, yy + 8, { size: 12, color: '#b8c4ee', align: 'right' });
   });
@@ -3885,7 +4410,7 @@ async function pickMember(title, opt = {}) {
   const panel = openPanel(g => drawPartyPanel(g, sel.v));
   const sel = { v: opt.index || 0 };
   const items = G.party.map(m => ({ label: memberName(m), right: `${m.hp}/${maxHp(m)}`, disabled: opt.filter ? !opt.filter(m) : false }));
-  const r = await listMenu({ x: 470, y: 16, w: 154, rows: 4, title, items, index: sel.v, onChange: i => sel.v = i });
+  const r = await listMenu({ x: 470, y: 16, w: 154, rows: 5, title, items, index: sel.v, onChange: i => sel.v = i });
   closePanel(panel);
   return r < 0 ? null : r;
 }
@@ -3894,22 +4419,23 @@ async function openMainMenu() {
   const panel = openPanel(g => { drawPartyPanel(g); drawInfoPanel(g); });
   let idx = 0;
   while (true) {
-    const items = [{ label: 'Items' }, { label: 'Magic' }, { label: 'Equip' }, { label: 'Status' }, { label: 'Quests' }, { label: 'Bestiary' }, { label: 'Map' }, { label: 'Save' }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }, { label: 'Close' }];
-    const k = await listMenu({ x: 472, y: 16, w: 152, rows: 10, rowH: 25, items, index: idx });
-    if (k < 0 || k === 9) break;
+    const items = [{ label: 'Items' }, { label: 'Magic' }, { label: 'Equip' }, { label: 'Status' }, { label: 'Formation', disabled: G.party.length < 2 }, { label: 'Quests' }, { label: 'Bestiary' }, { label: 'Map' }, { label: 'Save' }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }, { label: 'Close' }];
+    const k = await listMenu({ x: 472, y: 16, w: 152, rows: 11, rowH: 24, items, index: idx });
+    if (k < 0 || k === 10) break;
     idx = k;
     if (k === 0) await itemsMenu();
     if (k === 1) await magicMenu();
     if (k === 2) await equipMenu();
     if (k === 3) await statusMenu();
-    if (k === 4) await questMenu();
-    if (k === 5) await bestiaryMenu();
-    if (k === 6) await worldMapView();
-    if (k === 7) {
+    if (k === 4) await formationMenu();
+    if (k === 5) await questMenu();
+    if (k === 6) await bestiaryMenu();
+    if (k === 7) await worldMapView();
+    if (k === 8) {
       const c = await choose(null, 'Record your journey? This will overwrite your previous save.', ['Save', 'Cancel'], 1);
       if (c === 0) { if (saveGame()) { Audio_.sfx('save'); await narrate('Your journey has been recorded.'); } else await narrate('Saving failed — your browser blocked storage.'); }
     }
-    if (k === 8) Audio_.toggleMute();
+    if (k === 9) Audio_.toggleMute();
   }
   closePanel(panel);
 }
@@ -4210,7 +4736,7 @@ async function bestiaryMenu() {
 const MAP_COL = { '~': '#2c6fc4', r: '#3a80d0', '.': '#6dbb4f', T: '#2f7a35', '^': '#8a7f73', n: '#7cc65c', s: '#e9d49a', '=': '#c9a46a', b: '#a8763f', x: '#6a4522', '*': '#e6eef8', P: '#3a7a5a', M: '#b8c4d4', q: '#3b2a4c', d: '#24182f' };
 async function worldMapView() {
   const m = getMap('world');
-  const sc = 7, ow = m.w * sc, oh = m.h * sc, ox = (W - ow) / 2, oy = (H - oh) / 2 + 12;
+  const sc = Math.min(600 / m.w, 384 / m.h), ow = m.w * sc, oh = m.h * sc, ox = (W - ow) / 2, oy = (H - oh) / 2 + 12;
   // where is the party?
   let px = G.x, py = G.y;
   if (Field.map && Field.map.kind !== 'world') {
@@ -4235,16 +4761,34 @@ async function worldMapView() {
       for (const k in WORLD_LOC) {
         const L = WORLD_LOC[k], x = ox + L.x * sc + sc / 2, y = oy + L.y * sc + sc / 2;
         const known = G.flags['visit_' + k];
+        if (k === 'F' && !known && !G.flags.airship) continue;
         circle(g, x, y, 4.5, L.town ? '#fff4c8' : '#e88a6a', OUT, 1.5);
-        if (known) text(g, L.name, x + 7, y - 7, { size: 11, bold: true });
+        if (known) { g.font = font(11, true); const tw = g.measureText(L.name).width; const right = x + 7 + tw > ox + ow - 4; text(g, L.name, right ? x - 7 : x + 7, y - 7, { size: 11, bold: true, align: right ? 'right' : 'left' }); }
       }
       if (m.whirl && G.flags.bounty && !G.flags.leviathan) { const x = ox + m.whirl.x * sc + 3, y = oy + m.whirl.y * sc + 3; circle(g, x, y, 5 + Math.sin(t * 4), null, '#fff', 1.5); text(g, 'Leviathan', x + 8, y - 6, { size: 11, color: '#bfe8ff' }); }
       if (obj.loc && WORLD_LOC[obj.loc]) { const L = WORLD_LOC[obj.loc]; const x = ox + L.x * sc + 3.5, y = oy + L.y * sc - 8 + Math.sin(t * 4) * 2; poly(g, [x - 5, y - 6, x + 5, y - 6, x, y + 2], '#ffd23a', OUT, 1); }
+      if (G.airship && G.flags.airship) { const x = ox + G.airship.x * sc + 3, y = oy + G.airship.y * sc + 3; ellipse(g, x, y - 2, 5, 3, '#c8443a', '#fff', 1); }
       if (G.ship && G.flags.ship && !G.onShip) { const x = ox + G.ship.x * sc + 3, y = oy + G.ship.y * sc + 3; poly(g, [x - 4, y + 2, x + 4, y + 2, x + 2, y + 4, x - 2, y + 4], '#7a4a22'); poly(g, [x, y - 5, x + 4, y + 1, x, y + 1], '#fff'); }
       if (Math.sin(t * 8) > -0.3) { circle(g, ox + px * sc + 3.5, oy + py * sc + 3.5, 4, '#ff3a3a', '#fff', 1.5); }
       text(g, 'Red: you   ▼ objective   Enter/Esc to close', W / 2, oy + oh + 5, { size: 11, align: 'center', color: '#b8c4ee' });
     }
   });
+}
+
+// ---------- formation ----------
+async function formationMenu() {
+  let first = null;
+  const panel = openPanel(g => drawPartyPanel(g, sel.v));
+  const sel = { v: 0 };
+  while (true) {
+    const items = G.party.map((m, i) => ({ label: memberName(m) + (i === first ? '  ✦' : ''), right: i < 4 ? 'Active' : 'Reserve', rcolor: i < 4 ? '#9adf9a' : '#ffb86a' }));
+    const r = await listMenu({ x: 470, y: 16, w: 154, rows: 5, title: first === null ? 'Swap who?' : 'With whom?', items, index: sel.v, onChange: i => sel.v = i, help: () => 'The first four fight. Reserve members earn half EXP.', helpY: H - 52 });
+    if (r < 0) { if (first !== null) { first = null; continue; } break; }
+    if (first === null) { first = r; continue; }
+    if (first !== r) { const t = G.party[first]; G.party[first] = G.party[r]; G.party[r] = t; Audio_.sfx('item'); }
+    first = null;
+  }
+  closePanel(panel);
 }
 
 'use strict';
@@ -4262,7 +4806,7 @@ const LOOKS = {
   dwarf: { skin: '#e8b090', hair: '#c06a2a', style: 'bald', body: '#5a4a3a', accent: '#c0a040', beard: true },
   selene: { skin: '#f6d6b8', hair: '#a03a2a', style: 'long', body: '#3a2a5a', accent: '#c04aa8', robe: true }
 };
-function N(x, y, seed, o, talk, extra = {}) { return { x, y, look: o.skin ? o : npcLook(seed, o), talk, ...extra }; }
+function N(x, y, seed, o, talk, extra = {}) { return { x, y, look: o.skin && o.hair && o.body ? o : npcLook(seed, o), talk, ...extra }; }
 
 function townNpcs(id) {
   const f = G.flags;
@@ -4296,9 +4840,25 @@ function townNpcs(id) {
       N(6, 17, 25, { body: '#5a5a5a', hat: 'helm' }, talkMiner, { wander: true }),
       N(20, 17, 26, { style: 'spiky', body: '#3a5a8a' }, talkIronKid, { wander: true })
     ];
-    if (f.lantern3) l.push(N(13, 9, 27, LOOKS.selene, talkSelene, { name: 'Selene' }));
+    if (f.lantern3 && !inParty('selene')) l.push(N(13, 9, 27, LOOKS.selene, talkSelene, { name: 'Selene', mark: true }));
     return l;
   }
+  if (id === 'mirage') return [
+    N(13, 16, 41, { ...LOOKS.guard, skin: '#c98e62', hat: 'cap', accent: '#e8c24a' }, async () => say('Guard', 'Welcome to Mirage, jewel of the Sunscar. Mind the sand in your boots. And your teeth.')),
+    N(5, 8, 42, { skin: '#c98e62', style: 'bun', body: '#3a8a8a', robe: true }, async () => say('Water Seller', 'Water! Cold water! Well — water. Warmish water. It\'s the desert, friend, adjust your expectations.')),
+    N(19, 8, 43, { skin: '#8d5a3a', hair: '#1f1b2e', body: '#8a3a2a', hat: 'cap', beard: true }, talkDalen),
+    N(8, 15, 44, { skin: '#c98e62', hair: '#1f1b2e', style: 'long', body: '#c04a7a', accent: '#e8c24a' }, async () => say('Dancer', 'The Sultana dances only once a year, on the night the First King\'s star rises. Nobody\'s seen that star in a long time.'), { wander: true }),
+    N(16, 15, 45, { skin: '#e2b48c', hair: '#a0a0a0', style: 'bald', body: '#5a4a8a', robe: true, beard: true }, talkHesper),
+    N(14, 12, 46, { skin: '#8d5a3a', style: 'spiky', body: '#e8c24a' }, async () => say('Kid', 'Sand bandits stole my kite. They steal EVERYTHING. If you fight them, steal it back! It\'s red!'), { wander: true })
+  ];
+  if (id === 'aerie') return [
+    N(5, 8, 51, { skin: '#f1c9a0', hair: '#e8e0d0', style: 'long', body: '#5a8ad0', robe: true, accent: '#fff' }, talkSkye, { name: 'Elder Skye' }),
+    N(13, 7, 52, { body: '#a03a2a', hat: 'cap', accent: '#e8c24a' }, async () => say('Arena Barker', 'Step right up! The Aerie Arena! Five cups, five legends! Walk inside and see the Arena Master — if you dare!')),
+    N(8, 11, 53, { style: 'spiky', body: '#3a8a5a' }, async () => say('Kite Kid', 'Up here the wind never stops. My kite\'s been flying for three days. I\'m scared to reel it in.'), { wander: true }),
+    N(19, 8, 54, { body: '#5a4a3a', hat: 'helm', accent: '#c8a040', beard: true }, async () => say('Aviator Rook', G.flags.airship ? 'You flew the Aurora here?! My great-great-great-grandmother rigged her sails. Treat her kindly.' : 'The old stories say a skyship sleeps under the desert.')),
+    N(16, 15, 55, { style: 'bun', body: '#8a5a9a' }, async () => say('Merchant', 'Our shops sell what the desert traders can\'t. Moon-silver, sky-steel. Pricey, but you\'re heroes. Heroes are rich, right?'), { wander: true }),
+    N(4, 16, 56, { ...LOOKS.guard, hair: '#a0a0a0', beard: true, body: '#7a3a3a' }, async () => say('Old Champion', 'I won the Gold Cup once. Lost an ear to a Dread Knight. Tip: bring Remedies, and don\'t fight the Grand Champion cup until you\'ve seen a dragon and lived.'))
+  ];
   if (id === 'frostmere') return [
     N(12, 8, 31, { skin: '#e8c8a8', hair: '#c8c8d8', style: 'long', body: '#2a3a6a', accent: '#e8d070', robe: true, beard: true }, talkWren, { mark: !f.q_stars || (f.lantern3 && !f.chart), name: 'Wren' }),
     N(16, 13, 32, { skin: '#f1c9a0', hair: '#e8e0d0', style: 'bun', body: '#6a3a5a', accent: '#c0a040', robe: true }, talkSable, { mark: !f.q_scholar || (!f.scholar_done && seenCount() >= 30), name: 'Sable' }),
@@ -4490,6 +5050,20 @@ async function talkMiner() { await say('Miner', 'The Revenants down there... the
 async function talkIronKid() { await say('Brick', 'Snow imps throw ice at you. Fire makes them cry. Real fire, not mean words.'); }
 async function talkSelene() {
   const f = G.flags;
+  if (f.lantern3 && !inParty('selene')) {
+    await sayAll([
+      ['Selene', 'They gave me a room. A warm room. I keep waiting for someone to tell me I don\'t deserve it.'],
+      [LY, 'Nobody\'s going to tell you that. I won\'t let them.'],
+      ['Selene', 'Then let me earn it. Seven years he spoke to me in the dark — I know his tricks, because I used most of them.']
+    ]);
+    const c = await choose('Selene', 'Let me fight beside you. Please.', ['Welcome aboard', 'Rest a while longer'], 1);
+    if (c === 0) {
+      addMember('selene'); f.selene = true; Audio_.sfx('levelup');
+      await narrate('Selene joined the party! Four fight at a time — choose who in Menu → Formation. Reserve members still earn half EXP.');
+      await say(LY, '...Welcome home, Selene.');
+    } else await say('Selene', 'I\'ll be here. Come back for me.');
+    return;
+  }
   if (!f.ending) {
     await sayAll([
       ['Selene', 'They gave me a room. A warm room. I keep waiting for someone to tell me I don\'t deserve it.'],
@@ -4501,6 +5075,9 @@ async function talkSelene() {
 // ------------- doors -------------
 async function doorEvent(townId, b) {
   Audio_.sfx('door');
+  return enterInterior(townId, b);
+}
+async function oldDoorEvent(townId, b) {
   if (b.kind === 'inn') return innStay(townId, b.price);
   if (b.shop) return openShop(b.shop, b.sign === 'arms' ? (townId === 'ironhold' ? 'Hilda the Smith' : 'Armorer') : 'Shopkeeper');
   if (townId === 'brightwater' && b.id === 'arinhouse') {
@@ -4568,6 +5145,10 @@ async function canEnterDungeon(did) {
     if (!f.kestrel) { await narrate('Great iron gates seal the mountain. A plaque reads: "SEALED BY ORDER OF THE THANE OF IRONHOLD."'); return false; }
     if (!f.mineOpen) { await say(KE, 'Not the front door, genius. This way — behind the boulder. Mind the bats.'); f.mineOpen = true; }
   }
+  if (did === 'tomb') {
+    if (!f.sunseal) { await narrate('A great stone door, half-buried in sand. At its center is a hollow shaped like a blazing sun.'); await say(OS, 'A royal seal. Someone in Mirage will know whose.'); return false; }
+    if (!f.tombOpen) { Audio_.sfx('lantern'); await narrate('You press the Sun Seal into the hollow. Sand pours from the cracks as the door grinds open for the first time in a thousand years.'); f.tombOpen = true; }
+  }
   if (did === 'observatory') {
     if (!f.chart) { await narrate('A domed door of pale stone, carved with constellations. One star is missing from the carving, as if someone pried it out.'); return false; }
     if (!f.obsOpen) { await narrate('You hold up Wren\'s Star Chart. The circled star glows — and so does the empty socket in the door. With a sound like a struck bell, the dome opens.'); Audio_.sfx('lantern'); f.obsOpen = true; }
@@ -4590,11 +5171,12 @@ async function onEnterDungeon(did) {
   if (did === 'hollow') await sayAll([[LY, 'It\'s so dark... the trees have grown right down into the earth.'], [A, 'Stay close. The Lantern should be at the deepest point of the Hollow.']]);
   if (did === 'shrine') await say(OS, 'Built by my order a thousand years ago, when the sea was young and priests were taller. Watch the pools.');
   if (did === 'mine') await say(KE, 'Emberdeep. Three levels down to the Stone Lantern. Whatever you hear down here — don\'t answer it.');
+  if (did === 'tomb') await sayAll([[KE, 'Gold on the walls. Gold on the floor. Nobody touch anything. ...Except me.'], [OS, 'This is a grave, Kestrel.'], [KE, 'Graves have the best stuff.']]);
   if (did === 'observatory') await sayAll([[LY, 'Look up. There\'s no ceiling. Just... stars.'], [OS, 'The first kings built this. Whatever they kept here, they wanted the sky to watch over it.']]);
   if (did === 'spire') await sayAll([[LY, 'I can feel him. Like cold water poured down my spine.'], [OS, 'Then we are close. Courage, children. Light is only ever a small thing, until it isn\'t.']]);
 }
 async function examineLantern(e) {
-  const names = { hollow: 'Ember', shrine: 'Tide', mine: 'Stone', spire: 'Dawn', observatory: 'Fifth' };
+  const names = { hollow: 'Ember', shrine: 'Tide', mine: 'Stone', spire: 'Dawn', observatory: 'Fifth', tomb: 'Sun' };
   if (e.lit) await narrate(`The ${names[e.did]} Lantern burns warm and steady. You feel safe here.`);
   else await narrate(`The ${names[e.did]} Lantern is cold and dark.`);
 }
@@ -4697,6 +5279,33 @@ async function bossEncounter(did) {
     ]);
     return;
   }
+  if (did === 'tomb') {
+    await sayAll([
+      ['???', 'Who wakes the First King?'],
+      ['Ozymar', '...Lamplighters. My heirs in craft, if not in blood. I am Ozymar. I lit the first Lantern.'],
+      ['Ozymar', 'Did they tell you why? The Hollow King was my brother, Orun. Two halves of one crown — he held the night, and I the day.'],
+      ['Ozymar', 'When he hungered for all of it, I chained him beneath the world with four flames... and a fifth I could not keep. For that failure, the gods bound me here.'],
+      ['Ozymar', 'Show me you can carry the light further than I did.']
+    ]);
+    const r = await startBattle(['firstking'], { boss: true, bg: 'tomb' });
+    if (r === 'lose') return gameOver();
+    f.boss_tomb = true; refreshEntities();
+    await sayAll([
+      ['Ozymar', '...Yes. You burn brighter than I ever did. Perhaps that is all a king can hope for.'],
+      ['Ozymar', 'Light my lantern, little lamplighter. Then take my skyship, the Aurora — she sleeps beneath these sands.'],
+      ['Ozymar', 'Where the mesas wall in the sky, my crew\'s children still live. Aerie. Tell them their king is finally resting.']
+    ]);
+    await relightLantern('tomb');
+    f.lantern_sun = true; f.airship = true;
+    const L = WORLD_LOC['6'], wm = getMap('world');
+    let spot = { x: L.x, y: L.y + 1 };
+    for (const [dx, dy] of [[0, 1], [1, 0], [-1, 0], [0, -1], [1, 1], [-1, 1]]) { const c = wm.at(L.x + dx, L.y + dy); if (c && !'~r^Mxm'.includes(c) && !/[A-F1-6]/.test(c)) { spot = { x: L.x + dx, y: L.y + dy }; break; } }
+    G.airship = { ...spot, dir: 'right' };
+    Audio_.sfx('chest');
+    await narrate('You received the skyship Aurora! She waits outside the tomb. Walk onto her to fly; press Enter in the air to land.');
+    await say(LY, 'A flying ship. Arin. A FLYING SHIP.');
+    return;
+  }
   if (did === 'observatory') {
     await sayAll([
       ['Astral Wyrm', 'LAMPLIGHTER. I SMELL THE FLAME ON YOUR HANDS.'],
@@ -4739,7 +5348,7 @@ async function bossEncounter(did) {
     await fadeTo(0.8, 600, '#ffe8b0');
     await sayAll([
       ['Selene', 'Lyra! Everyone! Take the light — all of it!'],
-      ['', 'From far away, the glow of three Lanterns pours up through the Spire. Ember, Tide, Stone. The party is fully restored!']
+      ['', 'The glow of three Lanterns pours up through the Spire — Ember, Tide, Stone — answering Selene\'s call. The party is fully restored!']
     ]);
     healAll(); Audio_.sfx('lantern');
     await fadeTo(0, 600, '#ffe8b0');
@@ -4800,6 +5409,114 @@ async function talkFrostKid() { await say('Tamsin', 'Wren lets me look through t
 async function talkTrapper() { await say('Trapper', G.flags.chart ? 'Heading to the island, eh? Sail west from here. You\'ll see the dome before you see the shore.' : 'On clear nights you can see a dome on that little island to the west. Nobody goes there. No reason to. Or so we tell ourselves.'); }
 async function talkVeteran() { await say('Old Soldier', 'Accessories, friend! A good charm on your wrist keeps you awake when the imps start singing. Buy one at the trinket shop.'); }
 
+// ------------- Sunscar & Aerie -------------
+async function talkDalen() { await say('Caravan Master Dalen', G.flags.airship ? 'You found a way into the walled valley? By AIR? I\'ve been trying for thirty years with ladders.' : 'East of here the mesas form a ring with a valley inside. No pass, no tunnel. Only birds get in. And the birds won\'t tell.'); }
+async function talkHesper() {
+  await sayAll([
+    ['Scholar Hesper', 'Ozymar, the First King, lit the Lanterns and then simply... vanished. Our chronicles say he walked into his own tomb and sealed it behind him.'],
+    ['Scholar Hesper', 'Why would a king entomb himself alive? I have spent forty years on that question. I suspect the answer will be very sad.']
+  ]);
+}
+async function talkImara() {
+  const f = G.flags;
+  if (!f.sunseal) {
+    await sayAll([
+      ['Sultana Imara', 'Lamplighters, in my hall. The sands whispered you would come.'],
+      ['Sultana Imara', 'South of Mirage lies the Tomb of Ozymar, the First King, sealed by my line for a thousand years. Since the Lanterns dimmed, the dead inside have grown restless.'],
+      ['Sultana Imara', 'My oath forbids me to open it. But no oath forbids me to lend the Sun Seal to the lamplighter of legend. Go — and give the old king peace.']
+    ]);
+    addItem('sun_seal'); f.sunseal = true; Audio_.sfx('chest');
+    await narrate('Received the Sun Seal! The Tomb of the First King lies south of Mirage.');
+    return;
+  }
+  await say('Sultana Imara', f.boss_tomb ? 'The sands are quiet. My people will dance under the First King\'s star again. Thank you.' : 'The Tomb lies south of the city. The Sun Seal will open its door.');
+}
+async function talkSkye() {
+  const f = G.flags;
+  if (!f.seenAerie) {
+    f.seenAerie = true;
+    await sayAll([
+      ['Elder Skye', 'A ship from the sky... the Aurora?! Then the First King — ?'],
+      [A, 'He\'s at rest. He asked us to tell you.'],
+      ['Elder Skye', '...A thousand years we waited for those words. Welcome to Aerie, lamplighters. Our arena, our shops, our hearths — all are yours.']
+    ]);
+    return;
+  }
+  await say('Elder Skye', 'Our ancestors flew the Aurora to light the Lanterns. Now you fly her to keep them lit. The circle closes.');
+}
+async function arenaMenu() {
+  const f = G.flags;
+  if (!f.arenaMet) { f.arenaMet = true; await sayAll([['Arena Master', 'Challengers! Five cups. Each is a gauntlet — several battles back to back, no inn between rounds. Items are allowed. Running is not.'], ['Arena Master', 'Win, and the prize is yours. Lose, and our healers drag you out. No shame in it. Well — a little shame.']]); }
+  while (true) {
+    const items = ARENA_CUPS.map(c => ({ label: c.name + (f['cup_' + c.id] ? '  ✓' : ''), right: 'Lv ' + c.level + '+', color: f['cup_' + c.id] ? '#9adf9a' : '#fff' }));
+    items.push({ label: 'Leave' });
+    const k = await listMenu({ x: 150, y: 90, w: 340, rows: 6, title: 'Aerie Arena', items, help: i => i < ARENA_CUPS.length ? `${ARENA_CUPS[i].rounds.length} rounds · Prize: ${ITEMS[ARENA_CUPS[i].prize].name} + ${ARENA_CUPS[i].gold} G${f['cup_' + ARENA_CUPS[i].id] ? ' (won — rematch for gold only)' : ''}` : '' });
+    if (k < 0 || k === ARENA_CUPS.length) break;
+    const cup = ARENA_CUPS[k];
+    const c = await choose('Arena Master', `The ${cup.name}: ${cup.rounds.length} battles in a row. Ready?`, ['Fight!', 'Not yet'], 1);
+    if (c !== 0) continue;
+    let won = true;
+    for (let r = 0; r < cup.rounds.length; r++) {
+      await narrate(`${cup.name} — Round ${r + 1} of ${cup.rounds.length}. FIGHT!`);
+      const grp = cup.rounds[r], boss = grp.some(id => MONSTERS[id].boss);
+      const res = await startBattle(grp, { bg: 'arena', arena: true, boss, canRun: false });
+      if (res !== 'win') { won = false; break; }
+    }
+    if (!won) { healAll(); await say('Arena Master', 'Carried out on a stretcher! ...Patched up, good as new. Come back any time.'); continue; }
+    Audio_.sfx('levelup');
+    G.gold += cup.gold;
+    if (!f['cup_' + cup.id]) { f['cup_' + cup.id] = true; addItem(cup.prize); await narrate(`Champions of the ${cup.name}! Received ${ITEMS[cup.prize].name} and ${cup.gold} gold!`); }
+    else await narrate(`Champions again! Received ${cup.gold} gold.`);
+    if (cup.id === 'champion') await say('Arena Master', 'GRAND CHAMPIONS! In a thousand years, nobody has worn that crown. Aerie will sing about you until the wind stops.');
+  }
+}
+// ------------- interior people -------------
+function interiorNpcs(m) {
+  const f = G.flags, b = m.building, t = m.town, out = [];
+  const K = m.keeper;
+  const keeperLook = seed => npcLook(seed, { robe: false });
+  if (m.ikind === 'shop' || m.ikind === 'forge') {
+    const name = b.sign === 'arms' ? (t === 'ironhold' ? 'Hilda the Smith' : 'Armorer') : 'Shopkeeper';
+    out.push({ x: K.x, y: K.y, look: t === 'ironhold' && b.sign === 'arms' ? { ...LOOKS.dwarf, hair: '#e8c060', style: 'bun', beard: false, body: '#7a3a2a' } : keeperLook(t.length * 13 + b.x), talk: () => openShop(b.shop, name) });
+  }
+  if (m.ikind === 'inn') out.push({ x: 9, y: 2, look: keeperLook(t.length * 7 + 3), talk: () => innStay(t, b.price) });
+  if (m.ikind === 'arena') out.push({ x: K.x, y: K.y, look: { skin: '#c98e62', hair: '#1f1b2e', style: 'short', body: '#a03a2a', accent: '#e8c24a', beard: true }, talk: arenaMenu, name: 'Arena Master' });
+  if (m.ikind === 'chapel') out.push({ x: 6, y: 3, look: { skin: '#f1c9a0', hair: '#c8b8a0', style: 'bun', body: '#e9ecf2', accent: '#3a8fd0', robe: true }, talk: async () => { await say('Sister Wenna', 'May the tide carry your burdens. Rest a moment in the Sea Mother\'s house.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
+  if (m.ikind === 'jail' && t === 'ironhold') {
+    if (!f.kestrel) out.push({ x: 3, y: 3, look: LOOKS.kestrel, talk: talkKestrelJail, mark: !f.metKestrel });
+    out.push({ x: 8, y: 6, look: LOOKS.guard, talk: talkJailGuard });
+  }
+  if (m.ikind === 'hall') {
+    if (t === 'mirage') { out.push({ x: 6, y: 2, look: { skin: '#a8724a', hair: '#1f1b2e', style: 'long', body: '#3a8a8a', accent: '#e8c24a', robe: true }, talk: talkImara, name: 'Sultana Imara', mark: !f.sunseal }); out.push({ x: 2, y: 5, look: { ...LOOKS.guard, skin: '#8d5a3a', hat: 'cap', accent: '#e8c24a' }, talk: async () => say('Palace Guard', 'Bow when you speak to the Sultana. Or don\'t. She says she finds bowing tedious.') }); }
+    else if (t === 'ironhold') out.push({ x: 6, y: 2, look: LOOKS.guard, talk: async () => say('Lieutenant Varga', G.flags.lantern3 ? 'The mines are quiet. The Captain\'s actually smiling. It\'s unsettling.' : 'The Captain\'s out in the square. He doesn\'t like being cooped up in here with the paperwork.'), wander: true });
+    else out.push({ x: 6, y: 2, look: npcLook(77, { style: 'bald', beard: true, robe: true }), talk: async () => say('Scribe Tam', 'The Elder\'s records go back three hundred years. Every Lamplighter of Brightwater is written here. Your father\'s name is on the last page, Arin. Yours will be next.') });
+  }
+  if (m.ikind === 'study') out.push({ x: 3, y: 6, look: { style: 'spiky', body: '#3a3a6a', accent: '#e8d070' }, talk: async () => say('Apprentice Pell', 'Wren lets me polish the lenses. It\'s the most important job in Frostmere. Probably.') });
+  if (m.ikind === 'house') {
+    if (t === 'brightwater' && b.id === 'arinhouse') { if (f.cat_done) out.push({ x: 4, y: 6, look: null, cat: true, talk: async () => say('Mittens', 'Mrrp. (She has claimed your bed.)') }); }
+    else {
+      const lines = {
+        halden: ['My husband\'s out fishing. He\'s ALWAYS out fishing. I think the fish like him more than I do.', 'Harbor master Brann? Good man. Terrible singer.'],
+        ironhold: ['Mind the soot. Everything in Ironhold is soot, underneath.', 'My grandfather dug the third shaft of Emberdeep. Then he dug his way back out. Twice.'],
+        frostmere: ['Sable writes about monsters. I just try not to be eaten by them.', 'Wren kept us up all night shouting about stars. Good news, I think?'],
+        mirage: ['In the old days the caravans came every week. Now it\'s every month. The bandits, you see.', 'The oasis has never once run dry. Not in a thousand years.'],
+        aerie: ['We grow beans on the cliffs. Very windy beans.', 'My family kept the Aurora\'s logbooks. Every page ends with "Still waiting."']
+      }[t] || ['Make yourself at home. Well — not TOO at home.'];
+      out.push({ x: 5, y: 4, look: npcLook(t.length * 31 + b.x * 3), talk: async () => say('Resident', pick(lines)), wander: true });
+    }
+  }
+  return out.filter(n => n.look || n.cat).map((n, i) => n.cat ? { ...n, kind: 'npc', look: LOOKS.elder, catSprite: true } : (n.look.skin && n.look.hair ? n : { ...n, look: npcLook(t.length * 17 + i * 5 + b.x, n.look) }));
+}
+async function talkKestrelJail() {
+  if (G.flags.metKestrel) { await say('Kestrel', 'Still here. Still bored. Captain Dunmar, remember? He\'s out in the square. Bring the priest. Captains love priests.'); return; }
+  await sayAll([
+    ['Prisoner', 'Visitors! You don\'t look like guards. You look like... adventurers. Ugh.'],
+    [KE, 'Name\'s Kestrel. They caught me with a map of Emberdeep. The real one — with the smugglers\' tunnel the dwarves never sealed.'],
+    [KE, 'You want into those mines? Get me out of here, and I\'ll get you in. Captain Dunmar\'s in the square. Bring the priest. Captains love priests.']
+  ]);
+  G.flags.metKestrel = true; refreshEntities();
+}
+
 // ------------- sea bounty -------------
 async function whirlpoolEvent() {
   const f = G.flags;
@@ -4829,6 +5546,8 @@ function questList() {
   if (f.q_hammer) q.push({ title: 'The Stonebrand', giver: 'Orrin, Ironhold', done: !!f.hammer_done, reward: 'Dwarven Band', desc: f.hammer_done ? 'The Stonebrand hangs over Orrin\'s forge again.' : hasItem('stonebrand') ? 'Bring the Stonebrand back to Orrin in Ironhold.' : 'Orrin\'s ancestral hammer lies in the second hall (2F) of Emberdeep Mines.' });
   if (f.bounty) q.push({ title: 'Bounty: Leviathan', giver: 'Brann, Port Halden', done: !!f.bounty_done, reward: '4000 gold, Sailor\'s Compass', desc: f.bounty_done ? 'The harbor guild paid up. The seas are safer.' : f.leviathan ? 'The Leviathan is defeated. Collect your bounty from Brann.' : 'Sail into the whirlpool in the open sea (marked on your map) and defeat the Leviathan. Recommended level: 16+.' });
   if (f.q_stars) q.push({ title: 'Stars Over Frostmere', giver: 'Wren, Frostmere', done: !!f.lantern5, reward: 'The Fifth Flame', desc: f.lantern5 ? 'The Fifth Flame burns among the stars once more.' : f.chart ? 'Use the Star Chart to open the Starfall Observatory on the island west of Frostmere, and find the Fifth Flame. Recommended level: 32+.' : 'Wren needs a clear sky. Relight three Lanterns, then return to him.' });
+  if (f.sunseal) q.push({ title: 'The First King', giver: 'Sultana Imara, Mirage', done: !!f.boss_tomb, reward: 'The skyship Aurora', desc: f.boss_tomb ? 'Ozymar rests at last, and the Aurora is yours.' : 'Open the Tomb of the First King, south of Mirage, with the Sun Seal. Recommended level: 26+.' });
+  if (f.arenaMet) { const n = ARENA_CUPS.filter(c => f['cup_' + c.id]).length; q.push({ title: 'Arena Legend', giver: 'Arena Master, Aerie', done: !!f.cup_champion, reward: 'Lantern Crown', desc: f.cup_champion ? 'Grand Champions of the Aerie Arena!' : `Win all five cups at the Aerie Arena. (${n}/5 won)` }); }
   if (f.q_scholar) q.push({ title: 'Monster Scholar', giver: 'Sable, Frostmere', done: !!f.scholar_done, reward: 'Silk Ribbon', desc: f.scholar_done ? 'Your notes are in Sable\'s bestiary.' : `Record 30 different creatures in your bestiary, then visit Sable. (${seenCount()}/30)` });
   return q;
 }
@@ -4843,7 +5562,7 @@ function mainObjective() {
   if (!f.kestrel) return { text: f.metKestrel ? 'Ask Captain Dunmar in Ironhold to release Kestrel.' : 'Sail north to Ironhold and find a way into Emberdeep.', loc: 'C' };
   if (!f.lantern3) return { text: 'Relight the Stone Lantern deep in Emberdeep Mines.', loc: '3' };
   if (!f.ending) return { text: 'Sail east to the Isle of Dusk and climb the Hollow Spire.', loc: '4' };
-  return { text: 'The Lanterns burn. The world is at peace.', loc: null };
+  return { text: 'The Lanterns burn. The world is at peace — but legends still wait in the Sunscar and the sky.', loc: null };
 }
 
 // ------------- title -------------
@@ -4869,8 +5588,11 @@ async function titleMenu() {
   Audio_.play('title');
   await fadeTo(0, 600);
   while (true) {
-    const items = [{ label: 'New Game' }, { label: 'Continue', disabled: !hasSave() }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }];
-    const k = await listMenu({ x: W / 2 - 90, y: 196, w: 180, rows: 3, items, cancel: false, index: hasSave() ? 1 : 0 });
+    const ngp = saveFlag('ending');
+    const items = [{ label: 'New Game' }, { label: 'Continue', disabled: !hasSave() }, { label: ngp ? `New Game+ (${(saveFlag('ngplus') || 0) + 1})` : 'New Game+', disabled: !ngp }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }];
+    const k0 = await listMenu({ x: W / 2 - 100, y: 190, w: 200, rows: 4, items, cancel: false, index: hasSave() ? 1 : 0, help: i => i === 2 ? (ngp ? 'Keep your levels, gear and items. Enemies grow stronger.' : 'Finish the story to unlock New Game+.') : '' , helpY: H - 60 });
+    const k = k0 === 3 ? 2 : k0 === 2 ? 3 : k0;
+    if (k === 3) { await newGamePlus(); return; }
     if (k === 0) { await newGame(); return; }
     if (k === 1) {
       if (loadGame()) {
@@ -4885,11 +5607,24 @@ async function titleMenu() {
   }
 }
 const BlackScene = { lines: [], t: 0, tick(dt) { this.t += dt; }, update() { }, draw(g) { g.fillStyle = '#05040c'; g.fillRect(0, 0, W, H); this.lines.forEach((l, i) => { g.save(); g.globalAlpha = clamp((this.t - l.at) / 1.2, 0, 1); text(g, l.s, W / 2, 130 + i * 44, { size: 20, fam: SERIF, align: 'center', color: '#e8dcc8' }); g.restore(); }); } };
-async function newGame() {
+function saveFlag(k) { try { const d = JSON.parse(localStorage.getItem(SAVE_KEY)); return d && d.flags ? d.flags[k] : null; } catch (e) { return null; } }
+async function newGamePlus() {
+  if (!loadGame()) return newGame();
+  const carry = {}; G.party.forEach(m => carry[m.id] = { ...m, status: {} });
+  const inv = {}; for (const k in G.inv) if (ITEMS[k] && ITEMS[k].kind !== 'key') inv[k] = G.inv[k];
+  for (const m of G.party) for (const sl of ['weapon', 'armor', 'acc']) if (m[sl]) { /* equipped gear stays on the carried member */ }
+  await newGame({ carry, inv, gold: G.gold, seen: G.seen, killed: G.killed, ng: (G.flags.ngplus || 0) + 1 });
+}
+async function newGame(plus) {
   await fadeTo(1, 700);
   Object.keys(G.flags).forEach(k => delete G.flags[k]);
-  G.party = [makeMember('arin', 1), makeMember('lyra', 1)];
-  G.inv = { potion: 2 }; G.gold = 80; G.playTime = 0; G.maps = {}; G.ship = null; G.onShip = false; G.lastInn = { town: 'brightwater' };
+  G.carry = plus ? plus.carry : null;
+  G.party = [];
+  if (plus) { G.party.push({ ...G.carry.arin, status: {} }, { ...G.carry.lyra, status: {} }); healAll(); }
+  else G.party = [makeMember('arin', 1), makeMember('lyra', 1)];
+  G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
+  G.seen = plus ? plus.seen : {}; G.killed = plus ? plus.killed : {};
+  if (plus) G.flags.ngplus = plus.ng;
   G.scene = BlackScene; BlackScene.lines = []; BlackScene.t = 0;
   await fadeTo(0, 400);
   const story = ['Long ago, the Hollow Night swallowed the world.', 'Four Lanterns were lit to chain it beneath the earth —', 'Ember, Tide, Stone, and Dawn.', 'For a thousand years, their flames held.', '...Until tonight.'];
@@ -4975,6 +5710,10 @@ async function runEnding() {
 // ------------- main loop -------------
 let lastT = performance.now();
 function frame(now) {
+  try { frameInner(now); } catch (e) { if (!frame.seen) frame.seen = new Set(); if (!frame.seen.has(String(e))) { frame.seen.add(String(e)); console.error(e); } }
+  requestAnimationFrame(frame);
+}
+function frameInner(now) {
   const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
   Input.update(dt);
   if (Input.p('mute')) Audio_.toggleMute();
@@ -4988,7 +5727,6 @@ function frame(now) {
   UI.draw(ctx);
   drawToasts(ctx, dt);
   if (Fade.v > 0) { ctx.save(); ctx.globalAlpha = Fade.v; ctx.fillStyle = Fade.color; ctx.fillRect(0, 0, W, H); ctx.restore(); }
-  requestAnimationFrame(frame);
 }
 Fade.v = 1;
 G.scene = TitleScene;
