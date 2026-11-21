@@ -13,7 +13,7 @@ const LOOKS = {
   dwarf: { skin: '#e8b090', hair: '#c06a2a', style: 'bald', body: '#5a4a3a', accent: '#c0a040', beard: true },
   selene: { skin: '#f6d6b8', hair: '#a03a2a', style: 'long', body: '#3a2a5a', accent: '#c04aa8', robe: true }
 };
-function N(x, y, seed, o, talk, extra = {}) { return { x, y, look: o.skin ? o : npcLook(seed, o), talk, ...extra }; }
+function N(x, y, seed, o, talk, extra = {}) { return { x, y, look: o.skin && o.hair && o.body ? o : npcLook(seed, o), talk, ...extra }; }
 
 function townNpcs(id) {
   const f = G.flags;
@@ -47,9 +47,25 @@ function townNpcs(id) {
       N(6, 17, 25, { body: '#5a5a5a', hat: 'helm' }, talkMiner, { wander: true }),
       N(20, 17, 26, { style: 'spiky', body: '#3a5a8a' }, talkIronKid, { wander: true })
     ];
-    if (f.lantern3) l.push(N(13, 9, 27, LOOKS.selene, talkSelene, { name: 'Selene' }));
+    if (f.lantern3 && !inParty('selene')) l.push(N(13, 9, 27, LOOKS.selene, talkSelene, { name: 'Selene', mark: true }));
     return l;
   }
+  if (id === 'mirage') return [
+    N(13, 16, 41, { ...LOOKS.guard, skin: '#c98e62', hat: 'cap', accent: '#e8c24a' }, async () => say('Guard', 'Welcome to Mirage, jewel of the Sunscar. Mind the sand in your boots. And your teeth.')),
+    N(5, 8, 42, { skin: '#c98e62', style: 'bun', body: '#3a8a8a', robe: true }, async () => say('Water Seller', 'Water! Cold water! Well — water. Warmish water. It\'s the desert, friend, adjust your expectations.')),
+    N(19, 8, 43, { skin: '#8d5a3a', hair: '#1f1b2e', body: '#8a3a2a', hat: 'cap', beard: true }, talkDalen),
+    N(8, 15, 44, { skin: '#c98e62', hair: '#1f1b2e', style: 'long', body: '#c04a7a', accent: '#e8c24a' }, async () => say('Dancer', 'The Sultana dances only once a year, on the night the First King\'s star rises. Nobody\'s seen that star in a long time.'), { wander: true }),
+    N(16, 15, 45, { skin: '#e2b48c', hair: '#a0a0a0', style: 'bald', body: '#5a4a8a', robe: true, beard: true }, talkHesper),
+    N(14, 12, 46, { skin: '#8d5a3a', style: 'spiky', body: '#e8c24a' }, async () => say('Kid', 'Sand bandits stole my kite. They steal EVERYTHING. If you fight them, steal it back! It\'s red!'), { wander: true })
+  ];
+  if (id === 'aerie') return [
+    N(5, 8, 51, { skin: '#f1c9a0', hair: '#e8e0d0', style: 'long', body: '#5a8ad0', robe: true, accent: '#fff' }, talkSkye, { name: 'Elder Skye' }),
+    N(13, 7, 52, { body: '#a03a2a', hat: 'cap', accent: '#e8c24a' }, async () => say('Arena Barker', 'Step right up! The Aerie Arena! Five cups, five legends! Walk inside and see the Arena Master — if you dare!')),
+    N(8, 11, 53, { style: 'spiky', body: '#3a8a5a' }, async () => say('Kite Kid', 'Up here the wind never stops. My kite\'s been flying for three days. I\'m scared to reel it in.'), { wander: true }),
+    N(19, 8, 54, { body: '#5a4a3a', hat: 'helm', accent: '#c8a040', beard: true }, async () => say('Aviator Rook', G.flags.airship ? 'You flew the Aurora here?! My great-great-great-grandmother rigged her sails. Treat her kindly.' : 'The old stories say a skyship sleeps under the desert.')),
+    N(16, 15, 55, { style: 'bun', body: '#8a5a9a' }, async () => say('Merchant', 'Our shops sell what the desert traders can\'t. Moon-silver, sky-steel. Pricey, but you\'re heroes. Heroes are rich, right?'), { wander: true }),
+    N(4, 16, 56, { ...LOOKS.guard, hair: '#a0a0a0', beard: true, body: '#7a3a3a' }, async () => say('Old Champion', 'I won the Gold Cup once. Lost an ear to a Dread Knight. Tip: bring Remedies, and don\'t fight the Grand Champion cup until you\'ve seen a dragon and lived.'))
+  ];
   if (id === 'frostmere') return [
     N(12, 8, 31, { skin: '#e8c8a8', hair: '#c8c8d8', style: 'long', body: '#2a3a6a', accent: '#e8d070', robe: true, beard: true }, talkWren, { mark: !f.q_stars || (f.lantern3 && !f.chart), name: 'Wren' }),
     N(16, 13, 32, { skin: '#f1c9a0', hair: '#e8e0d0', style: 'bun', body: '#6a3a5a', accent: '#c0a040', robe: true }, talkSable, { mark: !f.q_scholar || (!f.scholar_done && seenCount() >= 30), name: 'Sable' }),
@@ -241,6 +257,20 @@ async function talkMiner() { await say('Miner', 'The Revenants down there... the
 async function talkIronKid() { await say('Brick', 'Snow imps throw ice at you. Fire makes them cry. Real fire, not mean words.'); }
 async function talkSelene() {
   const f = G.flags;
+  if (f.lantern3 && !inParty('selene')) {
+    await sayAll([
+      ['Selene', 'They gave me a room. A warm room. I keep waiting for someone to tell me I don\'t deserve it.'],
+      [LY, 'Nobody\'s going to tell you that. I won\'t let them.'],
+      ['Selene', 'Then let me earn it. Seven years he spoke to me in the dark — I know his tricks, because I used most of them.']
+    ]);
+    const c = await choose('Selene', 'Let me fight beside you. Please.', ['Welcome aboard', 'Rest a while longer'], 1);
+    if (c === 0) {
+      addMember('selene'); f.selene = true; Audio_.sfx('levelup');
+      await narrate('Selene joined the party! Four fight at a time — choose who in Menu → Formation. Reserve members still earn half EXP.');
+      await say(LY, '...Welcome home, Selene.');
+    } else await say('Selene', 'I\'ll be here. Come back for me.');
+    return;
+  }
   if (!f.ending) {
     await sayAll([
       ['Selene', 'They gave me a room. A warm room. I keep waiting for someone to tell me I don\'t deserve it.'],
@@ -252,6 +282,9 @@ async function talkSelene() {
 // ------------- doors -------------
 async function doorEvent(townId, b) {
   Audio_.sfx('door');
+  return enterInterior(townId, b);
+}
+async function oldDoorEvent(townId, b) {
   if (b.kind === 'inn') return innStay(townId, b.price);
   if (b.shop) return openShop(b.shop, b.sign === 'arms' ? (townId === 'ironhold' ? 'Hilda the Smith' : 'Armorer') : 'Shopkeeper');
   if (townId === 'brightwater' && b.id === 'arinhouse') {
@@ -319,6 +352,10 @@ async function canEnterDungeon(did) {
     if (!f.kestrel) { await narrate('Great iron gates seal the mountain. A plaque reads: "SEALED BY ORDER OF THE THANE OF IRONHOLD."'); return false; }
     if (!f.mineOpen) { await say(KE, 'Not the front door, genius. This way — behind the boulder. Mind the bats.'); f.mineOpen = true; }
   }
+  if (did === 'tomb') {
+    if (!f.sunseal) { await narrate('A great stone door, half-buried in sand. At its center is a hollow shaped like a blazing sun.'); await say(OS, 'A royal seal. Someone in Mirage will know whose.'); return false; }
+    if (!f.tombOpen) { Audio_.sfx('lantern'); await narrate('You press the Sun Seal into the hollow. Sand pours from the cracks as the door grinds open for the first time in a thousand years.'); f.tombOpen = true; }
+  }
   if (did === 'observatory') {
     if (!f.chart) { await narrate('A domed door of pale stone, carved with constellations. One star is missing from the carving, as if someone pried it out.'); return false; }
     if (!f.obsOpen) { await narrate('You hold up Wren\'s Star Chart. The circled star glows — and so does the empty socket in the door. With a sound like a struck bell, the dome opens.'); Audio_.sfx('lantern'); f.obsOpen = true; }
@@ -341,11 +378,12 @@ async function onEnterDungeon(did) {
   if (did === 'hollow') await sayAll([[LY, 'It\'s so dark... the trees have grown right down into the earth.'], [A, 'Stay close. The Lantern should be at the deepest point of the Hollow.']]);
   if (did === 'shrine') await say(OS, 'Built by my order a thousand years ago, when the sea was young and priests were taller. Watch the pools.');
   if (did === 'mine') await say(KE, 'Emberdeep. Three levels down to the Stone Lantern. Whatever you hear down here — don\'t answer it.');
+  if (did === 'tomb') await sayAll([[KE, 'Gold on the walls. Gold on the floor. Nobody touch anything. ...Except me.'], [OS, 'This is a grave, Kestrel.'], [KE, 'Graves have the best stuff.']]);
   if (did === 'observatory') await sayAll([[LY, 'Look up. There\'s no ceiling. Just... stars.'], [OS, 'The first kings built this. Whatever they kept here, they wanted the sky to watch over it.']]);
   if (did === 'spire') await sayAll([[LY, 'I can feel him. Like cold water poured down my spine.'], [OS, 'Then we are close. Courage, children. Light is only ever a small thing, until it isn\'t.']]);
 }
 async function examineLantern(e) {
-  const names = { hollow: 'Ember', shrine: 'Tide', mine: 'Stone', spire: 'Dawn', observatory: 'Fifth' };
+  const names = { hollow: 'Ember', shrine: 'Tide', mine: 'Stone', spire: 'Dawn', observatory: 'Fifth', tomb: 'Sun' };
   if (e.lit) await narrate(`The ${names[e.did]} Lantern burns warm and steady. You feel safe here.`);
   else await narrate(`The ${names[e.did]} Lantern is cold and dark.`);
 }
@@ -448,6 +486,33 @@ async function bossEncounter(did) {
     ]);
     return;
   }
+  if (did === 'tomb') {
+    await sayAll([
+      ['???', 'Who wakes the First King?'],
+      ['Ozymar', '...Lamplighters. My heirs in craft, if not in blood. I am Ozymar. I lit the first Lantern.'],
+      ['Ozymar', 'Did they tell you why? The Hollow King was my brother, Orun. Two halves of one crown — he held the night, and I the day.'],
+      ['Ozymar', 'When he hungered for all of it, I chained him beneath the world with four flames... and a fifth I could not keep. For that failure, the gods bound me here.'],
+      ['Ozymar', 'Show me you can carry the light further than I did.']
+    ]);
+    const r = await startBattle(['firstking'], { boss: true, bg: 'tomb' });
+    if (r === 'lose') return gameOver();
+    f.boss_tomb = true; refreshEntities();
+    await sayAll([
+      ['Ozymar', '...Yes. You burn brighter than I ever did. Perhaps that is all a king can hope for.'],
+      ['Ozymar', 'Light my lantern, little lamplighter. Then take my skyship, the Aurora — she sleeps beneath these sands.'],
+      ['Ozymar', 'Where the mesas wall in the sky, my crew\'s children still live. Aerie. Tell them their king is finally resting.']
+    ]);
+    await relightLantern('tomb');
+    f.lantern_sun = true; f.airship = true;
+    const L = WORLD_LOC['6'], wm = getMap('world');
+    let spot = { x: L.x, y: L.y + 1 };
+    for (const [dx, dy] of [[0, 1], [1, 0], [-1, 0], [0, -1], [1, 1], [-1, 1]]) { const c = wm.at(L.x + dx, L.y + dy); if (c && !'~r^Mxm'.includes(c) && !/[A-F1-6]/.test(c)) { spot = { x: L.x + dx, y: L.y + dy }; break; } }
+    G.airship = { ...spot, dir: 'right' };
+    Audio_.sfx('chest');
+    await narrate('You received the skyship Aurora! She waits outside the tomb. Walk onto her to fly; press Enter in the air to land.');
+    await say(LY, 'A flying ship. Arin. A FLYING SHIP.');
+    return;
+  }
   if (did === 'observatory') {
     await sayAll([
       ['Astral Wyrm', 'LAMPLIGHTER. I SMELL THE FLAME ON YOUR HANDS.'],
@@ -490,7 +555,7 @@ async function bossEncounter(did) {
     await fadeTo(0.8, 600, '#ffe8b0');
     await sayAll([
       ['Selene', 'Lyra! Everyone! Take the light — all of it!'],
-      ['', 'From far away, the glow of three Lanterns pours up through the Spire. Ember, Tide, Stone. The party is fully restored!']
+      ['', 'The glow of three Lanterns pours up through the Spire — Ember, Tide, Stone — answering Selene\'s call. The party is fully restored!']
     ]);
     healAll(); Audio_.sfx('lantern');
     await fadeTo(0, 600, '#ffe8b0');
@@ -551,6 +616,114 @@ async function talkFrostKid() { await say('Tamsin', 'Wren lets me look through t
 async function talkTrapper() { await say('Trapper', G.flags.chart ? 'Heading to the island, eh? Sail west from here. You\'ll see the dome before you see the shore.' : 'On clear nights you can see a dome on that little island to the west. Nobody goes there. No reason to. Or so we tell ourselves.'); }
 async function talkVeteran() { await say('Old Soldier', 'Accessories, friend! A good charm on your wrist keeps you awake when the imps start singing. Buy one at the trinket shop.'); }
 
+// ------------- Sunscar & Aerie -------------
+async function talkDalen() { await say('Caravan Master Dalen', G.flags.airship ? 'You found a way into the walled valley? By AIR? I\'ve been trying for thirty years with ladders.' : 'East of here the mesas form a ring with a valley inside. No pass, no tunnel. Only birds get in. And the birds won\'t tell.'); }
+async function talkHesper() {
+  await sayAll([
+    ['Scholar Hesper', 'Ozymar, the First King, lit the Lanterns and then simply... vanished. Our chronicles say he walked into his own tomb and sealed it behind him.'],
+    ['Scholar Hesper', 'Why would a king entomb himself alive? I have spent forty years on that question. I suspect the answer will be very sad.']
+  ]);
+}
+async function talkImara() {
+  const f = G.flags;
+  if (!f.sunseal) {
+    await sayAll([
+      ['Sultana Imara', 'Lamplighters, in my hall. The sands whispered you would come.'],
+      ['Sultana Imara', 'South of Mirage lies the Tomb of Ozymar, the First King, sealed by my line for a thousand years. Since the Lanterns dimmed, the dead inside have grown restless.'],
+      ['Sultana Imara', 'My oath forbids me to open it. But no oath forbids me to lend the Sun Seal to the lamplighter of legend. Go — and give the old king peace.']
+    ]);
+    addItem('sun_seal'); f.sunseal = true; Audio_.sfx('chest');
+    await narrate('Received the Sun Seal! The Tomb of the First King lies south of Mirage.');
+    return;
+  }
+  await say('Sultana Imara', f.boss_tomb ? 'The sands are quiet. My people will dance under the First King\'s star again. Thank you.' : 'The Tomb lies south of the city. The Sun Seal will open its door.');
+}
+async function talkSkye() {
+  const f = G.flags;
+  if (!f.seenAerie) {
+    f.seenAerie = true;
+    await sayAll([
+      ['Elder Skye', 'A ship from the sky... the Aurora?! Then the First King — ?'],
+      [A, 'He\'s at rest. He asked us to tell you.'],
+      ['Elder Skye', '...A thousand years we waited for those words. Welcome to Aerie, lamplighters. Our arena, our shops, our hearths — all are yours.']
+    ]);
+    return;
+  }
+  await say('Elder Skye', 'Our ancestors flew the Aurora to light the Lanterns. Now you fly her to keep them lit. The circle closes.');
+}
+async function arenaMenu() {
+  const f = G.flags;
+  if (!f.arenaMet) { f.arenaMet = true; await sayAll([['Arena Master', 'Challengers! Five cups. Each is a gauntlet — several battles back to back, no inn between rounds. Items are allowed. Running is not.'], ['Arena Master', 'Win, and the prize is yours. Lose, and our healers drag you out. No shame in it. Well — a little shame.']]); }
+  while (true) {
+    const items = ARENA_CUPS.map(c => ({ label: c.name + (f['cup_' + c.id] ? '  ✓' : ''), right: 'Lv ' + c.level + '+', color: f['cup_' + c.id] ? '#9adf9a' : '#fff' }));
+    items.push({ label: 'Leave' });
+    const k = await listMenu({ x: 150, y: 90, w: 340, rows: 6, title: 'Aerie Arena', items, help: i => i < ARENA_CUPS.length ? `${ARENA_CUPS[i].rounds.length} rounds · Prize: ${ITEMS[ARENA_CUPS[i].prize].name} + ${ARENA_CUPS[i].gold} G${f['cup_' + ARENA_CUPS[i].id] ? ' (won — rematch for gold only)' : ''}` : '' });
+    if (k < 0 || k === ARENA_CUPS.length) break;
+    const cup = ARENA_CUPS[k];
+    const c = await choose('Arena Master', `The ${cup.name}: ${cup.rounds.length} battles in a row. Ready?`, ['Fight!', 'Not yet'], 1);
+    if (c !== 0) continue;
+    let won = true;
+    for (let r = 0; r < cup.rounds.length; r++) {
+      await narrate(`${cup.name} — Round ${r + 1} of ${cup.rounds.length}. FIGHT!`);
+      const grp = cup.rounds[r], boss = grp.some(id => MONSTERS[id].boss);
+      const res = await startBattle(grp, { bg: 'arena', arena: true, boss, canRun: false });
+      if (res !== 'win') { won = false; break; }
+    }
+    if (!won) { healAll(); await say('Arena Master', 'Carried out on a stretcher! ...Patched up, good as new. Come back any time.'); continue; }
+    Audio_.sfx('levelup');
+    G.gold += cup.gold;
+    if (!f['cup_' + cup.id]) { f['cup_' + cup.id] = true; addItem(cup.prize); await narrate(`Champions of the ${cup.name}! Received ${ITEMS[cup.prize].name} and ${cup.gold} gold!`); }
+    else await narrate(`Champions again! Received ${cup.gold} gold.`);
+    if (cup.id === 'champion') await say('Arena Master', 'GRAND CHAMPIONS! In a thousand years, nobody has worn that crown. Aerie will sing about you until the wind stops.');
+  }
+}
+// ------------- interior people -------------
+function interiorNpcs(m) {
+  const f = G.flags, b = m.building, t = m.town, out = [];
+  const K = m.keeper;
+  const keeperLook = seed => npcLook(seed, { robe: false });
+  if (m.ikind === 'shop' || m.ikind === 'forge') {
+    const name = b.sign === 'arms' ? (t === 'ironhold' ? 'Hilda the Smith' : 'Armorer') : 'Shopkeeper';
+    out.push({ x: K.x, y: K.y, look: t === 'ironhold' && b.sign === 'arms' ? { ...LOOKS.dwarf, hair: '#e8c060', style: 'bun', beard: false, body: '#7a3a2a' } : keeperLook(t.length * 13 + b.x), talk: () => openShop(b.shop, name) });
+  }
+  if (m.ikind === 'inn') out.push({ x: 9, y: 2, look: keeperLook(t.length * 7 + 3), talk: () => innStay(t, b.price) });
+  if (m.ikind === 'arena') out.push({ x: K.x, y: K.y, look: { skin: '#c98e62', hair: '#1f1b2e', style: 'short', body: '#a03a2a', accent: '#e8c24a', beard: true }, talk: arenaMenu, name: 'Arena Master' });
+  if (m.ikind === 'chapel') out.push({ x: 6, y: 3, look: { skin: '#f1c9a0', hair: '#c8b8a0', style: 'bun', body: '#e9ecf2', accent: '#3a8fd0', robe: true }, talk: async () => { await say('Sister Wenna', 'May the tide carry your burdens. Rest a moment in the Sea Mother\'s house.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
+  if (m.ikind === 'jail' && t === 'ironhold') {
+    if (!f.kestrel) out.push({ x: 3, y: 3, look: LOOKS.kestrel, talk: talkKestrelJail, mark: !f.metKestrel });
+    out.push({ x: 8, y: 6, look: LOOKS.guard, talk: talkJailGuard });
+  }
+  if (m.ikind === 'hall') {
+    if (t === 'mirage') { out.push({ x: 6, y: 2, look: { skin: '#a8724a', hair: '#1f1b2e', style: 'long', body: '#3a8a8a', accent: '#e8c24a', robe: true }, talk: talkImara, name: 'Sultana Imara', mark: !f.sunseal }); out.push({ x: 2, y: 5, look: { ...LOOKS.guard, skin: '#8d5a3a', hat: 'cap', accent: '#e8c24a' }, talk: async () => say('Palace Guard', 'Bow when you speak to the Sultana. Or don\'t. She says she finds bowing tedious.') }); }
+    else if (t === 'ironhold') out.push({ x: 6, y: 2, look: LOOKS.guard, talk: async () => say('Lieutenant Varga', G.flags.lantern3 ? 'The mines are quiet. The Captain\'s actually smiling. It\'s unsettling.' : 'The Captain\'s out in the square. He doesn\'t like being cooped up in here with the paperwork.'), wander: true });
+    else out.push({ x: 6, y: 2, look: npcLook(77, { style: 'bald', beard: true, robe: true }), talk: async () => say('Scribe Tam', 'The Elder\'s records go back three hundred years. Every Lamplighter of Brightwater is written here. Your father\'s name is on the last page, Arin. Yours will be next.') });
+  }
+  if (m.ikind === 'study') out.push({ x: 3, y: 6, look: { style: 'spiky', body: '#3a3a6a', accent: '#e8d070' }, talk: async () => say('Apprentice Pell', 'Wren lets me polish the lenses. It\'s the most important job in Frostmere. Probably.') });
+  if (m.ikind === 'house') {
+    if (t === 'brightwater' && b.id === 'arinhouse') { if (f.cat_done) out.push({ x: 4, y: 6, look: null, cat: true, talk: async () => say('Mittens', 'Mrrp. (She has claimed your bed.)') }); }
+    else {
+      const lines = {
+        halden: ['My husband\'s out fishing. He\'s ALWAYS out fishing. I think the fish like him more than I do.', 'Harbor master Brann? Good man. Terrible singer.'],
+        ironhold: ['Mind the soot. Everything in Ironhold is soot, underneath.', 'My grandfather dug the third shaft of Emberdeep. Then he dug his way back out. Twice.'],
+        frostmere: ['Sable writes about monsters. I just try not to be eaten by them.', 'Wren kept us up all night shouting about stars. Good news, I think?'],
+        mirage: ['In the old days the caravans came every week. Now it\'s every month. The bandits, you see.', 'The oasis has never once run dry. Not in a thousand years.'],
+        aerie: ['We grow beans on the cliffs. Very windy beans.', 'My family kept the Aurora\'s logbooks. Every page ends with "Still waiting."']
+      }[t] || ['Make yourself at home. Well — not TOO at home.'];
+      out.push({ x: 5, y: 4, look: npcLook(t.length * 31 + b.x * 3), talk: async () => say('Resident', pick(lines)), wander: true });
+    }
+  }
+  return out.filter(n => n.look || n.cat).map((n, i) => n.cat ? { ...n, kind: 'npc', look: LOOKS.elder, catSprite: true } : (n.look.skin && n.look.hair ? n : { ...n, look: npcLook(t.length * 17 + i * 5 + b.x, n.look) }));
+}
+async function talkKestrelJail() {
+  if (G.flags.metKestrel) { await say('Kestrel', 'Still here. Still bored. Captain Dunmar, remember? He\'s out in the square. Bring the priest. Captains love priests.'); return; }
+  await sayAll([
+    ['Prisoner', 'Visitors! You don\'t look like guards. You look like... adventurers. Ugh.'],
+    [KE, 'Name\'s Kestrel. They caught me with a map of Emberdeep. The real one — with the smugglers\' tunnel the dwarves never sealed.'],
+    [KE, 'You want into those mines? Get me out of here, and I\'ll get you in. Captain Dunmar\'s in the square. Bring the priest. Captains love priests.']
+  ]);
+  G.flags.metKestrel = true; refreshEntities();
+}
+
 // ------------- sea bounty -------------
 async function whirlpoolEvent() {
   const f = G.flags;
@@ -580,6 +753,8 @@ function questList() {
   if (f.q_hammer) q.push({ title: 'The Stonebrand', giver: 'Orrin, Ironhold', done: !!f.hammer_done, reward: 'Dwarven Band', desc: f.hammer_done ? 'The Stonebrand hangs over Orrin\'s forge again.' : hasItem('stonebrand') ? 'Bring the Stonebrand back to Orrin in Ironhold.' : 'Orrin\'s ancestral hammer lies in the second hall (2F) of Emberdeep Mines.' });
   if (f.bounty) q.push({ title: 'Bounty: Leviathan', giver: 'Brann, Port Halden', done: !!f.bounty_done, reward: '4000 gold, Sailor\'s Compass', desc: f.bounty_done ? 'The harbor guild paid up. The seas are safer.' : f.leviathan ? 'The Leviathan is defeated. Collect your bounty from Brann.' : 'Sail into the whirlpool in the open sea (marked on your map) and defeat the Leviathan. Recommended level: 16+.' });
   if (f.q_stars) q.push({ title: 'Stars Over Frostmere', giver: 'Wren, Frostmere', done: !!f.lantern5, reward: 'The Fifth Flame', desc: f.lantern5 ? 'The Fifth Flame burns among the stars once more.' : f.chart ? 'Use the Star Chart to open the Starfall Observatory on the island west of Frostmere, and find the Fifth Flame. Recommended level: 32+.' : 'Wren needs a clear sky. Relight three Lanterns, then return to him.' });
+  if (f.sunseal) q.push({ title: 'The First King', giver: 'Sultana Imara, Mirage', done: !!f.boss_tomb, reward: 'The skyship Aurora', desc: f.boss_tomb ? 'Ozymar rests at last, and the Aurora is yours.' : 'Open the Tomb of the First King, south of Mirage, with the Sun Seal. Recommended level: 26+.' });
+  if (f.arenaMet) { const n = ARENA_CUPS.filter(c => f['cup_' + c.id]).length; q.push({ title: 'Arena Legend', giver: 'Arena Master, Aerie', done: !!f.cup_champion, reward: 'Lantern Crown', desc: f.cup_champion ? 'Grand Champions of the Aerie Arena!' : `Win all five cups at the Aerie Arena. (${n}/5 won)` }); }
   if (f.q_scholar) q.push({ title: 'Monster Scholar', giver: 'Sable, Frostmere', done: !!f.scholar_done, reward: 'Silk Ribbon', desc: f.scholar_done ? 'Your notes are in Sable\'s bestiary.' : `Record 30 different creatures in your bestiary, then visit Sable. (${seenCount()}/30)` });
   return q;
 }
@@ -594,7 +769,7 @@ function mainObjective() {
   if (!f.kestrel) return { text: f.metKestrel ? 'Ask Captain Dunmar in Ironhold to release Kestrel.' : 'Sail north to Ironhold and find a way into Emberdeep.', loc: 'C' };
   if (!f.lantern3) return { text: 'Relight the Stone Lantern deep in Emberdeep Mines.', loc: '3' };
   if (!f.ending) return { text: 'Sail east to the Isle of Dusk and climb the Hollow Spire.', loc: '4' };
-  return { text: 'The Lanterns burn. The world is at peace.', loc: null };
+  return { text: 'The Lanterns burn. The world is at peace — but legends still wait in the Sunscar and the sky.', loc: null };
 }
 
 // ------------- title -------------
@@ -620,8 +795,11 @@ async function titleMenu() {
   Audio_.play('title');
   await fadeTo(0, 600);
   while (true) {
-    const items = [{ label: 'New Game' }, { label: 'Continue', disabled: !hasSave() }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }];
-    const k = await listMenu({ x: W / 2 - 90, y: 196, w: 180, rows: 3, items, cancel: false, index: hasSave() ? 1 : 0 });
+    const ngp = saveFlag('ending');
+    const items = [{ label: 'New Game' }, { label: 'Continue', disabled: !hasSave() }, { label: ngp ? `New Game+ (${(saveFlag('ngplus') || 0) + 1})` : 'New Game+', disabled: !ngp }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }];
+    const k0 = await listMenu({ x: W / 2 - 100, y: 190, w: 200, rows: 4, items, cancel: false, index: hasSave() ? 1 : 0, help: i => i === 2 ? (ngp ? 'Keep your levels, gear and items. Enemies grow stronger.' : 'Finish the story to unlock New Game+.') : '' , helpY: H - 60 });
+    const k = k0 === 3 ? 2 : k0 === 2 ? 3 : k0;
+    if (k === 3) { await newGamePlus(); return; }
     if (k === 0) { await newGame(); return; }
     if (k === 1) {
       if (loadGame()) {
@@ -636,11 +814,24 @@ async function titleMenu() {
   }
 }
 const BlackScene = { lines: [], t: 0, tick(dt) { this.t += dt; }, update() { }, draw(g) { g.fillStyle = '#05040c'; g.fillRect(0, 0, W, H); this.lines.forEach((l, i) => { g.save(); g.globalAlpha = clamp((this.t - l.at) / 1.2, 0, 1); text(g, l.s, W / 2, 130 + i * 44, { size: 20, fam: SERIF, align: 'center', color: '#e8dcc8' }); g.restore(); }); } };
-async function newGame() {
+function saveFlag(k) { try { const d = JSON.parse(localStorage.getItem(SAVE_KEY)); return d && d.flags ? d.flags[k] : null; } catch (e) { return null; } }
+async function newGamePlus() {
+  if (!loadGame()) return newGame();
+  const carry = {}; G.party.forEach(m => carry[m.id] = { ...m, status: {} });
+  const inv = {}; for (const k in G.inv) if (ITEMS[k] && ITEMS[k].kind !== 'key') inv[k] = G.inv[k];
+  for (const m of G.party) for (const sl of ['weapon', 'armor', 'acc']) if (m[sl]) { /* equipped gear stays on the carried member */ }
+  await newGame({ carry, inv, gold: G.gold, seen: G.seen, killed: G.killed, ng: (G.flags.ngplus || 0) + 1 });
+}
+async function newGame(plus) {
   await fadeTo(1, 700);
   Object.keys(G.flags).forEach(k => delete G.flags[k]);
-  G.party = [makeMember('arin', 1), makeMember('lyra', 1)];
-  G.inv = { potion: 2 }; G.gold = 80; G.playTime = 0; G.maps = {}; G.ship = null; G.onShip = false; G.lastInn = { town: 'brightwater' };
+  G.carry = plus ? plus.carry : null;
+  G.party = [];
+  if (plus) { G.party.push({ ...G.carry.arin, status: {} }, { ...G.carry.lyra, status: {} }); healAll(); }
+  else G.party = [makeMember('arin', 1), makeMember('lyra', 1)];
+  G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
+  G.seen = plus ? plus.seen : {}; G.killed = plus ? plus.killed : {};
+  if (plus) G.flags.ngplus = plus.ng;
   G.scene = BlackScene; BlackScene.lines = []; BlackScene.t = 0;
   await fadeTo(0, 400);
   const story = ['Long ago, the Hollow Night swallowed the world.', 'Four Lanterns were lit to chain it beneath the earth —', 'Ember, Tide, Stone, and Dawn.', 'For a thousand years, their flames held.', '...Until tonight.'];
@@ -726,6 +917,10 @@ async function runEnding() {
 // ------------- main loop -------------
 let lastT = performance.now();
 function frame(now) {
+  try { frameInner(now); } catch (e) { if (!frame.seen) frame.seen = new Set(); if (!frame.seen.has(String(e))) { frame.seen.add(String(e)); console.error(e); } }
+  requestAnimationFrame(frame);
+}
+function frameInner(now) {
   const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
   Input.update(dt);
   if (Input.p('mute')) Audio_.toggleMute();
@@ -739,7 +934,6 @@ function frame(now) {
   UI.draw(ctx);
   drawToasts(ctx, dt);
   if (Fade.v > 0) { ctx.save(); ctx.globalAlpha = Fade.v; ctx.fillStyle = Fade.color; ctx.fillRect(0, 0, W, H); ctx.restore(); }
-  requestAnimationFrame(frame);
 }
 Fade.v = 1;
 G.scene = TitleScene;

@@ -3,25 +3,27 @@
 //  MENUS — field menu, items, magic, equipment, status, shop, inn
 // ============================================================
 function drawPartyPanel(g, sel = -1) {
-  const x = 16, y = 16, w = 440, rowH = 100;
+  const x = 16, y = 16, w = 440, five = G.party.length > 4, rowH = five ? 88 : 100;
   drawWindow(g, x, y, w, 16 + G.party.length * rowH);
   G.party.forEach((m, i) => {
     const yy = y + 10 + i * rowH;
     if (i === sel) { g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(x + 8, yy, w - 16, rowH - 6); }
     const L = HEROES[m.id].look;
     g.save(); if (!alive(m)) g.globalAlpha = 0.5;
-    drawChar(g, L, x + 50, yy + 78, 'down', 0, 1.6, alive(m) ? null : 'ko');
+    drawChar(g, L, x + 50, yy + (five ? 70 : 78), 'down', 0, five ? 1.4 : 1.6, alive(m) ? null : 'ko');
+    if (i >= 4) text(g, 'Reserve', x + 98 + 120, yy + 30, { size: 12, color: '#ffb86a' });
     g.restore();
     text(g, memberName(m), x + 100, yy + 6, { size: 18, bold: true, color: alive(m) ? '#fff' : '#ff8a8a' });
     text(g, HEROES[m.id].cls, x + 100, yy + 30, { size: 13, color: '#b8c4ee' });
     text(g, `Lv ${m.level}`, x + 220, yy + 8, { size: 15, color: '#ffe9a8' });
     if (m.status.poison) text(g, 'Poison', x + 290, yy + 8, { size: 13, color: '#8aff7a' });
-    text(g, 'HP', x + 100, yy + 52, { size: 13, color: '#9adf9a' });
-    text(g, `${m.hp} / ${maxHp(m)}`, x + 250, yy + 50, { size: 15, align: 'right' });
-    bar(g, x + 126, yy + 70, 124, 4, m.hp / maxHp(m), '#6ae07a');
-    text(g, 'MP', x + 270, yy + 52, { size: 13, color: '#9ab0ff' });
-    text(g, `${m.mp} / ${maxMp(m)}`, x + 410, yy + 50, { size: 15, align: 'right' });
-    bar(g, x + 296, yy + 70, 114, 4, m.mp / Math.max(1, maxMp(m)), '#6aa8ff');
+    const oy = five ? -6 : 0;
+    text(g, 'HP', x + 100, yy + 52 + oy, { size: 13, color: '#9adf9a' });
+    text(g, `${m.hp} / ${maxHp(m)}`, x + 250, yy + 50 + oy, { size: 15, align: 'right' });
+    bar(g, x + 126, yy + 70 + oy, 124, 4, m.hp / maxHp(m), '#6ae07a');
+    text(g, 'MP', x + 270, yy + 52 + oy, { size: 13, color: '#9ab0ff' });
+    text(g, `${m.mp} / ${maxMp(m)}`, x + 410, yy + 50 + oy, { size: 15, align: 'right' });
+    bar(g, x + 296, yy + 70 + oy, 114, 4, m.mp / Math.max(1, maxMp(m)), '#6aa8ff');
     const nx = xpForLevel(m.level + 1) - m.xp;
     text(g, m.level >= MAX_LEVEL ? 'MAX' : `Next ${nx}`, x + 410, yy + 8, { size: 12, color: '#b8c4ee', align: 'right' });
   });
@@ -41,7 +43,7 @@ async function pickMember(title, opt = {}) {
   const panel = openPanel(g => drawPartyPanel(g, sel.v));
   const sel = { v: opt.index || 0 };
   const items = G.party.map(m => ({ label: memberName(m), right: `${m.hp}/${maxHp(m)}`, disabled: opt.filter ? !opt.filter(m) : false }));
-  const r = await listMenu({ x: 470, y: 16, w: 154, rows: 4, title, items, index: sel.v, onChange: i => sel.v = i });
+  const r = await listMenu({ x: 470, y: 16, w: 154, rows: 5, title, items, index: sel.v, onChange: i => sel.v = i });
   closePanel(panel);
   return r < 0 ? null : r;
 }
@@ -50,22 +52,23 @@ async function openMainMenu() {
   const panel = openPanel(g => { drawPartyPanel(g); drawInfoPanel(g); });
   let idx = 0;
   while (true) {
-    const items = [{ label: 'Items' }, { label: 'Magic' }, { label: 'Equip' }, { label: 'Status' }, { label: 'Quests' }, { label: 'Bestiary' }, { label: 'Map' }, { label: 'Save' }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }, { label: 'Close' }];
-    const k = await listMenu({ x: 472, y: 16, w: 152, rows: 10, rowH: 25, items, index: idx });
-    if (k < 0 || k === 9) break;
+    const items = [{ label: 'Items' }, { label: 'Magic' }, { label: 'Equip' }, { label: 'Status' }, { label: 'Formation', disabled: G.party.length < 2 }, { label: 'Quests' }, { label: 'Bestiary' }, { label: 'Map' }, { label: 'Save' }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }, { label: 'Close' }];
+    const k = await listMenu({ x: 472, y: 16, w: 152, rows: 11, rowH: 24, items, index: idx });
+    if (k < 0 || k === 10) break;
     idx = k;
     if (k === 0) await itemsMenu();
     if (k === 1) await magicMenu();
     if (k === 2) await equipMenu();
     if (k === 3) await statusMenu();
-    if (k === 4) await questMenu();
-    if (k === 5) await bestiaryMenu();
-    if (k === 6) await worldMapView();
-    if (k === 7) {
+    if (k === 4) await formationMenu();
+    if (k === 5) await questMenu();
+    if (k === 6) await bestiaryMenu();
+    if (k === 7) await worldMapView();
+    if (k === 8) {
       const c = await choose(null, 'Record your journey? This will overwrite your previous save.', ['Save', 'Cancel'], 1);
       if (c === 0) { if (saveGame()) { Audio_.sfx('save'); await narrate('Your journey has been recorded.'); } else await narrate('Saving failed — your browser blocked storage.'); }
     }
-    if (k === 8) Audio_.toggleMute();
+    if (k === 9) Audio_.toggleMute();
   }
   closePanel(panel);
 }
@@ -366,7 +369,7 @@ async function bestiaryMenu() {
 const MAP_COL = { '~': '#2c6fc4', r: '#3a80d0', '.': '#6dbb4f', T: '#2f7a35', '^': '#8a7f73', n: '#7cc65c', s: '#e9d49a', '=': '#c9a46a', b: '#a8763f', x: '#6a4522', '*': '#e6eef8', P: '#3a7a5a', M: '#b8c4d4', q: '#3b2a4c', d: '#24182f' };
 async function worldMapView() {
   const m = getMap('world');
-  const sc = 7, ow = m.w * sc, oh = m.h * sc, ox = (W - ow) / 2, oy = (H - oh) / 2 + 12;
+  const sc = Math.min(600 / m.w, 384 / m.h), ow = m.w * sc, oh = m.h * sc, ox = (W - ow) / 2, oy = (H - oh) / 2 + 12;
   // where is the party?
   let px = G.x, py = G.y;
   if (Field.map && Field.map.kind !== 'world') {
@@ -391,14 +394,32 @@ async function worldMapView() {
       for (const k in WORLD_LOC) {
         const L = WORLD_LOC[k], x = ox + L.x * sc + sc / 2, y = oy + L.y * sc + sc / 2;
         const known = G.flags['visit_' + k];
+        if (k === 'F' && !known && !G.flags.airship) continue;
         circle(g, x, y, 4.5, L.town ? '#fff4c8' : '#e88a6a', OUT, 1.5);
-        if (known) text(g, L.name, x + 7, y - 7, { size: 11, bold: true });
+        if (known) { g.font = font(11, true); const tw = g.measureText(L.name).width; const right = x + 7 + tw > ox + ow - 4; text(g, L.name, right ? x - 7 : x + 7, y - 7, { size: 11, bold: true, align: right ? 'right' : 'left' }); }
       }
       if (m.whirl && G.flags.bounty && !G.flags.leviathan) { const x = ox + m.whirl.x * sc + 3, y = oy + m.whirl.y * sc + 3; circle(g, x, y, 5 + Math.sin(t * 4), null, '#fff', 1.5); text(g, 'Leviathan', x + 8, y - 6, { size: 11, color: '#bfe8ff' }); }
       if (obj.loc && WORLD_LOC[obj.loc]) { const L = WORLD_LOC[obj.loc]; const x = ox + L.x * sc + 3.5, y = oy + L.y * sc - 8 + Math.sin(t * 4) * 2; poly(g, [x - 5, y - 6, x + 5, y - 6, x, y + 2], '#ffd23a', OUT, 1); }
+      if (G.airship && G.flags.airship) { const x = ox + G.airship.x * sc + 3, y = oy + G.airship.y * sc + 3; ellipse(g, x, y - 2, 5, 3, '#c8443a', '#fff', 1); }
       if (G.ship && G.flags.ship && !G.onShip) { const x = ox + G.ship.x * sc + 3, y = oy + G.ship.y * sc + 3; poly(g, [x - 4, y + 2, x + 4, y + 2, x + 2, y + 4, x - 2, y + 4], '#7a4a22'); poly(g, [x, y - 5, x + 4, y + 1, x, y + 1], '#fff'); }
       if (Math.sin(t * 8) > -0.3) { circle(g, ox + px * sc + 3.5, oy + py * sc + 3.5, 4, '#ff3a3a', '#fff', 1.5); }
       text(g, 'Red: you   ▼ objective   Enter/Esc to close', W / 2, oy + oh + 5, { size: 11, align: 'center', color: '#b8c4ee' });
     }
   });
+}
+
+// ---------- formation ----------
+async function formationMenu() {
+  let first = null;
+  const panel = openPanel(g => drawPartyPanel(g, sel.v));
+  const sel = { v: 0 };
+  while (true) {
+    const items = G.party.map((m, i) => ({ label: memberName(m) + (i === first ? '  ✦' : ''), right: i < 4 ? 'Active' : 'Reserve', rcolor: i < 4 ? '#9adf9a' : '#ffb86a' }));
+    const r = await listMenu({ x: 470, y: 16, w: 154, rows: 5, title: first === null ? 'Swap who?' : 'With whom?', items, index: sel.v, onChange: i => sel.v = i, help: () => 'The first four fight. Reserve members earn half EXP.', helpY: H - 52 });
+    if (r < 0) { if (first !== null) { first = null; continue; } break; }
+    if (first === null) { first = r; continue; }
+    if (first !== r) { const t = G.party[first]; G.party[first] = G.party[r]; G.party[r] = t; Audio_.sfx('item'); }
+    first = null;
+  }
+  closePanel(panel);
 }

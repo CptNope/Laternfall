@@ -5,7 +5,7 @@
 const G = {
   party: [], inv: {}, gold: 0, flags: {}, playTime: 0,
   mapId: 'world', x: 0, y: 0, dir: 'down',
-  ship: null, onShip: false, encSteps: 20, lastInn: null, seen: {}, killed: {},
+  ship: null, onShip: false, airship: null, inAir: false, carry: null, encSteps: 20, lastInn: null, seen: {}, killed: {},
   scene: null, maps: {}
 };
 function makeMember(id, level = 1) {
@@ -38,6 +38,7 @@ function inParty(id) { return G.party.some(m => m.id === id); }
 function partyLevel() { return Math.round(G.party.reduce((a, m) => a + m.level, 0) / G.party.length); }
 function addMember(id) {
   if (inParty(id)) return;
+  if (G.carry && G.carry[id]) { const m = { ...G.carry[id], status: {} }; m.hp = maxHp(m); m.mp = maxMp(m); G.party.push(m); return; }
   const lv = Math.max(1, partyLevel());
   G.party.push(makeMember(id, lv));
 }
@@ -66,7 +67,7 @@ function saveGame() {
     party: G.party.map(m => ({ id: m.id, level: m.level, xp: m.xp, hp: m.hp, mp: m.mp, weapon: m.weapon, armor: m.armor, acc: m.acc || null })),
     seen: G.seen, killed: G.killed,
     inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime,
-    mapId: G.mapId, x: G.x, y: G.y, dir: G.dir, ship: G.ship, onShip: G.onShip, lastInn: G.lastInn
+    mapId: G.mapId, x: G.x, y: G.y, dir: G.dir, ship: G.ship, onShip: G.onShip, lastInn: G.lastInn, airship: G.airship, inAir: G.inAir, carry: G.carry
   };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); return true; } catch (e) { return false; }
 }
@@ -79,7 +80,7 @@ function loadGame() {
   G.seen = d.seen || {}; G.killed = d.killed || {};
   G.inv = d.inv || {}; G.gold = d.gold || 0; G.flags = d.flags || {}; G.playTime = d.playTime || 0;
   G.mapId = d.mapId; G.x = d.x; G.y = d.y; G.dir = d.dir || 'down';
-  G.ship = d.ship || null; G.onShip = !!d.onShip; G.lastInn = d.lastInn || null;
+  G.ship = d.ship || null; G.onShip = !!d.onShip; G.lastInn = d.lastInn || null; G.airship = d.airship || null; G.inAir = !!d.inAir; G.carry = d.carry || null;
   return true;
 }
 function fmtTime(s) { s = Math.floor(s); const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60; return `${h}:${String(m).padStart(2, '0')}`; }
