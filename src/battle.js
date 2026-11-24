@@ -10,6 +10,8 @@ class Battle {
   constructor(ids, opts) {
     BATTLE_PARTY = opts.party ? G.party.filter(m => opts.party.includes(m.id)) : G.party.slice(0, 4);
     this.opts = opts; this.bg = opts.bg || 'plains'; this.t = 0;
+    this.weather = opts.weather || (G.scene === Field ? currentWeather() : 'clear');
+    this.night = G.scene === Field && underSky(Field.map) && isNight();
     this.fx = []; this.nums = []; this.msg = null; this.active = -1; this.flash = null; this.shake = 0;
     const counts = {};
     ids.forEach(id => counts[id] = (counts[id] || 0) + 1);
@@ -64,6 +66,7 @@ class Battle {
     if (this.shake > 0) g.translate(rnd(-4, 4) * this.shake * 3, rnd(-3, 3) * this.shake * 3);
     g.fillStyle = '#0a0812'; g.fillRect(0, 0, W, H);
     g.save(); g.translate(0, -BG_SHIFT); drawBattleBG(g, this.bg, this.t); g.restore();
+    drawWeather(g, this.weather, this.t, 0.6);
     // enemies
     const sorted = this.enemies.map((e, i) => ({ e, i })).sort((a, b) => a.e.y - b.e.y);
     for (const { e } of sorted) {
@@ -80,7 +83,7 @@ class Battle {
       g.restore();
       if (e.status.sleep && e.alive) { const c = this.enemyCenter(e); text(g, 'z', c.x + 20 + Math.sin(this.t * 3) * 4, c.y - 40 - (this.t * 14 % 14), { size: 18, bold: true, color: '#c8b8ff' }); }
       if (e.status.silence && e.alive) { const c = this.enemyCenter(e); text(g, '…', c.x - 24, c.y - 40, { size: 18, bold: true, color: '#c8b8ff' }); }
-      if ((e.status.blind || e.status.slow) && e.alive) { const c = this.enemyCenter(e); text(g, [e.status.blind && 'BLD', e.status.slow && 'SLW'].filter(Boolean).join(' '), c.x, c.y + 44, { size: 11, bold: true, color: '#e8e0a0', align: 'center' }); }
+      if ((e.status.blind || e.status.slow || e.status.berserk || e.status.stop) && e.alive) { const c = this.enemyCenter(e); text(g, [e.status.blind && 'BLD', e.status.slow && 'SLW', e.status.berserk && 'BSK', e.status.stop && 'STP'].filter(Boolean).join(' '), c.x, c.y + 44, { size: 11, bold: true, color: '#e8e0a0', align: 'center' }); }
       if (e.status.poison && e.alive) { const c = this.enemyCenter(e); circle(g, c.x + 18 + Math.sin(this.t * 4) * 3, c.y - 20 - (this.t * 20 % 20), 3, 'rgba(140,255,120,.8)'); }
     }
     // party
@@ -139,7 +142,7 @@ class Battle {
       if (i === this.active) { g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(222, y - 2, 402, 27); }
       text(g, memberName(m), 230, y + 3, { size: 15, bold: true, color: col });
       if (limitUnlocked(m)) { const full = (m.limit || 0) >= 100; bar(g, 230, y + 22, 62, 3, (m.limit || 0) / 100, full ? (Math.sin(this.t * 10) > 0 ? '#ffd23a' : '#fff4c0') : '#e8a84a'); }
-      const tags = [m.status.poison && ['PSN', '#8aff7a'], m.status.sleep && ['SLP', '#c8b8ff'], m.status.silence && ['SIL', '#ffb0d0'], m.status.blind && ['BLD', '#e8e0a0'], m.status.slow && ['SLW', '#a0a8ff'], m.status.haste && ['HST', '#ffd27a'], m.status.regen && ['RGN', '#9ad8ff']].filter(Boolean);
+      const tags = [m.status.poison && ['PSN', '#8aff7a'], m.status.sleep && ['SLP', '#c8b8ff'], m.status.silence && ['SIL', '#ffb0d0'], m.status.blind && ['BLD', '#e8e0a0'], m.status.slow && ['SLW', '#a0a8ff'], m.status.haste && ['HST', '#ffd27a'], m.status.berserk && ['BSK', '#ff7a5a'], m.status.stop && ['STP', '#d0d0d0'], m.status.regen && ['RGN', '#9ad8ff']].filter(Boolean);
       tags.slice(0, 2).forEach(([tg, c], k) => text(g, tg, 302 + k * 24, y + 5, { size: 10, bold: true, color: c }));
       text(g, `${m.hp}`, 420, y + 3, { size: 15, color: col, align: 'right' });
       text(g, `/${maxHp(m)}`, 470, y + 5, { size: 12, color: '#b8c4ee', align: 'right' });
@@ -343,7 +346,7 @@ class Battle {
   }
   elemMult(def, elem) { return Math.abs(this.weakMult(def, elem)); }
   elemCol(def, elem) { const w = this.weakMult(def, elem); return w > 1 ? '#ffd27a' : w < 1 && w > 0 ? '#b8b8c8' : '#fff'; }
-  magBoost(m, elem) { return (hasPassive(m, 'wildfire') ? 1.2 : 1) * (elem === 'dark' && hasPassive(m, 'twilight') ? 1.25 : 1); }
+  magBoost(m, elem) { return (hasPassive(m, 'wildfire') ? 1.2 : 1) * (elem === 'dark' && hasPassive(m, 'twilight') ? 1.25 : 1) * weatherMult(this.weather, elem); }
   healBoost(m) { return hasPassive(m, 'tidal_grace') ? 1.3 : 1; }
   spdMod(st) { return (st.haste > 0 ? 1.6 : 1) * (st.slow > 0 ? 0.6 : 1); }
   thiefMult() { return BP().some(m => alive(m) && accOf(m) && accOf(m).thief) ? 2 : 1; }
@@ -362,7 +365,7 @@ class Battle {
     return got;
   }
   physDamage(atk, def, mult = 1) { return Math.max(1, Math.round((atk - def / 2) * mult * rnd(0.88, 1.12))); }
-  memberAtk(i) { const m = BP()[i]; return stat(m, 'str') * (this.buffs.rally > 0 ? 1.35 : 1); }
+  memberAtk(i) { const m = BP()[i]; return stat(m, 'str') * (this.buffs.rally > 0 ? 1.35 : 1) * (m.status.berserk ? 1.5 : 1); }
   memberDef(i) { const m = BP()[i]; return stat(m, 'def') * (this.buffs.barrier > 0 ? 1.4 : 1); }
   // ---------------- flow ----------------
   async run() {
@@ -431,9 +434,9 @@ class Battle {
         const m = BP()[i]; if (!alive(m)) continue;
         const a = accOf(m);
         if (m.status.regen > 0 || (a && a.regen)) { const h = Math.min(maxHp(m) - m.hp, Math.max(1, Math.floor(maxHp(m) * (m.status.regen > 0 ? 0.08 : 0.05)))); if (h > 0) { m.hp += h; const c = this.memberCenter(i); this.num(c.x + 14, c.y + 10, h, '#7aff9a'); } }
-        for (const st of ['sleep', 'silence', 'regen', 'blind', 'slow', 'haste']) if (m.status[st] > 0) m.status[st]--;
+        for (const st of ['sleep', 'silence', 'regen', 'blind', 'slow', 'haste', 'berserk', 'stop']) if (m.status[st] > 0) m.status[st]--;
       }
-      for (const e of this.enemies) for (const st of ['sleep', 'silence', 'blind', 'slow']) if (e.status[st] > 0) e.status[st]--;
+      for (const e of this.enemies) for (const st of ['sleep', 'silence', 'blind', 'slow', 'berserk', 'stop']) if (e.status[st] > 0) e.status[st]--;
       for (const e of this.enemies) if (e.alive && e.status.poison) { const d = Math.max(1, Math.floor(Math.min(e.maxhp * 0.05, 250))); e.hp -= d; const c = this.enemyCenter(e); this.num(c.x, c.y, d, '#8aff7a'); if (e.hp <= 0) this.kill(e); }
       if (this.buffs.rally > 0) this.buffs.rally--;
       if (this.buffs.barrier > 0) this.buffs.barrier--;
@@ -455,7 +458,8 @@ class Battle {
     const n = BP().length;
     while (i < n) {
       const m = BP()[i];
-      if (!alive(m) || m.status.sleep) { cmds[i] = null; i++; continue; }
+      if (!alive(m) || m.status.sleep || m.status.stop) { cmds[i] = null; i++; continue; }
+      if (m.status.berserk) { cmds[i] = { type: 'attack', target: null }; i++; continue; }   // berserk heroes act on their own
       if (cmds[i] && cmds[i].type === 'partner') { i++; continue; }
       this.active = i;
       this.pa[i].dx = -14;
@@ -464,10 +468,10 @@ class Battle {
       if (c === 'repeat') {
         // re-use last round's commands for everyone who can still act
         const P = BP();
-        return this.prevCmds.map((pc, j) => pc && alive(P[j]) && !P[j].status.sleep ? (pc.type === 'limit' ? { type: 'attack', target: null } : { ...pc }) : null);
+        return this.prevCmds.map((pc, j) => P[j].status.berserk && alive(P[j]) ? { type: 'attack', target: null } : pc && alive(P[j]) && !P[j].status.sleep && !P[j].status.stop ? (pc.type === 'limit' ? { type: 'attack', target: null } : { ...pc }) : null);
       }
       if (c === 'back') {
-        let j = i - 1; while (j >= 0 && (!alive(BP()[j]) || BP()[j].status.sleep)) j--;
+        let j = i - 1; while (j >= 0 && (!alive(BP()[j]) || BP()[j].status.sleep || BP()[j].status.stop || BP()[j].status.berserk)) j--;
         if (j >= 0 && cmds[j] && cmds[j].type === 'partner') j = cmds[j].from;
         if (j >= 0) { for (let k = 0; k < cmds.length; k++) if (cmds[k] && cmds[k].type === 'partner' && cmds[k].from === j) cmds[k] = null; i = j; }
         continue;
@@ -747,6 +751,8 @@ class Battle {
   async partyAct(i, c) {
     const m = BP()[i], a = this.pa[i];
     if (m.status.sleep) { const p = this.memberCenter(i); this.num(p.x, p.y, 'Asleep', '#c8b8ff'); await wait(300); return; }
+    if (m.status.stop) { const p = this.memberCenter(i); this.num(p.x, p.y, 'Stopped', '#c0c0c0'); await wait(300); return; }
+    if (m.status.berserk && c.type !== 'attack') c = { type: 'attack', target: null };
     if (c.type === 'defend') return;
     if (c.type === 'combo') return this.doCombo(i, c);
     if (c.type === 'limit') return this.doLimit(i, c);
@@ -759,7 +765,7 @@ class Battle {
         for (let k = 0; k < 6; k++) { a.swing = k / 5; await wait(16); }
         const p = this.enemyCenter(tg);
         await this.playFx('slash', [p]);
-        if (Math.random() < (m.status.blind ? 0.5 : 0.03)) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); return; }
+        if (Math.random() < (m.status.blind ? 0.5 : 0.03) + weatherMiss(this.weather)) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); return; }
         const crit = Math.random() < 0.06 + stat(m, 'spd') * 0.001;
         const dmg = this.physDamage(this.memberAtk(i), tg.def.def, crit ? 1.7 : 1);
         if (crit) { Audio_.sfx('crit'); this.shake = 0.15; }
@@ -891,7 +897,7 @@ class Battle {
         for (const e of ts) {
           const p = this.enemyCenter(e);
           const st = s.status, boss = e.def.boss;
-          if (boss && (st === 'sleep' || st === 'silence')) this.num(p.x, p.y, 'Immune', '#cfd8ff');
+          if (boss && (st === 'sleep' || st === 'silence' || st === 'stop')) this.num(p.x, p.y, 'Immune', '#cfd8ff');
           else if (Math.random() < s.chance * (boss ? (st === 'slow' ? 0.5 : 0.3) : 1)) { e.status[st] = STATUS_TURNS[st][1]; this.num(p.x, p.y, STATUS_LABEL[st], '#c8b8ff'); }
           else this.num(p.x, p.y, 'Miss', '#cfd8ff');
         }
@@ -911,10 +917,10 @@ class Battle {
     if (ai === 'magehunter' && r < 0.6) { const ms = L.filter(i => CASTERS.includes(P[i].id)); if (ms.length) return pick(ms); }
     return pick(L);
   }
-  dodges(i) { const m = BP()[i]; return hasPassive(m, 'ghost_step') && !m.status.sleep && Math.random() < 0.25; }
+  dodges(i) { const m = BP()[i]; return hasPassive(m, 'ghost_step') && !m.status.sleep && !m.status.stop && Math.random() < 0.25; }
   async counterAttack(i, e) {
     const m = BP()[i];
-    if (!alive(m) || !e.alive || m.status.sleep || !hasPassive(m, 'counter') || Math.random() >= 0.2) return;
+    if (!alive(m) || !e.alive || m.status.sleep || m.status.stop || !hasPassive(m, 'counter') || Math.random() >= 0.2) return;
     const p = this.memberCenter(i); this.num(p.x, p.y - 24, 'Counter!', '#ffd27a');
     this.pa[i].pose = 'attack'; await this.playFx('slash', [this.enemyCenter(e)]);
     this.damageEnemy(e, this.physDamage(this.memberAtk(i), e.def.def, 1));
@@ -926,11 +932,13 @@ class Battle {
       this.msg = e.phase.msg; await wait(1300); this.msg = null;
     }
     if (e.status.sleep) { const c = this.enemyCenter(e); this.num(c.x, c.y, 'Zzz', '#c8b8ff'); await wait(350); return; }
+    if (e.status.stop) { const c = this.enemyCenter(e); this.num(c.x, c.y, 'Stopped', '#d0d0d0'); await wait(350); return; }
     const acts = (e.phase && e.phase.acts) || e.def.acts || [{ w: 1, a: 'attack' }];
     let act = weighted(acts).a;
     // healers mend a hurt ally before anything else
     if (e.def.ai === 'healer' && this.liveEnemies().some(x => x.hp < x.maxhp * 0.5)) { const h = acts.find(x => SPELLS[x.a] && SPELLS[x.a].type === 'heal'); if (h && Math.random() < 0.7) act = h.a; }
     if (e.status.silence && act !== 'attack' && SPELLS[act] && SPELLS[act].type !== 'phys') act = 'attack';
+    if (e.status.berserk) act = 'attack';
     const live = this.liveParty();
     if (!live.length) return;
     const targetIdx = () => this.enemyTarget(e);
@@ -941,10 +949,10 @@ class Battle {
       const p = this.memberCenter(i);
       await this.playFx('hit', [p]);
       const ms = stat(BP()[i], 'spd');
-      if (blindMiss() || Math.random() < clamp(0.03 + (ms - e.def.spd) * 0.004, 0.02, 0.12)) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); }
+      if (blindMiss() || Math.random() < clamp(0.03 + (ms - e.def.spd) * 0.004, 0.02, 0.12) + weatherMiss(this.weather)) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); }
       else if (this.dodges(i)) { this.num(p.x, p.y, 'Dodge', '#cfd8ff'); Audio_.sfx('miss'); }
       else {
-        let dmg = this.physDamage(e.def.atk, this.memberDef(i), this.pa[i].defend ? 0.5 : 1);
+        let dmg = this.physDamage(e.def.atk * (e.status.berserk ? 1.5 : 1), this.memberDef(i), this.pa[i].defend ? 0.5 : 1);
         this.damageMember(i, dmg);
         await this.counterAttack(i, e);
       }
@@ -992,7 +1000,7 @@ class Battle {
       let total = 0;
       for (const i of ts) {
         const m = BP()[i];
-        let dmg = (s.power + e.def.mag) * rnd(0.9, 1.1) - stat(m, 'mag') * 0.4;
+        let dmg = ((s.power + e.def.mag) * rnd(0.9, 1.1) - stat(m, 'mag') * 0.4) * weatherMult(this.weather, s.elem);
         if (this.buffs.barrier > 0) dmg *= 0.6;
         if (this.pa[i].defend) dmg *= 0.6;
         dmg = Math.max(1, Math.round(dmg));
@@ -1016,6 +1024,7 @@ class Battle {
       if (e.def.mat && Math.random() < e.def.mat[1]) drops.push(e.def.mat[0]);
     }
     const tm = treasureMapDrop(this.enemies); if (tm) drops.push(tm);
+    if (this.night) G.flags.night_win = true;
     if (BP().some(m => alive(m) && accOf(m) && accOf(m).goldx)) gold = Math.round(gold * 1.5);
     if (mealIs('gold')) gold = Math.round(gold * (1 + mealNow().amount));
     if (mealIs('xp')) xp = Math.round(xp * (1 + mealNow().amount));
@@ -1050,6 +1059,7 @@ function applyItemEffect(id, m, battle, idx) {
     case 'mp': if (alive(m)) { const b = m.mp; m.mp = Math.min(maxMp(m), m.mp + it.amount); show(m.mp - b, '#7ab8ff'); return true; } return false;
     case 'cure': if (alive(m)) { m.status.poison = false; show('Cured', '#7aff9a'); return true; } return false;
     case 'remedy': if (alive(m)) { cureAll(m); show('Cured', '#7aff9a'); return true; } return false;
+    case 'berserk': if (alive(m) && battle && !immune(m, 'berserk')) { m.status.berserk = STATUS_TURNS.berserk[0]; show('Berserk', '#ff7a5a'); return true; } return false;
     case 'revive': if (!alive(m)) { m.hp = Math.floor(maxHp(m) * 0.3); show('Revived', '#7aff9a'); return true; } return false;
     case 'elixir': if (alive(m)) { m.hp = maxHp(m); m.mp = maxMp(m); show('Full', '#7aff9a'); return true; } return false;
     case 'megalixir': if (alive(m)) { m.hp = maxHp(m); m.mp = maxMp(m); show('Full', '#7aff9a'); } return true;

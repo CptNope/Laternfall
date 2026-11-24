@@ -59,6 +59,16 @@ for code, title in AREAS:
         w, r = elems(d)
         rows.append([d['name'] + (f" *({AI[d['ai']]})*" if d.get('ai') else ''), d['hp'], d['atk'], d['mag'], w, r, steal(d), drops, d['xp'], d['gold']])
     parts.append(f"#### {title}\n\n" + tbl(['Monster', 'HP', 'ATK', 'MAG', 'Weak to', 'Resists', 'Steal', 'Drops', 'EXP', 'Gold'], rows))
+# night tables (1.9): half of the world's battles at night
+NAREA = {'r1': 'Brightwater plains', 'r2': 'Eastern lowlands', 'sea': 'Open sea', 'r3': 'Northern continent', 'r4': 'Isle of Dusk', 'r5': 'Sunscar Desert', 'r6': 'Ashen Isle'}
+rows = []
+for code, title in NAREA.items():
+    ids = []
+    for g in D['NIGHT_ENC'][code]:
+        for m in g['g']:
+            if m not in ids: ids.append(m)
+    rows.append([title, ', '.join(M[m]['name'] for m in ids)])
+parts.append("#### At night\n\nBetween 20:30 and 5:30, half of the world's random battles come from these tables instead.\n\n" + tbl(['Area', 'Night monsters'], rows))
 out['monsters'] = '\n'.join(parts)
 WHERE = {'gloomcap': 'Whisperwood Hollow 2F', 'warden': 'Sunken Shrine 2F', 'vesper': 'Emberdeep Mines 3F', 'leviathan': 'Whirlpool, open sea (bounty)', 'firstking': 'Tomb of the First King 3F',
          'wyrm': 'Starfall Observatory 3F (optional)', 'king': 'Hollow Spire 3F (phase 1)', 'king2': 'Hollow Spire 3F (phase 2)', 'crown': 'Crownfall Abyss 4F (phase 1)', 'orun': 'Crownfall Abyss 4F (phase 2)',
@@ -130,6 +140,13 @@ for t, n in SHOPN.items():
     rows.append([f"**{n}**", ', '.join(nm(k) for k in D['SHOPS'][t + '_items']), ', '.join(nm(k) for k in D['SHOPS'][t + '_arms'])])
 out['shops'] = tbl(['Town', 'Item shop', 'Arms and trinkets'], rows)
 bm = lambda k: D['BLACKMARKET_PRICES'].get(k) or I[k]['price'] * D['BLACKMARKET_MARKUP']
+FL = {'ember': 'Ember', 'stone': 'Stone', 'tide': 'Tide', 'dawn': 'Dawn'}
+cn = lambda c: H[c['who']]['name'] if c['kind'] == 'h' else M[c['who']]['name']
+CB = {c['id']: c for c in D['CARDS']}
+out['cards'] = tbl(['Value', 'Cards'], [[str(v), ', '.join(f"{cn(c)} ({FL[c['f']]})" for c in D['CARDS'] if c['v'] == v)] for v in range(1, 10)])
+TN = {'brightwater': 'Brightwater', 'halden': 'Port Halden', 'ironhold': 'Ironhold', 'frostmere': 'Frostmere', 'mirage': 'Mirage', 'aerie': 'Aerie', 'undermarket': 'The Undermarket', 'nerith': 'Nerith'}
+WH = {'day': 'Day', 'night': 'Night', 'any': 'Any time'}
+out['card_foes'] = tbl(['Player', 'Where', 'When', 'Deck', 'Skill'], [[f"**{o['name']}**", TN[o['town']], WH[o['when']], ', '.join(f"{cn(CB[k])} {CB[k]['v']}" for k in o['deck']), f"{round(o['skill'] * 100)}%"] for o in D['FOES']])
 out['trophies'] = tbl(['Trophy', 'How to earn it'], [[f"🏆 **{t['name']}**", t['secret'] + ' *(hidden in the game until earned)*' if t.get('secret') else t['desc']] for t in D['TROPHIES']])
 out['blackmarket'] = tbl(['Item', 'Black-market price', 'Normal price'], [[nm(k), bm(k), I[k]['price'] or '—'] for k in D['SHOPS']['blackmarket']])
 loot = lambda l: f"{int(l[5:]):,} gold" if l.startswith('gold:') else nm(l)

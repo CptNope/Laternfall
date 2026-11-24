@@ -296,6 +296,8 @@ function undermarketNpcs() {
 }
 async function talkMags() {
   const f = G.flags;
+  if (f.debt_done && hasItem('sunset_opal')) return heistTurnIn();
+  if (f.debt_done && !f.q_heist) { if (inParty('kestrel')) return heistStart(); await say('Mags', 'I\'ve got a job, but only for Kestrel. Bring her down here.'); return; }
   if (inParty('kestrel')) await sayAll([['Mags', 'Kes! Look at you, all respectable. Guildmaster, they\'re saying. I nearly fell off my stool.'], [KE, 'I am NOT the Guildmaster. I\'m a... silent partner.'], ['Mags', 'Very silent. You haven\'t paid your dues in three years. Go on, spend some money at Nim\'s. That counts.']]);
   else await say('Mags', 'Friends of Kestrel? Then you\'re friends of the Guild. Mind your purses anyway. Professional habit.');
   if (f.debt_done && !f.mags_gift) { f.mags_gift = true; addItem('star_bomb'); addItem('star_bomb'); Audio_.sfx('item'); await narrate('Mags slips you two Star Bombs. "For old times. Don\'t ask where they\'re from."'); }

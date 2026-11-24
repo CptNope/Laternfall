@@ -11,6 +11,7 @@ function getMap(id) {
   let m;
   if (id === 'world') m = genWorld();
   else if (id === 'deep') m = genDeep();
+  else if (id === 'heist') m = buildHeist();
   else if (TOWN_DEFS[id]) m = buildTown(id);
   else if (id.startsWith('in:')) m = buildInterior(id);
   else { const [did, f] = id.split(':'); m = genDungeonFloor(did, parseInt(f)); }
@@ -21,12 +22,16 @@ function populate(map) {
   map.entities = [];
   if (map.kind === 'world') { applyWorldFlags(map); for (const q of [...worldQuestEntities(map), ...mothLampEntities(map)]) map.entities.push(q); }
   if (map.kind === 'deep') { applyDeepFlags(map); for (const q of deepEntities(map)) map.entities.push(q); }
+  if (map.kind === 'heist') { Heist.t = 0; for (const q of heistEntities(map)) map.entities.push(q); }
+  if (map.kind === 'town') for (const q of heistTownEntities(map)) map.entities.push(q);
   if (map.kind === 'interior') {
     for (const n of interiorNpcs(map)) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
     for (const q of interiorQuestEntities(map)) map.entities.push(q);
   }
   if (map.kind === 'town') {
-    for (const n of townNpcs(map.id)) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
+    // at night the wanderers go home and the night folk come out (1.9)
+    const folk = isNight() && !map.underwater && !map.underground ? [...townNpcs(map.id).filter(n => !n.wander), ...nightNpcs(map.id)] : [...townNpcs(map.id), ...cardDayNpcs(map.id)];
+    for (const n of folk) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
   } else if (map.kind === 'dungeon') {
     const did = map.dungeon, def = DUNGEONS[did];
     for (const c of map.extras.chests) {
@@ -62,12 +67,13 @@ const Field = {
     populate(map);
     G.scene = this;
     this.playMusic();
-    this.banner = map.kind === 'town' || map.kind === 'dungeon' || map.kind === 'deep' ? { text: map.name, t: 2.6 } : null;
+    this.banner = map.kind === 'town' || map.kind === 'dungeon' || map.kind === 'deep' || map.kind === 'heist' ? { text: map.name, t: 2.6 } : null;
   },
   playMusic() {
     const m = this.map;
     if (m.kind === 'world') Audio_.play(worldTrack());
     else if (m.kind === 'deep') Audio_.play('deep');
+    else if (m.kind === 'heist') Audio_.play('undermarket');
     else if (m.kind === 'interior') Audio_.play((TOWN_DEFS[m.town] && TOWN_DEFS[m.town].music) || 'town');
     else if (m.kind === 'town') Audio_.play(m.id === 'mirage' ? 'desert' : m.music || 'town');
     else Audio_.play(m.dungeon === 'spire' ? 'spire' : m.dungeon === 'abyss' || m.dungeon === 'hadal' ? 'abyss' : m.dungeon === 'palace' ? 'deep' : 'dungeon');
@@ -80,6 +86,7 @@ const Field = {
     if (m.kind === 'world') return !(c === '~' || c === 'r' || c === '^' || c === 'M' || c === 'x' || c === 'm');
     if (m.kind === 'interior') return !INT_SOLID.has(c) && c !== '#';
     if (m.kind === 'deep') return !DEEP_SOLID.has(c);
+    if (m.kind === 'heist') return !HEIST_SOLID.has(c);
     if (m.kind === 'town') return !TOWN_SOLID.has(c) && !this.buildingAt(x, y);
     return !DUNGEON_SOLID.has(c);
   },
@@ -168,6 +175,7 @@ const Field = {
   tick(dt) {
     this.t += dt;
     G.playTime += dt;
+    advanceClock(dt);
     if (this.banner) { this.banner.t -= dt; if (this.banner.t <= 0) this.banner = null; }
     if (this.anim) {
       this.anim.t += dt / this.anim.dur;
@@ -181,6 +189,7 @@ const Field = {
         this.onStep();
       }
     }
+    if (this.map.kind === 'heist') Heist.tick(this.map, dt);
     // NPC wandering
     if (this.map.kind === 'town' || this.map.kind === 'interior') {
       for (const e of this.map.entities) {
@@ -221,6 +230,9 @@ const Field = {
       if (isLoc(c)) { runScript(() => enterLocation(c)); return; }
       if (c === 'u') { runScript(surfacePrompt); return; }
       this.encounterCheck(c === 'k' ? 1.5 : 1);
+    } else if (m.kind === 'heist') {
+      if (m.at(G.x, G.y) === 'E') { runScript(heistExit); return; }
+      Heist.check(m);
     } else if (m.kind === 'interior') {
       if (m.at(G.x, G.y) === 'E') { runScript(exitInterior); return; }
     } else if (m.kind === 'dungeon') {
@@ -241,7 +253,8 @@ const Field = {
     let table, bg;
     if (m.kind === 'world') { table = worldRegionAt(m, G.x, G.y); bg = worldBattleBG(m, G.x, G.y); if (table === 'sea' && !G.onShip) table = 'r2'; }
     else { table = m.enc; bg = m.bg; }
-    const grp = weighted(ENCOUNTERS[table]).g;
+    const night = m.kind === 'world' && isNight() && NIGHT_ENC[table] && Math.random() < 0.5;
+    const grp = weighted(night ? NIGHT_ENC[table] : ENCOUNTERS[table]).g;
     runScript(async () => {
       const r = await startBattle(grp, { bg });
       if (r === 'lose') await gameOver();
@@ -268,6 +281,7 @@ const Field = {
       const sx = x * TS - cx, sy = y * TS - cy;
       if (m.kind === 'world') drawWorldTile(g, m, x, y, sx, sy, t);
       else if (m.kind === 'deep') drawDeepTile(g, m, x, y, sx, sy, t);
+      else if (m.kind === 'heist') drawHeistTile(g, m, x, y, sx, sy, t);
       else if (m.kind === 'town') { if (m.at(x, y) !== undefined) drawTownTile(g, m, x, y, sx, sy, t); }
       else if (m.kind === 'interior') { if (m.at(x, y) !== undefined) drawInteriorTile(g, m, x, y, sx, sy, t); }
       else drawDungeonTile(g, m, x, y, sx, sy, t);
@@ -303,6 +317,7 @@ const Field = {
       }
     });
     list.sort((a, b) => a.y - b.y).forEach(d => d.draw());
+    if (m.kind === 'heist') drawHeistSight(g, m, cx, cy, t);
     // the sea floor: dark water with the bell's lamp, glowing vents and the lights of Nerith
     if (m.kind === 'deep') drawDeepLight(g, m, cx, cy, psx, psy, t);
     if (m.kind === 'town' && (m.underwater || m.underground)) drawTownMood(g, m, t);
@@ -334,6 +349,9 @@ const Field = {
       // the sky darkens as the King stirs
       g.fillStyle = 'rgba(40,10,60,.12)'; g.fillRect(0, 0, W, H);
     }
+    // the sky and the weather (1.9)
+    drawSky(g, m, cx, cy, t);
+    if (underSky(m)) drawWeather(g, currentWeather(), t);
     if (this.banner) {
       g.save(); g.globalAlpha = clamp(this.banner.t, 0, 1);
       g.font = font(20, true, SERIF);
@@ -357,6 +375,7 @@ function drawEntity(g, e, sx, sy, t) {
   else if (e.kind === 'roadlamp') { drawRoadLamp(g, sx, sy, e.lit, t); if (e.moths) drawLampMoths(g, sx, sy, t); }
   else if (e.kind === 'riddle') drawRiddleFire(g, sx, sy, e.solved, t);
   else if (e.kind === 'hatch') drawHatch(g, sx, sy);
+  else if (e.kind === 'guard') { drawChar(g, e.look, sx, sy, e.dir, Math.floor(t * 4) % 2 ? 1 : 2, 1, null, t); }
   else if (e.kind === 'boss') {
     const s = 0.45;
     drawMonster(g, e.def, sx, sy + 2, { t, scale: s });

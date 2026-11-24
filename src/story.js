@@ -1006,6 +1006,8 @@ function questList() {
   if (f.forgeMet) q.push({ title: 'Orrin\'s Forge', giver: 'Orrin, Ironhold', done: !!f.forge_done, reward: 'Orrin\'s Seal', desc: f.forge_done ? 'Orrin calls you family now. The forge is always hot for you.' : `Bring monster materials to Orrin and forge three pieces of gear. (${f.forged || 0}/3)` });
   q.push(...heartsQuests());
   q.push(...deepQuests());
+  q.push(...cardQuests());
+  q.push(...heistQuests());
   if (f.arenaMet) { const n = ARENA_CUPS.slice(0, 5).filter(c => f['cup_' + c.id]).length; q.push({ title: 'Arena Legend', giver: 'Arena Master, Aerie', done: !!f.cup_champion, reward: 'Lantern Crown', desc: f.cup_champion ? 'Grand Champions of the Aerie Arena!' : `Win all five cups at the Aerie Arena. (${n}/5 won)` }); }
   if (f.q_scholar) q.push({ title: 'Monster Scholar', giver: 'Sable, Frostmere', done: !!f.scholar_done, reward: 'Silk Ribbon', desc: f.scholar_done ? 'Your notes are in Sable\'s bestiary.' : `Record 30 different creatures in your bestiary, then visit Sable. (${seenCount()}/30)` });
   if (f.scholar_done) { const tot = Object.keys(MONSTERS).length, goal = f.codex45 ? tot : 45; q.push({ title: 'The Complete Bestiary', giver: 'Sable, Frostmere', done: !!f.codex_all, reward: f.codex45 ? 'Bestiary Seal' : 'Scholar\'s Monocle', desc: f.codex_all ? 'Every creature is recorded. Sable\'s book is finished.' : `Record ${f.codex45 ? 'every creature' : '45 creatures'}, then visit Sable. (${seenCount()}/${goal})` }); }
@@ -1096,7 +1098,7 @@ async function newGame(plus) {
   G.party = [];
   if (plus) { G.party.push({ ...G.carry.arin, status: {} }, { ...G.carry.lyra, status: {} }); healAll(); }
   else G.party = [makeMember('arin', 1), makeMember('lyra', 1)];
-  G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.splits = {}; G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
+  G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.splits = {}; G.clock = CLOCK_START; if (!plus) { G.cards = {}; G.lastDeck = null; } G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
   G.seen = plus ? plus.seen : {}; G.killed = plus ? plus.killed : {};
   if (plus) G.flags.ngplus = plus.ng;
   if (!plus) G.slot = SAVE_SLOTS.find(s => !hasSave(s)) || '1';

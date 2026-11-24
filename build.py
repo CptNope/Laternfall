@@ -1,6 +1,6 @@
 import pathlib, hashlib, json
 root=pathlib.Path(__file__).parent
-order=['core','data','art','deep_art','maps','party','field','interior','battle','menu','crafts','hearts','deep','platform','story']
+order=['core','data','art','deep_art','maps','party','field','interior','battle','menu','crafts','hearts','deep','platform','living','cards','heist','story']
 js='\n'.join((root/'src'/f'{n}.js').read_text() for n in order)
 html=f'''<!DOCTYPE html>
 <html lang="en">

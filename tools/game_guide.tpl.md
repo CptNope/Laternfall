@@ -11,6 +11,9 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 - [Walkthrough](#walkthrough)
 - [Hearts of the Lamplighters](#hearts-of-the-lamplighters)
 - [The Drowned Kingdom](#the-drowned-kingdom)
+- [Day, night and weather](#day-night-and-weather)
+- [Lanterns & Lies](#lanterns--lies)
+- [The Sunset Opal](#the-sunset-opal)
 - [The world](#the-world)
 - [Towns, inns and shops](#towns-inns-and-shops)
 - [Dungeons](#dungeons)
@@ -181,6 +184,63 @@ After Kestrel's quest, the trapdoor in the Ironhold jail also leads to **the Und
 ### Lanternmoths
 
 Once all twelve roadside lamps are lit (Arin's quest), talk to **Old Ivy** in Brightwater for the **Moth Whistle**. After that, talk to any lit roadside lamp to ride a lanternmoth: it moves twice as fast as walking, crosses forests, and **meets no monsters**. Moths can't cross water or mountains. Press **Enter** to land; walking into a town or dungeon lands you too.
+
+---
+
+## Day, night and weather
+
+Added in 1.9. A clock runs while you explore: one real second is one game minute, so a day lasts 24 minutes. The menu shows the day, the time and the weather where you are.
+
+```mermaid
+flowchart LR
+    D[Dawn<br/>5:30–7:00] --> Day[Day<br/>7:00–19:00] --> K[Dusk<br/>19:00–20:30] --> N[Night<br/>20:30–5:30] --> D
+```
+
+**At night** the sky darkens (lamps, braziers and windows glow), the townsfolk who wander go home, and a few night owls come out: a watchman in Brightwater, a fisher in Port Halden, a stargazer in Frostmere, a vendor in Mirage, and some of the card players. Half of the world's random battles come from night tables (see [Monsters by area](#monsters-by-area)), with five creatures you only meet after dark. Winning one earns the Night Owl trophy.
+
+**Passing time.** An inn wakes you at 7:00, or at 21:00 if you choose **Stay until night**. A Tent moves the clock on 8 hours.
+
+**Weather** is rolled for each region every six game hours, so it changes four times a day. It shows on the world map and in towns, and it changes battles fought there:
+
+| Weather | Where | In battle |
+| --- | --- | --- |
+| Rain | Western continent, the northern lowlands, the open sea | Water and lightning +25%, fire −25% (for both sides) |
+| Snow | The snowfields around Frostmere (about half the time) | Ice +25%, fire −25% |
+| Sandstorm | The Sunscar Desert (about a third of the time) | Physical attacks miss 15% more often |
+| Fog | The Isle of Dusk (half the time), sometimes the western continent | Physical attacks miss 10% more often |
+| Ashfall | The Ashen Isle, always | Fire +25%, water −25% |
+
+The sky valley of Aerie sits above the weather. There's no weather indoors, underground, under the sea or in the air.
+
+---
+
+## Lanterns & Lies
+
+A card game played against people around the world. Tess in Brightwater (by day) explains it and gives you a 7-card starter deck.
+
+**Rules.** Each player brings 5 cards and takes turns laying one on a 3×3 board. When you lay a card, every touching enemy card with a lower value flips to you; ties flip nothing. Flames give an edge to the attacker: **Ember beats Stone, Stone beats Tide, Tide beats Ember** (+2). Dawn has no edge, and nothing has an edge over it. Whoever owns more of the nine squares at the end wins.
+
+**The Lie.** Once a game, press **Shift** on a card to lay it face-down. A veiled card flips nothing when it's laid. At the end of the game it turns over and flips everything weaker around it. A card that attacks a veiled card has to beat its real value, which the attacker can't see.
+
+**Winning** takes one card from your opponent's deck that you don't have yet (or gold, once you have them all). Beat every player for the **Joker's Lantern** (all stats +10, rare steals twice as likely). Collecting all 36 cards earns the Full Deck trophy.
+
+**Choosing a deck:** Enter picks or drops a card, Shift takes your five strongest, Esc starts the game once five are picked. The game remembers your last deck.
+
+{{card_foes}}
+
+Skill is how carefully a player thinks: low-skill players sometimes make careless moves.
+
+{{cards}}
+
+---
+
+## The Sunset Opal
+
+A heist for Kestrel. After Old Debts, **Mags** in the Undermarket guild hall asks Kestrel to steal back the Guild's Sunset Opal from the Mirage palace vaults. Kestrel must be in the party when you talk to her.
+
+At **night**, a loose grate east of the Mirage palace leads into the vaults. Four guards walk fixed patrols. Each sees four squares ahead, widening to a cone three squares wide; walls and pillars block their sight. What they can see is drawn in red. Be seen once and the guards throw you out (you can try again at once). Take the Opal from the chest in the far corner, get back to the grate, and bring the Opal to Mags for the **Night Cloak** (ATK +10, SPD +16, prevents blind and stop).
+
+The guards' patrols repeat every 1,092 steps, and there is a safe route in and out: the play-test checks it on every build.
 
 ---
 
@@ -428,6 +488,8 @@ Most enemies pick a random target. Some are smarter, and the bestiary says so:
 | Silence | Can't use skills or combos | Remedy, Purify, Sanctuary | Echo Bell, Sage Circlet, Dwarven Band, Eclipse Mantle, and others |
 | Blind | Attacks and physical skills miss half the time | Remedy, Purify, Sanctuary | Eye Charm, Sun Circlet, Scholar's Monocle, all-ailment accessories |
 | Slow | Acts later (speed ×0.6) | Remedy, Purify, Haste, Sanctuary | Hourglass Pin, Starlit Cloak, all-ailment accessories |
+| Berserk | Attacks a random foe every turn with ATK ×1.5; you can't give orders | Remedy, Purify, wears off (3 rounds) | Calm Charm, all-ailment accessories |
+| Stop | Loses every turn | Remedy, Purify, wears off (2 rounds) | Clockwork Charm, Night Cloak, all-ailment accessories |
 | Haste | Acts sooner (speed ×1.6) for 4 rounds | Wears off; Slow cancels it | — |
 | Regen | Heals every round | Wears off | — |
 
@@ -566,6 +628,8 @@ flowchart LR
 | **The Tide That Remembers** | Mother Ysolde, Nerith | The superboss in the Hadal Rift | Tidesong |
 | **Lanternmoths** | Old Ivy, Brightwater (after The Lamplighter's Road) | Talk to her | Moth Whistle |
 | **Buried Treasure** | Whisper, the Undermarket | Dig up all five treasure maps | 50,000 G |
+| **Lanterns & Lies** | Tess, Brightwater (by day) | Beat all eight card players | Joker's Lantern |
+| **The Sunset Opal** | Mags, the Undermarket (after Old Debts, with Kestrel) | The night heist in the Mirage palace vaults | Night Cloak |
 
 ---
 

@@ -2,8 +2,8 @@
 
 Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
 
-- **Current release:** 1.6.0 *Deeper systems*. **Merged, not yet tagged:** 1.7.0 *The Drowned Kingdom*. **In review:** 1.8.0 *Install anywhere* (PL-1 to PL-4). See [CHANGELOG.md](CHANGELOG.md#unreleased).
-- **Next up:** 2.0 *Lantern Engine* work can start (EN-5 is already under way), or the optional 1.6.x items (Berserk and Stop, day and night, weather, the card game, stealth). ST-2 (a real phone test) still needs a person with a phone.
+- **Current release:** 1.6.0 *Deeper systems*. **Merged, not yet tagged:** 1.7.0 *The Drowned Kingdom* and 1.8.0 *Install anywhere*. **In review:** 1.9.0 *Living world* (DS-4, DS-8 to DS-11). See [CHANGELOG.md](CHANGELOG.md#unreleased).
+- **Next up:** 2.0 *Lantern Engine* work can start (EN-5 is already under way). With 1.9 the 1.6 list is finished. ST-2 (a real phone test) still needs a person with a phone.
 - ✅ marks items that are done.
 
 ## Contents
@@ -112,7 +112,9 @@ gantt
     section World
     1.7 The Drowned Kingdom          :done, m17, 2026-11-24, 1d
     section Platform
-    1.8 Install anywhere             :active, m18, 2026-11-24, 2w
+    1.8 Install anywhere             :done, m18, 2026-11-24, 1d
+    section Living world
+    1.9 Living world                 :active, m19, 2026-11-24, 2w
     section Engine
     2.0 Lantern Engine               :m20, after m17, 12w
 ```
@@ -122,9 +124,9 @@ gantt
 | **1.3.x** | Stabilise | Real-HP balance pass, mobile check, CI, tagged releases | Nov 2026 | ✅ Done in 1.4.0 (tags pushed for 1.6.0) except ST-2 |
 | **1.4** | Comfort | Save slots, auto-save, battle speed, gamepad, accessibility | Nov 2026 | ✅ Done (1.4.0, finished in 1.5.0) |
 | **1.5** | Heroes | A personal quest for each of the five heroes, with an ultimate weapon and a Limit | Dec 2026 | ✅ Done (1.5.0) |
-| **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | Nov 2026 | ✅ Done (1.6.0: DS-1 to DS-7) |
+| **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | Nov 2026 | ✅ Done (1.6.0: DS-1 to DS-7; 1.9.0: DS-4's last part and DS-8 to DS-11) |
 | **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ✅ Done (1.7.0, merged in #13) |
-| **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | 🟡 In review (1.8.0: PL-1 to PL-4) |
+| **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ✅ Done (1.8.0, merged in #14; PL-5 not started) |
 | **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 💭 Exploring |
 
 ```mermaid
@@ -250,14 +252,14 @@ flowchart LR
 | ✅ DS-1 | **Lantern Board** | After level 30, a small node grid per hero spends "Embers" (earned with EXP) on stats and passive skills | Shipped: 12 nodes per hero, 11 passives, Embers past the cap too | L |
 | ✅ DS-2 | **Cooking** | Combine fish with shop ingredients at inns into meals that buff the next 3 battles. Gives fish a use beyond selling | Shipped with fish only (11 meals); shop ingredients were left out to keep it simple | M |
 | ✅ DS-3 | **Smarter enemy AI** | Targeting rules (focus the weakest hero, heal allies, counter-attack) and scripted boss phases | Shipped: weakest / casters / healer AI and phases for all 15 bosses. Counter-attacks went to the heroes (a Lantern Board passive) | M |
-| ✅ DS-4 | **More statuses** | Blind (miss chance), Slow, Haste, Berserk, Stop. New accessories that prevent them | Shipped Blind, Slow and Haste. **Berserk and Stop are still open** | M |
+| ✅ DS-4 | **More statuses** | Blind (miss chance), Slow, Haste, Berserk, Stop. New accessories that prevent them | Shipped Blind, Slow and Haste in 1.6; **Berserk and Stop in 1.9**, with the Calm and Clockwork Charms | M |
 | ✅ DS-5 | **Elemental resistances and absorbs** | Today monsters only have `weak`; add `resist` and `absorb` | Shipped: 23 monsters | S |
 | ✅ DS-6 | **Steal tiers** | A rare steal slot per monster, more likely with Mug | Shipped: 13 monsters; the Thief's Gloves double the chance instead of Mug | S |
 | ✅ DS-7 | **Monster codex rewards** | Sable gives a reward at 45 and at 63 creatures | Shipped at 45 and at all 75 | XS |
-| DS-8 | **Day and night** | Visual tint, different night encounters, a few NPCs who only appear at night | Open | M |
-| DS-9 | **Weather** | Snow in Frostmere and sandstorms in the Sunscar, drawn in code; some affect battle | Open | M |
-| DS-10 | **"Lanterns & Lies"** | A small in-world card game against NPCs, for prizes | Open | L |
-| DS-11 | **Stealth sections** | Guard sight lines on the field (from HR-5); a stealth replay of the Undercity | Open | L |
+| ✅ DS-8 | **Day and night** | Visual tint, different night encounters, a few NPCs who only appear at night | Shipped in 1.9: a 24-minute day, five night monsters, night NPCs, inn and Tent pass time | M |
+| ✅ DS-9 | **Weather** | Snow in Frostmere and sandstorms in the Sunscar, drawn in code; some affect battle | Shipped in 1.9: six kinds by region; they change elemental damage and physical misses | M |
+| ✅ DS-10 | **"Lanterns & Lies"** | A small in-world card game against NPCs, for prizes | Shipped in 1.9: 36 cards, eight players, a once-a-game face-down Lie | L |
+| ✅ DS-11 | **Stealth sections** | Guard sight lines on the field (from HR-5); a stealth replay of the Undercity | Shipped in 1.9 as a new heist in the Mirage vaults instead of a replay; the Undercity is unchanged | L |
 
 ```mermaid
 stateDiagram-v2
