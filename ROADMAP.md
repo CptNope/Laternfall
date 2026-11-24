@@ -1,0 +1,460 @@
+# Lanternfall Roadmap
+
+Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
+
+- **Current release:** 1.3.0, *Chapter VI: The Crownless King*. See [CHANGELOG.md](CHANGELOG.md#130--2026-11-23--chapter-vi-the-crownless-king).
+- **Next up:** 1.3.x *Stabilise*, then 1.4 *Comfort*.
+
+## Contents
+
+1. [Guiding principles](#guiding-principles)
+2. [Where the game is today](#where-the-game-is-today)
+3. [Milestones at a glance](#milestones-at-a-glance)
+4. [Milestone details](#milestone-details)
+5. [Prioritised backlog](#prioritised-backlog)
+6. [Technical debt](#technical-debt)
+7. [Ideas parking lot](#ideas-parking-lot)
+8. [Release process](#release-process)
+9. [How to propose something](#how-to-propose-something)
+
+---
+
+## Guiding principles
+
+These rules decide what makes the cut.
+
+| # | Principle | In practice |
+| --- | --- | --- |
+| 1 | **Everything is made in code** | No image or audio files ship with the game. New art is Canvas paths; new music is a `TRACKS` entry. |
+| 2 | **One file, no install** | `index.html` must keep running when opened straight from disk. A build step is fine; runtime dependencies are not. |
+| 3 | **Story first** | Every system should serve a character or a place. Fishing has the Ice Fisher; forging has Orrin. |
+| 4 | **Saves never break** | New content is gated by flags, and old saves load cleanly. A breaking change needs a migration and a major version. |
+| 5 | **Plays on a phone** | Every feature works with the D-pad and A/B buttons. If it needs a third button, it needs a touch answer too. |
+| 6 | **Respect the player's time** | Things that cost time but add nothing (slow text, backtracking, grinding walls) get an option or a fix. |
+
+---
+
+## Where the game is today
+
+```mermaid
+mindmap
+  root((Lanternfall 1.3))
+    World
+      7 towns
+      7 dungeons, 20 floors
+      Ship and airship
+      Walk-in interiors
+    Story
+      Main quest: 4 Lanterns
+      Tomb of the First King
+      Chapter VI post-game
+      10 side quests
+    Battle
+      5 heroes, 4 active
+      36 skills, 12 combos
+      63 monsters, 10 bosses
+      Arena: 6 cups
+    Systems
+      Equipment and 27 accessories
+      Fishing: 13 fish
+      Forge: 9 recipes
+      Bestiary and world map
+      New Game+
+    Tech
+      Canvas 2D vector art
+      Web Audio chiptune, 18 tracks
+      Single-file build
+      Headless play-test harness
+```
+
+### Content by area
+
+```mermaid
+pie showData
+    title Lines of source by module (1.3.0)
+    "art.js: all drawing" : 1480
+    "story.js: dialogue and events" : 1144
+    "battle.js: combat" : 910
+    "core.js: engine, UI, audio" : 673
+    "maps.js: world, towns, dungeons" : 499
+    "field.js: exploration" : 440
+    "menu.js: menus" : 451
+    "data.js: game data" : 423
+    "crafts.js: fishing, forge" : 154
+    "interior.js: buildings" : 145
+    "party.js: state, saves" : 86
+```
+
+---
+
+## Milestones at a glance
+
+```mermaid
+gantt
+    title Lanternfall roadmap (target dates, subject to change)
+    dateFormat YYYY-MM-DD
+    axisFormat %b %Y
+    section Stabilise
+    1.3.x Stabilise                  :active, m13, 2026-11-24, 3w
+    section Comfort
+    1.4 Comfort and accessibility    :m14, after m13, 6w
+    section Heroes
+    1.5 Hearts of the Lamplighters   :m15, after m14, 8w
+    section Depth
+    1.6 Deeper systems               :m16, after m15, 8w
+    section World
+    1.7 The Drowned Kingdom          :m17, after m16, 10w
+    section Platform
+    1.8 Install anywhere             :m18, after m14, 6w
+    section Engine
+    2.0 Lantern Engine               :m20, after m17, 12w
+```
+
+| Milestone | Theme | Headline | Target | Status |
+| --- | --- | --- | --- | --- |
+| **1.3.x** | Stabilise | Real-HP balance pass, mobile check, CI, tagged releases | Dec 2026 | 🟡 In progress |
+| **1.4** | Comfort | Save slots, auto-save, battle speed, gamepad, accessibility | Jan 2027 | ⚪ Planned |
+| **1.5** | Heroes | A personal quest for each of the five heroes, with an ultimate weapon and a Limit | Mar 2027 | ⚪ Planned |
+| **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | May 2027 | ⚪ Planned |
+| **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ⚪ Planned |
+| **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ⚪ Planned |
+| **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 💭 Exploring |
+
+```mermaid
+flowchart LR
+    S[1.3.x Stabilise] --> C[1.4 Comfort]
+    C --> H[1.5 Heroes]
+    H --> D[1.6 Depth]
+    D --> W[1.7 World]
+    C --> P[1.8 Platform]
+    W --> E[2.0 Engine]
+    P --> E
+    C -. save slots and versioning .-> E
+    D -. Lantern Board data format .-> E
+    classDef now fill:#ffe9a8,stroke:#c0902a,color:#222
+    class S now
+```
+
+---
+
+## Milestone details
+
+### 1.3.x · Stabilise
+
+Make 1.3.0 solid before building on it.
+
+| ID | Item | Why | Size |
+| --- | --- | --- | --- |
+| ST-1 | **Balance pass at real HP**: play Chapter VI's finale at Lv 42, 45 and 50 without debug changes | The 1.3.0 tests shrank boss HP to finish quickly | M |
+| ST-2 | **Touch-device pass**: fishing, forge and Config on a phone in landscape | The fishing timing window was only tested with a keyboard | S |
+| ST-3 | **CI**: run `tools/playtest.py` on every pull request with GitHub Actions and attach screenshots | Catches broken saves and JS errors automatically | M |
+| ST-4 | **Tag releases** `v1.0.0`–`v1.3.0` and publish GitHub Releases | The changelog and itch builds can then link to real tags | S |
+| ST-5 | **itch.io update**: Chapter VI devlog, new screenshots, updated feature list | `docs/itch/itch-page.md` still describes 1.2 | S |
+| ST-6 | **Lastlight barrels** may hand out Abyss Ash early; decide whether that's intended | Forge balance | XS |
+| ST-7 | **Eclipse Cup EXP**: Orun gives 45,000 EXP on every rematch | Possible EXP farm; harmless at the level cap, but worth a decision | XS |
+| ST-8 | **Map labels** for Lastlight and the Abyss before visiting | The world map hides names until visited, so the new isle reads as blank | XS |
+
+**Done when:** a level-45 party can clear the finale in 12–20 rounds with no debug changes, the harness runs in CI, and `v1.3.1` is tagged.
+
+### 1.4 · Comfort and accessibility
+
+```mermaid
+flowchart TB
+    subgraph Saving
+      A1[3 save slots] --> A2[Auto-save on map change]
+      A2 --> A3[Save versioning and migration]
+    end
+    subgraph Battle
+      B1[Battle speed 1x 2x 4x] --> B2[Repeat last turn]
+      B2 --> B3[Auto-battle toggle]
+    end
+    subgraph Input
+      C1[Gamepad API support] --> C2[Key rebinding]
+      C2 --> C3[Bigger touch buttons option]
+    end
+    subgraph Reading
+      D1[Text size option] --> D2[High-contrast windows]
+      D2 --> D3[Colour-blind-safe status icons]
+      D3 --> D4[Dialogue backlog]
+    end
+```
+
+| ID | Item | Notes | Size |
+| --- | --- | --- | --- |
+| QL-1 | **Three save slots** plus an auto-save slot | `SAVE_KEY` becomes `lanternfall_save_v2_<slot>`, and v1 saves migrate into slot 1 | M |
+| QL-2 | **Auto-save** when entering a town or dungeon | A Config toggle, on by default | S |
+| QL-3 | **Battle speed** (1×, 2×, 4×) | Scale the `wait()` timers inside battles | S |
+| QL-4 | **Repeat last turn** (R / L button) | `lastCmd` already stores each hero's last menu choice | S |
+| QL-5 | **Gamepad support** through the Gamepad API | Map to the existing `Input` actions | M |
+| QL-6 | **Key rebinding** in Config | Edits `KEYMAP` and persists in `CFG` | S |
+| QL-7 | **Text size and high-contrast windows** | `drawWindow` and `font()` are already central, so this is cheap | S |
+| QL-8 | **Status icons** that don't rely on colour (PSN, SLP, SIL glyphs) | Accessibility | S |
+| QL-9 | **Dialogue backlog**: press a key to reread the last 20 lines | Story-heavy game | S |
+| QL-10 | **Optimise equipment** button in Equip | Picks the best stat total per slot | S |
+| QL-11 | **Shop: compare** every party member at once for armour and accessories | Extends `drawShopDetail` | S |
+| QL-12 | **Encounter toggle** in Config, unlocked after the ending | Today it's only the `?noenc` debug flag | XS |
+
+### 1.5 · Hearts of the Lamplighters
+
+A personal chapter for each hero. Each one adds a short story, a small optional dungeon or set piece, an **ultimate weapon** (tier above the forge) and a **Limit**, a once-per-battle super move that charges as the hero takes damage.
+
+```mermaid
+flowchart LR
+    subgraph Arin
+      AR1[Father's ledger<br/>at the Elder's hall] --> AR2[The Lamplighter's Road:<br/>relight 12 roadside lamps] --> AR3[Sunbearer + Limit: First Light]
+    end
+    subgraph Lyra
+      LY1[Mother's grimoire<br/>under the house] --> LY2[Ember Caves trial:<br/>three fire riddles] --> LY3[Hearthstaff + Limit: Phoenix Rite]
+    end
+    subgraph Oswin
+      OS1[The drowned priesthood's<br/>last letter] --> OS2[Sea Mother's grotto<br/>off Port Halden] --> OS3[Abbot's Bell + Limit: High Tide]
+    end
+    subgraph Kestrel
+      KE1[An old debt to the<br/>Undercity Guild] --> KE2[Heist in the Ironhold<br/>Undercity] --> KE3[Pickpocket's Prize + Limit: Grand Larceny]
+    end
+    subgraph Selene
+      SE1[Vesper's voice in<br/>her dreams] --> SE2[Mirror duel against<br/>Vesper's echo] --> SE3[Duskstar + Limit: Long Night]
+    end
+```
+
+| ID | Item | Requirements | Size |
+| --- | --- | --- | --- |
+| HR-1 | **Limit gauge** in battle (fills on damage taken; one Limit per hero) | Battle UI space next to the MP bar | M |
+| HR-2 | Arin: *The Lamplighter's Road*. Find and relight 12 roadside lamps across the world | New world entity type `lamp` | M |
+| HR-3 | Lyra: *Mother's Grimoire*. A riddle mini-dungeon | Reuses `genDungeonFloor` with a fixed seed | M |
+| HR-4 | Oswin: *The Sea Mother's Grotto*. A boss fight | New boss art | M |
+| HR-5 | Kestrel: *The Undercity Heist*. Stealth: avoid guards' sight lines | Needs NPC vision cones in `field.js` | L |
+| HR-6 | Selene: *Echo of Vesper*. A solo mirror battle | Solo battles need `BATTLE_PARTY` overrides | M |
+| HR-7 | **Campfire conversations**: party banter when resting with a Tent | `say()` scenes keyed off story flags | S |
+| HR-8 | **Epilogue additions** that change with completed personal quests | Edit `runEnding()` | S |
+
+### 1.6 · Deeper systems
+
+| ID | Item | Description | Size |
+| --- | --- | --- | --- |
+| DS-1 | **Lantern Board** | After level 30, a small node grid per hero spends "Embers" (earned with EXP) on stats and passive skills | L |
+| DS-2 | **Cooking** | Combine fish with shop ingredients at inns into meals that buff the next 3 battles. Gives fish a use beyond selling | M |
+| DS-3 | **Smarter enemy AI** | Targeting rules (focus the weakest hero, heal allies, counter-attack) and scripted boss phases | M |
+| DS-4 | **More statuses** | Blind (miss chance), Slow, Haste, Berserk, Stop. New accessories that prevent them | M |
+| DS-5 | **Elemental resistances and absorbs** | Today monsters only have `weak`; add `resist` and `absorb` | S |
+| DS-6 | **Steal tiers** | A rare steal slot per monster, more likely with Mug | S |
+| DS-7 | **Monster codex rewards** | Sable gives a reward at 45 and at 63 creatures | XS |
+| DS-8 | **Day and night** | Visual tint, different night encounters, a few NPCs who only appear at night | M |
+| DS-9 | **Weather** | Snow in Frostmere and sandstorms in the Sunscar, drawn in code; some affect battle | M |
+| DS-10 | **"Lanterns & Lies"** | A small in-world card game against NPCs, for prizes | L |
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Catch: Fishing (1.3)
+    Catch --> Sell: Shop
+    Catch --> Cook: Inn kitchen (1.6)
+    Cook --> Meal
+    Meal --> Buff: Next 3 battles
+    Catch --> Collect: Ice Fisher quest
+    Collect --> Reward: Angler's Ring, Moonfin Charm
+```
+
+### 1.7 · The Drowned Kingdom
+
+A new region and a sixth way to travel.
+
+| ID | Item | Description | Size |
+| --- | --- | --- | --- |
+| WD-1 | **Diving bell** | The *Dawnrunner* can dive at dark-water spots, reaching an underwater layer of the world map | L |
+| WD-2 | **The Drowned Kingdom** | The Sea Mother's sunken city: a town and a 4-floor dungeon, tied to Oswin's order | L |
+| WD-3 | **Ironhold Undercity** | A town beneath Ironhold (Kestrel's home turf), with a black-market shop | M |
+| WD-4 | **Treasure maps** | Dropped by bandits; they point to dig spots marked on the world map | M |
+| WD-5 | **Lanternmoths** | Ride-able giant moths in the Whisperwood: fast travel on foot, ignoring encounters | M |
+| WD-6 | **Secret superboss** | *The Tide That Remembers*, at the bottom of the Drowned Kingdom | M |
+
+### 1.8 · Install anywhere
+
+Can run alongside 1.5 to 1.7.
+
+| ID | Item | Notes | Size |
+| --- | --- | --- | --- |
+| PL-1 | **PWA**: manifest and a service worker, so the game installs and runs offline | Generated in `build.py`. The single-file rule still holds for `index.html` | S |
+| PL-2 | **Desktop builds** (Tauri) for Windows, macOS and Linux | Ship on itch.io alongside the web version | M |
+| PL-3 | **Achievements**, in-game first (a trophy room in Brightwater) and later on Steam | Hooks on existing flags | M |
+| PL-4 | **Speedrun mode** with an on-screen timer and split markers at each Lantern | `G.playTime` already exists | S |
+| PL-5 | **Mobile wrappers** (Capacitor) for Android and iOS | Only if there's demand | L |
+
+### 2.0 · Lantern Engine
+
+Separate the engine from Lanternfall's content so a sequel or a modder can build on it.
+
+```mermaid
+flowchart TB
+    subgraph Today[Today: 1.x]
+      direction LR
+      D1[data.js<br/>JS objects] --- S1[story.js<br/>async scripts] --- A1[art.js<br/>draw code]
+    end
+    subgraph Tomorrow[2.0]
+      direction LR
+      J[content/*.json<br/>monsters, items, maps] --> L[Loader + validator]
+      SC[content/scenes/*.js<br/>event scripts] --> L
+      AR[art packs<br/>registered families] --> L
+      L --> EN[Lantern Engine<br/>field, battle, UI, audio]
+      ED[Map and event editor<br/>in-browser] --> J
+      MOD[Mods<br/>drop-in folders] --> L
+    end
+    Today ==> Tomorrow
+```
+
+| ID | Item | Size |
+| --- | --- | --- |
+| EN-1 | Move monsters, items, shops and encounters to JSON with a schema and a validator | L |
+| EN-2 | **Save versioning**: `version` in the save, plus an ordered list of migrations | M |
+| EN-3 | **In-browser map editor** for towns and fixed dungeon floors | L |
+| EN-4 | **Mod loader**: content folders merged at build time | M |
+| EN-5 | Split `art.js` into per-family files with a registry (`registerMonsterArt('crown', fn)`) | M |
+| EN-6 | **Localisation**: move every dialogue line into a string table keyed by ID | L |
+| EN-7 | *Lanternfall II* design document (the Sixth Flame?) | M |
+
+---
+
+## Prioritised backlog
+
+Every item above, placed by impact and effort.
+
+```mermaid
+quadrantChart
+    title Impact vs effort
+    x-axis Low effort --> High effort
+    y-axis Low impact --> High impact
+    quadrant-1 Plan carefully
+    quadrant-2 Do first
+    quadrant-3 Fill-ins
+    quadrant-4 Reconsider
+    Save slots: [0.45, 0.85]
+    Battle speed: [0.2, 0.8]
+    Balance pass: [0.35, 0.9]
+    CI harness: [0.4, 0.7]
+    Gamepad: [0.45, 0.6]
+    Hero quests: [0.8, 0.85]
+    Limit gauge: [0.5, 0.7]
+    Cooking: [0.5, 0.5]
+    Lantern Board: [0.8, 0.65]
+    Drowned Kingdom: [0.9, 0.75]
+    PWA offline: [0.25, 0.55]
+    Card game: [0.8, 0.3]
+    Weather: [0.55, 0.3]
+    Text size: [0.15, 0.5]
+    Map editor: [0.9, 0.45]
+    Localisation: [0.85, 0.55]
+```
+
+| Rank | ID | Item | Milestone | Impact | Effort |
+| --- | --- | --- | --- | --- | --- |
+| 1 | ST-1 | Real-HP balance pass for Chapter VI | 1.3.x | High | Medium |
+| 2 | ST-3 | CI with the play-test harness | 1.3.x | High | Medium |
+| 3 | QL-3 | Battle speed | 1.4 | High | Low |
+| 4 | QL-1 | Save slots and migration | 1.4 | High | Medium |
+| 5 | ST-2 | Touch-device pass | 1.3.x | High | Low |
+| 6 | QL-4 | Repeat last turn | 1.4 | Medium | Low |
+| 7 | PL-1 | PWA offline install | 1.8 | Medium | Low |
+| 8 | QL-5 | Gamepad | 1.4 | Medium | Medium |
+| 9 | HR-1 | Limit gauge | 1.5 | High | Medium |
+| 10 | HR-2–6 | Hero quests | 1.5 | High | High |
+| 11 | DS-2 | Cooking | 1.6 | Medium | Medium |
+| 12 | DS-3 | Enemy AI | 1.6 | Medium | Medium |
+| 13 | DS-1 | Lantern Board | 1.6 | Medium | High |
+| 14 | WD-1–2 | Drowned Kingdom | 1.7 | High | High |
+| 15 | EN-2 | Save versioning | 2.0 (could move earlier) | High | Medium |
+
+```mermaid
+pie showData
+    title Backlog items by milestone
+    "1.3.x Stabilise" : 8
+    "1.4 Comfort" : 12
+    "1.5 Heroes" : 8
+    "1.6 Depth" : 10
+    "1.7 World" : 6
+    "1.8 Platform" : 5
+    "2.0 Engine" : 7
+```
+
+---
+
+## Technical debt
+
+Things in the code today that will slow future work down.
+
+| ID | Debt | Where | Risk | Suggested fix | When |
+| --- | --- | --- | --- | --- | --- |
+| TD-1 | **No save version.** `lanternfall_save_v1` has no schema version | `party.js` | A future change to the save shape breaks old saves silently | Add `version`, plus a migration list | 1.4 |
+| TD-2 | **Global state everywhere** (`G`, `Field`, `UI`) | all | Hard to test parts in isolation | Keep for 1.x; namespace in 2.0 | 2.0 |
+| TD-3 | **`index.html` is generated but committed**, so pull requests show a huge diff | `build.py` | Merge conflicts; reviewers skim | CI checks that `index.html` matches `build.py` output | 1.3.x |
+| TD-4 | **The world redraws every tile every frame** | `field.js`, `art.js` | Battery drain on phones | Cache static tiles on an offscreen canvas per screen | 1.8 |
+| TD-5 | **The music scheduler uses `setInterval`**, which background tabs throttle | `core.js` | Stutter when switching tabs | Pause on `visibilitychange`; schedule further ahead | 1.4 |
+| TD-6 | **Balance is checked by ad hoc simulation** | none | Regressions when stats change | Commit a battle simulator under `tools/` | 1.3.x |
+| TD-7 | **`art.js` is about 1,480 lines** | `art.js` | Hard to navigate | Split by family (EN-5) | 2.0 |
+| TD-8 | **Strings are inline in code** | `story.js` and others | Blocks localisation | String table (EN-6) | 2.0 |
+| TD-9 | **Bosses fight with fixed weighted moves** | `battle.js` | Late bosses feel flat | Phase scripts (DS-3) | 1.6 |
+
+---
+
+## Ideas parking lot
+
+Not scheduled. Each needs a reason to exist (see [Guiding principles](#guiding-principles)).
+
+- 🎵 **Music box** in Brightwater that plays any track you've heard.
+- 🏠 **Arin's house upgrades**: trophies, a fish tank for caught fish, Mittens' bed.
+- 🐈 **Mittens follows you** in Brightwater after The Lost Cat.
+- 🌙 **A "Hollow" hard mode**: no inns, no running, bosses get a third phase.
+- 🧭 **Compass hints**: the Sailor's Compass points toward unopened chests.
+- 📜 **Old Bram's verses**: collect verse fragments to complete the Lantern rhyme. The reward is a new title-screen song.
+- 🤝 **Guest party members** for single quests: Brann at sea, Wren in the Observatory, Ione in the Abyss.
+- 🎨 **Photo mode**: hide the UI and pan the camera.
+- 🧪 **Alchemy**: turn spare materials into consumables.
+- 🗺️ **Procedural "Endless Lantern"** dungeon for the post-game, using the existing floor generator with rising floor numbers.
+
+---
+
+## Release process
+
+```mermaid
+flowchart LR
+    A[Feature branch] --> B[python3 build.py]
+    B --> C[tools/playtest.py<br/>0 JS errors]
+    C --> D[Pull request<br/>+ CHANGELOG entry under Unreleased]
+    D --> E{Review and merge}
+    E --> F[Move Unreleased to a version<br/>and date in CHANGELOG]
+    F --> G[git tag vX.Y.Z<br/>GitHub Release]
+    G --> H[Zip index.html<br/>upload to itch.io]
+    H --> I[Devlog post<br/>+ update itch-page.md]
+```
+
+1. Work on a branch. Rebuild with `python3 build.py`, because `index.html` is generated.
+2. Run the play-test harness ([docs/TESTING.md](docs/TESTING.md)). It should report `ERRORS: 0`.
+3. Add your changes to the `[Unreleased]` section of [CHANGELOG.md](CHANGELOG.md).
+4. After merging, choose the version:
+   - a save-breaking change bumps the **major** number;
+   - new content or systems bump the **minor** number;
+   - fixes, balance or docs bump the **patch** number.
+5. Tag it and publish a release:
+   ```bash
+   git tag -a v1.3.1 -m "Lanternfall 1.3.1"
+   git push origin v1.3.1
+   ```
+6. Zip `index.html` as `lanternfall-web.zip`, upload it to itch.io (tick "played in the browser") and post a devlog.
+
+**Backfilling tags (ST-4).** These commits match the versions in the changelog:
+
+| Tag | Commit |
+| --- | --- |
+| `v1.0.0` | `414bb8d` |
+| `v1.1.0` | `d171795` (merge of #1) |
+| `v1.2.0` | `1197c6d` (merge of #2) |
+| `v1.2.1` | `f737c3b` (merge of #3) |
+| `v1.3.0` | `a5dbeeb` (merge of #4) |
+
+---
+
+## How to propose something
+
+- **Open an issue** titled `[Idea] …` or `[Bug] …`. For ideas, say which [principle](#guiding-principles) it serves and which milestone it fits.
+- **Small fixes** can go straight to a pull request. Include a changelog line and a clean harness run.
+- **Big features** (L size and above): write a short design note in the issue first (story hook, UI, save flags, touch controls).
+- The [Modding guide](docs/MODDING.md) shows where each kind of content lives in the code.
