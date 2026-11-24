@@ -14,8 +14,8 @@ timeline
     2026-11-19 : 1.0.0 First playable : 1.1.0 Frostmere and side quests
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
     2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance : 1.5.0 Hearts of the Lamplighters : 1.6.0 Deeper systems
-    2026-11-24 : 1.7.0 The Drowned Kingdom
-    Next : 1.8.0 Install anywhere
+    2026-11-24 : 1.7.0 The Drowned Kingdom : 1.8.0 Install anywhere
+    Next : 1.9.0 Living world
 ```
 
 ```mermaid
@@ -40,13 +40,34 @@ xychart-beta
 | 1.5.0 | 2026-11-23 | 7 | 10 (26) | 75 (15) | 16 | 5 | [#7](https://github.com/CptNope/Laternfall/pull/7) |
 | 1.6.0 | 2026-11-23 | 7 | 10 (26) | 75 (15) | 17 | 5 | [#8](https://github.com/CptNope/Laternfall/pull/8) |
 | 1.7.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 89 (17) | 21 | 5 | [#13](https://github.com/CptNope/Laternfall/pull/13) |
-| 1.8.0 | next | 9 | 12 (32) | 89 (17) | 21 | 5 | this release |
+| 1.8.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 89 (17) | 21 | 5 | [#14](https://github.com/CptNope/Laternfall/pull/14) |
+| 1.9.0 | next | 9 | 12 (32) | 94 (17) | 23 | 5 | this release |
 
 ---
 
 ## [Unreleased]
 
-Planned as **1.8.0 · *Install anywhere***. It delivers PL-1 to PL-4 from the [roadmap](ROADMAP.md#18--install-anywhere), and the first part of TD-4.
+Planned as **1.9.0 · *Living world***. It delivers the rest of the 1.6 *Deeper systems* list from the [roadmap](ROADMAP.md#16--deeper-systems): DS-4 (Berserk and Stop), DS-8 (day and night), DS-9 (weather), DS-10 (*Lanterns & Lies*) and DS-11 (stealth).
+
+### Added
+- **Day and night.** A clock runs while you explore (a full day is 24 minutes of play). Evenings turn the world amber, nights a moonlit blue, and windows, lamps and braziers glow in the dark. The time and day are shown in the field menu. An inn wakes you at 7:00, or at 21:00 with the new **Stay until night**, and a Tent passes eight hours.
+- **Night encounters**: five new monsters that only come out after dark (Moonmoth, Gravewight, Ghostlight, Frostwraith, Night Jackal), on every continent and at sea. Wandering townsfolk go home at night, and a few people only appear then: a watchman in Brightwater, a fisher in Port Halden, a stargazer in Frostmere, a vendor in Mirage, and some of the card players.
+- **Weather** by region, rolled every six game hours: rain in the west, the northern lowlands and at sea, snow around Frostmere, sandstorms in the Sunscar, fog on the Isle of Dusk, ash on the Ashen Isle. It's drawn over the field and carried into battle, for both sides: rain strengthens water and lightning and dampens fire, snow favours ice, ash favours fire, and sand and fog make physical attacks miss more often. Aerie sits above the weather.
+- **Berserk and Stop.** Berserk (ATK ×1.5, but the hero attacks on their own) and Stop (lose your turns) for heroes and enemies. Chimeras, Night Jackals and Ogres can madden you; Deepgazers and Starspawn can stop you. Bosses can't be stopped. Selene learns **Stop** at Lv 30, Ironhold sells the **Rage Tonic**, and the **Calm Charm** and **Clockwork Charm** prevent them. Remedy and Purify cure both.
+- ***Lanterns & Lies***, a card game against eight players around the world, some only by day and some only at night. Lay five cards on a 3×3 board; a card turns every weaker enemy card next to it, and its flame gives +2 against the one it beats (Ember beats Stone beats Tide beats Ember). Once per game you can lay a card face down as a **Lie**: it captures nothing when it lands, then turns over at the end and takes everything weaker around it. Win a card from each opponent you beat. Tess in Brightwater teaches the rules and gives you a starter deck; 36 cards to collect, and beating everyone earns the **Joker's Lantern**.
+- ***The Sunset Opal***, a night heist for Kestrel: Mags in the Undermarket has a job in the Mirage palace vaults. Sneak past four patrolling guards whose sight lines are shown on the floor; if one sees you, you're thrown out. Reward: the **Night Cloak**.
+- 4 new trophies (34 in all): *Night Owl*, *Card Sharp*, *Collector* and a hidden one.
+- `living` play-test scenario: 26 named checks covering the clock and the inn, night encounters and NPCs, weather in battle, Berserk and Stop, a full card game, the deck screen, the heist (including a search proving there is an unseen route in and out) and saving the clock and the cards. Added to CI.
+
+### Changed
+- Saves now keep the time of day, your card collection and your last deck. Older saves start at 8 in the morning with no cards.
+- The game guide has new sections for day, night and weather, *Lanterns & Lies* (every card and player) and the heist.
+
+---
+
+## [1.8.0] — 2026-11-24, merged (#14) but not yet tagged · *Install anywhere*
+
+Delivers PL-1 to PL-4 from the [roadmap](ROADMAP.md#18--install-anywhere), and the first part of TD-4.
 
 ### Added
 - **Install as an app (PWA).** `build.py` now also writes `manifest.webmanifest` and an offline service worker (`sw.js`) beside `index.html`, and `tools/make_icons.py` draws the app icons with the game's own drawing helpers. Served from GitHub Pages, the game installs to a home screen or desktop and plays offline. **Install** on the title screen opens the browser's install prompt, or explains how (Share → Add to Home Screen on iOS). `index.html` is still one self-contained file that runs when opened directly.
@@ -300,6 +321,7 @@ Shipped together with 1.0.0 in pull request #1.
 - The full main story, with an ending.
 
 [Unreleased]: https://github.com/CptNope/Laternfall/compare/v1.6.0...HEAD
+[1.8.0]: https://github.com/CptNope/Laternfall/pull/14
 [1.7.0]: https://github.com/CptNope/Laternfall/pull/13
 [1.6.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.6.0
 [1.5.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.5.0

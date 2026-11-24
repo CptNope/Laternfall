@@ -45,6 +45,9 @@ flowchart TD
 - [Add a place on the sea floor](#add-a-place-on-the-sea-floor)
 - [Change the Lantern Board](#change-the-lantern-board)
 - [Add a trophy](#add-a-trophy)
+- [Add a card or a card player](#add-a-card-or-a-card-player)
+- [Add a night NPC or night monsters](#add-a-night-npc-or-night-monsters)
+- [Change the weather](#change-the-weather)
 - [Regenerating the guide tables](#regenerating-the-guide-tables)
 - [Pull request checklist](#pull-request-checklist)
 
@@ -501,6 +504,33 @@ Add an entry to `TROPHIES`. `test(flags)` runs twice a second during play; when 
 ```
 
 Keep `id` stable: it's the key in the player's stored trophies. Keep each entry on one line in the `{ id: …, name: …, desc: … }` order shown, because `tools/extract.js` reads the names for the game guide with a pattern.
+
+---
+
+## Add a card or a card player
+
+**Files:** `src/cards.js`
+
+A card is an entry in `CARDS`: `id: { v, f, m }`, with a value `v` from 1 to 9, a flame `f` (`ember`, `stone`, `tide`, or `dawn`, which beats nothing) and the monster id `m` drawn on it (or `h` and a hero id for a hero card). Keep that shape, because `tools/extract.js` reads the cards for the guide with a pattern. Give it to a player by putting its id in their `deck`, or to every new player in `STARTER_CARDS`.
+
+A player is an entry in `CARD_FOES`: `name`, the `town`, a free tile `x`, `y` (check it isn't inside a building or on a plant), `when` (`day`, `night` or `any`), a `look`, their five-card `deck`, a `skill` from 0 to 1 (higher plays closer to the AI's best move) and a greeting `line`. Don't read `LOOKS` or other later globals at the top level of `cards.js`: it's built before `story.js`, so write the look inline or as a string key resolved at runtime. A win sets `G.flags['cardwin_' + id]`; the quest is done when every player in `CARD_FOES` has one.
+
+---
+
+## Add a night NPC or night monsters
+
+**Files:** `src/living.js`, `src/data.js`
+
+- `nightNpcs(id)` returns extra NPCs for town `id` when `isNight()`. Wandering townsfolk are removed at night, so shopkeepers and night NPCs are all that's left. Entities refresh when night starts or ends.
+- `NIGHT_ENC` in `data.js` maps an encounter table name (`r1`, `sea`, …) to night-only groups. At night half of the field's encounters come from it, so day monsters still appear.
+
+---
+
+## Change the weather
+
+**Files:** `src/living.js`
+
+`WEATHER` lists each kind with its field drawing and its battle effect: `boost` and `dampen` are elements that do ×1.25 and ×0.75 damage, `miss` is added to every physical attack's miss chance. `regionWeather(reg, y)` decides, for each world region (`A` the west, `B` the north, `C` the Isle of Dusk, `E` the north-west, `F` the Sunscar, `G` Aerie, `H` the Ashen Isle), which kind can roll and how often; it rolls again every six game hours from a hash, so the weather is the same for everyone at the same time. Weather only shows under an open sky (`underSky(m)`).
 
 ---
 

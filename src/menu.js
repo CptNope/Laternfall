@@ -34,8 +34,9 @@ function drawInfoPanel(g) {
   drawWindow(g, 472, 360, 152, 104);
   text(g, 'Gold', 486, 372, { size: 13, color: '#b8c4ee' });
   text(g, `${G.gold}`, 610, 370, { size: 16, align: 'right', color: '#ffe9a8' });
-  text(g, 'Time', 486, 398, { size: 13, color: '#b8c4ee' });
-  text(g, fmtTime(G.playTime), 610, 396, { size: 16, align: 'right' });
+  const wx = currentWeather();
+  text(g, `Day ${dayNumber()}`, 486, 398, { size: 13, color: '#b8c4ee' });
+  text(g, `${WEATHER[wx].icon} ${isNight() ? '☾' : ''}${fmtClockHM()}`, 610, 396, { size: 16, align: 'right', color: isNight() ? '#b8c8ff' : '#fff' });
   const lit = ['ember', 'tide', 'stone', 'dawn'].map((k, i) => G.flags['lantern' + (i + 1)]);
   text(g, 'Lanterns', 486, 424, { size: 13, color: '#b8c4ee' });
   lit.forEach((l, i) => { circle(g, 498 + i * 26, 450, 8, l ? ['#ff9a3a', '#5af0d0', '#ff6a2a', '#ffe08a'][i] : 'rgba(255,255,255,.12)', '#fff', 1.2); });
@@ -213,7 +214,7 @@ async function itemsMenu() {
     if (it.effect === 'tent') {
       if (Field.map.kind !== 'world') { await narrate('You can only pitch a tent on the world map.'); continue; }
       addItem(id, -1);
-      await fadeTo(1, 400); Audio_.sfx('inn'); healAll(); await wait(1000); await fadeTo(0, 400);
+      await fadeTo(1, 400); Audio_.sfx('inn'); healAll(); G.clock = clockNow() + 8 * 60; await wait(1000); await fadeTo(0, 400);
       await narrate('The party rests under the stars. HP and MP restored.');
       await campfireTalk();
       continue;
@@ -454,10 +455,11 @@ function drawShopDetail(g, id) {
 }
 // ---------- inn ----------
 async function innStay(townId, price, keeper = 'Innkeeper') {
-  const fish = hasAnyFish(), opts = fish ? ['Stay', 'Cook a meal', 'No thanks'] : ['Stay', 'No thanks'];
+  const fish = hasAnyFish(), opts = fish ? ['Stay', 'Cook a meal', 'Stay until night', 'No thanks'] : ['Stay', 'Stay until night', 'No thanks'];
   const c = await choose(keeper, `Welcome, travelers! A warm bed is ${price} gold for the party. Will you rest?${fish ? ' Or I can cook up that catch of yours.' : ''}`, opts, opts.length - 1);
   if (opts[c] === 'Cook a meal') { if (await cookMenu(keeper)) await say(keeper, 'Eat up! That\'ll keep you going for a few fights.'); return; }
-  if (c !== 0) { await say(keeper, 'Another time, then.'); return; }
+  const tillNight = opts[c] === 'Stay until night';
+  if (c !== 0 && !tillNight) { await say(keeper, 'Another time, then.'); return; }
   if (G.gold < price) { await say(keeper, "Ah... you're a bit short on coin, I'm afraid."); return; }
   G.gold -= price;
   await fadeTo(1, 500);
@@ -465,12 +467,14 @@ async function innStay(townId, price, keeper = 'Innkeeper') {
   Audio_.sfx('inn');
   healAll();
   G.lastInn = { town: townId };
+  sleepUntil(tillNight ? 21 : 7);
   await wait(1600);
+  if (Field.map && Field.map.kind === 'town') refreshEntities();
   Field.playMusic();
   Audio_.play(Audio_.curName, true);
   await fadeTo(0, 500);
   await innDream();
-  await say(keeper, 'Good morning! You look well rested.');
+  await say(keeper, tillNight ? 'Good evening! The night folk are out, if that\'s your business.' : 'Good morning! You look well rested.');
   await promptSave();
 }
 

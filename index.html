@@ -811,7 +811,7 @@ const HEROES = {
     name: 'Selene', cls: 'Duskmage', skill: 'Dusk',
     base: { hp: 46, mp: 24, str: 7, def: 6, mag: 14, spd: 11 },
     grow: { hp: 10.5, mp: 4, str: 1.1, def: 1.2, mag: 2.75, spd: 1.3 },
-    spells: [['shade', 1], ['drain', 1], ['gravity', 1], ['slow', 1], ['nightfall', 1], ['requiem', 28], ['eventide', 44]],
+    spells: [['shade', 1], ['drain', 1], ['gravity', 1], ['slow', 1], ['nightfall', 1], ['requiem', 28], ['stop', 30], ['eventide', 44]],
     look: { skin: '#f6d6b8', hair: '#a03a2a', style: 'long', body: '#3a2a5a', accent: '#c04aa8', robe: true, weapon: 'staff' },
     start: { weapon: 'crescent_rod', armor: 'sage_robe' },
     bio: 'Lyra\'s elder sister. Seven years in the dark taught her its spells — and how to turn them back on it.'
@@ -823,7 +823,8 @@ const SPELLS = {
   cure: { name: 'Cure', mp: 4, type: 'heal', power: 22, target: 'ally', fx: 'heal', desc: 'Restore HP to one ally.' },
   cura: { name: 'Cura', mp: 9, type: 'heal', power: 26, scale: 0.75, target: 'allies', fx: 'heal', desc: 'Restore HP to all allies.' },
   curaga: { name: 'Curaga', mp: 18, type: 'heal', power: 60, scale: 1.3, target: 'allies', fx: 'heal', desc: 'Greatly restore all allies.' },
-  purify: { name: 'Purify', mp: 2, type: 'cure', target: 'ally', fx: 'heal', desc: 'Cure poison, sleep, silence, blind and slow.' },
+  purify: { name: 'Purify', mp: 2, type: 'cure', target: 'ally', fx: 'heal', desc: 'Cure every ailment: poison, sleep, silence, blind, slow, berserk and stop.' },
+  stop: { name: 'Stop', mp: 14, type: 'status', status: 'stop', chance: 0.6, target: 'enemy', fx: 'dark', desc: 'Freeze one foe in time for 2 rounds. Bosses are immune.' },
   haste: { name: 'Haste', mp: 10, type: 'haste', target: 'ally', fx: 'buff', desc: 'One ally acts much sooner for 4 rounds.' },
   slow: { name: 'Slow', mp: 8, type: 'status', status: 'slow', chance: 0.7, target: 'enemy', fx: 'dark', desc: 'One foe acts later for 4 rounds. Works on bosses half as often.' },
   flash: { name: 'Flash Powder', mp: 6, type: 'status', status: 'blind', chance: 0.65, target: 'enemies', fx: 'holy', desc: 'Blind all foes: their attacks miss half the time. Bosses resist.' },
@@ -896,6 +897,8 @@ const SPELLS = {
   e_slow: { name: 'Time Warp', type: 'status', status: 'slow', chance: 0.5, target: 'ally', fx: 'dark' },
   e_slowall: { name: 'Heavy Night', type: 'status', status: 'slow', chance: 0.35, target: 'allies', fx: 'dark' },
   // 1.7 The Drowned Kingdom
+  e_madden: { name: 'Maddening Howl', type: 'status', status: 'berserk', chance: 0.45, target: 'ally', fx: 'fire' },
+  e_stop: { name: 'Still Gaze', type: 'status', status: 'stop', chance: 0.4, target: 'ally', fx: 'dark' },
   e_maelstrom: { name: 'Maelstrom', type: 'dmg', elem: 'water', power: 32, target: 'allies', fx: 'water' },
   e_undertow: { name: 'Undertow', type: 'dmg', elem: 'water', power: 62, target: 'ally', fx: 'water' },
   e_depths: { name: 'Crushing Depths', type: 'phys', power: 1.0, target: 'allies', fx: 'hit' },
@@ -905,12 +908,12 @@ const SPELLS = {
   e_forget: { name: 'Forget', type: 'status', status: 'silence', chance: 0.45, target: 'allies', fx: 'water' },
   e_remember: { name: 'Remember', type: 'heal', power: 500, target: 'self', fx: 'heal' }
 };
-const STATUS_LABEL = { sleep: 'Sleep', silence: 'Silence', blind: 'Blind', slow: 'Slow', poison: 'Poison' };
+const STATUS_LABEL = { sleep: 'Sleep', silence: 'Silence', blind: 'Blind', slow: 'Slow', poison: 'Poison', berserk: 'Berserk', stop: 'Stop' };
 const CASTERS = ['lyra', 'oswin', 'selene'];
-const STATUS_TURNS = { sleep: [2, 3], silence: [3, 4], blind: [3, 4], slow: [3, 4] };   // [on heroes, on enemies]
+const STATUS_TURNS = { sleep: [2, 3], silence: [3, 4], blind: [3, 4], slow: [3, 4], berserk: [3, 3], stop: [2, 2] };   // [on heroes, on enemies]
 
 // items
-const AILMENTS = ['poison', 'sleep', 'silence', 'blind', 'slow'];
+const AILMENTS = ['poison', 'sleep', 'silence', 'blind', 'slow', 'berserk', 'stop'];
 const ITEMS = {
   potion: { name: 'Potion', price: 20, kind: 'use', effect: 'hp', amount: 60, target: 'ally', desc: 'Restores 60 HP.' },
   hipotion: { name: 'Hi-Potion', price: 120, kind: 'use', effect: 'hp', amount: 180, target: 'ally', desc: 'Restores 180 HP.' },
@@ -922,7 +925,8 @@ const ITEMS = {
   tent: { name: 'Tent', price: 120, kind: 'use', effect: 'tent', target: 'none', field: 'world', desc: 'Rest on the world map. Restores the party.' },
   elixir: { name: 'Elixir', price: 0, kind: 'use', effect: 'elixir', target: 'ally', desc: 'Fully restores HP and MP.' },
   megalixir: { name: 'Megalixir', price: 0, kind: 'use', effect: 'megalixir', target: 'allies', desc: 'Fully restores the whole party.' },
-  remedy: { name: 'Remedy', price: 60, kind: 'use', effect: 'remedy', target: 'ally', desc: 'Cures poison, sleep, silence, blind and slow.' },
+  remedy: { name: 'Remedy', price: 60, kind: 'use', effect: 'remedy', target: 'ally', desc: 'Cures every ailment, berserk and stop included.' },
+  rage_tonic: { name: 'Rage Tonic', price: 400, kind: 'use', effect: 'berserk', target: 'ally', battleOnly: true, desc: 'Berserks an ally for 3 rounds: ATK ×1.5, but they attack on their own.' },
   bomb: { name: 'Ember Bomb', price: 90, kind: 'use', effect: 'bomb', amount: 90, target: 'enemies', battleOnly: true, desc: 'Deals fire damage to all foes.' },
   star_bomb: { name: 'Star Bomb', price: 900, kind: 'use', effect: 'bomb', amount: 420, elem: 'holy', fx: 'holy', target: 'enemies', battleOnly: true, desc: 'Bursts with holy light on all foes.' },
   // forging materials (dropped by monsters; Orrin works them in Ironhold)
@@ -988,6 +992,8 @@ const ITEMS = {
   starlit_cloak: { name: 'Starlit Cloak', price: 0, kind: 'acc', def: 20, mag: 20, immune: ['sleep', 'slow'], desc: 'DEF +20, MAG +20. Prevents sleep and slow. Rare steal: Astral Wyrm.' },
   kings_signet: { name: 'King\'s Signet', price: 0, kind: 'acc', atk: 18, mag: 18, desc: 'ATK +18, MAG +18. Rare steal: the Hollow King.' },
   sun_circlet: { name: 'Sun Circlet', price: 0, kind: 'acc', mag: 16, immune: ['blind', 'silence'], desc: 'MAG +16. Prevents blind and silence. Rare steal: Ozymar.' },
+  calm_charm: { name: 'Calm Charm', price: 2400, kind: 'acc', def: 6, immune: ['berserk'], desc: 'DEF +6. Prevents berserk.' },
+  clock_charm: { name: 'Clockwork Charm', price: 3000, kind: 'acc', spd: 6, immune: ['stop'], desc: 'SPD +6. Prevents stop.' },
   eye_charm: { name: 'Eye Charm', price: 2200, kind: 'acc', def: 4, immune: ['blind'], desc: 'DEF +4. Prevents blind.' },
   hourglass: { name: 'Hourglass Pin', price: 2600, kind: 'acc', spd: 4, immune: ['slow'], desc: 'SPD +4. Prevents slow.' },
   scholar_monocle: { name: 'Scholar\'s Monocle', price: 0, kind: 'acc', mag: 14, xp: 1.25, immune: ['blind'], desc: 'MAG +14. +25% EXP. Prevents blind. Sable\'s reward.' },
@@ -1018,6 +1024,9 @@ const ITEMS = {
   admiral_hat: { name: 'Admiral\'s Hat', price: 0, kind: 'acc', spd: 10, def: 8, fewer: true, desc: 'SPD +10, DEF +8. Halves random encounters. Buried treasure.' },
   tidecrown: { name: 'Crown of Nerith', price: 0, kind: 'acc', all: 16, immune: ['slow', 'sleep'], desc: 'All +16. Prevents slow and sleep. The last king\'s crown, freely given.' },
   tidesong: { name: 'Tidesong', price: 0, kind: 'acc', all: 26, regen: true, immune: AILMENTS, desc: 'All +26. Regen. No ailments. The sea remembers you now.' },
+  jokers_lantern: { name: 'Joker\'s Lantern', price: 0, kind: 'acc', all: 10, thief: true, desc: 'All +10. Rare steals twice as likely. Every card player in the world, beaten.' },
+  night_cloak: { name: 'Night Cloak', price: 0, kind: 'acc', atk: 10, spd: 16, immune: ['blind', 'stop'], desc: 'ATK +10, SPD +16. Prevents blind and stop. The Guild\'s finest.' },
+  sunset_opal: { name: 'Sunset Opal', price: 0, kind: 'key', desc: 'A fist-sized opal the colour of a desert evening. The Guild says it was theirs first.' },
   heartlight: { name: 'Heartlight', price: 0, kind: 'acc', all: 20, reraise: true, immune: AILMENTS, desc: 'All +20. Revives once per battle. No ailments. Five lights, one lantern.' },
   twin_crown: { name: 'Crown of Dusk & Dawn', price: 0, kind: 'acc', all: 25, regen: true, immune: AILMENTS, desc: 'All +25. Regen. No ailments. Both halves of the first crown, at peace.' },
   // weapons
@@ -1108,7 +1117,7 @@ const MONSTERS = {
   frostwolf: { name: 'Frost Wolf', fam: 'beast', c: ['#d8e8f8', '#7a98b8'], hp: 220, atk: 68, def: 28, mag: 20, spd: 18, xp: 85, gold: 55, weak: ['fire'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_frost' }], steal: 'hipotion', ai: 'weakest', resist: ['ice'] },
   icegolem: { name: 'Ice Golem', fam: 'golem', c: ['#a8d8f0', '#4a7a9a', '#e8ffff'], hp: 340, atk: 76, def: 48, mag: 10, spd: 6, xp: 110, gold: 80, weak: ['fire'], steal: 'ether', absorb: ['ice'] },
   snowimp: { name: 'Snow Imp', fam: 'imp', c: ['#7ac8e8', '#2a5a8a'], hp: 180, atk: 52, def: 22, mag: 58, spd: 16, xp: 90, gold: 70, weak: ['fire'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_ice' }, { w: 1, a: 'e_lullaby' }], steal: 'ether', resist: ['ice'] },
-  ogre: { name: 'Ogre', fam: 'ogre', c: ['#9a8a5a', '#5a4a2a'], hp: 300, atk: 86, def: 34, mag: 5, spd: 8, xp: 120, gold: 110, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }], drop: ['hipotion', 0.25], steal: 'hipotion' },
+  ogre: { name: 'Ogre', fam: 'ogre', c: ['#9a8a5a', '#5a4a2a'], hp: 300, atk: 86, def: 34, mag: 5, spd: 8, xp: 120, gold: 110, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }, { w: 1, a: 'e_madden' }], drop: ['hipotion', 0.25], steal: 'hipotion' },
   magmaslime: { name: 'Magma Slime', fam: 'slime', c: ['#ff7a2a', '#a02a0a'], hp: 320, atk: 84, def: 40, mag: 60, spd: 10, xp: 150, gold: 100, weak: ['ice'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_fire' }], steal: 'bomb', absorb: ['fire'] },
   firebat: { name: 'Fire Bat', fam: 'bat', c: ['#e8502a', '#7a1a0a'], hp: 260, atk: 88, def: 30, mag: 40, spd: 28, xp: 140, gold: 90, weak: ['ice'], steal: 'bomb', resist: ['fire'] },
   revenant: { name: 'Dwarf Revenant', fam: 'skeleton', c: ['#e8dcc0', '#7a5a3a'], hp: 420, atk: 98, def: 54, mag: 20, spd: 12, xp: 180, gold: 130, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }], drop: ['ether', 0.15], steal: 'hiether' },
@@ -1117,11 +1126,11 @@ const MONSTERS = {
   hollowknight: { name: 'Hollow Knight', fam: 'knight', c: ['#3a3048', '#1a1424', '#c070ff'], hp: 700, atk: 138, def: 80, mag: 30, spd: 14, xp: 300, gold: 220, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }], drop: ['hipotion', 0.25], steal: 'xpotion', ai: 'magehunter', resist: ['dark'] },
   nightgaze: { name: 'Night Gaze', fam: 'eye', c: ['#e8e0f0', '#5a2a8a', '#ff3a6a'], hp: 520, atk: 80, def: 50, mag: 118, spd: 18, xp: 280, gold: 200, weak: ['bolt'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_hush' }, { w: 1, a: 'e_slow' }], steal: 'hiether' },
   wraith: { name: 'Shade Wraith', fam: 'ghost', c: ['#6a4a9a', '#20103a'], hp: 600, atk: 118, def: 60, mag: 100, spd: 20, xp: 290, gold: 210, weak: ['holy'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_drain' }], steal: 'ether', resist: ['dark'] },
-  chimera: { name: 'Chimera', fam: 'beast', size: 1.3, c: ['#b8803a', '#5a2a1a'], hp: 900, atk: 148, def: 66, mag: 90, spd: 16, xp: 350, gold: 260, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_blaze' }], steal: 'xpotion', ai: 'weakest' },
+  chimera: { name: 'Chimera', fam: 'beast', size: 1.3, c: ['#b8803a', '#5a2a1a'], hp: 900, atk: 148, def: 66, mag: 90, spd: 16, xp: 350, gold: 260, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_blaze' }, { w: 1, a: 'e_madden' }], steal: 'xpotion', ai: 'weakest' },
   voidslime: { name: 'Void Slime', fam: 'slime', c: ['#4a2a7a', '#100828'], hp: 780, atk: 140, def: 70, mag: 110, spd: 15, xp: 320, gold: 240, weak: ['holy'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_shadow' }], steal: 'hiether', absorb: ['dark'] },
   dreadknight: { name: 'Dread Knight', fam: 'knight', c: ['#5a1a2a', '#200810', '#ff4a4a'], hp: 1000, atk: 160, def: 88, mag: 40, spd: 15, xp: 420, gold: 320, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }], drop: ['xpotion', 0.15], steal: 'megalixir', ai: 'magehunter', resist: ['dark'], rare: ['megalixir', 0.1] },
   leviathan: { name: 'Leviathan', fam: 'serpent', boss: true, size: 1.9, c: ['#1a5a8a', '#0a2a4a'], hp: 3500, atk: 97, def: 36, mag: 78, spd: 14, xp: 2500, gold: 1500, weak: ['bolt'], acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_crush' }], steal: 'hiether', absorb: ['water'], phases: [{ hp: 0.5, msg: 'The Leviathan churns the whirlpool faster!', acts: [{ w: 2, a: 'attack' }, { w: 3, a: 'e_whirl' }, { w: 2, a: 'e_crush' }] }] },
-  starspawn: { name: 'Starspawn', fam: 'eye', c: ['#f0f4ff', '#2a3a8a', '#ffd84a'], hp: 1100, atk: 120, def: 70, mag: 150, spd: 22, xp: 520, gold: 380, weak: ['bolt'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_dreamfog' }, { w: 1, a: 'e_slow' }], steal: 'hiether', rare: ['star_shard', 0.3] },
+  starspawn: { name: 'Starspawn', fam: 'eye', c: ['#f0f4ff', '#2a3a8a', '#ffd84a'], hp: 1100, atk: 120, def: 70, mag: 150, spd: 22, xp: 520, gold: 380, weak: ['bolt'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_dreamfog' }, { w: 1, a: 'e_slow' }, { w: 1, a: 'e_stop' }], steal: 'hiether', rare: ['star_shard', 0.3] },
   astralknight: { name: 'Astral Knight', fam: 'knight', c: ['#3a4a8a', '#141a3a', '#8ad8ff'], hp: 1400, atk: 182, def: 96, mag: 60, spd: 18, xp: 600, gold: 420, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }], drop: ['xpotion', 0.2], steal: 'megalixir', ai: 'magehunter' },
   nebulaslime: { name: 'Nebula Slime', fam: 'slime', c: ['#c070ff', '#3a1a7a'], hp: 1000, atk: 160, def: 80, mag: 140, spd: 16, xp: 480, gold: 360, weak: ['ice'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_hush' }, { w: 1, a: 'e_shadow' }], steal: 'hiether' },
   voiddrake: { name: 'Void Drake', fam: 'wyrm', size: 0.7, c: ['#3a2a6a', '#140a2a', '#c070ff'], hp: 1500, atk: 175, def: 84, mag: 130, spd: 20, xp: 650, gold: 480, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_starbreath' }], steal: 'xpotion' },
@@ -1174,11 +1183,27 @@ const MONSTERS = {
   siren: { name: 'Siren of Nerith', fam: 'witch', c: ['#5af0d0', '#1a3a4a', '#ffe9a8'], hp: 2600, atk: 150, def: 90, mag: 230, spd: 28, xp: 1150, gold: 950, weak: ['bolt'], absorb: ['water'], ai: 'healer', acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_heal' }, { w: 1, a: 'e_siren' }], steal: 'hiether', rare: ['siren_scale', 0.15] },
   coralgolem: { name: 'Coral Golem', fam: 'golem', size: 1.1, c: ['#e87a8a', '#7a2a3a'], hp: 4200, atk: 250, def: 180, mag: 40, spd: 8, xp: 1300, gold: 1000, weak: ['bolt'], resist: ['water', 'fire'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }, { w: 1, a: 'e_shatter' }], steal: 'xpotion', mat: ['deep_pearl', 0.3] },
   tidewraith: { name: 'Tide Wraith', fam: 'ghost', c: ['#7ad8ff', '#1a4a6a'], hp: 2200, atk: 160, def: 80, mag: 240, spd: 30, xp: 1050, gold: 800, weak: ['holy'], absorb: ['water'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_undertow' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_forget' }], steal: 'hiether' },
-  deepgazer: { name: 'Deep Gazer', fam: 'eye', c: ['#1a3a4a', '#05141e', '#5af0d0'], hp: 2400, atk: 140, def: 90, mag: 220, spd: 26, xp: 1000, gold: 750, weak: ['holy'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_slow' }, { w: 1, a: 'e_hushall' }], steal: 'remedy' },
+  deepgazer: { name: 'Deep Gazer', fam: 'eye', c: ['#1a3a4a', '#05141e', '#5af0d0'], hp: 2400, atk: 140, def: 90, mag: 220, spd: 26, xp: 1000, gold: 750, weak: ['holy'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_slow' }, { w: 1, a: 'e_hushall' }, { w: 1, a: 'e_stop' }], steal: 'remedy' },
   voidjelly: { name: 'Void Jelly', fam: 'jelly', size: 1.2, c: ['#4a2a6a', '#14082a', '#c070ff'], hp: 3200, atk: 200, def: 100, mag: 255, spd: 26, xp: 1400, gold: 1000, weak: ['holy'], absorb: ['dark', 'water'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_sting' }, { w: 1, a: 'e_forget' }], steal: 'megalixir', mat: ['deep_pearl', 0.3] },
   hadalangler: { name: 'Hadal Angler', fam: 'angler', size: 1.3, c: ['#1a1a2a', '#05050a', '#ff6a8a'], hp: 4000, atk: 265, def: 115, mag: 90, spd: 24, xp: 1500, gold: 1100, weak: ['bolt'], resist: ['water'], ai: 'weakest', acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_lure' }, { w: 1, a: 'e_depths' }], steal: 'elixir', mat: ['deep_pearl', 0.35], rare: ['megalixir', 0.15] },
   nereus: { name: 'Nereus, the Drowned King', fam: 'king', boss: true, pale: true, size: 0.95, c: ['#1a5a6a', '#0a2a34', '#5af0d0'], hp: 13000, atk: 225, def: 110, mag: 210, spd: 28, xp: 24000, gold: 14000, actions: 2, weak: ['bolt'], absorb: ['water'], ai: 'weakest', acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_slowall' }, { w: 1, a: 'e_doom' }], steal: 'megalixir', rare: ['siren_scale', 0.3], phases: [{ hp: 0.5, msg: 'Nereus calls the whole sea into his throne room!', acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_slowall' }, { w: 1, a: 'e_doom' }] }] },
-  tide: { name: 'The Tide That Remembers', fam: 'tide', boss: true, size: 1.3, c: ['#2c6fc4', '#0a1a3a', '#e8f4ff'], hp: 22000, atk: 238, def: 120, mag: 240, spd: 34, xp: 60000, gold: 30000, actions: 2, absorb: ['water'], resist: ['dark', 'ice'], acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_undertow' }, { w: 1, a: 'e_forget' }, { w: 1, a: 'e_depths' }], steal: 'megalixir', rare: ['megalixir', 1], phases: [{ hp: 0.6, msg: 'The Tide remembers every storm it ever was.', acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_meteor' }, { w: 1, a: 'e_siren' }, { w: 1, a: 'e_depths' }] }, { hp: 0.25, msg: 'The Tide remembers you. It does not want you to leave.', acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_remember' }, { w: 1, a: 'e_undertow' }, { w: 1, a: 'e_slowall' }] }] }
+  tide: { name: 'The Tide That Remembers', fam: 'tide', boss: true, size: 1.3, c: ['#2c6fc4', '#0a1a3a', '#e8f4ff'], hp: 22000, atk: 238, def: 120, mag: 240, spd: 34, xp: 60000, gold: 30000, actions: 2, absorb: ['water'], resist: ['dark', 'ice'], acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_undertow' }, { w: 1, a: 'e_forget' }, { w: 1, a: 'e_depths' }], steal: 'megalixir', rare: ['megalixir', 1], phases: [{ hp: 0.6, msg: 'The Tide remembers every storm it ever was.', acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_meteor' }, { w: 1, a: 'e_siren' }, { w: 1, a: 'e_depths' }] }, { hp: 0.25, msg: 'The Tide remembers you. It does not want you to leave.', acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_remember' }, { w: 1, a: 'e_undertow' }, { w: 1, a: 'e_slowall' }] }] },
+  // 1.9 Living world: creatures that only come out at night
+  moonmoth: { name: 'Moonmoth', fam: 'bat', size: 0.8, c: ['#c8c8f0', '#6a6aa0'], hp: 28, atk: 16, def: 6, mag: 14, spd: 14, xp: 11, gold: 9, weak: ['fire'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_lullaby' }], drop: ['ether', 0.08], steal: 'potion' },
+  gravewight: { name: 'Gravewight', fam: 'skeleton', size: 0.9, c: ['#b8b0a0', '#4a4438'], hp: 120, atk: 44, def: 22, mag: 10, spd: 10, xp: 42, gold: 40, weak: ['holy', 'fire'], resist: ['dark'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_bite' }], steal: 'antidote', ai: 'weakest' },
+  ghostlight: { name: 'Ghostlight', fam: 'ghost', c: ['#9ad8ff', '#2a5a7a'], hp: 260, atk: 50, def: 30, mag: 70, spd: 22, xp: 95, gold: 80, weak: ['holy'], absorb: ['water'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_tidal' }, { w: 1, a: 'e_hush' }], steal: 'ether' },
+  frostwraith: { name: 'Frost Wraith', fam: 'ghost', c: ['#d8f0ff', '#5a7a9a'], hp: 300, atk: 60, def: 36, mag: 82, spd: 20, xp: 115, gold: 95, weak: ['fire', 'holy'], absorb: ['ice'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_ice' }, { w: 1, a: 'e_frost' }], steal: 'hiether', mat: ['frost_crystal', 0.08] },
+  nightjackal: { name: 'Night Jackal', fam: 'beast', size: 0.9, c: ['#4a3a5a', '#1a1424'], hp: 400, atk: 106, def: 50, mag: 20, spd: 30, xp: 185, gold: 140, weak: ['holy'], ai: 'weakest', acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_bite' }, { w: 1, a: 'e_blind' }, { w: 1, a: 'e_madden' }], steal: 'hipotion' }
+};
+// At night, half of the world's random battles come from these tables instead
+const NIGHT_ENC = {
+  r1: [{ w: 3, g: ['moonmoth', 'moonmoth'] }, { w: 2, g: ['shadebat', 'moonmoth'] }, { w: 1, g: ['moonmoth', 'moonmoth', 'moonmoth'] }],
+  r2: [{ w: 3, g: ['gravewight', 'gravewight'] }, { w: 2, g: ['wisp', 'shadebat'] }, { w: 1, g: ['gravewight', 'wisp'] }],
+  sea: [{ w: 3, g: ['ghostlight'] }, { w: 2, g: ['ghostlight', 'harpy'] }, { w: 1, g: ['ghostlight', 'ghostlight'] }],
+  r3: [{ w: 3, g: ['frostwraith'] }, { w: 2, g: ['revenant', 'frostwraith'] }, { w: 1, g: ['frostwraith', 'snowimp'] }],
+  r4: [{ w: 3, g: ['wraith', 'wraith'] }, { w: 2, g: ['hollowknight', 'wraith'] }, { w: 1, g: ['nightgaze', 'wraith'] }],
+  r5: [{ w: 3, g: ['nightjackal', 'nightjackal'] }, { w: 2, g: ['mummy', 'nightjackal'] }, { w: 1, g: ['nightjackal', 'scorpion'] }],
+  r6: [{ w: 3, g: ['cinderwisp', 'cinderwisp', 'cinderwisp'] }, { w: 2, g: ['nightmare'] }, { w: 1, g: ['ashhound', 'cinderwisp'] }]
 };
 
 
@@ -1210,14 +1235,14 @@ const SHOPS = {
   brightwater_arms: ['bronze_sword', 'oak_staff', 'leather', 'cloth_robe'],
   halden_items: ['potion', 'hipotion', 'ether', 'antidote', 'remedy', 'plume', 'tent', 'bomb'],
   halden_arms: ['iron_sword', 'mage_staff', 'iron_mace', 'chain_mail', 'silk_robe', 'power_ring', 'guard_ring'],
-  ironhold_items: ['hipotion', 'xpotion', 'ether', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
+  ironhold_items: ['rage_tonic', 'hipotion', 'xpotion', 'ether', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
   ironhold_arms: ['steel_sword', 'rune_staff', 'steel_mace', 'steel_dagger', 'plate', 'sage_robe', 'thief_vest', 'mage_ring', 'wake_charm'],
   mirage_items: ['hipotion', 'xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
   mirage_arms: ['sunsteel_blade', 'sky_staff', 'desert_veil', 'swift_boots', 'mage_ring', 'wake_charm', 'eye_charm'],
   aerie_items: ['xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
-  aerie_arms: ['moon_scepter', 'sunsteel_blade', 'sky_staff', 'scholar_lens', 'echo_bell', 'desert_veil', 'hourglass'],
+  aerie_arms: ['moon_scepter', 'sunsteel_blade', 'sky_staff', 'scholar_lens', 'echo_bell', 'desert_veil', 'hourglass', 'calm_charm', 'clock_charm'],
   frostmere_items: ['hipotion', 'xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
-  frostmere_arms: ['swift_boots', 'echo_bell', 'wake_charm', 'scholar_lens', 'guard_ring', 'power_ring', 'eye_charm', 'hourglass'],
+  frostmere_arms: ['swift_boots', 'echo_bell', 'wake_charm', 'scholar_lens', 'guard_ring', 'power_ring', 'eye_charm', 'hourglass', 'clock_charm'],
   nerith_items: ['xpotion', 'hiether', 'remedy', 'plume', 'tent', 'star_bomb'],
   nerith_arms: ['coral_blade', 'pearl_staff', 'reef_mace', 'eel_fang', 'abyss_orb', 'nacre_mail', 'kelp_robe', 'shark_garb', 'pressure_ring'],
   // the Undermarket: Ironhold's black market (prices are not negotiable)
@@ -3840,7 +3865,7 @@ function genDungeonFloor(did, f) {
 //  PARTY & GAME STATE
 // ============================================================
 const G = {
-  party: [], inv: {}, gold: 0, flags: {}, playTime: 0, splits: {},
+  party: [], inv: {}, gold: 0, flags: {}, playTime: 0, splits: {}, clock: 8 * 60,
   mapId: 'world', x: 0, y: 0, dir: 'down',
   ship: null, onShip: false, airship: null, inAir: false, carry: null, encSteps: 20, lastInn: null, seen: {}, killed: {},
   scene: null, maps: {}, slot: '1'
@@ -3901,7 +3926,7 @@ function gearBonus(m, s) {
 }
 function accOf(m) { return m.acc ? ITEMS[m.acc] : null; }
 function immune(m, st) { if (mealIs('ward') && AILMENTS.includes(st)) return true; const a = accOf(m); return !!(a && a.immune && a.immune.includes(st)); }
-function cureAll(m) { m.status.poison = false; for (const s of ['sleep', 'silence', 'blind', 'slow']) m.status[s] = 0; }
+function cureAll(m) { m.status.poison = false; for (const s of ['sleep', 'silence', 'blind', 'slow', 'berserk', 'stop']) m.status[s] = 0; }
 function partyHasAcc(flag) { return G.party.some(m => { const a = accOf(m); return a && a[flag]; }); }
 function canEquip(it, id) { return !it.who || it.who.includes(id); }
 function stat(m, s) { return Math.round((baseStat(m, s) + gearBonus(m, s) + boardBonus(m, s)) * mealMult(s)); }
@@ -3983,7 +4008,7 @@ function saveData() {
     party: G.party.map(m => ({ id: m.id, level: m.level, xp: m.xp, hp: m.hp, mp: m.mp, weapon: m.weapon, armor: m.armor, acc: m.acc || null, limit: m.limit || 0, board: m.board || [], embers: m.embers || 0, capxp: m.capxp || 0 })),
     meal: G.meal || null,
     seen: G.seen, killed: G.killed,
-    inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime, splits: G.splits || {},
+    inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime, splits: G.splits || {}, clock: clockNow(), cards: G.cards || {}, lastDeck: G.lastDeck || null,
     mapId: G.mapId, x: G.x, y: G.y, dir: G.dir, ship: G.ship, onShip: G.onShip, lastInn: G.lastInn, airship: G.airship, inAir: G.inAir, carry: G.carry
   };
 }
@@ -4006,7 +4031,7 @@ function loadGame(slot = latestSlot()) {
   if (!d) return false;
   G.party = d.party.map(p => { const m = { acc: null, board: [], embers: 0, ...p, status: {} }; m.hp = clamp(m.hp, 0, maxHp(m)); m.mp = clamp(m.mp, 0, maxMp(m)); return m; });
   G.seen = d.seen || {}; G.killed = d.killed || {};
-  G.inv = d.inv || {}; G.gold = d.gold || 0; G.flags = d.flags || {}; G.playTime = d.playTime || 0;
+  G.inv = d.inv || {}; G.gold = d.gold || 0; G.flags = d.flags || {}; G.playTime = d.playTime || 0; G.clock = d.clock !== undefined ? d.clock : 8 * 60; G.cards = d.cards || {}; G.lastDeck = d.lastDeck || null;
   // saves from before 1.8 have no splits: Lanterns already lit count as unknown (null), never as a time
   G.splits = d.splits || Object.fromEntries(SPLITS.filter(([f]) => G.flags[f]).map(([f]) => [f, null]));
   G.mapId = d.mapId; G.x = d.x; G.y = d.y; G.dir = d.dir || 'down';
@@ -4047,6 +4072,7 @@ function getMap(id) {
   let m;
   if (id === 'world') m = genWorld();
   else if (id === 'deep') m = genDeep();
+  else if (id === 'heist') m = buildHeist();
   else if (TOWN_DEFS[id]) m = buildTown(id);
   else if (id.startsWith('in:')) m = buildInterior(id);
   else { const [did, f] = id.split(':'); m = genDungeonFloor(did, parseInt(f)); }
@@ -4057,12 +4083,16 @@ function populate(map) {
   map.entities = [];
   if (map.kind === 'world') { applyWorldFlags(map); for (const q of [...worldQuestEntities(map), ...mothLampEntities(map)]) map.entities.push(q); }
   if (map.kind === 'deep') { applyDeepFlags(map); for (const q of deepEntities(map)) map.entities.push(q); }
+  if (map.kind === 'heist') { Heist.t = 0; for (const q of heistEntities(map)) map.entities.push(q); }
+  if (map.kind === 'town') for (const q of heistTownEntities(map)) map.entities.push(q);
   if (map.kind === 'interior') {
     for (const n of interiorNpcs(map)) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
     for (const q of interiorQuestEntities(map)) map.entities.push(q);
   }
   if (map.kind === 'town') {
-    for (const n of townNpcs(map.id)) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
+    // at night the wanderers go home and the night folk come out (1.9)
+    const folk = isNight() && !map.underwater && !map.underground ? [...townNpcs(map.id).filter(n => !n.wander), ...nightNpcs(map.id)] : [...townNpcs(map.id), ...cardDayNpcs(map.id)];
+    for (const n of folk) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
   } else if (map.kind === 'dungeon') {
     const did = map.dungeon, def = DUNGEONS[did];
     for (const c of map.extras.chests) {
@@ -4098,12 +4128,13 @@ const Field = {
     populate(map);
     G.scene = this;
     this.playMusic();
-    this.banner = map.kind === 'town' || map.kind === 'dungeon' || map.kind === 'deep' ? { text: map.name, t: 2.6 } : null;
+    this.banner = map.kind === 'town' || map.kind === 'dungeon' || map.kind === 'deep' || map.kind === 'heist' ? { text: map.name, t: 2.6 } : null;
   },
   playMusic() {
     const m = this.map;
     if (m.kind === 'world') Audio_.play(worldTrack());
     else if (m.kind === 'deep') Audio_.play('deep');
+    else if (m.kind === 'heist') Audio_.play('undermarket');
     else if (m.kind === 'interior') Audio_.play((TOWN_DEFS[m.town] && TOWN_DEFS[m.town].music) || 'town');
     else if (m.kind === 'town') Audio_.play(m.id === 'mirage' ? 'desert' : m.music || 'town');
     else Audio_.play(m.dungeon === 'spire' ? 'spire' : m.dungeon === 'abyss' || m.dungeon === 'hadal' ? 'abyss' : m.dungeon === 'palace' ? 'deep' : 'dungeon');
@@ -4116,6 +4147,7 @@ const Field = {
     if (m.kind === 'world') return !(c === '~' || c === 'r' || c === '^' || c === 'M' || c === 'x' || c === 'm');
     if (m.kind === 'interior') return !INT_SOLID.has(c) && c !== '#';
     if (m.kind === 'deep') return !DEEP_SOLID.has(c);
+    if (m.kind === 'heist') return !HEIST_SOLID.has(c);
     if (m.kind === 'town') return !TOWN_SOLID.has(c) && !this.buildingAt(x, y);
     return !DUNGEON_SOLID.has(c);
   },
@@ -4204,6 +4236,7 @@ const Field = {
   tick(dt) {
     this.t += dt;
     G.playTime += dt;
+    advanceClock(dt);
     if (this.banner) { this.banner.t -= dt; if (this.banner.t <= 0) this.banner = null; }
     if (this.anim) {
       this.anim.t += dt / this.anim.dur;
@@ -4217,6 +4250,7 @@ const Field = {
         this.onStep();
       }
     }
+    if (this.map.kind === 'heist') Heist.tick(this.map, dt);
     // NPC wandering
     if (this.map.kind === 'town' || this.map.kind === 'interior') {
       for (const e of this.map.entities) {
@@ -4257,6 +4291,9 @@ const Field = {
       if (isLoc(c)) { runScript(() => enterLocation(c)); return; }
       if (c === 'u') { runScript(surfacePrompt); return; }
       this.encounterCheck(c === 'k' ? 1.5 : 1);
+    } else if (m.kind === 'heist') {
+      if (m.at(G.x, G.y) === 'E') { runScript(heistExit); return; }
+      Heist.check(m);
     } else if (m.kind === 'interior') {
       if (m.at(G.x, G.y) === 'E') { runScript(exitInterior); return; }
     } else if (m.kind === 'dungeon') {
@@ -4277,7 +4314,8 @@ const Field = {
     let table, bg;
     if (m.kind === 'world') { table = worldRegionAt(m, G.x, G.y); bg = worldBattleBG(m, G.x, G.y); if (table === 'sea' && !G.onShip) table = 'r2'; }
     else { table = m.enc; bg = m.bg; }
-    const grp = weighted(ENCOUNTERS[table]).g;
+    const night = m.kind === 'world' && isNight() && NIGHT_ENC[table] && Math.random() < 0.5;
+    const grp = weighted(night ? NIGHT_ENC[table] : ENCOUNTERS[table]).g;
     runScript(async () => {
       const r = await startBattle(grp, { bg });
       if (r === 'lose') await gameOver();
@@ -4304,6 +4342,7 @@ const Field = {
       const sx = x * TS - cx, sy = y * TS - cy;
       if (m.kind === 'world') drawWorldTile(g, m, x, y, sx, sy, t);
       else if (m.kind === 'deep') drawDeepTile(g, m, x, y, sx, sy, t);
+      else if (m.kind === 'heist') drawHeistTile(g, m, x, y, sx, sy, t);
       else if (m.kind === 'town') { if (m.at(x, y) !== undefined) drawTownTile(g, m, x, y, sx, sy, t); }
       else if (m.kind === 'interior') { if (m.at(x, y) !== undefined) drawInteriorTile(g, m, x, y, sx, sy, t); }
       else drawDungeonTile(g, m, x, y, sx, sy, t);
@@ -4339,6 +4378,7 @@ const Field = {
       }
     });
     list.sort((a, b) => a.y - b.y).forEach(d => d.draw());
+    if (m.kind === 'heist') drawHeistSight(g, m, cx, cy, t);
     // the sea floor: dark water with the bell's lamp, glowing vents and the lights of Nerith
     if (m.kind === 'deep') drawDeepLight(g, m, cx, cy, psx, psy, t);
     if (m.kind === 'town' && (m.underwater || m.underground)) drawTownMood(g, m, t);
@@ -4370,6 +4410,9 @@ const Field = {
       // the sky darkens as the King stirs
       g.fillStyle = 'rgba(40,10,60,.12)'; g.fillRect(0, 0, W, H);
     }
+    // the sky and the weather (1.9)
+    drawSky(g, m, cx, cy, t);
+    if (underSky(m)) drawWeather(g, currentWeather(), t);
     if (this.banner) {
       g.save(); g.globalAlpha = clamp(this.banner.t, 0, 1);
       g.font = font(20, true, SERIF);
@@ -4393,6 +4436,7 @@ function drawEntity(g, e, sx, sy, t) {
   else if (e.kind === 'roadlamp') { drawRoadLamp(g, sx, sy, e.lit, t); if (e.moths) drawLampMoths(g, sx, sy, t); }
   else if (e.kind === 'riddle') drawRiddleFire(g, sx, sy, e.solved, t);
   else if (e.kind === 'hatch') drawHatch(g, sx, sy);
+  else if (e.kind === 'guard') { drawChar(g, e.look, sx, sy, e.dir, Math.floor(t * 4) % 2 ? 1 : 2, 1, null, t); }
   else if (e.kind === 'boss') {
     const s = 0.45;
     drawMonster(g, e.def, sx, sy + 2, { t, scale: s });
@@ -4665,6 +4709,8 @@ class Battle {
   constructor(ids, opts) {
     BATTLE_PARTY = opts.party ? G.party.filter(m => opts.party.includes(m.id)) : G.party.slice(0, 4);
     this.opts = opts; this.bg = opts.bg || 'plains'; this.t = 0;
+    this.weather = opts.weather || (G.scene === Field ? currentWeather() : 'clear');
+    this.night = G.scene === Field && underSky(Field.map) && isNight();
     this.fx = []; this.nums = []; this.msg = null; this.active = -1; this.flash = null; this.shake = 0;
     const counts = {};
     ids.forEach(id => counts[id] = (counts[id] || 0) + 1);
@@ -4719,6 +4765,7 @@ class Battle {
     if (this.shake > 0) g.translate(rnd(-4, 4) * this.shake * 3, rnd(-3, 3) * this.shake * 3);
     g.fillStyle = '#0a0812'; g.fillRect(0, 0, W, H);
     g.save(); g.translate(0, -BG_SHIFT); drawBattleBG(g, this.bg, this.t); g.restore();
+    drawWeather(g, this.weather, this.t, 0.6);
     // enemies
     const sorted = this.enemies.map((e, i) => ({ e, i })).sort((a, b) => a.e.y - b.e.y);
     for (const { e } of sorted) {
@@ -4735,7 +4782,7 @@ class Battle {
       g.restore();
       if (e.status.sleep && e.alive) { const c = this.enemyCenter(e); text(g, 'z', c.x + 20 + Math.sin(this.t * 3) * 4, c.y - 40 - (this.t * 14 % 14), { size: 18, bold: true, color: '#c8b8ff' }); }
       if (e.status.silence && e.alive) { const c = this.enemyCenter(e); text(g, '…', c.x - 24, c.y - 40, { size: 18, bold: true, color: '#c8b8ff' }); }
-      if ((e.status.blind || e.status.slow) && e.alive) { const c = this.enemyCenter(e); text(g, [e.status.blind && 'BLD', e.status.slow && 'SLW'].filter(Boolean).join(' '), c.x, c.y + 44, { size: 11, bold: true, color: '#e8e0a0', align: 'center' }); }
+      if ((e.status.blind || e.status.slow || e.status.berserk || e.status.stop) && e.alive) { const c = this.enemyCenter(e); text(g, [e.status.blind && 'BLD', e.status.slow && 'SLW', e.status.berserk && 'BSK', e.status.stop && 'STP'].filter(Boolean).join(' '), c.x, c.y + 44, { size: 11, bold: true, color: '#e8e0a0', align: 'center' }); }
       if (e.status.poison && e.alive) { const c = this.enemyCenter(e); circle(g, c.x + 18 + Math.sin(this.t * 4) * 3, c.y - 20 - (this.t * 20 % 20), 3, 'rgba(140,255,120,.8)'); }
     }
     // party
@@ -4794,7 +4841,7 @@ class Battle {
       if (i === this.active) { g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(222, y - 2, 402, 27); }
       text(g, memberName(m), 230, y + 3, { size: 15, bold: true, color: col });
       if (limitUnlocked(m)) { const full = (m.limit || 0) >= 100; bar(g, 230, y + 22, 62, 3, (m.limit || 0) / 100, full ? (Math.sin(this.t * 10) > 0 ? '#ffd23a' : '#fff4c0') : '#e8a84a'); }
-      const tags = [m.status.poison && ['PSN', '#8aff7a'], m.status.sleep && ['SLP', '#c8b8ff'], m.status.silence && ['SIL', '#ffb0d0'], m.status.blind && ['BLD', '#e8e0a0'], m.status.slow && ['SLW', '#a0a8ff'], m.status.haste && ['HST', '#ffd27a'], m.status.regen && ['RGN', '#9ad8ff']].filter(Boolean);
+      const tags = [m.status.poison && ['PSN', '#8aff7a'], m.status.sleep && ['SLP', '#c8b8ff'], m.status.silence && ['SIL', '#ffb0d0'], m.status.blind && ['BLD', '#e8e0a0'], m.status.slow && ['SLW', '#a0a8ff'], m.status.haste && ['HST', '#ffd27a'], m.status.berserk && ['BSK', '#ff7a5a'], m.status.stop && ['STP', '#d0d0d0'], m.status.regen && ['RGN', '#9ad8ff']].filter(Boolean);
       tags.slice(0, 2).forEach(([tg, c], k) => text(g, tg, 302 + k * 24, y + 5, { size: 10, bold: true, color: c }));
       text(g, `${m.hp}`, 420, y + 3, { size: 15, color: col, align: 'right' });
       text(g, `/${maxHp(m)}`, 470, y + 5, { size: 12, color: '#b8c4ee', align: 'right' });
@@ -4998,7 +5045,7 @@ class Battle {
   }
   elemMult(def, elem) { return Math.abs(this.weakMult(def, elem)); }
   elemCol(def, elem) { const w = this.weakMult(def, elem); return w > 1 ? '#ffd27a' : w < 1 && w > 0 ? '#b8b8c8' : '#fff'; }
-  magBoost(m, elem) { return (hasPassive(m, 'wildfire') ? 1.2 : 1) * (elem === 'dark' && hasPassive(m, 'twilight') ? 1.25 : 1); }
+  magBoost(m, elem) { return (hasPassive(m, 'wildfire') ? 1.2 : 1) * (elem === 'dark' && hasPassive(m, 'twilight') ? 1.25 : 1) * weatherMult(this.weather, elem); }
   healBoost(m) { return hasPassive(m, 'tidal_grace') ? 1.3 : 1; }
   spdMod(st) { return (st.haste > 0 ? 1.6 : 1) * (st.slow > 0 ? 0.6 : 1); }
   thiefMult() { return BP().some(m => alive(m) && accOf(m) && accOf(m).thief) ? 2 : 1; }
@@ -5017,7 +5064,7 @@ class Battle {
     return got;
   }
   physDamage(atk, def, mult = 1) { return Math.max(1, Math.round((atk - def / 2) * mult * rnd(0.88, 1.12))); }
-  memberAtk(i) { const m = BP()[i]; return stat(m, 'str') * (this.buffs.rally > 0 ? 1.35 : 1); }
+  memberAtk(i) { const m = BP()[i]; return stat(m, 'str') * (this.buffs.rally > 0 ? 1.35 : 1) * (m.status.berserk ? 1.5 : 1); }
   memberDef(i) { const m = BP()[i]; return stat(m, 'def') * (this.buffs.barrier > 0 ? 1.4 : 1); }
   // ---------------- flow ----------------
   async run() {
@@ -5086,9 +5133,9 @@ class Battle {
         const m = BP()[i]; if (!alive(m)) continue;
         const a = accOf(m);
         if (m.status.regen > 0 || (a && a.regen)) { const h = Math.min(maxHp(m) - m.hp, Math.max(1, Math.floor(maxHp(m) * (m.status.regen > 0 ? 0.08 : 0.05)))); if (h > 0) { m.hp += h; const c = this.memberCenter(i); this.num(c.x + 14, c.y + 10, h, '#7aff9a'); } }
-        for (const st of ['sleep', 'silence', 'regen', 'blind', 'slow', 'haste']) if (m.status[st] > 0) m.status[st]--;
+        for (const st of ['sleep', 'silence', 'regen', 'blind', 'slow', 'haste', 'berserk', 'stop']) if (m.status[st] > 0) m.status[st]--;
       }
-      for (const e of this.enemies) for (const st of ['sleep', 'silence', 'blind', 'slow']) if (e.status[st] > 0) e.status[st]--;
+      for (const e of this.enemies) for (const st of ['sleep', 'silence', 'blind', 'slow', 'berserk', 'stop']) if (e.status[st] > 0) e.status[st]--;
       for (const e of this.enemies) if (e.alive && e.status.poison) { const d = Math.max(1, Math.floor(Math.min(e.maxhp * 0.05, 250))); e.hp -= d; const c = this.enemyCenter(e); this.num(c.x, c.y, d, '#8aff7a'); if (e.hp <= 0) this.kill(e); }
       if (this.buffs.rally > 0) this.buffs.rally--;
       if (this.buffs.barrier > 0) this.buffs.barrier--;
@@ -5110,7 +5157,8 @@ class Battle {
     const n = BP().length;
     while (i < n) {
       const m = BP()[i];
-      if (!alive(m) || m.status.sleep) { cmds[i] = null; i++; continue; }
+      if (!alive(m) || m.status.sleep || m.status.stop) { cmds[i] = null; i++; continue; }
+      if (m.status.berserk) { cmds[i] = { type: 'attack', target: null }; i++; continue; }   // berserk heroes act on their own
       if (cmds[i] && cmds[i].type === 'partner') { i++; continue; }
       this.active = i;
       this.pa[i].dx = -14;
@@ -5119,10 +5167,10 @@ class Battle {
       if (c === 'repeat') {
         // re-use last round's commands for everyone who can still act
         const P = BP();
-        return this.prevCmds.map((pc, j) => pc && alive(P[j]) && !P[j].status.sleep ? (pc.type === 'limit' ? { type: 'attack', target: null } : { ...pc }) : null);
+        return this.prevCmds.map((pc, j) => P[j].status.berserk && alive(P[j]) ? { type: 'attack', target: null } : pc && alive(P[j]) && !P[j].status.sleep && !P[j].status.stop ? (pc.type === 'limit' ? { type: 'attack', target: null } : { ...pc }) : null);
       }
       if (c === 'back') {
-        let j = i - 1; while (j >= 0 && (!alive(BP()[j]) || BP()[j].status.sleep)) j--;
+        let j = i - 1; while (j >= 0 && (!alive(BP()[j]) || BP()[j].status.sleep || BP()[j].status.stop || BP()[j].status.berserk)) j--;
         if (j >= 0 && cmds[j] && cmds[j].type === 'partner') j = cmds[j].from;
         if (j >= 0) { for (let k = 0; k < cmds.length; k++) if (cmds[k] && cmds[k].type === 'partner' && cmds[k].from === j) cmds[k] = null; i = j; }
         continue;
@@ -5402,6 +5450,8 @@ class Battle {
   async partyAct(i, c) {
     const m = BP()[i], a = this.pa[i];
     if (m.status.sleep) { const p = this.memberCenter(i); this.num(p.x, p.y, 'Asleep', '#c8b8ff'); await wait(300); return; }
+    if (m.status.stop) { const p = this.memberCenter(i); this.num(p.x, p.y, 'Stopped', '#c0c0c0'); await wait(300); return; }
+    if (m.status.berserk && c.type !== 'attack') c = { type: 'attack', target: null };
     if (c.type === 'defend') return;
     if (c.type === 'combo') return this.doCombo(i, c);
     if (c.type === 'limit') return this.doLimit(i, c);
@@ -5414,7 +5464,7 @@ class Battle {
         for (let k = 0; k < 6; k++) { a.swing = k / 5; await wait(16); }
         const p = this.enemyCenter(tg);
         await this.playFx('slash', [p]);
-        if (Math.random() < (m.status.blind ? 0.5 : 0.03)) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); return; }
+        if (Math.random() < (m.status.blind ? 0.5 : 0.03) + weatherMiss(this.weather)) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); return; }
         const crit = Math.random() < 0.06 + stat(m, 'spd') * 0.001;
         const dmg = this.physDamage(this.memberAtk(i), tg.def.def, crit ? 1.7 : 1);
         if (crit) { Audio_.sfx('crit'); this.shake = 0.15; }
@@ -5546,7 +5596,7 @@ class Battle {
         for (const e of ts) {
           const p = this.enemyCenter(e);
           const st = s.status, boss = e.def.boss;
-          if (boss && (st === 'sleep' || st === 'silence')) this.num(p.x, p.y, 'Immune', '#cfd8ff');
+          if (boss && (st === 'sleep' || st === 'silence' || st === 'stop')) this.num(p.x, p.y, 'Immune', '#cfd8ff');
           else if (Math.random() < s.chance * (boss ? (st === 'slow' ? 0.5 : 0.3) : 1)) { e.status[st] = STATUS_TURNS[st][1]; this.num(p.x, p.y, STATUS_LABEL[st], '#c8b8ff'); }
           else this.num(p.x, p.y, 'Miss', '#cfd8ff');
         }
@@ -5566,10 +5616,10 @@ class Battle {
     if (ai === 'magehunter' && r < 0.6) { const ms = L.filter(i => CASTERS.includes(P[i].id)); if (ms.length) return pick(ms); }
     return pick(L);
   }
-  dodges(i) { const m = BP()[i]; return hasPassive(m, 'ghost_step') && !m.status.sleep && Math.random() < 0.25; }
+  dodges(i) { const m = BP()[i]; return hasPassive(m, 'ghost_step') && !m.status.sleep && !m.status.stop && Math.random() < 0.25; }
   async counterAttack(i, e) {
     const m = BP()[i];
-    if (!alive(m) || !e.alive || m.status.sleep || !hasPassive(m, 'counter') || Math.random() >= 0.2) return;
+    if (!alive(m) || !e.alive || m.status.sleep || m.status.stop || !hasPassive(m, 'counter') || Math.random() >= 0.2) return;
     const p = this.memberCenter(i); this.num(p.x, p.y - 24, 'Counter!', '#ffd27a');
     this.pa[i].pose = 'attack'; await this.playFx('slash', [this.enemyCenter(e)]);
     this.damageEnemy(e, this.physDamage(this.memberAtk(i), e.def.def, 1));
@@ -5581,11 +5631,13 @@ class Battle {
       this.msg = e.phase.msg; await wait(1300); this.msg = null;
     }
     if (e.status.sleep) { const c = this.enemyCenter(e); this.num(c.x, c.y, 'Zzz', '#c8b8ff'); await wait(350); return; }
+    if (e.status.stop) { const c = this.enemyCenter(e); this.num(c.x, c.y, 'Stopped', '#d0d0d0'); await wait(350); return; }
     const acts = (e.phase && e.phase.acts) || e.def.acts || [{ w: 1, a: 'attack' }];
     let act = weighted(acts).a;
     // healers mend a hurt ally before anything else
     if (e.def.ai === 'healer' && this.liveEnemies().some(x => x.hp < x.maxhp * 0.5)) { const h = acts.find(x => SPELLS[x.a] && SPELLS[x.a].type === 'heal'); if (h && Math.random() < 0.7) act = h.a; }
     if (e.status.silence && act !== 'attack' && SPELLS[act] && SPELLS[act].type !== 'phys') act = 'attack';
+    if (e.status.berserk) act = 'attack';
     const live = this.liveParty();
     if (!live.length) return;
     const targetIdx = () => this.enemyTarget(e);
@@ -5596,10 +5648,10 @@ class Battle {
       const p = this.memberCenter(i);
       await this.playFx('hit', [p]);
       const ms = stat(BP()[i], 'spd');
-      if (blindMiss() || Math.random() < clamp(0.03 + (ms - e.def.spd) * 0.004, 0.02, 0.12)) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); }
+      if (blindMiss() || Math.random() < clamp(0.03 + (ms - e.def.spd) * 0.004, 0.02, 0.12) + weatherMiss(this.weather)) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); }
       else if (this.dodges(i)) { this.num(p.x, p.y, 'Dodge', '#cfd8ff'); Audio_.sfx('miss'); }
       else {
-        let dmg = this.physDamage(e.def.atk, this.memberDef(i), this.pa[i].defend ? 0.5 : 1);
+        let dmg = this.physDamage(e.def.atk * (e.status.berserk ? 1.5 : 1), this.memberDef(i), this.pa[i].defend ? 0.5 : 1);
         this.damageMember(i, dmg);
         await this.counterAttack(i, e);
       }
@@ -5647,7 +5699,7 @@ class Battle {
       let total = 0;
       for (const i of ts) {
         const m = BP()[i];
-        let dmg = (s.power + e.def.mag) * rnd(0.9, 1.1) - stat(m, 'mag') * 0.4;
+        let dmg = ((s.power + e.def.mag) * rnd(0.9, 1.1) - stat(m, 'mag') * 0.4) * weatherMult(this.weather, s.elem);
         if (this.buffs.barrier > 0) dmg *= 0.6;
         if (this.pa[i].defend) dmg *= 0.6;
         dmg = Math.max(1, Math.round(dmg));
@@ -5671,6 +5723,7 @@ class Battle {
       if (e.def.mat && Math.random() < e.def.mat[1]) drops.push(e.def.mat[0]);
     }
     const tm = treasureMapDrop(this.enemies); if (tm) drops.push(tm);
+    if (this.night) G.flags.night_win = true;
     if (BP().some(m => alive(m) && accOf(m) && accOf(m).goldx)) gold = Math.round(gold * 1.5);
     if (mealIs('gold')) gold = Math.round(gold * (1 + mealNow().amount));
     if (mealIs('xp')) xp = Math.round(xp * (1 + mealNow().amount));
@@ -5705,6 +5758,7 @@ function applyItemEffect(id, m, battle, idx) {
     case 'mp': if (alive(m)) { const b = m.mp; m.mp = Math.min(maxMp(m), m.mp + it.amount); show(m.mp - b, '#7ab8ff'); return true; } return false;
     case 'cure': if (alive(m)) { m.status.poison = false; show('Cured', '#7aff9a'); return true; } return false;
     case 'remedy': if (alive(m)) { cureAll(m); show('Cured', '#7aff9a'); return true; } return false;
+    case 'berserk': if (alive(m) && battle && !immune(m, 'berserk')) { m.status.berserk = STATUS_TURNS.berserk[0]; show('Berserk', '#ff7a5a'); return true; } return false;
     case 'revive': if (!alive(m)) { m.hp = Math.floor(maxHp(m) * 0.3); show('Revived', '#7aff9a'); return true; } return false;
     case 'elixir': if (alive(m)) { m.hp = maxHp(m); m.mp = maxMp(m); show('Full', '#7aff9a'); return true; } return false;
     case 'megalixir': if (alive(m)) { m.hp = maxHp(m); m.mp = maxMp(m); show('Full', '#7aff9a'); } return true;
@@ -5755,8 +5809,9 @@ function drawInfoPanel(g) {
   drawWindow(g, 472, 360, 152, 104);
   text(g, 'Gold', 486, 372, { size: 13, color: '#b8c4ee' });
   text(g, `${G.gold}`, 610, 370, { size: 16, align: 'right', color: '#ffe9a8' });
-  text(g, 'Time', 486, 398, { size: 13, color: '#b8c4ee' });
-  text(g, fmtTime(G.playTime), 610, 396, { size: 16, align: 'right' });
+  const wx = currentWeather();
+  text(g, `Day ${dayNumber()}`, 486, 398, { size: 13, color: '#b8c4ee' });
+  text(g, `${WEATHER[wx].icon} ${isNight() ? '☾' : ''}${fmtClockHM()}`, 610, 396, { size: 16, align: 'right', color: isNight() ? '#b8c8ff' : '#fff' });
   const lit = ['ember', 'tide', 'stone', 'dawn'].map((k, i) => G.flags['lantern' + (i + 1)]);
   text(g, 'Lanterns', 486, 424, { size: 13, color: '#b8c4ee' });
   lit.forEach((l, i) => { circle(g, 498 + i * 26, 450, 8, l ? ['#ff9a3a', '#5af0d0', '#ff6a2a', '#ffe08a'][i] : 'rgba(255,255,255,.12)', '#fff', 1.2); });
@@ -5934,7 +5989,7 @@ async function itemsMenu() {
     if (it.effect === 'tent') {
       if (Field.map.kind !== 'world') { await narrate('You can only pitch a tent on the world map.'); continue; }
       addItem(id, -1);
-      await fadeTo(1, 400); Audio_.sfx('inn'); healAll(); await wait(1000); await fadeTo(0, 400);
+      await fadeTo(1, 400); Audio_.sfx('inn'); healAll(); G.clock = clockNow() + 8 * 60; await wait(1000); await fadeTo(0, 400);
       await narrate('The party rests under the stars. HP and MP restored.');
       await campfireTalk();
       continue;
@@ -6175,10 +6230,11 @@ function drawShopDetail(g, id) {
 }
 // ---------- inn ----------
 async function innStay(townId, price, keeper = 'Innkeeper') {
-  const fish = hasAnyFish(), opts = fish ? ['Stay', 'Cook a meal', 'No thanks'] : ['Stay', 'No thanks'];
+  const fish = hasAnyFish(), opts = fish ? ['Stay', 'Cook a meal', 'Stay until night', 'No thanks'] : ['Stay', 'Stay until night', 'No thanks'];
   const c = await choose(keeper, `Welcome, travelers! A warm bed is ${price} gold for the party. Will you rest?${fish ? ' Or I can cook up that catch of yours.' : ''}`, opts, opts.length - 1);
   if (opts[c] === 'Cook a meal') { if (await cookMenu(keeper)) await say(keeper, 'Eat up! That\'ll keep you going for a few fights.'); return; }
-  if (c !== 0) { await say(keeper, 'Another time, then.'); return; }
+  const tillNight = opts[c] === 'Stay until night';
+  if (c !== 0 && !tillNight) { await say(keeper, 'Another time, then.'); return; }
   if (G.gold < price) { await say(keeper, "Ah... you're a bit short on coin, I'm afraid."); return; }
   G.gold -= price;
   await fadeTo(1, 500);
@@ -6186,12 +6242,14 @@ async function innStay(townId, price, keeper = 'Innkeeper') {
   Audio_.sfx('inn');
   healAll();
   G.lastInn = { town: townId };
+  sleepUntil(tillNight ? 21 : 7);
   await wait(1600);
+  if (Field.map && Field.map.kind === 'town') refreshEntities();
   Field.playMusic();
   Audio_.play(Audio_.curName, true);
   await fadeTo(0, 500);
   await innDream();
-  await say(keeper, 'Good morning! You look well rested.');
+  await say(keeper, tillNight ? 'Good evening! The night folk are out, if that\'s your business.' : 'Good morning! You look well rested.');
   await promptSave();
 }
 
@@ -7165,6 +7223,8 @@ function undermarketNpcs() {
 }
 async function talkMags() {
   const f = G.flags;
+  if (f.debt_done && hasItem('sunset_opal')) return heistTurnIn();
+  if (f.debt_done && !f.q_heist) { if (inParty('kestrel')) return heistStart(); await say('Mags', 'I\'ve got a job, but only for Kestrel. Bring her down here.'); return; }
   if (inParty('kestrel')) await sayAll([['Mags', 'Kes! Look at you, all respectable. Guildmaster, they\'re saying. I nearly fell off my stool.'], [KE, 'I am NOT the Guildmaster. I\'m a... silent partner.'], ['Mags', 'Very silent. You haven\'t paid your dues in three years. Go on, spend some money at Nim\'s. That counts.']]);
   else await say('Mags', 'Friends of Kestrel? Then you\'re friends of the Guild. Mind your purses anyway. Professional habit.');
   if (f.debt_done && !f.mags_gift) { f.mags_gift = true; addItem('star_bomb'); addItem('star_bomb'); Audio_.sfx('item'); await narrate('Mags slips you two Star Bombs. "For old times. Don\'t ask where they\'re from."'); }
@@ -7325,6 +7385,10 @@ const TROPHIES = [
   { id: 'lv50', name: 'Fifty', desc: 'Raise a hero to level 50.', test: () => anyHero(m => m.level >= MAX_LEVEL) },
   { id: 'board', name: 'Every Lamp Lit', desc: 'Light a hero\'s whole Lantern Board.', test: () => anyHero(m => (m.board || []).length >= Object.keys(BOARD_NODES).length - 1) },
   { id: 'ngplus', name: 'Once More, With Feeling', desc: 'Start New Game+.', test: f => f.ngplus },
+  { id: 'night', name: 'Night Owl', desc: 'Win a battle at night.', test: f => f.night_win },
+  { id: 'cards', name: 'Card Shark', desc: 'Beat every Lanterns & Lies player.', test: f => f.cards_done },
+  { id: 'collector', name: 'Full Deck', desc: 'Collect every Lanterns & Lies card.', test: () => !!G.cards && Object.keys(CARDS).every(k => G.cards[k] > 0) },
+  { id: 'heist', name: 'Ghost of Mirage', desc: '???', secret: 'Steal the Sunset Opal without being caught.', test: f => f.heist_done },
   // speed
   { id: 'speed', name: 'Lamplighter\'s Dash', desc: 'Finish the story in under 5 hours of play time.', test: f => f.ending && G.splits && G.splits.ending && G.splits.ending < 5 * 3600 }
 ];
@@ -7333,15 +7397,18 @@ const Trophies = {
   load() { try { this.got = JSON.parse(localStorage.getItem(TROPHY_KEY) || '{}') || {}; } catch (e) { this.got = {}; } },
   save() { try { localStorage.setItem(TROPHY_KEY, JSON.stringify(this.got)); } catch (e) { } },
   count() { return TROPHIES.filter(t => this.got[t.id]).length; },
-  give(id) {
-    if (this.got[id]) return;
-    const t = TROPHIES.find(x => x.id === id); if (!t) return;
+  give(id, quiet) {
+    if (this.got[id]) return false;
+    const t = TROPHIES.find(x => x.id === id); if (!t) return false;
     this.got[id] = Date.now(); this.save();
-    Audio_.sfx('levelup'); toast(`🏆 ${t.name}`);
+    if (!quiet) { Audio_.sfx('levelup'); toast(`🏆 ${t.name}`); }
+    return true;
   },
   check() {
-    const f = G.flags || {};
-    for (const t of TROPHIES) if (!this.got[t.id]) { let ok = false; try { ok = !!t.test(f); } catch (e) { } if (ok) this.give(t.id); }
+    const f = G.flags || {}, now = [];
+    for (const t of TROPHIES) if (!this.got[t.id]) { let ok = false; try { ok = !!t.test(f); } catch (e) { } if (ok) now.push(t.id); }
+    if (now.length === 1) this.give(now[0]);
+    else if (now.length > 1) { now.forEach(id => this.give(id, true)); Audio_.sfx('levelup'); toast(`🏆 ${now.length} trophies earned`); }   // e.g. loading an older save
   }
 };
 Trophies.load();
@@ -7420,6 +7487,586 @@ function frameSkip(now) {
   if (now - (frameSkip.last || 0) < 1000 / 31) return true;
   frameSkip.last = now;
   return false;
+}
+
+'use strict';
+// ============================================================
+//  LIVING WORLD (1.9): the clock, day and night, regional weather
+//  and how weather changes battles. Loaded after platform.js.
+// ============================================================
+
+// ---------------- the clock ----------------
+// One real second on the field is one minute of game time: a day lasts 24 minutes.
+const DAY_MIN = 1440, CLOCK_START = 8 * 60;
+function clockNow() { return G.clock === undefined ? CLOCK_START : G.clock; }
+function timeOfDay() { return ((clockNow() % DAY_MIN) + DAY_MIN) % DAY_MIN; }
+function dayNumber() { return Math.floor(clockNow() / DAY_MIN) + 1; }
+// night runs from 20:30 to 5:30; dusk and dawn are the hour either side
+function isNight() { const t = timeOfDay(); return t >= 20.5 * 60 || t < 5.5 * 60; }
+function dayPhase() {
+  const t = timeOfDay();
+  if (t < 5.5 * 60 || t >= 20.5 * 60) return 'night';
+  if (t < 7 * 60) return 'dawn';
+  if (t < 19 * 60) return 'day';
+  return 'dusk';
+}
+function fmtClockHM() { const t = Math.floor(timeOfDay()); return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`; }
+let lastNight = null;
+function advanceClock(dt) {
+  G.clock = clockNow() + dt;
+  const n = isNight();
+  if (lastNight !== null && n !== lastNight && Field.map && Field.map.kind === 'town' && !Script.running) refreshEntities();   // night folk come out, day folk go home
+  lastNight = n;
+}
+// jump the clock forward to the next given hour (resting at an inn, a tent)
+function sleepUntil(hour) {
+  const t = timeOfDay(); let add = hour * 60 - t; if (add <= 30) add += DAY_MIN;
+  G.clock = clockNow() + add; lastNight = isNight();
+}
+// how dark the sky is, 0 (noon) to 1 (midnight), with a warm tint at dawn and dusk
+function skyTint() {
+  const t = timeOfDay() / 60;
+  const dark = t < 5 ? 1 : t < 7 ? 1 - (t - 5) / 2 : t < 18.5 ? 0 : t < 21 ? (t - 18.5) / 2.5 : 1;
+  const warm = t >= 5 && t < 7.5 ? 1 - Math.abs(t - 6.2) / 1.3 : t >= 17.5 && t < 21 ? 1 - Math.abs(t - 19.3) / 1.7 : 0;
+  return { dark: clamp(dark, 0, 1), warm: clamp(warm, 0, 1) };
+}
+// where the sky can be seen: the world map and outdoor towns
+function underSky(m) { return m && (m.kind === 'world' || (m.kind === 'town' && !m.underwater && !m.underground)); }
+
+// ---------------- weather ----------------
+// Each region rolls its weather every six game hours from the clock, so it needs no saving.
+const WEATHER = {
+  clear: { name: 'Clear', icon: '☀' },
+  rain: { name: 'Rain', icon: '☂', battle: 'Rain: water and lightning hit 25% harder, fire 25% softer.', boost: ['water', 'bolt'], dampen: ['fire'] },
+  snow: { name: 'Snow', icon: '❄', battle: 'Snow: ice hits 25% harder, fire 25% softer.', boost: ['ice'], dampen: ['fire'] },
+  sand: { name: 'Sandstorm', icon: '≋', battle: 'Sandstorm: every physical attack misses 15% more often.', miss: 0.15 },
+  fog: { name: 'Fog', icon: '☁', battle: 'Fog: physical attacks miss 10% more often.', miss: 0.1 },
+  ash: { name: 'Ashfall', icon: '✶', battle: 'Ashfall: fire hits 25% harder, water 25% softer.', boost: ['fire'], dampen: ['water'] }
+};
+function regionWeather(reg, y) {
+  const block = Math.floor(clockNow() / 360), h = hash(block, (reg || 'S').charCodeAt(0), 77);
+  if (reg === 'H') return 'ash';
+  if (reg === 'B' && y <= 11) return h < 0.55 ? 'snow' : 'clear';
+  if (reg === 'B') return h < 0.2 ? 'rain' : 'clear';
+  if (reg === 'F') return h < 0.3 ? 'sand' : 'clear';
+  if (reg === 'G') return 'clear';                       // the sky valley sits above the weather
+  if (reg === 'C') return h < 0.5 ? 'fog' : 'clear';
+  if (reg === 'A' || reg === 'E') return h < 0.25 ? 'rain' : h < 0.35 ? 'fog' : 'clear';
+  return h < 0.2 ? 'rain' : 'clear';                     // open sea
+}
+function worldWeatherAt(x, y) {
+  const w = getMap('world'), reg = w.region[y] && w.region[y][x];
+  return regionWeather(reg, y);
+}
+// the weather where the party is now (indoors and underground there is none)
+function currentWeather() {
+  const m = Field.map;
+  if (!m) return 'clear';
+  if (m.kind === 'world') return G.inAir ? 'clear' : worldWeatherAt(G.x, G.y);
+  if (m.kind === 'town' && !m.underwater && !m.underground) { const L = locDef(m.loc); return L && locMap(m.loc) === 'world' ? worldWeatherAt(L.x, L.y) : 'clear'; }
+  return 'clear';
+}
+function weatherMult(w, elem) {
+  const W_ = WEATHER[w]; if (!W_ || !elem) return 1;
+  return W_.boost && W_.boost.includes(elem) ? 1.25 : W_.dampen && W_.dampen.includes(elem) ? 0.75 : 1;
+}
+function weatherMiss(w) { return (WEATHER[w] && WEATHER[w].miss) || 0; }
+
+// ---------------- drawing ----------------
+function drawSky(g, m, cx, cy, t) {
+  if (!underSky(m)) return;
+  const { dark, warm } = skyTint();
+  if (warm > 0) { g.save(); g.globalCompositeOperation = 'multiply'; g.fillStyle = `rgb(255,${Math.round(255 - 60 * warm)},${Math.round(255 - 120 * warm)})`; g.fillRect(0, 0, W, H); g.restore(); }
+  if (dark > 0) {
+    // multiply toward moonlit blue: colours keep their hue, but the world goes properly dark
+    g.save(); g.globalCompositeOperation = 'multiply';
+    g.fillStyle = `rgb(${Math.round(255 - 190 * dark)},${Math.round(255 - 175 * dark)},${Math.round(255 - 120 * dark)})`; g.fillRect(0, 0, W, H);
+    g.restore();
+    // lamps, braziers, lit windows and roadside lamps glow through the dark
+    g.save(); g.globalCompositeOperation = 'lighter';
+    const glow = (sx, sy, r, col, a) => { const lg = g.createRadialGradient(sx, sy, 2, sx, sy, r); lg.addColorStop(0, `rgba(${col},${a * dark})`); lg.addColorStop(1, `rgba(${col},0)`); g.fillStyle = lg; g.fillRect(sx - r, sy - r, r * 2, r * 2); };
+    const x0 = Math.floor(cx / TS) - 2, y0 = Math.floor(cy / TS) - 2;
+    for (let y = y0; y <= y0 + VH + 4; y++) for (let x = x0; x <= x0 + VW + 4; x++) {
+      const c = m.at(x, y); if (c === undefined) continue;
+      const sx = x * TS - cx + 16, sy = y * TS - cy + 10;
+      if (m.kind === 'town' && (c === 'l' || c === 'b')) glow(sx, sy, c === 'b' ? 110 : 80, '255,190,100', 0.45);
+      if (m.kind === 'world' && isLoc(c)) glow(sx, sy, 70, '255,200,120', 0.4);
+    }
+    if (m.kind === 'town') for (const b of m.buildings || []) { const sx = (b.x + b.w / 2) * TS - cx, sy = (b.y + b.h - 1.3) * TS - cy; if (sx > -80 && sy > -80 && sx < W + 80 && sy < H + 80) glow(sx, sy, 60, '255,200,120', 0.3); }
+    for (const e of m.entities) if (e.kind === 'roadlamp' && e.lit) glow(e.x * TS - cx + 16, e.y * TS - cy - 4, 70, '255,210,120', 0.5);
+    g.restore();
+    if (m.kind === 'world' || m.kind === 'town') for (let i = 0; i < 30; i++) { const tw = 0.5 + 0.5 * Math.sin(t * 2 + i * 3); circle(g, hash(i, 91) * W, hash(i, 92) * H * 0.35, 1, `rgba(255,255,255,${0.35 * dark * tw})`); }
+  }
+}
+function drawWeather(g, w, t, strength = 1) {
+  if (!w || w === 'clear') return;
+  g.save();
+  if (w === 'rain') {
+    g.fillStyle = 'rgba(30,45,75,.22)'; g.fillRect(0, 0, W, H);
+    g.strokeStyle = 'rgba(200,225,255,.7)'; g.lineWidth = 1.5;
+    for (let i = 0; i < 130 * strength; i++) { const k = (t * 1.6 + hash(i, 11)) % 1, x = (hash(i, 12) * (W + 120) - k * 60) % (W + 60), y = k * (H + 40) - 20; g.beginPath(); g.moveTo(x, y); g.lineTo(x - 5, y + 14); g.stroke(); }
+  } else if (w === 'snow') {
+    g.fillStyle = 'rgba(225,235,255,.14)'; g.fillRect(0, 0, W, H);
+    for (let i = 0; i < 120 * strength; i++) { const k = (t * 0.12 + hash(i, 21)) % 1, x = (hash(i, 22) * W + Math.sin(t + i) * 18) % W, y = k * H; circle(g, x, y, 1.3 + hash(i, 23) * 2, 'rgba(255,255,255,.95)', 'rgba(120,140,180,.4)', 0.6); }
+  } else if (w === 'sand') {
+    g.fillStyle = 'rgba(190,120,50,.34)'; g.fillRect(0, 0, W, H);
+    // rolling dust clouds, then fast streaks of grit
+    for (let i = 0; i < 7; i++) { const x = ((hash(i, 34) * W + t * 140 * (0.7 + hash(i, 35))) % (W + 400)) - 200, y = hash(i, 36) * H; g.fillStyle = 'rgba(170,110,50,.22)'; g.beginPath(); g.ellipse(x, y, 190, 70, 0, 0, Math.PI * 2); g.fill(); }
+    g.lineWidth = 2;
+    for (let i = 0; i < 90 * strength; i++) { const k = (t * 1.1 + hash(i, 31)) % 1, x = k * (W + 100) - 50, y = hash(i, 32) * H + Math.sin(t * 3 + i) * 4; g.strokeStyle = i % 3 ? 'rgba(120,70,30,.45)' : 'rgba(255,225,170,.6)'; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 20 + hash(i, 33) * 24, y + 2); g.stroke(); }
+  } else if (w === 'fog') {
+    for (let i = 0; i < 9; i++) { const x = ((hash(i, 41) * W + t * 10 * (1 + hash(i, 42))) % (W + 300)) - 150, y = hash(i, 43) * H; g.fillStyle = 'rgba(220,225,235,.13)'; g.beginPath(); g.ellipse(x, y, 170, 60, 0, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = 'rgba(200,205,215,.12)'; g.fillRect(0, 0, W, H);
+  } else if (w === 'ash') {
+    for (let i = 0; i < 50 * strength; i++) { const k = (t * 0.07 + hash(i, 51)) % 1, x = (hash(i, 52) * W + Math.sin(t * 0.8 + i) * 14) % W, y = k * H; circle(g, x, y, 1.3, i % 7 ? 'rgba(160,150,150,.7)' : `rgba(255,140,60,${0.8 * (1 - k)})`); }
+  }
+  g.restore();
+}
+
+// ---------------- night people ----------------
+// At night the wanderers go home and a few night owls come out.
+function nightNpcs(id) {
+  const f = G.flags;
+  const L = {
+    brightwater: [N(9, 13, 101, { hair: '#c8c0b0', style: 'bald', beard: true, body: '#3a3a5a', hat: 'cap' }, async () => say('Lamplighter\'s Watch', f.road_done ? 'Twelve lamps on the roads again. I walk out to the bridge each night just to look at them.' : 'Your father lit the roadside lamps every evening. Nobody\'s done it since. The roads are very dark, Arin.'), { name: 'Night watchman' })],
+    halden: [N(7, 15, 102, { style: 'long', body: '#2a3a5a', accent: '#c8a050' }, async () => say('Moonlit Fisher', hasItem('fishing_rod') ? 'The fish bite differently at night. Different fish, too, some say. I say: same fish, different mood.' : 'Night fishing is the only peace and quiet in this harbour.'), { name: 'Night fisher' })],
+    ironhold: [N(14, 9, 103, { ...LOOKS.guard, hat: 'cap' }, async () => say('Night Patrol', 'Mines run all night. Listen: hammers. The dwarves say the mountain sleeps better with someone tapping on it.'))],
+    frostmere: [N(10, 9, 104, { style: 'spiky', body: '#3a3a6a', accent: '#e8d070' }, async () => say('Stargazer Nils', f.lantern5 ? 'There — the Fifth Flame. You can see it with your bare eyes if you squint. I squint a lot.' : 'Clearest sky in the world, Frostmere. On a cloudless night you can count every star. I got to four thousand once.'))],
+    mirage: [N(8, 12, 105, { skin: '#a8724a', style: 'bun', body: '#3a2a5a', accent: '#e8c24a' }, async () => say('Night Market Vendor', 'The night market opens when the sand cools. Dates, lamps, stories. Mostly stories.'), { name: 'Night vendor' })],
+    aerie: [N(12, 12, 106, { body: '#5a6a8a', hat: 'cap' }, async () => say('Windwatcher', 'At night the wind sings in the mesas. Old Aerie folk say it\'s the Aurora, calling home.'))],
+    lastlight: []
+  };
+  return (L[id] || []).concat(cardNightNpcs(id));
+}
+
+'use strict';
+// ============================================================
+//  LANTERNS & LIES (1.9): a card game played against people around the world.
+//  Rules: a 3×3 board; each player brings 5 cards. Place a card on an empty
+//  square: every touching enemy card with a lower value flips to you. Flames
+//  give an edge: Ember beats Stone, Stone beats Tide, Tide beats Ember (+2 when
+//  attacking). Once per game you may play a card veiled (the Lie): it shows "?",
+//  captures nothing when played, and is revealed at the end, when it attacks
+//  everything around it. Most squares at the end wins.
+// ============================================================
+
+const FLAMES = { ember: { name: 'Ember', col: '#ff8a3a', beats: 'stone' }, stone: { name: 'Stone', col: '#c8a070', beats: 'tide' }, tide: { name: 'Tide', col: '#5ad0f0', beats: 'ember' }, dawn: { name: 'Dawn', col: '#ffe08a', beats: null } };
+// value, flame, and the monster (m) or hero (h) drawn on the card
+const CARDS = {
+  slime: { v: 1, f: 'tide', m: 'slime' }, bat: { v: 1, f: 'ember', m: 'bat' }, moonmoth: { v: 1, f: 'dawn', m: 'moonmoth' },
+  goblin: { v: 2, f: 'stone', m: 'goblin' }, wolf: { v: 2, f: 'ember', m: 'wolf' }, wisp: { v: 2, f: 'dawn', m: 'wisp' }, blueslime: { v: 2, f: 'tide', m: 'blueslime' },
+  harpy: { v: 3, f: 'dawn', m: 'harpy' }, sandcrab: { v: 3, f: 'stone', m: 'sandcrab' }, hobgoblin: { v: 3, f: 'stone', m: 'hobgoblin' }, firebat: { v: 3, f: 'ember', m: 'firebat' },
+  frostwolf: { v: 4, f: 'tide', m: 'frostwolf' }, snowimp: { v: 4, f: 'tide', m: 'snowimp' }, scorpion: { v: 4, f: 'stone', m: 'scorpion' }, cindersnake: { v: 4, f: 'ember', m: 'cindersnake' },
+  ogre: { v: 5, f: 'stone', m: 'ogre' }, wraith: { v: 5, f: 'dawn', m: 'wraith' }, seaserpent: { v: 5, f: 'tide', m: 'seaserpent' }, chimera: { v: 5, f: 'ember', m: 'chimera' },
+  hollowknight: { v: 6, f: 'dawn', m: 'hollowknight' }, gloomcap: { v: 6, f: 'stone', m: 'gloomcap' }, kestrel: { v: 6, f: 'stone', h: 'kestrel' }, embergolem: { v: 6, f: 'ember', m: 'embergolem' },
+  warden: { v: 7, f: 'tide', m: 'warden' }, vesper: { v: 7, f: 'dawn', m: 'vesper' }, lyra: { v: 7, f: 'ember', h: 'lyra' }, oswin: { v: 7, f: 'tide', h: 'oswin' },
+  leviathan: { v: 8, f: 'tide', m: 'leviathan' }, firstking: { v: 8, f: 'ember', m: 'firstking' }, selene: { v: 8, f: 'dawn', h: 'selene' }, arin: { v: 8, f: 'ember', h: 'arin' },
+  wyrm: { v: 9, f: 'dawn', m: 'wyrm' }, king: { v: 9, f: 'dawn', m: 'king' }, nereus: { v: 9, f: 'tide', m: 'nereus' }, crown: { v: 9, f: 'stone', m: 'crown' }, lampeater: { v: 9, f: 'ember', m: 'lampeater' }
+};
+const cardName = id => CARDS[id].h ? HEROES[CARDS[id].h].name : MONSTERS[CARDS[id].m].name;
+const STARTER_CARDS = ['slime', 'bat', 'goblin', 'wolf', 'wisp', 'blueslime', 'harpy'];
+// opponents: where they play (town, day or night, x, y), their deck and how carefully they think (0 = random, 1 = sharp)
+const CARD_FOES = {
+  tess: { name: 'Tess', town: 'brightwater', when: 'day', x: 10, y: 14, look: { style: 'bun', body: '#c8603a', accent: '#ffe9a8' }, deck: ['slime', 'bat', 'goblin', 'wolf', 'moonmoth'], skill: 0.2, line: 'Want a game of Lanterns & Lies? I never lie. Except when I do.' },
+  odo: { name: 'Sailor Odo', town: 'halden', when: 'night', x: 14, y: 12, look: 'sailor', deck: ['blueslime', 'harpy', 'sandcrab', 'seaserpent', 'frostwolf'], skill: 0.4, line: 'Cards by moonlight, eh? The sea\'s quiet. My wallet isn\'t.' },
+  gorrim: { name: 'Gorrim', town: 'ironhold', when: 'day', x: 7, y: 8, look: 'dwarf', deck: ['hobgoblin', 'sandcrab', 'scorpion', 'ogre', 'gloomcap'], skill: 0.5, line: 'Stone beats tide. Everyone knows that. Dwarves knew it first.' },
+  yuki: { name: 'Trapper Yuki', town: 'frostmere', when: 'night', x: 15, y: 12, look: { style: 'long', body: '#e8e8f0', accent: '#5a8ac0', hat: 'cap' }, deck: ['frostwolf', 'snowimp', 'wraith', 'warden', 'oswin'], skill: 0.6, line: 'Long nights up here. Long games. Sit.' },
+  nyx: { name: 'Madame Nyx', town: 'mirage', when: 'night', x: 14, y: 12, look: { skin: '#a8724a', hair: '#1a1020', style: 'long', body: '#4a1a5a', accent: '#e8c24a', robe: true }, deck: ['chimera', 'vesper', 'hollowknight', 'firstking', 'selene'], skill: 0.75, line: 'I read fortunes. With cards. Sometimes the fortune is that you lose.' },
+  lark: { name: 'Bookie Lark', town: 'aerie', when: 'day', x: 9, y: 12, look: { body: '#a03a2a', accent: '#e8c24a', hat: 'cap' }, deck: ['embergolem', 'kestrel', 'lyra', 'leviathan', 'arin'], skill: 0.8, line: 'Arena odds are boring. Cards — now cards are honest gambling.' },
+  dealer: { name: 'The Dealer', town: 'undermarket', when: 'any', x: 6, y: 9, look: { skin: '#c8a888', hair: '#e8e8e8', style: 'short', body: '#1a1a1a', accent: '#c83a3a' }, deck: ['wyrm', 'king', 'crown', 'firstking', 'vesper'], skill: 0.9, line: 'Everyone in the Undermarket lies. At least my table says so up front.' },
+  gambler: { name: 'Memory of a Gambler', town: 'nerith', when: 'any', x: 7, y: 12, look: { skin: '#c8e4ea', hair: '#e8f4ff', style: 'short', body: '#2a5a6a', accent: '#ffe9a8' }, deck: ['nereus', 'lampeater', 'leviathan', 'wyrm', 'selene'], skill: 1, line: 'I\'ve been dealt the same hand for a thousand years. Deal me a new one.' }
+};
+function foeNpc(id) { const o = CARD_FOES[id]; return N(o.x, o.y, 200 + Object.keys(CARD_FOES).indexOf(id), typeof o.look === 'string' ? LOOKS[o.look] : o.look, () => talkCardFoe(id), { name: o.name, mark: !G.flags['cardwin_' + id] && !!G.flags.q_cards }); }
+function cardDayNpcs(town) { return Object.keys(CARD_FOES).filter(k => CARD_FOES[k].town === town && CARD_FOES[k].when !== 'night').map(foeNpc); }
+function cardNightNpcs(town) { return Object.keys(CARD_FOES).filter(k => CARD_FOES[k].town === town && CARD_FOES[k].when !== 'day').map(foeNpc); }
+function cardCount() { return Object.keys(G.cards || {}).filter(k => G.cards[k] > 0).length; }
+function addCard(id) { G.cards = G.cards || {}; G.cards[id] = (G.cards[id] || 0) + 1; }
+
+async function talkCardFoe(id) {
+  const o = CARD_FOES[id], f = G.flags;
+  if (!f.q_cards) {
+    if (id !== 'tess') { await say(o.name, 'Lanterns & Lies? You need cards first. Tess in Brightwater hands out starter decks.'); return; }
+    await sayAll([
+      ['Tess', 'Ever played Lanterns & Lies? Everyone in the world plays it. Well — everyone who\'s bored.'],
+      ['Tess', 'Each of us lays down five cards on a 3-by-3 board. Lay a card next to mine with a bigger number and mine turns yours.'],
+      ['Tess', 'Flames matter: Ember beats Stone, Stone beats Tide, Tide beats Ember. That\'s +2 when you attack with the right flame.'],
+      ['Tess', 'And once a game you can tell a Lie: play a card face-down. It doesn\'t take anything when it lands, but at the end it flips over and takes everything weaker around it.'],
+      ['Tess', 'Here, a starter deck. Beat me, and the other players around the world will want a go. Win, and you take a card from their deck.']
+    ]);
+    for (const c of STARTER_CARDS) addCard(c);
+    f.q_cards = true; Audio_.sfx('chest'); toast('New quest: Lanterns & Lies');
+    await narrate(`Received ${STARTER_CARDS.length} Lanterns & Lies cards! Card players appear in towns, some only at night.`);
+    refreshEntities();
+  }
+  const c = await choose(o.name, o.line, ['Play', 'Rules', 'Not now'], 2);
+  if (c === 1) { await cardRules(); return; }
+  if (c !== 0) return;
+  const deck = await pickDeck();
+  if (!deck) return;
+  const r = await playCards(deck, o);
+  if (r === 'win') {
+    const pool = o.deck.filter(k => !(G.cards[k] > 0));
+    const prize = pool.length ? pick(pool) : null;
+    const first = !f['cardwin_' + id]; f['cardwin_' + id] = true;
+    if (prize) { addCard(prize); Audio_.sfx('chest'); await say(o.name, `Well played. Take one of mine: ${cardName(prize)}.`); await narrate(`Received the ${cardName(prize)} card! (${CARDS[prize].v} · ${FLAMES[CARDS[prize].f].name})`); }
+    else { const g = 200 + CARDS[o.deck[0]].v * 150; G.gold += g; Audio_.sfx('item'); await say(o.name, `You've already got every card I own. Here, have some gold instead: ${g}.`); }
+    if (first && Object.keys(CARD_FOES).every(k => f['cardwin_' + k]) && !f.cards_done) {
+      f.cards_done = true; addItem('jokers_lantern'); Audio_.sfx('chest');
+      await narrate('You have beaten every Lanterns & Lies player in the world! Received the Joker\'s Lantern! (Accessory: all stats +10, rare steals twice as likely)');
+    }
+  } else if (r === 'lose') await say(o.name, 'Ha! Again whenever you like. I\'ll still be here. I\'m always here.');
+  refreshEntities();
+}
+async function cardRules() {
+  await sayAll([
+    ['Rules', 'Each player brings 5 cards and takes turns laying one on the 3×3 board.'],
+    ['Rules', 'When you lay a card, every touching enemy card with a lower value flips to you. Ties flip nothing.'],
+    ['Rules', 'Ember beats Stone, Stone beats Tide, Tide beats Ember: +2 to the attacking card. Dawn has no edge, and nothing has an edge over Dawn.'],
+    ['Rules', 'The Lie: once a game, press Shift on a card to lay it veiled. It flips nothing when laid, but it is revealed at the end and flips everything weaker around it. A card that attacks a veiled card has to beat its real value.'],
+    ['Rules', 'When the board is full, the player who owns more squares wins.']
+  ]);
+}
+// choose five cards from the collection (Enter toggles, the run key fills with the strongest)
+function pickDeck() {
+  const ids = Object.keys(CARDS).filter(k => G.cards[k] > 0).sort((a, b) => CARDS[b].v - CARDS[a].v);
+  if (ids.length < 5) { narrate('You need at least five cards.'); return Promise.resolve(null); }
+  const sel = new Set(G.lastDeck ? G.lastDeck.filter(k => G.cards[k] > 0) : ids.slice(0, 5));
+  let i = 0, top = 0, fresh = true;
+  return UI.push({
+    update() {
+      if (fresh) { fresh = false; return; }   // ignore the key press that opened this screen
+      if (Input.p('up')) { i = (i + ids.length - 1) % ids.length; Audio_.sfx('cursor'); }
+      if (Input.p('down')) { i = (i + 1) % ids.length; Audio_.sfx('cursor'); }
+      if (Input.p('run')) { sel.clear(); ids.slice(0, 5).forEach(k => sel.add(k)); Audio_.sfx('cursor'); }
+      if (Input.p('ok')) {
+        if (sel.has(ids[i])) sel.delete(ids[i]); else if (sel.size < 5) sel.add(ids[i]); else Audio_.sfx('buzz');
+        if (sel.size === 5 && Input.h('ok')) { }
+      }
+      if (Input.p('cancel')) {
+        if (sel.size === 5) { G.lastDeck = [...sel]; UI.close(this, [...sel]); } else { Audio_.sfx('cancel'); UI.close(this, null); }
+      }
+      top = clamp(top, i - 9, i);
+    },
+    draw(g) {
+      g.fillStyle = 'rgba(4,6,20,.9)'; g.fillRect(0, 0, W, H);
+      drawWindow(g, 30, 20, 300, 440);
+      text(g, `Your deck  ${sel.size}/5`, 46, 30, { size: 16, bold: true, color: '#ffe9a8' });
+      ids.slice(top, top + 10).forEach((k, n) => {
+        const y = 62 + n * 36, on = sel.has(k), cur = top + n === i;
+        if (cur) rrect(g, 40, y - 4, 280, 32, 6, 'rgba(255,233,168,.15)');
+        text(g, (on ? '◆ ' : '◇ ') + cardName(k), 52, y + 4, { size: 14, color: on ? '#ffe9a8' : '#fff' });
+        text(g, `${CARDS[k].v} · ${FLAMES[CARDS[k].f].name}${G.cards[k] > 1 ? ` ×${G.cards[k]}` : ''}`, 308, y + 4, { size: 13, align: 'right', color: FLAMES[CARDS[k].f].col });
+      });
+      drawCard(g, ids[i], 400, 120, 1.5, 'p');
+      text(g, 'Enter: pick · Shift: strongest five · Esc: ' + (sel.size === 5 ? 'play' : 'back'), 480, 420, { size: 12, align: 'center', color: '#b8c4ee' });
+    }
+  });
+}
+// a card face (or back) at x, y; scale 1 = 76×100
+function drawCard(g, id, x, y, s = 1, owner = 'p', veiled = false, back = false) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  const col = owner === 'p' ? '#3a6ad0' : '#c03a4a';
+  if (back) {
+    rrect(g, 0, 0, 76, 100, 8, '#2a1a40', '#e8c24a', 2);
+    for (let i = 0; i < 4; i++) rrect(g, 8 + i * 4, 8 + i * 4, 60 - i * 8, 84 - i * 8, 6, null, 'rgba(232,194,74,.35)', 1);
+    text(g, '✦', 38, 38, { size: 22, align: 'center', color: '#e8c24a' });
+    g.restore(); return;
+  }
+  const c = CARDS[id], fl = FLAMES[c.f];
+  rrect(g, 0, 0, 76, 100, 8, veiled ? '#2a2a3a' : '#f4ecd8', col, 3);
+  if (veiled) { text(g, '?', 38, 30, { size: 34, bold: true, align: 'center', color: '#e8c24a' }); g.restore(); return; }
+  rrect(g, 4, 4, 68, 64, 5, rgba(fl.col, 0.35));
+  g.save(); g.beginPath(); g.rect(4, 4, 68, 64); g.clip();
+  if (c.h) drawChar(g, HEROES[c.h].look, 38, 62, 'down', 0, 0.85, null, 0);
+  else { const d = MONSTERS[c.m]; const sc = 0.62 / Math.max(1, monsterHeight(d) / 70, monsterWidth(d) / 80); drawMonster(g, d, 38, 64, { t: 0, scale: sc }); }
+  g.restore();
+  circle(g, 14, 14, 11, fl.col, OUT, 1.5);
+  text(g, String(c.v), 14, 6, { size: 16, bold: true, align: 'center', color: '#1a1020', shadow: false });
+  text(g, cardName(id).length > 12 ? cardName(id).slice(0, 11) + '…' : cardName(id), 38, 72, { size: 10, align: 'center', color: '#1a1020', shadow: false });
+  text(g, fl.name, 38, 85, { size: 9, align: 'center', color: shade(fl.col, -0.4), shadow: false });
+  g.restore();
+}
+
+// ---------------- the match ----------------
+const ADJ = [[1, 3], [0, 2, 4], [1, 5], [0, 4, 6], [1, 3, 5, 7], [2, 4, 8], [3, 7], [4, 6, 8], [5, 7]];
+function cardAttack(id, target) { const a = CARDS[id], d = CARDS[target]; return a.v + (FLAMES[a.f].beats === d.f ? 2 : 0) > d.v; }
+// lay a card; returns the squares it flipped (veiled cards flip nothing when laid)
+function layCard(board, cell, id, owner, veiled) {
+  board[cell] = { id, owner, veiled };
+  if (veiled) return [];
+  const flips = [];
+  for (const n of ADJ[cell]) { const b = board[n]; if (b && b.owner !== owner && cardAttack(id, b.id)) { b.owner = owner; b.veiled = false; flips.push(n); } }
+  return flips;
+}
+// the end of the game: veiled cards turn over and attack, in the order they were laid
+function revealLies(board) {
+  const flips = [];
+  board.forEach((b, cell) => {
+    if (!b || !b.veiled) return;
+    b.veiled = false;
+    for (const n of ADJ[cell]) { const t = board[n]; if (t && t.owner !== b.owner && cardAttack(b.id, t.id)) { t.owner = b.owner; flips.push(n); } }
+  });
+  return flips;
+}
+// the opponent's choice: flips now, minus how exposed the card is, with some noise for weaker players
+function cardAI(board, hand, veilLeft, skill) {
+  let best = null;
+  for (const id of hand) for (let cell = 0; cell < 9; cell++) {
+    if (board[cell]) continue;
+    let gain = 0, risk = 0;
+    for (const n of ADJ[cell]) {
+      const b = board[n];
+      if (!b) { risk += 10 - CARDS[id].v; continue; }
+      if (b.owner === 'p' && !b.veiled && cardAttack(id, b.id)) gain += 10;
+      if (b.owner === 'p' && b.veiled) risk += 3;
+    }
+    const score = gain - risk * 0.4 * skill - CARDS[id].v * 0.3 + Math.random() * (1 - skill) * 14;
+    if (!best || score > best.score) best = { id, cell, score, gain };
+  }
+  // tell a Lie with a strong card when it would flip nothing now
+  best.veil = veilLeft && best.gain === 0 && CARDS[best.id].v >= 6 && Math.random() < 0.6 * skill + 0.2;
+  return best;
+}
+function playCards(deck, foe) {
+  const board = Array(9).fill(null); confirm_ = 0;
+  const hands = { p: [...deck], o: [...foe.deck] };
+  const veil = { p: true, o: true };
+  let turn = Math.random() < 0.5 ? 'p' : 'o', sel = 0, cell = 4, phase = 'card', veilOn = false, wait_ = 0.9, flash = [], msg = turn === 'p' ? 'You go first.' : `${foe.name} goes first.`, result = null, msgT = 2;
+  const score = who => board.filter(b => b && b.owner === who).length;
+  CardGame.state = { board, hands, turn: () => turn, phase: () => phase, cell: () => cell, sel: () => sel };   // read-only view for the play-test
+  const finish = () => { flash = revealLies(board); result = score('p') > score('o') ? 'win' : 'lose'; msg = result === 'win' ? 'You win!' : `${foe.name} wins.`; msgT = 99; Audio_.sfx(result === 'win' ? 'levelup' : 'buzz'); phase = 'done'; };
+  const next = () => { if (board.every(Boolean)) { finish(); return; } turn = turn === 'p' ? 'o' : 'p'; wait_ = 0.8; if (turn === 'p') { sel = Math.min(sel, hands.p.length - 1); phase = 'card'; } };
+  let fresh = true;
+  return UI.push({
+    update(dt) {
+      dt = dt || 1 / 60; msgT -= dt;
+      if (fresh) { fresh = false; return; }
+      if (phase === 'done') { if (Input.p('ok') || Input.p('cancel')) UI.close(this, result); return; }
+      if (turn === 'o') {
+        wait_ -= dt; if (wait_ > 0) return;
+        const mv = cardAI(board, hands.o, veil.o, foe.skill);
+        if (mv.veil) veil.o = false;
+        hands.o.splice(hands.o.indexOf(mv.id), 1);
+        flash = layCard(board, mv.cell, mv.id, 'o', mv.veil); Audio_.sfx(flash.length ? 'hit' : 'cursor');
+        msg = mv.veil ? `${foe.name} lays a card face-down…` : flash.length ? `${foe.name} takes ${flash.length}!` : ''; msgT = 1.6;
+        next(); return;
+      }
+      if (phase === 'card') {
+        if (Input.p('left')) { sel = (sel + hands.p.length - 1) % hands.p.length; Audio_.sfx('cursor'); }
+        if (Input.p('right')) { sel = (sel + 1) % hands.p.length; Audio_.sfx('cursor'); }
+        if (Input.p('run') && veil.p) { veilOn = !veilOn; Audio_.sfx('cursor'); }
+        if (Input.p('ok')) { phase = 'cell'; cell = board[4] ? board.findIndex(b => !b) : 4; Audio_.sfx('ok'); }
+        if (Input.p('cancel')) { const c = confirm_ = (confirm_ || 0) + 1; if (c >= 2) { result = 'quit'; UI.close(this, 'quit'); } else { msg = 'Press Esc again to forfeit.'; msgT = 1.5; } }
+      } else if (phase === 'cell') {
+        const r = Math.floor(cell / 3), c = cell % 3;
+        if (Input.p('left') && c > 0) cell--; if (Input.p('right') && c < 2) cell++;
+        if (Input.p('up') && r > 0) cell -= 3; if (Input.p('down') && r < 2) cell += 3;
+        if (Input.p('cancel')) { phase = 'card'; Audio_.sfx('cancel'); }
+        else if (Input.p('ok')) {
+          if (board[cell]) { Audio_.sfx('buzz'); return; }
+          const id = hands.p.splice(sel, 1)[0];
+          const veiled = veilOn && veil.p; if (veiled) veil.p = false; veilOn = false;
+          flash = layCard(board, cell, id, 'p', veiled); Audio_.sfx(flash.length ? 'hit' : 'cursor');
+          msg = veiled ? 'You lay a card face-down. A Lie.' : flash.length ? `You take ${flash.length}!` : ''; msgT = 1.6;
+          next();
+        }
+      }
+    },
+    draw(g) {
+      g.fillStyle = '#120c20'; g.fillRect(0, 0, W, H);
+      const gr = g.createRadialGradient(W / 2, H / 2, 40, W / 2, H / 2, 380); gr.addColorStop(0, '#2a4a2a'); gr.addColorStop(1, '#0a140a'); g.fillStyle = gr; rrect(g, 150, 20, 340, 440, 18, null); g.fill();
+      const cx = (k) => 180 + (k % 3) * 96, cy = (k) => 40 + Math.floor(k / 3) * 140;
+      for (let k = 0; k < 9; k++) {
+        rrect(g, cx(k) - 6, cy(k) - 6, 88, 112, 8, 'rgba(0,0,0,.25)', phase === 'cell' && k === cell && turn === 'p' ? '#ffe9a8' : 'rgba(255,255,255,.12)', phase === 'cell' && k === cell ? 3 : 1);
+        const b = board[k];
+        if (b) { drawCard(g, b.id, cx(k), cy(k), 1, b.owner, b.veiled && b.owner === 'o', false); if (b.veiled && b.owner === 'p') text(g, 'veiled', cx(k) + 38, cy(k) + 90, { size: 10, align: 'center', color: '#c070ff' }); }
+        if (flash.includes(k)) { g.save(); g.globalAlpha = clamp(msgT, 0, 1) * 0.5; rrect(g, cx(k), cy(k), 76, 100, 8, '#fff'); g.restore(); }
+      }
+      // opponent's hand (backs) and score
+      text(g, foe.name, 70, 24, { size: 14, align: 'center', color: '#ff9a9a' });
+      hands.o.forEach((id, n) => drawCard(g, id, 34 + (n % 2) * 40, 48 + n * 46, 0.7, 'o', false, true));
+      text(g, String(score('o')), 70, 420, { size: 28, bold: true, align: 'center', color: '#ff9a9a' });
+      text(g, 'You', 570, 24, { size: 14, align: 'center', color: '#9ab8ff' });
+      hands.p.forEach((id, n) => { const on = n === sel && turn === 'p' && phase !== 'done'; drawCard(g, id, 520 + (n % 2) * 44 - (on ? 10 : 0), 48 + n * 50, on ? 0.72 : 0.6, 'p', false); if (on && veilOn) text(g, 'LIE', 548, 46 + n * 50, { size: 12, bold: true, color: '#c070ff' }); });
+      text(g, String(score('p')), 570, 420, { size: 28, bold: true, align: 'center', color: '#9ab8ff' });
+      if (msg && msgT > 0) { g.font = font(16); const w = g.measureText(msg).width + 40; drawWindow(g, (W - w) / 2, 210, w, 40); text(g, msg, W / 2, 220, { size: 16, align: 'center' }); }
+      const help = phase === 'done' ? 'Enter to continue' : turn !== 'p' ? `${foe.name} is thinking…` : phase === 'card' ? `←→ choose a card · Enter: lay it${veil.p ? ' · Shift: Lie' + (veilOn ? ' (on)' : '') : ''} · Esc×2: forfeit` : 'Arrows: choose a square · Enter: lay · Esc: back';
+      text(g, help, W / 2, 462, { size: 11, align: 'center', color: '#b8c4ee' });
+    }
+  });
+}
+let confirm_ = 0;
+const CardGame = { state: null };
+
+function cardQuests() {
+  const f = G.flags; if (!f.q_cards) return [];
+  const n = Object.keys(CARD_FOES).filter(k => f['cardwin_' + k]).length, tot = Object.keys(CARD_FOES).length;
+  return [{ title: 'Lanterns & Lies', giver: 'Tess, Brightwater', done: !!f.cards_done, reward: 'Joker\'s Lantern', desc: f.cards_done ? 'Every card player in the world has lost to you at least once.' : `Beat every card player: Tess (Brightwater), Sailor Odo (Port Halden, night), Gorrim (Ironhold), Trapper Yuki (Frostmere, night), Madame Nyx (Mirage, night), Bookie Lark (Aerie), the Dealer (the Undermarket) and someone in Nerith. (${n}/${tot} beaten · ${cardCount()}/${Object.keys(CARDS).length} cards)` }];
+}
+
+'use strict';
+// ============================================================
+//  THE SUNSET OPAL (1.9): a stealth heist in the Mirage palace at night.
+//  Guards walk fixed patrols and see 4 squares ahead, widening to a 3-square
+//  cone; walls and pillars block their sight. Get seen and you're thrown out.
+// ============================================================
+
+// # wall, o pillar (blocks sight), . floor, E the cellar grate (exit), V the vault
+const HEIST_MAP = [
+  '####################',
+  '#E.....#....#......#',
+  '#......#.o..#..o...#',
+  '#..o...#....#......#',
+  '#......###.###..o..#',
+  '#..................#',
+  '###.####....####.###',
+  '#......#....#......#',
+  '#.o....#.o..#....o.#',
+  '#......#....#......#',
+  '#......##..##......#',
+  '#..o...........V...#',
+  '#..................#',
+  '####################'
+];
+// patrols: waypoints walked in order (and looped); a guard takes one step every GUARD_STEP seconds
+const GUARD_STEP = 0.6;
+const HEIST_GUARDS = [
+  [[3, 5], [16, 5]],                       // the long hall, back and forth
+  [[9, 7], [9, 9], [10, 9], [10, 7]],      // the middle room
+  [[14, 1], [18, 1], [18, 3], [14, 3]],    // the east room
+  [[11, 12], [18, 12]]                     // in front of the vault
+];
+const HEIST_SOLID = new Set(['#', 'o']);
+function buildHeist() {
+  const tiles = HEIST_MAP.map(r => r.split(''));
+  return new GameMap({ id: 'heist', kind: 'heist', w: tiles[0].length, h: tiles.length, tiles, theme: 'tomb', name: 'The Palace Vaults', torches: new Set(['4,0', '15,0', '2,6', '17,6', '5,13', '14,13']) });
+}
+// expand a patrol into the square it stands on at each step
+function patrolPath(wp) {
+  const out = [];
+  const legs = wp.length === 2 ? [wp[0], wp[1], wp[0]] : [...wp, wp[0]];
+  for (let k = 0; k < legs.length - 1; k++) {
+    let [x, y] = legs[k]; const [x1, y1] = legs[k + 1];
+    while (x !== x1 || y !== y1) { out.push([x, y]); x += Math.sign(x1 - x); y += Math.sign(y1 - y); }
+  }
+  return out;
+}
+function guardAt(path, step) {
+  const n = path.length, i = ((step % n) + n) % n, [x, y] = path[i], [nx, ny] = path[(i + 1) % n];
+  const dir = nx > x ? 'right' : nx < x ? 'left' : ny > y ? 'down' : 'up';
+  return { x, y, dir };
+}
+// the squares a guard can see: 4 ahead, the cone widening to 3 wide from the 2nd square; solid squares stop sight
+function guardSight(map, g) {
+  const [dx, dy] = DIRS[g.dir], px = -dy, py = dx, seen = [];
+  const open = (x, y) => map.at(x, y) !== undefined && !HEIST_SOLID.has(map.at(x, y));
+  for (let d = 1; d <= 4; d++) {
+    const cx = g.x + dx * d, cy = g.y + dy * d;
+    if (!open(cx, cy)) break;
+    seen.push([cx, cy]);
+    if (d >= 2) for (const s of [-1, 1]) {
+      const sx = cx + px * s, sy = cy + py * s, bx = sx - dx, by = sy - dy;
+      if (open(sx, sy) && open(bx, by)) seen.push([sx, sy]);
+    }
+  }
+  return seen;
+}
+function heistEntities(m) {
+  const out = [];
+  const paths = HEIST_GUARDS.map(patrolPath);
+  paths.forEach((p, i) => { const g = guardAt(p, 0); out.push({ kind: 'guard', x: g.x, y: g.y, dir: g.dir, path: p, step: 0, look: { ...LOOKS.guard, skin: '#c98e62', hat: 'cap', accent: '#e8c24a' }, idx: i }); });
+  if (!hasItem('sunset_opal') && !G.flags.heist_done) out.push({ kind: 'chest', x: 15, y: 11, key: 'heist_opal', loot: 'sunset_opal', opened: false, opal: true });
+  return out;
+}
+const Heist = {
+  t: 0,
+  seen(m) { const s = new Set(); for (const e of m.entities) if (e.kind === 'guard') for (const [x, y] of guardSight(m, e)) s.add(x + ',' + y); return s; },
+  tick(m, dt) {
+    if (Script.running || UI.stack.length) return;
+    this.t += dt;
+    if (this.t >= GUARD_STEP) {
+      this.t -= GUARD_STEP;
+      for (const e of m.entities) if (e.kind === 'guard') {
+        const g = guardAt(e.path, e.step + 1);
+        if (g.x === G.x && g.y === G.y) continue;      // never walk into the player: the guard waits
+        e.step++; Object.assign(e, g);
+      }
+    }
+    this.check(m);
+  },
+  check(m) {
+    if (Script.running || Field.anim) return;
+    const px = G.x, py = G.y;
+    if (this.seen(m).has(px + ',' + py)) runScript(heistCaught);
+  }
+};
+async function heistCaught() {
+  const f = G.flags;
+  Audio_.sfx('buzz');
+  await say('Palace Guard', 'THIEF! In the vaults!');
+  f.heist_caught = (f.heist_caught || 0) + 1;
+  if (hasItem('sunset_opal')) addItem('sunset_opal', -1);
+  await narrate('The guards march you out through the servants\' gate and dump you in the street.');
+  await changeMap('mirage', HEIST_GATE.x, HEIST_GATE.y + 1, 'down');
+  if (inParty('kestrel')) await say(KE, f.heist_caught > 2 ? 'Third time\'s the charm. Or the fourth. Watch which way they\'re facing, and wait behind the pillars.' : 'Rule one: they only see what\'s in front of them. Rule two: pillars are your friends.');
+}
+async function heistExit() {
+  const f = G.flags;
+  if (!hasItem('sunset_opal')) { const c = await choose(null, 'The cellar grate. Leave the vaults empty-handed?', ['Leave', 'Stay'], 1); if (c !== 0) return; await changeMap('mirage', HEIST_GATE.x, HEIST_GATE.y + 1, 'down'); return; }
+  f.heist_out = true;
+  await changeMap('mirage', HEIST_GATE.x, HEIST_GATE.y + 1, 'down');
+  Audio_.sfx('chest');
+  await sayAll(inParty('kestrel') ? [[KE, 'In, out, not a single shout. Mags is going to cry.'], [OS, 'I would like it noted that I was against this.'], [KE, 'Noted, Father. Duly noted.']] : [['', 'You slip out through the cellar grate with the Sunset Opal under your coat.']]);
+  await narrate('Bring the Sunset Opal to Mags in the Undermarket.');
+}
+// the grate into the palace cellars, in Mirage (shown at night once Mags has asked)
+const HEIST_GATE = { x: 16, y: 6 };
+function heistTownEntities(m) {
+  const f = G.flags;
+  if (m.id !== 'mirage' || !f.q_heist || f.heist_done) return [];
+  return [{ kind: 'hatch', x: HEIST_GATE.x, y: HEIST_GATE.y, talk: async () => {
+    if (!isNight()) { await narrate('A grate into the palace cellars, right under a guard tower. Not in broad daylight. Come back after dark.'); return; }
+    if (hasItem('sunset_opal')) { await narrate('You already have the Opal. Take it to Mags.'); return; }
+    const c = await choose(null, 'The cellar grate is loose. Slip into the palace vaults?', ['Go in', 'Not yet'], 1);
+    if (c !== 0) return;
+    await changeMap('heist', 1, 2, 'down');
+    if (!f.heist_seen) { f.heist_seen = true; await sayAll([[KE, 'Four guards. Each one sees four steps ahead, wider the farther it goes. Walls and pillars block them.'], [KE, 'The vault is in the far corner. Grab the opal, come back to this grate. Don\'t get seen. Easy.'], [A, 'You said "easy" about the Undercity too.']]); toast('Red squares: what the guards can see'); }
+  } }];
+}
+async function heistStart() {
+  await sayAll([
+    ['Mags', 'Kes. A job, for old times. The Sultana\'s vault holds the Sunset Opal. The Guild\'s, a hundred years ago, before a sultan "borrowed" it.'],
+    [KE, 'You want me to rob a palace. With a priest in tow.'],
+    ['Mags', 'I want you to return stolen property to its rightful thieves. There\'s a loose cellar grate east of the palace in Mirage. Only at night.'],
+    [OS, 'I am going to pretend I did not hear any of this.']
+  ]);
+  G.flags.q_heist = true; toast('New quest: The Sunset Opal');
+  await narrate('Go to Mirage at night and find the loose cellar grate east of the palace.');
+}
+async function heistTurnIn() {
+  await sayAll([['Mags', 'Is that... it IS. Look at it. A century of Guild members cried over a painting of this rock.'], ['Mags', 'Take this. The Guild\'s finest cloak. Nobody\'s worn it since Vane got fat.']]);
+  addItem('sunset_opal', -1); addItem('night_cloak'); G.flags.heist_done = true; Audio_.sfx('chest');
+  await narrate('Received the Night Cloak! (Accessory: ATK +10, SPD +16, prevents blind and stop)');
+}
+function heistQuests() {
+  const f = G.flags; if (!f.q_heist) return [];
+  return [{ title: 'The Sunset Opal', giver: 'Mags, the Undermarket', done: !!f.heist_done, reward: 'Night Cloak', desc: f.heist_done ? 'The Opal is back with the Guild, and the palace never noticed.' : hasItem('sunset_opal') ? 'Bring the Sunset Opal to Mags in the Undermarket.' : 'At night, slip through the cellar grate east of the Mirage palace and steal the Sunset Opal without being seen.' + (f.heist_caught ? ` (caught ${f.heist_caught}×)` : '') }];
+}
+
+// ---------------- drawing ----------------
+function drawHeistTile(g, m, x, y, px, py, t) {
+  const c = m.at(x, y);
+  if (c === 'E' || c === 'V') { const save = m.tiles[y][x]; m.tiles[y][x] = '.'; drawDungeonTile(g, m, x, y, px, py, t); m.tiles[y][x] = save; }
+  else drawDungeonTile(g, m, x, y, px, py, t);
+  if (c === 'E') { rrect(g, px + 5, py + 6, 22, 20, 2, '#2a2420', OUT, 1.2); for (let i = 1; i < 4; i++) line(g, px + 5 + i * 5.5, py + 6, px + 5 + i * 5.5, py + 26, '#6a6050', 1.5); }
+  if (c === 'V') { g.save(); g.globalAlpha = 0.25 + 0.15 * Math.sin(t * 3); circle(g, px + 16, py + 16, 18, '#ff9a5a'); g.restore(); }
+}
+// the guards' sight, drawn as red squares; plus the vault's gloom
+function drawHeistSight(g, m, cx, cy, t) {
+  const gr = g.createRadialGradient(W / 2, H / 2, 80, W / 2, H / 2, 420); gr.addColorStop(0, 'rgba(10,8,30,.25)'); gr.addColorStop(1, 'rgba(10,8,30,.7)');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  const a = 0.22 + 0.06 * Math.sin(t * 6);
+  for (const e of m.entities) if (e.kind === 'guard') for (const [x, y] of guardSight(m, e)) { g.fillStyle = `rgba(255,60,60,${a})`; g.fillRect(x * TS - cx + 1, y * TS - cy + 1, TS - 2, TS - 2); }
 }
 
 'use strict';
@@ -8430,6 +9077,8 @@ function questList() {
   if (f.forgeMet) q.push({ title: 'Orrin\'s Forge', giver: 'Orrin, Ironhold', done: !!f.forge_done, reward: 'Orrin\'s Seal', desc: f.forge_done ? 'Orrin calls you family now. The forge is always hot for you.' : `Bring monster materials to Orrin and forge three pieces of gear. (${f.forged || 0}/3)` });
   q.push(...heartsQuests());
   q.push(...deepQuests());
+  q.push(...cardQuests());
+  q.push(...heistQuests());
   if (f.arenaMet) { const n = ARENA_CUPS.slice(0, 5).filter(c => f['cup_' + c.id]).length; q.push({ title: 'Arena Legend', giver: 'Arena Master, Aerie', done: !!f.cup_champion, reward: 'Lantern Crown', desc: f.cup_champion ? 'Grand Champions of the Aerie Arena!' : `Win all five cups at the Aerie Arena. (${n}/5 won)` }); }
   if (f.q_scholar) q.push({ title: 'Monster Scholar', giver: 'Sable, Frostmere', done: !!f.scholar_done, reward: 'Silk Ribbon', desc: f.scholar_done ? 'Your notes are in Sable\'s bestiary.' : `Record 30 different creatures in your bestiary, then visit Sable. (${seenCount()}/30)` });
   if (f.scholar_done) { const tot = Object.keys(MONSTERS).length, goal = f.codex45 ? tot : 45; q.push({ title: 'The Complete Bestiary', giver: 'Sable, Frostmere', done: !!f.codex_all, reward: f.codex45 ? 'Bestiary Seal' : 'Scholar\'s Monocle', desc: f.codex_all ? 'Every creature is recorded. Sable\'s book is finished.' : `Record ${f.codex45 ? 'every creature' : '45 creatures'}, then visit Sable. (${seenCount()}/${goal})` }); }
@@ -8520,7 +9169,7 @@ async function newGame(plus) {
   G.party = [];
   if (plus) { G.party.push({ ...G.carry.arin, status: {} }, { ...G.carry.lyra, status: {} }); healAll(); }
   else G.party = [makeMember('arin', 1), makeMember('lyra', 1)];
-  G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.splits = {}; G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
+  G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.splits = {}; G.clock = CLOCK_START; if (!plus) { G.cards = {}; G.lastDeck = null; } G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
   G.seen = plus ? plus.seen : {}; G.killed = plus ? plus.killed : {};
   if (plus) G.flags.ngplus = plus.ng;
   if (!plus) G.slot = SAVE_SLOTS.find(s => !hasSave(s)) || '1';

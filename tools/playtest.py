@@ -7,7 +7,7 @@ Usage:
     python3 tools/playtest.py [index.html] [outdir] [scenario ...]
     python3 tools/playtest.py index.html /tmp/shots chapter systems
 
-Scenarios: chapter, orun, systems, newgame, comfort, hearts, depth, drowned, platform, readme (default: all but readme).
+Scenarios: chapter, orun, systems, newgame, comfort, hearts, depth, drowned, platform, living, readme (default: all but readme).
 Needs: pip install playwright && playwright install chromium
        (or set CHROME=/path/to/chrome to use an installed browser).
 See docs/TESTING.md for what each scenario covers."""
@@ -17,7 +17,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -594,6 +594,105 @@ async def main():
             await ctx2.set_offline(True); await pg2.reload(); await pg2.wait_for_timeout(1500)
             check(await pg2.evaluate("typeof Trophies === 'object' && document.title.startsWith('Lanternfall')"), 'the game reloads offline')
             await ctx2.close(); srv.shutdown()
+
+        if want('living'):
+            def check(ok, label):
+                print(('ok   ' if ok else 'FAIL ') + label)
+                if not ok: errs.append('check failed: ' + label)
+            s = json.loads(json.dumps(POST))
+            s['flags'].update({k: True for k in ['isle', 'q_road', 'road_done', 'q_debt', 'debt_done', 'boss_abyss']})
+            s['mapId'] = 'brightwater'; s['x'] = 11; s['y'] = 12
+            await boot(s); await until_idle()
+            # --- day and night ---
+            check(await ev("dayPhase() === 'day' && !isNight()"), 'a new clock starts in the morning')
+            await ev("G.clock = 22 * 60; Field.enter('brightwater', 11, 12, 'down')"); await pg.wait_for_timeout(600)
+            check(await ev("isNight() && Field.map.entities.some(e => e.name === 'Night watchman') && !Field.map.entities.some(e => e.wander)"), 'at night the wanderers go home and the night watchman is out')
+            await shot('63_brightwater_night')
+            await ev("G.clock = 22 * 60; G.onShip = false; Field.enter('world', 14, 40, 'down')"); await pg.wait_for_timeout(500); await shot('64_world_night')
+            await ev("const r = Math.random; Math.random = () => 0.1; G.encSteps = 0; Field.encounterCheck(1); Math.random = r")
+            await pg.wait_for_timeout(2200)
+            check(await ev("!!G.scene.enemies && G.scene.enemies.every(e => NIGHT_ENC.r1.some(g => g.g.includes(e.id)) || NIGHT_ENC.r2.some(g => g.g.includes(e.id)))"), 'night battles come from the night tables')
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110)
+            check(await ev("G.flags.night_win === true"), 'winning at night is noted (Night Owl)')
+            await ev("G.clock = 10 * 60; Field.enter('in:brightwater:inn', 9, 4, 'up')")
+            await run("await innStay('brightwater', 10)", 400); await press('Enter', 1, 300); await press('ArrowDown', 1, 150); await press('Enter', 1, 300); await until_idle()
+            tod = await ev("[timeOfDay(), dayNumber()]")
+            check(abs(tod[0] - 21 * 60) < 10 and tod[1] == 1, f'an inn can wake you at nightfall (woke {tod})')
+            # --- weather ---
+            await ev("window.__findClock = (reg, y, want) => { for (let c = 0; c < 1440 * 60; c += 360) { G.clock = c; if (regionWeather(reg, y) === want) { G.clock = c + 13 * 60 % 360 + 600; return regionWeather(reg, y) === want ? G.clock : c; } } return -1; }")
+            await ev("(() => { for (let c = 10 * 60; c < 1440 * 60; c += 360) { G.clock = c; if (worldWeatherAt(14, 40) === 'rain' && !isNight()) return; } })(); Field.enter('world', 14, 40, 'down')")
+            await pg.wait_for_timeout(500); await shot('65_world_rain')
+            check(await ev("currentWeather() === 'rain'"), 'the weather is rolled per region from the clock')
+            await run("await startBattle(['slime', 'slime'])", 2400); await shot('66_battle_rain')
+            check(await ev("G.scene.weather === 'rain' && weatherMult('rain', 'water') === 1.25 && weatherMult('rain', 'fire') === 0.75 && G.scene.magBoost(BP()[1], 'bolt') >= 1.25"), 'rain strengthens water and lightning, weakens fire')
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110)
+            await ev("(() => { for (let c = 10 * 60; c < 1440 * 60; c += 360) { G.clock = c; if (worldWeatherAt(30, 8) === 'snow' && !isNight()) return; } })(); Field.enter('frostmere', 11, 15, 'up')")
+            await pg.wait_for_timeout(600); await shot('67_frostmere_snow')
+            check(await ev("currentWeather() === 'snow'"), 'Frostmere gets snow')
+            await ev("(() => { for (let c = 10 * 60; c < 1440 * 60; c += 360) { G.clock = c; if (worldWeatherAt(80, 43) === 'sand' && !isNight()) return; } })(); G.onShip = false; Field.enter('world', 80, 43, 'down')")
+            await pg.wait_for_timeout(500); await shot('68_world_sandstorm')
+            check(await ev("currentWeather() === 'sand' && weatherMiss('sand') === 0.15"), 'the Sunscar gets sandstorms')
+            await ev("G.clock = 10 * 60; Field.enter('world', 14, 40, 'down')")
+            # --- berserk and stop ---
+            await run("await startBattle(['ogre'], { weather: 'clear' })", 2400)
+            a0 = await ev("G.scene.memberAtk(0)")
+            await ev("applyItemEffect('rage_tonic', BP()[0], G.scene, 0)")
+            check(await ev(f"BP()[0].status.berserk === 3 && Math.abs(G.scene.memberAtk(0) - {a0} * 1.5) < 0.01"), 'Rage Tonic berserks: ATK ×1.5')
+            await ev("G.scene.enemies[0].status.stop = 2; window.__hp = BP().map(m => m.hp).join(); window.__r = G.scene.enemyAct(G.scene.enemies[0])")
+            await pg.wait_for_timeout(900)
+            check(await ev("BP().map(m => m.hp).join() === window.__hp"), 'a stopped enemy loses its turn')
+            await shot('69_battle_statuses')
+            await ev("BP()[0].status = {}; G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110)
+            check(await ev("spellsOf(G.party.find(m => m.id === 'selene')).includes('stop') && MONSTERS.deepgazer.acts.some(a => a.a === 'e_stop')"), 'Selene learns Stop; deep gazers cast it')
+            # --- Lanterns & Lies ---
+            check(await ev("cardAttack('wolf', 'goblin') && !cardAttack('goblin', 'wolf') && cardAttack('slime', 'bat') && !cardAttack('bat', 'slime')"), 'flames: ember beats stone, tide beats ember (+2)')
+            check(await ev("(() => { const b = Array(9).fill(null); layCard(b, 0, 'goblin', 'o', false); const f1 = layCard(b, 1, 'arin', 'p', true); const f2 = revealLies(b); return f1.length === 0 && f2.length === 1 && b[0].owner === 'p'; })()"), 'a Lie flips nothing when laid, then strikes at the end')
+            await ev("G.clock = 10 * 60; Field.enter('brightwater', 10, 13, 'down')"); await pg.wait_for_timeout(400)
+            check(await ev("Field.map.entities.some(e => e.name === 'Tess')"), 'Tess plays cards in Brightwater by day')
+            await run("await talkCardFoe('tess')", 400)
+            for i in range(30):
+                if await ev("(() => { const t = UI.stack[UI.stack.length - 1]; return !!t && Array.isArray(t.choices) && t.choices.includes('Play') && t.done(); })()"): break
+                await press('Enter', 1, 160)
+            check(await ev("cardCount() === 7 && G.flags.q_cards"), 'Tess hands out a 7-card starter deck')
+            await press('Enter', 1, 400)   # Play
+            await pg.wait_for_timeout(300); await shot('70_card_deck'); await press('Escape', 1, 400)   # accept the five strongest
+            for i in range(200):
+                st = await ev("CardGame.state && UI.stack.length ? [CardGame.state.turn(), CardGame.state.phase(), CardGame.state.cell(), CardGame.state.board.findIndex(b => !b)] : null")
+                if not st or st[1] == 'done': break
+                if st[0] != 'p': await pg.wait_for_timeout(200); continue
+                if st[1] == 'card': await press('Enter', 1, 150); continue
+                cur, tgt = st[2], st[3]
+                if cur // 3 < tgt // 3: await press('ArrowDown', 1, 60)
+                elif cur // 3 > tgt // 3: await press('ArrowUp', 1, 60)
+                elif cur % 3 < tgt % 3: await press('ArrowRight', 1, 60)
+                elif cur % 3 > tgt % 3: await press('ArrowLeft', 1, 60)
+                else: await press('Enter', 1, 200)
+                if i == 6: await shot('71_card_match')
+            await pg.wait_for_timeout(400); await shot('72_card_result')
+            check(await ev("CardGame.state.phase() === 'done' && CardGame.state.board.every(Boolean)"), 'a full match plays out by keyboard')
+            await until_idle(40)
+            # --- the heist ---
+            await run("await talkMags()", 300); await until_idle()
+            check(await ev("G.flags.q_heist"), 'Mags asks Kestrel for a job')
+            await ev("G.clock = 22 * 60; Field.enter('mirage', 16, 7, 'up')"); await pg.wait_for_timeout(300)
+            await press('Enter', 1, 300); await press('Enter', 1, 400); await until_idle()
+            check(await ev("Field.map.id === 'heist'"), 'the cellar grate opens at night')
+            await pg.wait_for_timeout(700); await shot('73_heist')
+            await ev("const g = Field.map.entities.find(e => e.kind === 'guard' && e.idx === 0); const [x, y] = guardSight(Field.map, g)[1]; G.x = x; G.y = y; Heist.check(Field.map)")
+            await until_idle()
+            check(await ev("Field.map.id === 'mirage' && G.flags.heist_caught === 1"), 'being seen gets you thrown out')
+            await ev("addItem('sunset_opal'); Field.enter('heist', 1, 2, 'up')"); await press('ArrowUp', 1, 500); await until_idle()
+            check(await ev("Field.map.id === 'mirage' && G.flags.heist_out"), 'leaving by the grate with the opal')
+            await run("await talkMags()", 300); await until_idle()
+            await pg.wait_for_timeout(700)
+            hv = await ev("[!!G.flags.heist_done, hasItem('night_cloak'), !!Trophies.got.heist, Field.map.id, G.flags.heist_out, hasItem('sunset_opal')]")
+            check(hv[:3] == [True, True, True], f'Mags pays with the Night Cloak; Ghost of Mirage {hv}')
+            sol = await ev("(() => {\n// heist: time-expanded search, up to 3 player steps per guard step\n  const m = buildHeist(); const paths = HEIST_GUARDS.map(patrolPath);\n  const L = paths.reduce((a, p) => { const g = (x, y) => y ? g(y, x % y) : x; return a * p.length / g(a, p.length); }, 1);\n  const guardsAt = t => paths.map(p => guardAt(p, t));\n  const seenAt = []; for (let t = 0; t < L; t++) { const s = new Set(); const gs = guardsAt(t); for (const g of gs) { s.add(g.x + ',' + g.y); for (const [x, y] of guardSight(m, g)) s.add(x + ',' + y); } seenAt.push(s); }\n  const walk = (x, y) => m.at(x, y) !== undefined && !HEIST_SOLID.has(m.at(x, y));\n  const solve = (sx, sy, tx, ty) => {\n    const key = (x, y, t) => x + ',' + y + ',' + t; const vis = new Set([key(sx, sy, 0)]); let fr = [[sx, sy, 0]]; let steps = 0;\n    while (fr.length && steps < L * 3) {\n      const nx = [];\n      for (const [x, y, t] of fr) {\n        const t1 = (t + 1) % L;\n        // up to 3 moves during this guard step, each square must be unseen now; the final square unseen after the guards move\n        let reach = new Set([x + ',' + y]), layer = [[x, y]];\n        for (let k = 0; k < 3; k++) { const nl = []; for (const [a, b] of layer) for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) { const p = [a + dx, b + dy], s = p.join(); if (!reach.has(s) && walk(...p) && !seenAt[t].has(s) && !(p[0] === 15 && p[1] === 11 && !(tx === 15 && ty === 11))) { reach.add(s); nl.push(p); } } layer = nl; }\n        for (const s of reach) { const [a, b] = s.split(',').map(Number);\n          if (seenAt[t1].has(s)) continue;\n          if (Math.abs(a - tx) + Math.abs(b - ty) <= 1 && !(a === tx && b === ty)) return true;\n          const k2 = key(a, b, t1); if (!vis.has(k2)) { vis.add(k2); nx.push([a, b, t1]); } }\n      }\n      fr = nx; steps++;\n    }\n    return false;\n  };\n  return [solve(1, 2, 15, 11), solve(16, 11, 1, 1)];\n})()")
+            check(sol == [True, True], f'the heist has an unseen route in and out ({sol})')
+            # --- save keeps the clock and the cards ---
+            await ev("G.clock = 3000; saveGame('2'); G.clock = 0; G.cards = {}; loadGame('2')")
+            cv = await ev("[G.clock, cardCount()]")
+            check(abs(cv[0] - 3000) < 1 and cv[1] >= 7, f'the clock and the card collection are saved {cv}')
 
         print('ERRORS:', len(errs))
         for e in errs[:30]: print('  ', e)

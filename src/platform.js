@@ -113,6 +113,10 @@ const TROPHIES = [
   { id: 'lv50', name: 'Fifty', desc: 'Raise a hero to level 50.', test: () => anyHero(m => m.level >= MAX_LEVEL) },
   { id: 'board', name: 'Every Lamp Lit', desc: 'Light a hero\'s whole Lantern Board.', test: () => anyHero(m => (m.board || []).length >= Object.keys(BOARD_NODES).length - 1) },
   { id: 'ngplus', name: 'Once More, With Feeling', desc: 'Start New Game+.', test: f => f.ngplus },
+  { id: 'night', name: 'Night Owl', desc: 'Win a battle at night.', test: f => f.night_win },
+  { id: 'cards', name: 'Card Shark', desc: 'Beat every Lanterns & Lies player.', test: f => f.cards_done },
+  { id: 'collector', name: 'Full Deck', desc: 'Collect every Lanterns & Lies card.', test: () => !!G.cards && Object.keys(CARDS).every(k => G.cards[k] > 0) },
+  { id: 'heist', name: 'Ghost of Mirage', desc: '???', secret: 'Steal the Sunset Opal without being caught.', test: f => f.heist_done },
   // speed
   { id: 'speed', name: 'Lamplighter\'s Dash', desc: 'Finish the story in under 5 hours of play time.', test: f => f.ending && G.splits && G.splits.ending && G.splits.ending < 5 * 3600 }
 ];
@@ -121,15 +125,18 @@ const Trophies = {
   load() { try { this.got = JSON.parse(localStorage.getItem(TROPHY_KEY) || '{}') || {}; } catch (e) { this.got = {}; } },
   save() { try { localStorage.setItem(TROPHY_KEY, JSON.stringify(this.got)); } catch (e) { } },
   count() { return TROPHIES.filter(t => this.got[t.id]).length; },
-  give(id) {
-    if (this.got[id]) return;
-    const t = TROPHIES.find(x => x.id === id); if (!t) return;
+  give(id, quiet) {
+    if (this.got[id]) return false;
+    const t = TROPHIES.find(x => x.id === id); if (!t) return false;
     this.got[id] = Date.now(); this.save();
-    Audio_.sfx('levelup'); toast(`🏆 ${t.name}`);
+    if (!quiet) { Audio_.sfx('levelup'); toast(`🏆 ${t.name}`); }
+    return true;
   },
   check() {
-    const f = G.flags || {};
-    for (const t of TROPHIES) if (!this.got[t.id]) { let ok = false; try { ok = !!t.test(f); } catch (e) { } if (ok) this.give(t.id); }
+    const f = G.flags || {}, now = [];
+    for (const t of TROPHIES) if (!this.got[t.id]) { let ok = false; try { ok = !!t.test(f); } catch (e) { } if (ok) now.push(t.id); }
+    if (now.length === 1) this.give(now[0]);
+    else if (now.length > 1) { now.forEach(id => this.give(id, true)); Audio_.sfx('levelup'); toast(`🏆 ${now.length} trophies earned`); }   // e.g. loading an older save
   }
 };
 Trophies.load();

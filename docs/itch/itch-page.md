@@ -36,12 +36,14 @@ You are Arin, the young lamplighter of Brightwater. When the Ember Lantern goes 
 - **Chapter VI: The Crownless King**: a post-game story on an island that rises from the sea after the credits
 - **Hearts of the Lamplighters**: a personal quest for every hero, each ending in a **Limit** super move and an ultimate weapon
 - **Walk inside every building**: shopkeepers behind counters, inns, homes and a palace, plus barrels and pots to search for hidden treasure
-- **75 monsters** and **15 boss battles**, including two two-phase finales, a sea monster, a forgotten king, an optional superboss dragon and a solo duel
-- **Fishing** (13 fish) and **forging** (9 recipes from monster materials)
-- **21 side quests**, buried **treasure maps**, a **6-cup Arena**, a **bestiary**, a **world map**, 42 accessories, a **Lantern Board** for every hero, **cooking**, and **New Game+**
-- **Play anywhere**: in the browser, installed as an offline app from [cptnope.github.io/Laternfall](https://cptnope.github.io/Laternfall/), or as a Windows, macOS or Linux download. **30 trophies**, a **speedrun timer**, and save transfer between devices.
+- **94 monsters** and **17 boss battles**, including two two-phase finales, a sea monster, a forgotten king, an optional superboss dragon, a solo duel, a drowned king and a secret superboss
+- **Fishing** (13 fish) and **forging** (12 recipes from monster materials)
+- **A living world**: day and night with night-only monsters and people, and regional weather that changes battles
+- ***Lanterns & Lies***, a card game against eight players, and a night **heist** past patrolling guards
+- **23 side quests**, buried **treasure maps**, a **6-cup Arena**, a **bestiary**, a **world map**, 46 accessories, a **Lantern Board** for every hero, **cooking**, and **New Game+**
+- **Play anywhere**: in the browser, installed as an offline app from [cptnope.github.io/Laternfall](https://cptnope.github.io/Laternfall/), or as a Windows, macOS or Linux download. **34 trophies**, a **speedrun timer**, and save transfer between devices.
 - **Comfortable to play**: 3 save slots and auto-save, battle speed up to 4×, repeat-last-turn, gamepad support, rebindable keys, large text and high contrast, a dialogue log
-- An original chiptune soundtrack of 18 tracks and a full ending with an epilogue for every hero
+- An original chiptune soundtrack of 21 tracks and a full ending with an epilogue for every hero
 
 ### Controls
 | | Keyboard | Touch | Gamepad |

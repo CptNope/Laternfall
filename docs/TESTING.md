@@ -72,6 +72,7 @@ The exit code is `0` when there were no errors and `1` otherwise, so it can gate
 | `depth` | The 1.6 systems from a Lv 45 save at the Ironhold inn (seeded as a 1.x save, so it also tests the v1→v3 migration) | 19 named checks: 16 Embers each after migration; lighting Vigor with the keyboard; Counter and MP Saver; Vigor's +10% HP; cooking Grilled Trout at the inn and its +12% ATK; fire healing a Magma Slime; Haste and Slow turn speed; the meal counting down; Vane's phase change and its announcement; a rare steal; Sable's two rewards; the board and meal surviving save/load. A failed check counts as an error | `42`–`47` |
 | `drowned` | 1.7 from a post-game save in Port Halden (Oswin's quest done) | 22 named checks: Wenna's chart; Brann's bell and its cost; diving onto the sea floor below the spot; entering Nerith; the palace staying shut until Ysolde; Nereus, the Crown and the Rift opening; the Tide and Tidesong; surfacing at another spot; digging map 1; map drops; Old Ivy and a moth ride with no battles; the Undermarket in and out; black-market prices; a save on the sea floor | `48`–`57` |
 | `platform` | 1.8 from a fresh start and a post-game save | 13 named checks: trophies unlocking from flags and stored outside the slots; Light Fingers from a rare steal; pre-1.8 saves marking earlier splits unknown; a split's time and delta; play time counting in battle; the battery saver's frame rate; save export, import and refusing a foreign file; and, over a local web server, the service worker taking control, the manifest parsing and an offline reload | `58`–`62` |
+| `living` | 1.9 from a fresh start and a post-game save | 26 named checks: the clock running and saving; dusk and night; the inn's *Stay until night*; night encounters and night-only NPCs; weather rolling by region and changing fire and water damage in battle; Berserk and Stop on heroes and enemies, the charms preventing them and bosses ignoring Stop; Tess's starter deck, the deck screen and a full card game with a Lie; Mags's job, the night-only hatch, being caught by a guard, a search proving the vault has an unseen route in and out, the opal and the Night Cloak | `63`–`73` |
 | `readme` | Takes clean screenshots for the README | — | Lastlight, Ashen Isle, Abyss, Hollow Crown, fishing |
 
 ```mermaid
@@ -225,14 +226,14 @@ tools/check_mermaid.sh README.md ROADMAP.md CHANGELOG.md docs/*.md
 
 1. builds the game and fails if `index.html` doesn't match `src/` (someone forgot to run `build.py`);
 2. regenerates the game guide and fails if `docs/GAME_GUIDE.md` is out of date;
-3. also checks `manifest.webmanifest` and `sw.js` match the build, then runs the `chapter`, `systems`, `newgame`, `comfort`, `hearts`, `depth`, `drowned` and `platform` scenarios, failing on any JavaScript error or failed check;
+3. also checks `manifest.webmanifest` and `sw.js` match the build, then runs the `chapter`, `systems`, `newgame`, `comfort`, `hearts`, `depth`, `drowned`, `platform` and `living` scenarios, failing on any JavaScript error or failed check;
 4. uploads the screenshots as a `playtest-screenshots` artifact.
 
 ```mermaid
 flowchart LR
     PR[Pull request] --> B[python3 build.py<br/>git diff index.html]
     B --> GG[gentables.py<br/>git diff GAME_GUIDE.md]
-    GG --> PT[playtest.py<br/>5 scenarios]
+    GG --> PT[playtest.py<br/>9 scenarios]
     PT --> A[(screenshots artifact)]
     PT -->|any JS error| X[❌ fail]
     PT -->|ERRORS: 0| OK[✅ pass]

@@ -11,6 +11,9 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 - [Walkthrough](#walkthrough)
 - [Hearts of the Lamplighters](#hearts-of-the-lamplighters)
 - [The Drowned Kingdom](#the-drowned-kingdom)
+- [Day, night and weather](#day-night-and-weather)
+- [Lanterns & Lies](#lanterns--lies)
+- [The Sunset Opal](#the-sunset-opal)
 - [The world](#the-world)
 - [Towns, inns and shops](#towns-inns-and-shops)
 - [Dungeons](#dungeons)
@@ -202,6 +205,82 @@ Once all twelve roadside lamps are lit (Arin's quest), talk to **Old Ivy** in Br
 
 ---
 
+## Day, night and weather
+
+Added in 1.9. A clock runs while you explore: one real second is one game minute, so a day lasts 24 minutes. The menu shows the day, the time and the weather where you are.
+
+```mermaid
+flowchart LR
+    D[Dawn<br/>5:30–7:00] --> Day[Day<br/>7:00–19:00] --> K[Dusk<br/>19:00–20:30] --> N[Night<br/>20:30–5:30] --> D
+```
+
+**At night** the sky darkens (lamps, braziers and windows glow), the townsfolk who wander go home, and a few night owls come out: a watchman in Brightwater, a fisher in Port Halden, a stargazer in Frostmere, a vendor in Mirage, and some of the card players. Half of the world's random battles come from night tables (see [Monsters by area](#monsters-by-area)), with five creatures you only meet after dark. Winning one earns the Night Owl trophy.
+
+**Passing time.** An inn wakes you at 7:00, or at 21:00 if you choose **Stay until night**. A Tent moves the clock on 8 hours.
+
+**Weather** is rolled for each region every six game hours, so it changes four times a day. It shows on the world map and in towns, and it changes battles fought there:
+
+| Weather | Where | In battle |
+| --- | --- | --- |
+| Rain | Western continent, the northern lowlands, the open sea | Water and lightning +25%, fire −25% (for both sides) |
+| Snow | The snowfields around Frostmere (about half the time) | Ice +25%, fire −25% |
+| Sandstorm | The Sunscar Desert (about a third of the time) | Physical attacks miss 15% more often |
+| Fog | The Isle of Dusk (half the time), sometimes the western continent | Physical attacks miss 10% more often |
+| Ashfall | The Ashen Isle, always | Fire +25%, water −25% |
+
+The sky valley of Aerie sits above the weather. There's no weather indoors, underground, under the sea or in the air.
+
+---
+
+## Lanterns & Lies
+
+A card game played against people around the world. Tess in Brightwater (by day) explains it and gives you a 7-card starter deck.
+
+**Rules.** Each player brings 5 cards and takes turns laying one on a 3×3 board. When you lay a card, every touching enemy card with a lower value flips to you; ties flip nothing. Flames give an edge to the attacker: **Ember beats Stone, Stone beats Tide, Tide beats Ember** (+2). Dawn has no edge, and nothing has an edge over it. Whoever owns more of the nine squares at the end wins.
+
+**The Lie.** Once a game, press **Shift** on a card to lay it face-down. A veiled card flips nothing when it's laid. At the end of the game it turns over and flips everything weaker around it. A card that attacks a veiled card has to beat its real value, which the attacker can't see.
+
+**Winning** takes one card from your opponent's deck that you don't have yet (or gold, once you have them all). Beat every player for the **Joker's Lantern** (all stats +10, rare steals twice as likely). Collecting all 36 cards earns the Full Deck trophy.
+
+**Choosing a deck:** Enter picks or drops a card, Shift takes your five strongest, Esc starts the game once five are picked. The game remembers your last deck.
+
+| Player | Where | When | Deck | Skill |
+| --- | --- | --- | --- | --- |
+| **Tess** | Brightwater | Day | Green Slime 1, Cave Bat 1, Goblin 2, Wild Wolf 2, Moonmoth 1 | 20% |
+| **Sailor Odo** | Port Halden | Night | Gel Slime 2, Harpy 3, Sand Crab 3, Sea Serpent 5, Frost Wolf 4 | 40% |
+| **Gorrim** | Ironhold | Day | Hobgoblin 3, Sand Crab 3, Death Scorpion 4, Ogre 5, Gloomcap 6 | 50% |
+| **Trapper Yuki** | Frostmere | Night | Frost Wolf 4, Snow Imp 4, Shade Wraith 5, Drowned Warden 7, Oswin 7 | 60% |
+| **Madame Nyx** | Mirage | Night | Chimera 5, Vesper 7, Hollow Knight 6, Ozymar, the First King 8, Selene 8 | 75% |
+| **Bookie Lark** | Aerie | Day | Ember Golem 6, Kestrel 6, Lyra 7, Leviathan 8, Arin 8 | 80% |
+| **The Dealer** | The Undermarket | Any time | Astral Wyrm 9, The Hollow King 9, The Hollow Crown 9, Ozymar, the First King 8, Vesper 7 | 90% |
+| **Memory of a Gambler** | Nerith | Any time | Nereus, the Drowned King 9, The Lamp-Eater 9, Leviathan 8, Astral Wyrm 9, Selene 8 | 100% |
+
+Skill is how carefully a player thinks: low-skill players sometimes make careless moves.
+
+| Value | Cards |
+| --- | --- |
+| 1 | Green Slime (Tide), Cave Bat (Ember), Moonmoth (Dawn) |
+| 2 | Goblin (Stone), Wild Wolf (Ember), Will-o-Wisp (Dawn), Gel Slime (Tide) |
+| 3 | Harpy (Dawn), Sand Crab (Stone), Hobgoblin (Stone), Fire Bat (Ember) |
+| 4 | Frost Wolf (Tide), Snow Imp (Tide), Death Scorpion (Stone), Cinder Serpent (Ember) |
+| 5 | Ogre (Stone), Shade Wraith (Dawn), Sea Serpent (Tide), Chimera (Ember) |
+| 6 | Hollow Knight (Dawn), Gloomcap (Stone), Kestrel (Stone), Ember Golem (Ember) |
+| 7 | Drowned Warden (Tide), Vesper (Dawn), Lyra (Ember), Oswin (Tide) |
+| 8 | Leviathan (Tide), Ozymar, the First King (Ember), Selene (Dawn), Arin (Ember) |
+| 9 | Astral Wyrm (Dawn), The Hollow King (Dawn), Nereus, the Drowned King (Tide), The Hollow Crown (Stone), The Lamp-Eater (Ember) |
+
+---
+
+## The Sunset Opal
+
+A heist for Kestrel. After Old Debts, **Mags** in the Undermarket guild hall asks Kestrel to steal back the Guild's Sunset Opal from the Mirage palace vaults. Kestrel must be in the party when you talk to her.
+
+At **night**, a loose grate east of the Mirage palace leads into the vaults. Four guards walk fixed patrols. Each sees four squares ahead, widening to a cone three squares wide; walls and pillars block their sight. What they can see is drawn in red. Be seen once and the guards throw you out (you can try again at once). Take the Opal from the chest in the far corner, get back to the grate, and bring the Opal to Mags for the **Night Cloak** (ATK +10, SPD +16, prevents blind and stop).
+
+The guards' patrols repeat every 1,092 steps, and there is a safe route in and out: the play-test checks it on every build.
+
+---
+
 ## The world
 
 ```mermaid
@@ -308,10 +387,10 @@ Every building can be entered. Search **barrels, pots and crates** (face one and
 | --- | --- | --- |
 | **Brightwater** | Potion, Antidote, Phoenix Plume, Tent | Bronze Sword, Oak Staff, Leather Armor, Cloth Robe |
 | **Port Halden** | Potion, Hi-Potion, Ether, Antidote, Remedy, Phoenix Plume, Tent, Ember Bomb | Iron Sword, Mage Staff, Iron Mace, Chain Mail, Silk Robe, Power Ring, Guard Ring |
-| **Ironhold** | Hi-Potion, X-Potion, Ether, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Steel Sword, Rune Staff, Steel Mace, Steel Dagger, Plate Armor, Sage Robe, Thief Vest, Mage Ring, Wake Charm |
+| **Ironhold** | Rage Tonic, Hi-Potion, X-Potion, Ether, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Steel Sword, Rune Staff, Steel Mace, Steel Dagger, Plate Armor, Sage Robe, Thief Vest, Mage Ring, Wake Charm |
 | **Mirage** | Hi-Potion, X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Sunsteel Blade, Sky Staff, Desert Veil, Swift Boots, Mage Ring, Wake Charm, Eye Charm |
-| **Aerie** | X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Moon Scepter, Sunsteel Blade, Sky Staff, Scholar's Lens, Echo Bell, Desert Veil, Hourglass Pin |
-| **Frostmere** | Hi-Potion, X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Swift Boots, Echo Bell, Wake Charm, Scholar's Lens, Guard Ring, Power Ring, Eye Charm, Hourglass Pin |
+| **Aerie** | X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Moon Scepter, Sunsteel Blade, Sky Staff, Scholar's Lens, Echo Bell, Desert Veil, Hourglass Pin, Calm Charm, Clockwork Charm |
+| **Frostmere** | Hi-Potion, X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Swift Boots, Echo Bell, Wake Charm, Scholar's Lens, Guard Ring, Power Ring, Eye Charm, Hourglass Pin, Clockwork Charm |
 | **Lastlight** | X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb, Star Bomb | Ashsteel Blade, Cinder Staff, Ashen Mace, Ash Kris, Umbral Rod, Ash Mail, Ash Robe, Ash Garb |
 | **Nerith** | X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Star Bomb | Coral Blade, Pearl Staff, Reef Mace, Eel Fang, Abyss Orb, Nacre Mail, Kelp Robe, Sharkskin Garb, Pressure Ring |
 
@@ -382,7 +461,7 @@ Four heroes fight at once. Arrange them in **Menu → Formation**; the fifth wai
 | Lv | Skill | MP | Element | Target | Effect |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Cure** | 4 | — | One ally | Restore HP to one ally. |
-| 1 | **Purify** | 2 | — | One ally | Cure poison, sleep, silence, blind and slow. |
+| 1 | **Purify** | 2 | — | One ally | Cure every ailment: poison, sleep, silence, blind, slow, berserk and stop. |
 | 7 | **Cura** | 9 | — | All allies | Restore HP to all allies. |
 | 9 | **Raise** | 14 | — | One ally | Revive a fallen ally. |
 | 12 | **Barrier** | 10 | — | All allies | Raise party defense for a time. |
@@ -415,6 +494,7 @@ Four heroes fight at once. Arrange them in **Menu → Formation**; the fifth wai
 | 1 | **Slow** | 8 | — | One foe | One foe acts later for 4 rounds. Works on bosses half as often. |
 | 1 | **Nightfall** | 16 | Dark | All foes | Darkness falls on all foes. |
 | 28 | **Requiem** | 34 | Dark | All foes | The last song of the night. |
+| 30 | **Stop** | 14 | — | One foe | Freeze one foe in time for 2 rounds. Bosses are immune. |
 | 44 | **Eventide** | 46 | Dark | All foes | Night falls gently on all foes, and takes a little back. |
 
 ---
@@ -538,6 +618,8 @@ Most enemies pick a random target. Some are smarter, and the bestiary says so:
 | Silence | Can't use skills or combos | Remedy, Purify, Sanctuary | Echo Bell, Sage Circlet, Dwarven Band, Eclipse Mantle, and others |
 | Blind | Attacks and physical skills miss half the time | Remedy, Purify, Sanctuary | Eye Charm, Sun Circlet, Scholar's Monocle, all-ailment accessories |
 | Slow | Acts later (speed ×0.6) | Remedy, Purify, Haste, Sanctuary | Hourglass Pin, Starlit Cloak, all-ailment accessories |
+| Berserk | Attacks a random foe every turn with ATK ×1.5; you can't give orders | Remedy, Purify, wears off (3 rounds) | Calm Charm, all-ailment accessories |
+| Stop | Loses every turn | Remedy, Purify, wears off (2 rounds) | Clockwork Charm, Night Cloak, all-ailment accessories |
 | Haste | Acts sooner (speed ×1.6) for 4 rounds | Wears off; Slow cancels it | — |
 | Regen | Heals every round | Wears off | — |
 
@@ -848,6 +930,20 @@ Ordered roughly as you meet them.
 | Deep Gazer | 2400 | 140 | 220 | Holy | — | Remedy | — | 1000 | 750 |
 | Drowned Sentinel *(Hunts casters)* | 3600 | 245 | 60 | Bolt | Water | Elixir | Sun Gold (15%) | 1100 | 800 |
 
+#### At night
+
+Between 20:30 and 5:30, half of the world's random battles come from these tables instead.
+
+| Area | Night monsters |
+| --- | --- |
+| Brightwater plains | Moonmoth, Shade Bat |
+| Eastern lowlands | Gravewight, Will-o-Wisp, Shade Bat |
+| Open sea | Ghostlight, Harpy |
+| Northern continent | Frost Wraith, Dwarf Revenant, Snow Imp |
+| Isle of Dusk | Shade Wraith, Hollow Knight, Night Gaze |
+| Sunscar Desert | Night Jackal, Mummy, Death Scorpion |
+| Ashen Isle | Cinder Wisp, Nightmare, Ash Hound |
+
 ---
 
 ## Side quests
@@ -895,6 +991,8 @@ flowchart LR
 | **The Tide That Remembers** | Mother Ysolde, Nerith | The superboss in the Hadal Rift | Tidesong |
 | **Lanternmoths** | Old Ivy, Brightwater (after The Lamplighter's Road) | Talk to her | Moth Whistle |
 | **Buried Treasure** | Whisper, the Undermarket | Dig up all five treasure maps | 50,000 G |
+| **Lanterns & Lies** | Tess, Brightwater (by day) | Beat all eight card players | Joker's Lantern |
+| **The Sunset Opal** | Mags, the Undermarket (after Old Debts, with Kestrel) | The night heist in the Mirage palace vaults | Night Cloak |
 
 ---
 
@@ -978,7 +1076,7 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | Material | Value (shops pay half) | Dropped by |
 | --- | --- | --- |
 | **Ember Core** | 400 | Magma Slime, Fire Bat, Ember Golem, Cinder Wisp, Ash Colossus, Kiln Imp, Cinder Serpent |
-| **Frost Crystal** | 400 | Frost Wolf, Ice Golem, Snow Imp, Deep One |
+| **Frost Crystal** | 400 | Frost Wolf, Ice Golem, Snow Imp, Deep One, Frost Wraith |
 | **Sun Gold** | 600 | Mummy, Gilded Scarab, Sphinx, Gilded Golem, Pearl Guard, Guild Enforcer, Drowned Sentinel |
 | **Star Shard** | 800 | Starspawn, Astral Knight, Nebula Slime, Void Drake, Comet Imp |
 | **Dusk Silk** | 700 | Hollow Knight, Night Gaze, Shade Wraith, Chimera, Void Slime, Dread Knight, Nightmare, Hollow Herald, Guild Cutpurse, Sewer Ooze |
@@ -1143,6 +1241,8 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **Starlit Cloak** | DEF +20, MAG +20. Prevents sleep and slow. Rare steal: Astral Wyrm. | — | Quest, chest or prize |
 | **King's Signet** | ATK +18, MAG +18. Rare steal: the Hollow King. | — | Quest, chest or prize |
 | **Sun Circlet** | MAG +16. Prevents blind and silence. Rare steal: Ozymar. | — | Quest, chest or prize |
+| **Calm Charm** | DEF +6. Prevents berserk. | 2400 | Aerie shop |
+| **Clockwork Charm** | SPD +6. Prevents stop. | 3000 | Aerie shop, Frostmere shop |
 | **Eye Charm** | DEF +4. Prevents blind. | 2200 | Mirage shop, Frostmere shop |
 | **Hourglass Pin** | SPD +4. Prevents slow. | 2600 | Aerie shop, Frostmere shop |
 | **Scholar's Monocle** | MAG +14. +25% EXP. Prevents blind. Sable's reward. | — | Quest, chest or prize |
@@ -1153,6 +1253,8 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **Admiral's Hat** | SPD +10, DEF +8. Halves random encounters. Buried treasure. | — | Quest, chest or prize |
 | **Crown of Nerith** | All +16. Prevents slow and sleep. The last king's crown, freely given. | — | Quest, chest or prize |
 | **Tidesong** | All +26. Regen. No ailments. The sea remembers you now. | — | Quest, chest or prize |
+| **Joker's Lantern** | All +10. Rare steals twice as likely. Every card player in the world, beaten. | — | Quest, chest or prize |
+| **Night Cloak** | ATK +10, SPD +16. Prevents blind and stop. The Guild's finest. | — | Quest, chest or prize |
 | **Heartlight** | All +20. Revives once per battle. No ailments. Five lights, one lantern. | — | Quest, chest or prize |
 | **Crown of Dusk & Dawn** | All +25. Regen. No ailments. Both halves of the first crown, at peace. | — | Quest, chest or prize |
 
@@ -1172,7 +1274,8 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **Tent** | 120 | Rest on the world map. Restores the party. |
 | **Elixir** | — | Fully restores HP and MP. |
 | **Megalixir** | — | Fully restores the whole party. |
-| **Remedy** | 60 | Cures poison, sleep, silence, blind and slow. |
+| **Remedy** | 60 | Cures every ailment, berserk and stop included. |
+| **Rage Tonic** | 400 | Berserks an ally for 3 rounds: ATK ×1.5, but they attack on their own. |
 | **Ember Bomb** | 90 | Deals fire damage to all foes. |
 | **Star Bomb** | 900 | Bursts with holy light on all foes. |
 
@@ -1197,6 +1300,7 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **Map: Dune Sea** | Deep in the Sunscar, south of Mirage and west of the Tomb. "Where the sand sings at noon." |
 | **Map: Hollow Root** | At the edge of the Whisperwood, north of Brightwater. The ink smells of moss. |
 | **Map: Ash and Gold** | The Ashen Isle, south of Lastlight. Charred at the edges. Somebody wanted this burned. |
+| **Sunset Opal** | A fist-sized opal the colour of a desert evening. The Guild says it was theirs first. |
 
 ---
 
@@ -1267,6 +1371,10 @@ Trophies (added in 1.8) belong to you, not to a save: earn one once and it stays
 | 🏆 **Fifty** | Raise a hero to level 50. |
 | 🏆 **Every Lamp Lit** | Light a hero's whole Lantern Board. |
 | 🏆 **Once More, With Feeling** | Start New Game+. |
+| 🏆 **Night Owl** | Win a battle at night. |
+| 🏆 **Card Shark** | Beat every Lanterns & Lies player. |
+| 🏆 **Full Deck** | Collect every Lanterns & Lies card. |
+| 🏆 **Ghost of Mirage** | Steal the Sunset Opal without being caught. *(hidden in the game until earned)* |
 | 🏆 **Lamplighter's Dash** | Finish the story in under 5 hours of play time. |
 
 ---

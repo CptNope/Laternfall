@@ -41,7 +41,7 @@ How the engine works, for anyone reading or changing the code. It covers how the
 ```mermaid
 flowchart LR
     subgraph src/
-      core[core.js] --> data[data.js] --> art[art.js] --> dart[deep_art.js] --> maps[maps.js] --> party[party.js] --> field[field.js] --> interior[interior.js] --> battle[battle.js] --> menu[menu.js] --> crafts[crafts.js] --> hearts[hearts.js] --> deep[deep.js] --> plat[platform.js] --> story[story.js]
+      core[core.js] --> data[data.js] --> art[art.js] --> dart[deep_art.js] --> maps[maps.js] --> party[party.js] --> field[field.js] --> interior[interior.js] --> battle[battle.js] --> menu[menu.js] --> crafts[crafts.js] --> hearts[hearts.js] --> deep[deep.js] --> plat[platform.js] --> liv[living.js] --> cards[cards.js] --> heist[heist.js] --> story[story.js]
     end
     story --> B[build.py<br/>concatenate in order]
     B --> H[index.html<br/>HTML + CSS + touch pad + one inline script]
@@ -78,6 +78,9 @@ python3 build.py   # prints the byte size of the new index.html
 | `hearts.js` | The five hero quests, Limits unlocking, campfire talks, the Festival of Lanterns | `learnLimit` `worldQuestEntities` `interiorQuestEntities` `innDream` `campfireTalk` `heartsQuests` |
 | `deep_art.js` | 1.7 drawing: sea-floor tiles and light, town moods, the dive spot, bell and moth, three monster families and three battle backgrounds. Registers itself with `art.js` | `drawDeepTile` `drawDeepLight` `drawTownMood` `drawBell` `drawMoth` `drawDeepMap` |
 | `platform.js` | 1.8: install prompt and service-worker registration, save export and import, trophies, speedrun splits, the battery saver. `platformTick(dt)` runs every frame from the main loop | `installApp` `exportSaves` `importSaves` `Trophies` `TROPHIES` `trophyRoom` `checkSplits` `drawSpeedrun` `frameSkip` |
+| `living.js` | 1.9: the clock (`G.clock`, minutes since day 1), night and dusk, the sky tint and light glows, weather per region and its battle multipliers, night NPCs. `advanceClock(dt)` runs from the field's tick | `clockNow` `isNight` `dayPhase` `sleepUntil` `drawSky` `WEATHER` `currentWeather` `weatherMult` `weatherMiss` `drawWeather` `nightNpcs` |
+| `cards.js` | 1.9: *Lanterns & Lies*. Card data, the eight players and where they sit, the deck picker, the board game and its AI. A player's look is inline or a key such as `'sailor'` resolved at runtime, never a `LOOKS` entry at load time, because `LOOKS` is defined later | `CARDS` `CARD_FOES` `STARTER_CARDS` `talkCardFoe` `pickDeck` `playCards` `cardAI` `CardGame` `cardQuests` |
+| `heist.js` | 1.9: *The Sunset Opal*. The vault map (map kind `heist`), guard patrols on a fixed loop, sight cones blocked by walls, getting caught, the Mirage hatch (night only) and Mags | `HEIST_MAP` `HEIST_GUARDS` `guardAt` `guardSight` `Heist` `heistStart` `heistTurnIn` `heistQuests` |
 | `deep.js` | 1.7 The Drowned Kingdom: diving and surfacing, Nerith's people, the palace and Rift bosses, treasure maps, lanternmoths, the Undermarket, the 1.7 quest log | `diveDown` `surfacePrompt` `talkYsolde` `palaceBoss` `hadalBoss` `digTreasure` `treasureMapDrop` `lampMoth` `shopPrice` `deepQuests` `worldPos` |
 | `story.js` | NPCs and dialogue, doors, cutscenes, bosses, quests, the title screen, the ending, **and the main loop** | `townNpcs` `bossEncounter` `questList` `mainObjective` `worldEvents` `titleMenu` `frame` |
 
@@ -510,6 +513,8 @@ Everything that persists lives in the global `G` (`party.js`). `saveGame(slot)` 
 | `party` | `{id, level, xp, hp, mp, weapon, armor, acc, limit, board, embers, capxp}[]` | Heroes in formation order; the first four fight. `board` is the lit Lantern Board node ids |
 | `meal` | `{id, left}` or null | The active meal and how many battles it has left |
 | `splits` | `{flag: seconds or null}` | Speedrun splits for this run (1.8); `null` means the Lantern was lit before splits existed |
+| `clock` | number | Game minutes since 00:00 on day 1 (1.9). Missing in older saves, which start at 08:00 |
+| `cards`, `lastDeck` | `{cardId: count}`, `cardId[]` or null | The *Lanterns & Lies* collection and the last deck played (1.9) |
 | `inv` | `{itemId: count}` | Inventory, including key items |
 | `gold`, `playTime` | number | Play time counts on the field and, since 1.8, in battle |
 | `flags` | `{key: any}` | **All story progress**; see below |

@@ -121,17 +121,18 @@ flowchart LR
 
 | | Count | | Count |
 | --- | --- | --- | --- |
-| Playable heroes | **5** (4 fight at once) | Monsters | **89** in 24 drawn families |
+| Playable heroes | **5** (4 fight at once) | Monsters | **94** in 24 drawn families (5 only at night) |
 | Towns | **9** (one under the sea, one under Ironhold) | Boss battles | **17** |
-| Dungeons | **12** (32 floors) | Skills and spells | **39**, plus **43** enemy abilities |
-| Side quests | **21** | Combo techs and Limits | **12** and **5** |
-| Arena cups | **6** | Weapons, armour, accessories | **48**, **23**, **42** |
+| Dungeons | **12** (32 floors) | Skills and spells | **40**, plus **45** enemy abilities |
+| Side quests | **23** | Combo techs and Limits | **12** and **5** |
+| Arena cups | **6** | Weapons, armour, accessories | **48**, **23**, **46** |
 | Fish | **13** | Forge recipes | **12** |
 | Music tracks | **21** | Image or audio files | **0** in the game (the app icons are drawn by a script) |
-| Level cap | **50**, then the Lantern Board | Source lines | ~8,600 across 15 files |
-| Trophies | **30** | Platforms | Browser, installable app (offline), Windows, macOS, Linux |
+| Level cap | **50**, then the Lantern Board | Source lines | ~9,200 across 18 files |
+| Trophies | **34** | Platforms | Browser, installable app (offline), Windows, macOS, Linux |
 | Lantern Board passives | **11** | Meals | **11** |
 | Ways to travel | **5**: foot, ship, airship, diving bell, lanternmoth | Treasure maps | **5** |
+| Cards | **36**, against **8** players | Weather | **6** kinds, by region |
 
 ```mermaid
 mindmap
@@ -183,6 +184,8 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 **World**
 - A large overworld: three continents, the Sunscar Desert, a corrupted isle, a star-island, a mesa-walled valley you can only reach by air, and (after the ending) the Ashen Isle
 - **The sea floor**: a second, dark world map under the sea, reached by diving bell, with the sunken city of Nerith at its heart
+- **Day and night**: a clock runs while you explore. Nights are moonlit, lamps glow, other monsters come out and other people walk the streets. Inns let you sleep until night.
+- **Weather** by region (rain, snow, sandstorms, fog, ash) that you see on the field and feel in battle
 - Travel on foot, by **ship**, by **airship**, by **diving bell** and on the back of a **lanternmoth**
 - **9 towns** (Brightwater, Port Halden, Ironhold, Frostmere, desert Mirage, sky-valley Aerie, ash-bound Lastlight, sunken Nerith and the Undermarket beneath Ironhold), with more than 70 NPCs whose dialogue changes as the story moves on
 - **Walk inside every building**: inns, shops and smithies with keepers behind counters, homes, chapels, a jail, a palace, an observatory hut. Search barrels, pots and crates for hidden items.
@@ -191,19 +194,20 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 **Battle**
 - Classic turn-based, side-view combat: Attack, Skill, **Combo**, Item, Defend, Run
 - **12 combo techs**: dual and triple attacks such as Flame Edge, Crossfang, Twin Stars, Shadow Waltz, Lantern Light and Last Light (taught in Lastlight). They use every member's turn and MP.
-- Elemental weaknesses, **resistances and absorbs**, critical hits, stealing (with **rare steals**), buffs, poison, sleep, silence, **blind, slow, haste**, regen and auto-revive. The [formulas](docs/GAME_GUIDE.md#formulas) are all documented.
+- Elemental weaknesses, **resistances and absorbs**, critical hits, stealing (with **rare steals**), buffs, poison, sleep, silence, **blind, slow, haste, berserk, stop**, regen and auto-revive. The [formulas](docs/GAME_GUIDE.md#formulas) are all documented.
 - **Smarter enemies**: some hunt your weakest hero or your casters, healers mend their allies, and every boss **changes tactics when hurt**
 - **Limits**: a gauge that fills as each hero takes damage, unlocking a once-per-charge super move
-- **89 monsters** in 24 drawn families, including **17 boss battles**: two two-phase finales, a sea monster, the First King, an optional superboss dragon, five personal nemeses (one a solo duel), a drowned king and a secret superboss at the bottom of the sea
+- **94 monsters** in 24 drawn families, including **17 boss battles**: two two-phase finales, a sea monster, the First King, an optional superboss dragon, five personal nemeses (one a solo duel), a drowned king and a secret superboss at the bottom of the sea
 
 **Progression**
-- Levels up to **50**, learned skills, and weapon, armour and accessory slots, with **42 accessories**
+- Levels up to **50**, learned skills, and weapon, armour and accessory slots, with **46 accessories**
 - **The Lantern Board**: from level 30, Embers light nodes on each hero's board: stats, three passives (Counter, MP Saver, Auto-Haste, Ghost Step and more) and a capstone
 - **Formation** menu: four fight, and the reserve earns half EXP
 - **Orrin's Forge**: monsters drop materials (Ember Cores, Frost Crystals, Sun Gold, Star Shards, Dusk Silk, Abyss Ash, Deep Pearls). Orrin in Ironhold forges them into 12 pieces of gear, including each hero's best weapon. The bestiary shows who drops what.
 - **Fishing**: get a rod from the Ice Fisher in Frostmere, then fish any pond, river, harbour or sea. 13 kinds of fish, each with its own spots, and a timing mini-game that gets harder for rarer fish. One legend only rises once every Lantern burns. Innkeepers **cook** your catch into 11 meals that buff the next three battles.
 - **The Aerie Arena**: six cups of back-to-back battles with unique prizes, up to the Grand Champion gauntlet and the post-game Eclipse Cup
-- **21 side quests** in a quest log, including five personal hero quests, the Festival of Lanterns, the Drowned Kingdom and five buried treasures, with the main objective always shown
+- **23 side quests** in a quest log, including five personal hero quests, the Festival of Lanterns, the Drowned Kingdom, five buried treasures and a night heist past patrolling guards, with the main objective always shown
+- ***Lanterns & Lies***: a card game against eight players around the world, with 36 cards to win and one face-down bluff a game
 - **Campfire talks** when you rest with a Tent
 - A **bestiary** with stats, weaknesses, resistances, AI, steals and drops (Sable rewards you at 45 and for every creature), and a **world map** with your next objective marked
 - **New Game+**: finish the story to replay with your levels and gear against stronger enemies
@@ -214,7 +218,7 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 - **Gamepad** support, a touch **R** button, auto-dash, **rebindable keys**, adjustable text speed, **large text** and **high-contrast** windows
 - **Equip → Optimise** puts on the best gear you own in one step
 - **Installable and offline** (1.8): install from GitHub Pages as an app, or download the Windows, macOS and Linux builds
-- **30 trophies** shared by every save, a **speedrun timer** with splits at each Lantern, and **Transfer saves** to move between devices
+- **34 trophies** shared by every save, a **speedrun timer** with splits at each Lantern, and **Transfer saves** to move between devices
 
 **Sound**
 - An original chiptune soundtrack of 21 tracks (title, overworld, sea, sky, desert, towns, dungeons, the Spire, the Ashen Isle, the Abyss, the sea floor, Nerith, the Undermarket, battle, boss, two final battles, victory, ending, game over), sequenced live in Web Audio
@@ -350,6 +354,9 @@ flowchart LR
 | `src/hearts.js` | The five hero quests, Limits unlocking, campfire talks and the Festival of Lanterns |
 | `src/deep.js` | 1.7 The Drowned Kingdom: diving and surfacing, Nerith, the Palace and the Rift, treasure maps, lanternmoths and the Undermarket |
 | `src/platform.js` | 1.8: install as an app, transfer saves, trophies, the speedrun timer and splits, the battery saver |
+| `src/living.js` | 1.9: the clock, day and night, the sky tint and glows, regional weather and its battle effects, night NPCs |
+| `src/cards.js` | 1.9: *Lanterns & Lies*: the cards, the players, the deck screen, the board and the AI |
+| `src/heist.js` | 1.9: *The Sunset Opal*: the vault map, guard patrols and sight lines |
 | `src/story.js` | NPC dialogue, cutscenes, story flags, quests, the arena, boss events, the title screen, the endings, the main loop |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Generated: the installable-app files (`build.py`, `tools/make_icons.py`) |
 | `src-tauri/` | The desktop app (Tauri): a native window around `index.html`, built by CI |

@@ -43,7 +43,7 @@ const HEROES = {
     name: 'Selene', cls: 'Duskmage', skill: 'Dusk',
     base: { hp: 46, mp: 24, str: 7, def: 6, mag: 14, spd: 11 },
     grow: { hp: 10.5, mp: 4, str: 1.1, def: 1.2, mag: 2.75, spd: 1.3 },
-    spells: [['shade', 1], ['drain', 1], ['gravity', 1], ['slow', 1], ['nightfall', 1], ['requiem', 28], ['eventide', 44]],
+    spells: [['shade', 1], ['drain', 1], ['gravity', 1], ['slow', 1], ['nightfall', 1], ['requiem', 28], ['stop', 30], ['eventide', 44]],
     look: { skin: '#f6d6b8', hair: '#a03a2a', style: 'long', body: '#3a2a5a', accent: '#c04aa8', robe: true, weapon: 'staff' },
     start: { weapon: 'crescent_rod', armor: 'sage_robe' },
     bio: 'Lyra\'s elder sister. Seven years in the dark taught her its spells — and how to turn them back on it.'
@@ -55,7 +55,8 @@ const SPELLS = {
   cure: { name: 'Cure', mp: 4, type: 'heal', power: 22, target: 'ally', fx: 'heal', desc: 'Restore HP to one ally.' },
   cura: { name: 'Cura', mp: 9, type: 'heal', power: 26, scale: 0.75, target: 'allies', fx: 'heal', desc: 'Restore HP to all allies.' },
   curaga: { name: 'Curaga', mp: 18, type: 'heal', power: 60, scale: 1.3, target: 'allies', fx: 'heal', desc: 'Greatly restore all allies.' },
-  purify: { name: 'Purify', mp: 2, type: 'cure', target: 'ally', fx: 'heal', desc: 'Cure poison, sleep, silence, blind and slow.' },
+  purify: { name: 'Purify', mp: 2, type: 'cure', target: 'ally', fx: 'heal', desc: 'Cure every ailment: poison, sleep, silence, blind, slow, berserk and stop.' },
+  stop: { name: 'Stop', mp: 14, type: 'status', status: 'stop', chance: 0.6, target: 'enemy', fx: 'dark', desc: 'Freeze one foe in time for 2 rounds. Bosses are immune.' },
   haste: { name: 'Haste', mp: 10, type: 'haste', target: 'ally', fx: 'buff', desc: 'One ally acts much sooner for 4 rounds.' },
   slow: { name: 'Slow', mp: 8, type: 'status', status: 'slow', chance: 0.7, target: 'enemy', fx: 'dark', desc: 'One foe acts later for 4 rounds. Works on bosses half as often.' },
   flash: { name: 'Flash Powder', mp: 6, type: 'status', status: 'blind', chance: 0.65, target: 'enemies', fx: 'holy', desc: 'Blind all foes: their attacks miss half the time. Bosses resist.' },
@@ -128,6 +129,8 @@ const SPELLS = {
   e_slow: { name: 'Time Warp', type: 'status', status: 'slow', chance: 0.5, target: 'ally', fx: 'dark' },
   e_slowall: { name: 'Heavy Night', type: 'status', status: 'slow', chance: 0.35, target: 'allies', fx: 'dark' },
   // 1.7 The Drowned Kingdom
+  e_madden: { name: 'Maddening Howl', type: 'status', status: 'berserk', chance: 0.45, target: 'ally', fx: 'fire' },
+  e_stop: { name: 'Still Gaze', type: 'status', status: 'stop', chance: 0.4, target: 'ally', fx: 'dark' },
   e_maelstrom: { name: 'Maelstrom', type: 'dmg', elem: 'water', power: 32, target: 'allies', fx: 'water' },
   e_undertow: { name: 'Undertow', type: 'dmg', elem: 'water', power: 62, target: 'ally', fx: 'water' },
   e_depths: { name: 'Crushing Depths', type: 'phys', power: 1.0, target: 'allies', fx: 'hit' },
@@ -137,12 +140,12 @@ const SPELLS = {
   e_forget: { name: 'Forget', type: 'status', status: 'silence', chance: 0.45, target: 'allies', fx: 'water' },
   e_remember: { name: 'Remember', type: 'heal', power: 500, target: 'self', fx: 'heal' }
 };
-const STATUS_LABEL = { sleep: 'Sleep', silence: 'Silence', blind: 'Blind', slow: 'Slow', poison: 'Poison' };
+const STATUS_LABEL = { sleep: 'Sleep', silence: 'Silence', blind: 'Blind', slow: 'Slow', poison: 'Poison', berserk: 'Berserk', stop: 'Stop' };
 const CASTERS = ['lyra', 'oswin', 'selene'];
-const STATUS_TURNS = { sleep: [2, 3], silence: [3, 4], blind: [3, 4], slow: [3, 4] };   // [on heroes, on enemies]
+const STATUS_TURNS = { sleep: [2, 3], silence: [3, 4], blind: [3, 4], slow: [3, 4], berserk: [3, 3], stop: [2, 2] };   // [on heroes, on enemies]
 
 // items
-const AILMENTS = ['poison', 'sleep', 'silence', 'blind', 'slow'];
+const AILMENTS = ['poison', 'sleep', 'silence', 'blind', 'slow', 'berserk', 'stop'];
 const ITEMS = {
   potion: { name: 'Potion', price: 20, kind: 'use', effect: 'hp', amount: 60, target: 'ally', desc: 'Restores 60 HP.' },
   hipotion: { name: 'Hi-Potion', price: 120, kind: 'use', effect: 'hp', amount: 180, target: 'ally', desc: 'Restores 180 HP.' },
@@ -154,7 +157,8 @@ const ITEMS = {
   tent: { name: 'Tent', price: 120, kind: 'use', effect: 'tent', target: 'none', field: 'world', desc: 'Rest on the world map. Restores the party.' },
   elixir: { name: 'Elixir', price: 0, kind: 'use', effect: 'elixir', target: 'ally', desc: 'Fully restores HP and MP.' },
   megalixir: { name: 'Megalixir', price: 0, kind: 'use', effect: 'megalixir', target: 'allies', desc: 'Fully restores the whole party.' },
-  remedy: { name: 'Remedy', price: 60, kind: 'use', effect: 'remedy', target: 'ally', desc: 'Cures poison, sleep, silence, blind and slow.' },
+  remedy: { name: 'Remedy', price: 60, kind: 'use', effect: 'remedy', target: 'ally', desc: 'Cures every ailment, berserk and stop included.' },
+  rage_tonic: { name: 'Rage Tonic', price: 400, kind: 'use', effect: 'berserk', target: 'ally', battleOnly: true, desc: 'Berserks an ally for 3 rounds: ATK ×1.5, but they attack on their own.' },
   bomb: { name: 'Ember Bomb', price: 90, kind: 'use', effect: 'bomb', amount: 90, target: 'enemies', battleOnly: true, desc: 'Deals fire damage to all foes.' },
   star_bomb: { name: 'Star Bomb', price: 900, kind: 'use', effect: 'bomb', amount: 420, elem: 'holy', fx: 'holy', target: 'enemies', battleOnly: true, desc: 'Bursts with holy light on all foes.' },
   // forging materials (dropped by monsters; Orrin works them in Ironhold)
@@ -220,6 +224,8 @@ const ITEMS = {
   starlit_cloak: { name: 'Starlit Cloak', price: 0, kind: 'acc', def: 20, mag: 20, immune: ['sleep', 'slow'], desc: 'DEF +20, MAG +20. Prevents sleep and slow. Rare steal: Astral Wyrm.' },
   kings_signet: { name: 'King\'s Signet', price: 0, kind: 'acc', atk: 18, mag: 18, desc: 'ATK +18, MAG +18. Rare steal: the Hollow King.' },
   sun_circlet: { name: 'Sun Circlet', price: 0, kind: 'acc', mag: 16, immune: ['blind', 'silence'], desc: 'MAG +16. Prevents blind and silence. Rare steal: Ozymar.' },
+  calm_charm: { name: 'Calm Charm', price: 2400, kind: 'acc', def: 6, immune: ['berserk'], desc: 'DEF +6. Prevents berserk.' },
+  clock_charm: { name: 'Clockwork Charm', price: 3000, kind: 'acc', spd: 6, immune: ['stop'], desc: 'SPD +6. Prevents stop.' },
   eye_charm: { name: 'Eye Charm', price: 2200, kind: 'acc', def: 4, immune: ['blind'], desc: 'DEF +4. Prevents blind.' },
   hourglass: { name: 'Hourglass Pin', price: 2600, kind: 'acc', spd: 4, immune: ['slow'], desc: 'SPD +4. Prevents slow.' },
   scholar_monocle: { name: 'Scholar\'s Monocle', price: 0, kind: 'acc', mag: 14, xp: 1.25, immune: ['blind'], desc: 'MAG +14. +25% EXP. Prevents blind. Sable\'s reward.' },
@@ -250,6 +256,9 @@ const ITEMS = {
   admiral_hat: { name: 'Admiral\'s Hat', price: 0, kind: 'acc', spd: 10, def: 8, fewer: true, desc: 'SPD +10, DEF +8. Halves random encounters. Buried treasure.' },
   tidecrown: { name: 'Crown of Nerith', price: 0, kind: 'acc', all: 16, immune: ['slow', 'sleep'], desc: 'All +16. Prevents slow and sleep. The last king\'s crown, freely given.' },
   tidesong: { name: 'Tidesong', price: 0, kind: 'acc', all: 26, regen: true, immune: AILMENTS, desc: 'All +26. Regen. No ailments. The sea remembers you now.' },
+  jokers_lantern: { name: 'Joker\'s Lantern', price: 0, kind: 'acc', all: 10, thief: true, desc: 'All +10. Rare steals twice as likely. Every card player in the world, beaten.' },
+  night_cloak: { name: 'Night Cloak', price: 0, kind: 'acc', atk: 10, spd: 16, immune: ['blind', 'stop'], desc: 'ATK +10, SPD +16. Prevents blind and stop. The Guild\'s finest.' },
+  sunset_opal: { name: 'Sunset Opal', price: 0, kind: 'key', desc: 'A fist-sized opal the colour of a desert evening. The Guild says it was theirs first.' },
   heartlight: { name: 'Heartlight', price: 0, kind: 'acc', all: 20, reraise: true, immune: AILMENTS, desc: 'All +20. Revives once per battle. No ailments. Five lights, one lantern.' },
   twin_crown: { name: 'Crown of Dusk & Dawn', price: 0, kind: 'acc', all: 25, regen: true, immune: AILMENTS, desc: 'All +25. Regen. No ailments. Both halves of the first crown, at peace.' },
   // weapons
@@ -340,7 +349,7 @@ const MONSTERS = {
   frostwolf: { name: 'Frost Wolf', fam: 'beast', c: ['#d8e8f8', '#7a98b8'], hp: 220, atk: 68, def: 28, mag: 20, spd: 18, xp: 85, gold: 55, weak: ['fire'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_frost' }], steal: 'hipotion', ai: 'weakest', resist: ['ice'] },
   icegolem: { name: 'Ice Golem', fam: 'golem', c: ['#a8d8f0', '#4a7a9a', '#e8ffff'], hp: 340, atk: 76, def: 48, mag: 10, spd: 6, xp: 110, gold: 80, weak: ['fire'], steal: 'ether', absorb: ['ice'] },
   snowimp: { name: 'Snow Imp', fam: 'imp', c: ['#7ac8e8', '#2a5a8a'], hp: 180, atk: 52, def: 22, mag: 58, spd: 16, xp: 90, gold: 70, weak: ['fire'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_ice' }, { w: 1, a: 'e_lullaby' }], steal: 'ether', resist: ['ice'] },
-  ogre: { name: 'Ogre', fam: 'ogre', c: ['#9a8a5a', '#5a4a2a'], hp: 300, atk: 86, def: 34, mag: 5, spd: 8, xp: 120, gold: 110, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }], drop: ['hipotion', 0.25], steal: 'hipotion' },
+  ogre: { name: 'Ogre', fam: 'ogre', c: ['#9a8a5a', '#5a4a2a'], hp: 300, atk: 86, def: 34, mag: 5, spd: 8, xp: 120, gold: 110, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }, { w: 1, a: 'e_madden' }], drop: ['hipotion', 0.25], steal: 'hipotion' },
   magmaslime: { name: 'Magma Slime', fam: 'slime', c: ['#ff7a2a', '#a02a0a'], hp: 320, atk: 84, def: 40, mag: 60, spd: 10, xp: 150, gold: 100, weak: ['ice'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_fire' }], steal: 'bomb', absorb: ['fire'] },
   firebat: { name: 'Fire Bat', fam: 'bat', c: ['#e8502a', '#7a1a0a'], hp: 260, atk: 88, def: 30, mag: 40, spd: 28, xp: 140, gold: 90, weak: ['ice'], steal: 'bomb', resist: ['fire'] },
   revenant: { name: 'Dwarf Revenant', fam: 'skeleton', c: ['#e8dcc0', '#7a5a3a'], hp: 420, atk: 98, def: 54, mag: 20, spd: 12, xp: 180, gold: 130, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }], drop: ['ether', 0.15], steal: 'hiether' },
@@ -349,11 +358,11 @@ const MONSTERS = {
   hollowknight: { name: 'Hollow Knight', fam: 'knight', c: ['#3a3048', '#1a1424', '#c070ff'], hp: 700, atk: 138, def: 80, mag: 30, spd: 14, xp: 300, gold: 220, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }], drop: ['hipotion', 0.25], steal: 'xpotion', ai: 'magehunter', resist: ['dark'] },
   nightgaze: { name: 'Night Gaze', fam: 'eye', c: ['#e8e0f0', '#5a2a8a', '#ff3a6a'], hp: 520, atk: 80, def: 50, mag: 118, spd: 18, xp: 280, gold: 200, weak: ['bolt'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_hush' }, { w: 1, a: 'e_slow' }], steal: 'hiether' },
   wraith: { name: 'Shade Wraith', fam: 'ghost', c: ['#6a4a9a', '#20103a'], hp: 600, atk: 118, def: 60, mag: 100, spd: 20, xp: 290, gold: 210, weak: ['holy'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_drain' }], steal: 'ether', resist: ['dark'] },
-  chimera: { name: 'Chimera', fam: 'beast', size: 1.3, c: ['#b8803a', '#5a2a1a'], hp: 900, atk: 148, def: 66, mag: 90, spd: 16, xp: 350, gold: 260, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_blaze' }], steal: 'xpotion', ai: 'weakest' },
+  chimera: { name: 'Chimera', fam: 'beast', size: 1.3, c: ['#b8803a', '#5a2a1a'], hp: 900, atk: 148, def: 66, mag: 90, spd: 16, xp: 350, gold: 260, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_blaze' }, { w: 1, a: 'e_madden' }], steal: 'xpotion', ai: 'weakest' },
   voidslime: { name: 'Void Slime', fam: 'slime', c: ['#4a2a7a', '#100828'], hp: 780, atk: 140, def: 70, mag: 110, spd: 15, xp: 320, gold: 240, weak: ['holy'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_shadow' }], steal: 'hiether', absorb: ['dark'] },
   dreadknight: { name: 'Dread Knight', fam: 'knight', c: ['#5a1a2a', '#200810', '#ff4a4a'], hp: 1000, atk: 160, def: 88, mag: 40, spd: 15, xp: 420, gold: 320, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }], drop: ['xpotion', 0.15], steal: 'megalixir', ai: 'magehunter', resist: ['dark'], rare: ['megalixir', 0.1] },
   leviathan: { name: 'Leviathan', fam: 'serpent', boss: true, size: 1.9, c: ['#1a5a8a', '#0a2a4a'], hp: 3500, atk: 97, def: 36, mag: 78, spd: 14, xp: 2500, gold: 1500, weak: ['bolt'], acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_crush' }], steal: 'hiether', absorb: ['water'], phases: [{ hp: 0.5, msg: 'The Leviathan churns the whirlpool faster!', acts: [{ w: 2, a: 'attack' }, { w: 3, a: 'e_whirl' }, { w: 2, a: 'e_crush' }] }] },
-  starspawn: { name: 'Starspawn', fam: 'eye', c: ['#f0f4ff', '#2a3a8a', '#ffd84a'], hp: 1100, atk: 120, def: 70, mag: 150, spd: 22, xp: 520, gold: 380, weak: ['bolt'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_dreamfog' }, { w: 1, a: 'e_slow' }], steal: 'hiether', rare: ['star_shard', 0.3] },
+  starspawn: { name: 'Starspawn', fam: 'eye', c: ['#f0f4ff', '#2a3a8a', '#ffd84a'], hp: 1100, atk: 120, def: 70, mag: 150, spd: 22, xp: 520, gold: 380, weak: ['bolt'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_dreamfog' }, { w: 1, a: 'e_slow' }, { w: 1, a: 'e_stop' }], steal: 'hiether', rare: ['star_shard', 0.3] },
   astralknight: { name: 'Astral Knight', fam: 'knight', c: ['#3a4a8a', '#141a3a', '#8ad8ff'], hp: 1400, atk: 182, def: 96, mag: 60, spd: 18, xp: 600, gold: 420, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }], drop: ['xpotion', 0.2], steal: 'megalixir', ai: 'magehunter' },
   nebulaslime: { name: 'Nebula Slime', fam: 'slime', c: ['#c070ff', '#3a1a7a'], hp: 1000, atk: 160, def: 80, mag: 140, spd: 16, xp: 480, gold: 360, weak: ['ice'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_hush' }, { w: 1, a: 'e_shadow' }], steal: 'hiether' },
   voiddrake: { name: 'Void Drake', fam: 'wyrm', size: 0.7, c: ['#3a2a6a', '#140a2a', '#c070ff'], hp: 1500, atk: 175, def: 84, mag: 130, spd: 20, xp: 650, gold: 480, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_starbreath' }], steal: 'xpotion' },
@@ -406,11 +415,27 @@ const MONSTERS = {
   siren: { name: 'Siren of Nerith', fam: 'witch', c: ['#5af0d0', '#1a3a4a', '#ffe9a8'], hp: 2600, atk: 150, def: 90, mag: 230, spd: 28, xp: 1150, gold: 950, weak: ['bolt'], absorb: ['water'], ai: 'healer', acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_heal' }, { w: 1, a: 'e_siren' }], steal: 'hiether', rare: ['siren_scale', 0.15] },
   coralgolem: { name: 'Coral Golem', fam: 'golem', size: 1.1, c: ['#e87a8a', '#7a2a3a'], hp: 4200, atk: 250, def: 180, mag: 40, spd: 8, xp: 1300, gold: 1000, weak: ['bolt'], resist: ['water', 'fire'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }, { w: 1, a: 'e_shatter' }], steal: 'xpotion', mat: ['deep_pearl', 0.3] },
   tidewraith: { name: 'Tide Wraith', fam: 'ghost', c: ['#7ad8ff', '#1a4a6a'], hp: 2200, atk: 160, def: 80, mag: 240, spd: 30, xp: 1050, gold: 800, weak: ['holy'], absorb: ['water'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_undertow' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_forget' }], steal: 'hiether' },
-  deepgazer: { name: 'Deep Gazer', fam: 'eye', c: ['#1a3a4a', '#05141e', '#5af0d0'], hp: 2400, atk: 140, def: 90, mag: 220, spd: 26, xp: 1000, gold: 750, weak: ['holy'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_slow' }, { w: 1, a: 'e_hushall' }], steal: 'remedy' },
+  deepgazer: { name: 'Deep Gazer', fam: 'eye', c: ['#1a3a4a', '#05141e', '#5af0d0'], hp: 2400, atk: 140, def: 90, mag: 220, spd: 26, xp: 1000, gold: 750, weak: ['holy'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_slow' }, { w: 1, a: 'e_hushall' }, { w: 1, a: 'e_stop' }], steal: 'remedy' },
   voidjelly: { name: 'Void Jelly', fam: 'jelly', size: 1.2, c: ['#4a2a6a', '#14082a', '#c070ff'], hp: 3200, atk: 200, def: 100, mag: 255, spd: 26, xp: 1400, gold: 1000, weak: ['holy'], absorb: ['dark', 'water'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_sting' }, { w: 1, a: 'e_forget' }], steal: 'megalixir', mat: ['deep_pearl', 0.3] },
   hadalangler: { name: 'Hadal Angler', fam: 'angler', size: 1.3, c: ['#1a1a2a', '#05050a', '#ff6a8a'], hp: 4000, atk: 265, def: 115, mag: 90, spd: 24, xp: 1500, gold: 1100, weak: ['bolt'], resist: ['water'], ai: 'weakest', acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_lure' }, { w: 1, a: 'e_depths' }], steal: 'elixir', mat: ['deep_pearl', 0.35], rare: ['megalixir', 0.15] },
   nereus: { name: 'Nereus, the Drowned King', fam: 'king', boss: true, pale: true, size: 0.95, c: ['#1a5a6a', '#0a2a34', '#5af0d0'], hp: 13000, atk: 225, def: 110, mag: 210, spd: 28, xp: 24000, gold: 14000, actions: 2, weak: ['bolt'], absorb: ['water'], ai: 'weakest', acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_slowall' }, { w: 1, a: 'e_doom' }], steal: 'megalixir', rare: ['siren_scale', 0.3], phases: [{ hp: 0.5, msg: 'Nereus calls the whole sea into his throne room!', acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_slowall' }, { w: 1, a: 'e_doom' }] }] },
-  tide: { name: 'The Tide That Remembers', fam: 'tide', boss: true, size: 1.3, c: ['#2c6fc4', '#0a1a3a', '#e8f4ff'], hp: 22000, atk: 238, def: 120, mag: 240, spd: 34, xp: 60000, gold: 30000, actions: 2, absorb: ['water'], resist: ['dark', 'ice'], acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_undertow' }, { w: 1, a: 'e_forget' }, { w: 1, a: 'e_depths' }], steal: 'megalixir', rare: ['megalixir', 1], phases: [{ hp: 0.6, msg: 'The Tide remembers every storm it ever was.', acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_meteor' }, { w: 1, a: 'e_siren' }, { w: 1, a: 'e_depths' }] }, { hp: 0.25, msg: 'The Tide remembers you. It does not want you to leave.', acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_remember' }, { w: 1, a: 'e_undertow' }, { w: 1, a: 'e_slowall' }] }] }
+  tide: { name: 'The Tide That Remembers', fam: 'tide', boss: true, size: 1.3, c: ['#2c6fc4', '#0a1a3a', '#e8f4ff'], hp: 22000, atk: 238, def: 120, mag: 240, spd: 34, xp: 60000, gold: 30000, actions: 2, absorb: ['water'], resist: ['dark', 'ice'], acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_undertow' }, { w: 1, a: 'e_forget' }, { w: 1, a: 'e_depths' }], steal: 'megalixir', rare: ['megalixir', 1], phases: [{ hp: 0.6, msg: 'The Tide remembers every storm it ever was.', acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_meteor' }, { w: 1, a: 'e_siren' }, { w: 1, a: 'e_depths' }] }, { hp: 0.25, msg: 'The Tide remembers you. It does not want you to leave.', acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_remember' }, { w: 1, a: 'e_undertow' }, { w: 1, a: 'e_slowall' }] }] },
+  // 1.9 Living world: creatures that only come out at night
+  moonmoth: { name: 'Moonmoth', fam: 'bat', size: 0.8, c: ['#c8c8f0', '#6a6aa0'], hp: 28, atk: 16, def: 6, mag: 14, spd: 14, xp: 11, gold: 9, weak: ['fire'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_lullaby' }], drop: ['ether', 0.08], steal: 'potion' },
+  gravewight: { name: 'Gravewight', fam: 'skeleton', size: 0.9, c: ['#b8b0a0', '#4a4438'], hp: 120, atk: 44, def: 22, mag: 10, spd: 10, xp: 42, gold: 40, weak: ['holy', 'fire'], resist: ['dark'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_bite' }], steal: 'antidote', ai: 'weakest' },
+  ghostlight: { name: 'Ghostlight', fam: 'ghost', c: ['#9ad8ff', '#2a5a7a'], hp: 260, atk: 50, def: 30, mag: 70, spd: 22, xp: 95, gold: 80, weak: ['holy'], absorb: ['water'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_tidal' }, { w: 1, a: 'e_hush' }], steal: 'ether' },
+  frostwraith: { name: 'Frost Wraith', fam: 'ghost', c: ['#d8f0ff', '#5a7a9a'], hp: 300, atk: 60, def: 36, mag: 82, spd: 20, xp: 115, gold: 95, weak: ['fire', 'holy'], absorb: ['ice'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_ice' }, { w: 1, a: 'e_frost' }], steal: 'hiether', mat: ['frost_crystal', 0.08] },
+  nightjackal: { name: 'Night Jackal', fam: 'beast', size: 0.9, c: ['#4a3a5a', '#1a1424'], hp: 400, atk: 106, def: 50, mag: 20, spd: 30, xp: 185, gold: 140, weak: ['holy'], ai: 'weakest', acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_bite' }, { w: 1, a: 'e_blind' }, { w: 1, a: 'e_madden' }], steal: 'hipotion' }
+};
+// At night, half of the world's random battles come from these tables instead
+const NIGHT_ENC = {
+  r1: [{ w: 3, g: ['moonmoth', 'moonmoth'] }, { w: 2, g: ['shadebat', 'moonmoth'] }, { w: 1, g: ['moonmoth', 'moonmoth', 'moonmoth'] }],
+  r2: [{ w: 3, g: ['gravewight', 'gravewight'] }, { w: 2, g: ['wisp', 'shadebat'] }, { w: 1, g: ['gravewight', 'wisp'] }],
+  sea: [{ w: 3, g: ['ghostlight'] }, { w: 2, g: ['ghostlight', 'harpy'] }, { w: 1, g: ['ghostlight', 'ghostlight'] }],
+  r3: [{ w: 3, g: ['frostwraith'] }, { w: 2, g: ['revenant', 'frostwraith'] }, { w: 1, g: ['frostwraith', 'snowimp'] }],
+  r4: [{ w: 3, g: ['wraith', 'wraith'] }, { w: 2, g: ['hollowknight', 'wraith'] }, { w: 1, g: ['nightgaze', 'wraith'] }],
+  r5: [{ w: 3, g: ['nightjackal', 'nightjackal'] }, { w: 2, g: ['mummy', 'nightjackal'] }, { w: 1, g: ['nightjackal', 'scorpion'] }],
+  r6: [{ w: 3, g: ['cinderwisp', 'cinderwisp', 'cinderwisp'] }, { w: 2, g: ['nightmare'] }, { w: 1, g: ['ashhound', 'cinderwisp'] }]
 };
 
 
@@ -442,14 +467,14 @@ const SHOPS = {
   brightwater_arms: ['bronze_sword', 'oak_staff', 'leather', 'cloth_robe'],
   halden_items: ['potion', 'hipotion', 'ether', 'antidote', 'remedy', 'plume', 'tent', 'bomb'],
   halden_arms: ['iron_sword', 'mage_staff', 'iron_mace', 'chain_mail', 'silk_robe', 'power_ring', 'guard_ring'],
-  ironhold_items: ['hipotion', 'xpotion', 'ether', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
+  ironhold_items: ['rage_tonic', 'hipotion', 'xpotion', 'ether', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
   ironhold_arms: ['steel_sword', 'rune_staff', 'steel_mace', 'steel_dagger', 'plate', 'sage_robe', 'thief_vest', 'mage_ring', 'wake_charm'],
   mirage_items: ['hipotion', 'xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
   mirage_arms: ['sunsteel_blade', 'sky_staff', 'desert_veil', 'swift_boots', 'mage_ring', 'wake_charm', 'eye_charm'],
   aerie_items: ['xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
-  aerie_arms: ['moon_scepter', 'sunsteel_blade', 'sky_staff', 'scholar_lens', 'echo_bell', 'desert_veil', 'hourglass'],
+  aerie_arms: ['moon_scepter', 'sunsteel_blade', 'sky_staff', 'scholar_lens', 'echo_bell', 'desert_veil', 'hourglass', 'calm_charm', 'clock_charm'],
   frostmere_items: ['hipotion', 'xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
-  frostmere_arms: ['swift_boots', 'echo_bell', 'wake_charm', 'scholar_lens', 'guard_ring', 'power_ring', 'eye_charm', 'hourglass'],
+  frostmere_arms: ['swift_boots', 'echo_bell', 'wake_charm', 'scholar_lens', 'guard_ring', 'power_ring', 'eye_charm', 'hourglass', 'clock_charm'],
   nerith_items: ['xpotion', 'hiether', 'remedy', 'plume', 'tent', 'star_bomb'],
   nerith_arms: ['coral_blade', 'pearl_staff', 'reef_mace', 'eel_fang', 'abyss_orb', 'nacre_mail', 'kelp_robe', 'shark_garb', 'pressure_ring'],
   // the Undermarket: Ironhold's black market (prices are not negotiable)

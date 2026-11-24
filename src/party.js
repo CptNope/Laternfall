@@ -3,7 +3,7 @@
 //  PARTY & GAME STATE
 // ============================================================
 const G = {
-  party: [], inv: {}, gold: 0, flags: {}, playTime: 0, splits: {},
+  party: [], inv: {}, gold: 0, flags: {}, playTime: 0, splits: {}, clock: 8 * 60,
   mapId: 'world', x: 0, y: 0, dir: 'down',
   ship: null, onShip: false, airship: null, inAir: false, carry: null, encSteps: 20, lastInn: null, seen: {}, killed: {},
   scene: null, maps: {}, slot: '1'
@@ -64,7 +64,7 @@ function gearBonus(m, s) {
 }
 function accOf(m) { return m.acc ? ITEMS[m.acc] : null; }
 function immune(m, st) { if (mealIs('ward') && AILMENTS.includes(st)) return true; const a = accOf(m); return !!(a && a.immune && a.immune.includes(st)); }
-function cureAll(m) { m.status.poison = false; for (const s of ['sleep', 'silence', 'blind', 'slow']) m.status[s] = 0; }
+function cureAll(m) { m.status.poison = false; for (const s of ['sleep', 'silence', 'blind', 'slow', 'berserk', 'stop']) m.status[s] = 0; }
 function partyHasAcc(flag) { return G.party.some(m => { const a = accOf(m); return a && a[flag]; }); }
 function canEquip(it, id) { return !it.who || it.who.includes(id); }
 function stat(m, s) { return Math.round((baseStat(m, s) + gearBonus(m, s) + boardBonus(m, s)) * mealMult(s)); }
@@ -146,7 +146,7 @@ function saveData() {
     party: G.party.map(m => ({ id: m.id, level: m.level, xp: m.xp, hp: m.hp, mp: m.mp, weapon: m.weapon, armor: m.armor, acc: m.acc || null, limit: m.limit || 0, board: m.board || [], embers: m.embers || 0, capxp: m.capxp || 0 })),
     meal: G.meal || null,
     seen: G.seen, killed: G.killed,
-    inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime, splits: G.splits || {},
+    inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime, splits: G.splits || {}, clock: clockNow(), cards: G.cards || {}, lastDeck: G.lastDeck || null,
     mapId: G.mapId, x: G.x, y: G.y, dir: G.dir, ship: G.ship, onShip: G.onShip, lastInn: G.lastInn, airship: G.airship, inAir: G.inAir, carry: G.carry
   };
 }
@@ -169,7 +169,7 @@ function loadGame(slot = latestSlot()) {
   if (!d) return false;
   G.party = d.party.map(p => { const m = { acc: null, board: [], embers: 0, ...p, status: {} }; m.hp = clamp(m.hp, 0, maxHp(m)); m.mp = clamp(m.mp, 0, maxMp(m)); return m; });
   G.seen = d.seen || {}; G.killed = d.killed || {};
-  G.inv = d.inv || {}; G.gold = d.gold || 0; G.flags = d.flags || {}; G.playTime = d.playTime || 0;
+  G.inv = d.inv || {}; G.gold = d.gold || 0; G.flags = d.flags || {}; G.playTime = d.playTime || 0; G.clock = d.clock !== undefined ? d.clock : 8 * 60; G.cards = d.cards || {}; G.lastDeck = d.lastDeck || null;
   // saves from before 1.8 have no splits: Lanterns already lit count as unknown (null), never as a time
   G.splits = d.splits || Object.fromEntries(SPLITS.filter(([f]) => G.flags[f]).map(([f]) => [f, null]));
   G.mapId = d.mapId; G.x = d.x; G.y = d.y; G.dir = d.dir || 'down';
