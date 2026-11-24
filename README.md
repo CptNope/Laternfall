@@ -20,6 +20,9 @@ To host it, enable **GitHub Pages** for this repo (Settings → Pages → deploy
 | Walk faster | Hold Shift | — |
 | Land the airship | Enter while flying | A |
 | Sound on/off | M | (in menu) |
+| Fish (with a rod) | Enter while facing water | A |
+
+**Config** (Menu → Config): sound, auto-dash (run everywhere without holding Shift, which helps on touch screens) and text speed (Normal / Fast / Instant). Settings are remembered between sessions.
 
 Your progress saves to the browser's local storage. Save from the menu anywhere, or when you rest at an inn.
 
@@ -31,6 +34,8 @@ You play Arin, the young lamplighter of Brightwater. When the Ember Lantern goes
 
 Beyond the main quest, the desert holds the tomb of the king who lit the first Lantern, and the truth about who the Hollow King really is.
 
+**Chapter VI: The Crownless King** (post-game). After the credits, step back out into the world. An ash-covered island rises from the far northeast sea. On it is Lastlight, a village that waited a thousand years under the waves for the Hollow King's crown to fall. Descend the four floors of the Crownfall Abyss, piece together two brothers' memories, and face the crown that is looking for a new head. Recommended level: 42+.
+
 **The party (5 playable characters; 4 fight at a time)**
 
 - **Arin**, Lamplighter: sword, healing, holy strikes, party attack boost
@@ -39,26 +44,30 @@ Beyond the main quest, the desert holds the tomb of the king who lit the first L
 - **Kestrel**, Rogue: Steal, Twin Strike, Smoke Bomb, Shadowstep
 - **Selene**, Duskmage: Shade, Drain, Gravity, Nightfall, Requiem. Joins after her story chapter.
 
+Each hero learns a final skill between levels 42 and 44: Dawnbreak, Supernova, Sanctuary, Thousand Cuts and Eventide. Kestrel also picks up Mug at 26. The level cap is 50.
+
 ## Features
 
 **World**
-- A large overworld: three continents, the Sunscar Desert, a corrupted isle, a star-island, and a mesa-walled valley you can only reach by air
+- A large overworld: three continents, the Sunscar Desert, a corrupted isle, a star-island, a mesa-walled valley you can only reach by air, and (after the ending) the Ashen Isle
 - Travel on foot, by **ship**, and by **airship**
-- **6 towns** (Brightwater, Port Halden, Ironhold, Frostmere, desert Mirage and sky-valley Aerie), with more than 50 NPCs whose dialogue changes as the story moves on
+- **7 towns** (Brightwater, Port Halden, Ironhold, Frostmere, desert Mirage, sky-valley Aerie and ash-bound Lastlight), with more than 60 NPCs whose dialogue changes as the story moves on
 - **Walk inside every building**: inns, shops and smithies with keepers behind counters, homes, a chapel, a jail, a palace, an observatory hut. You can search barrels, pots and crates for hidden items.
-- **6 dungeons, 16 floors**: Whisperwood Hollow, Sunken Shrine, Emberdeep Mines, Hollow Spire, the Tomb of the First King and the Starfall Observatory. They have torchlight, treasure, and a Lantern at the heart of each.
+- **7 dungeons, 20 floors**: Whisperwood Hollow, Sunken Shrine, Emberdeep Mines, Hollow Spire, the Tomb of the First King, the Starfall Observatory and the Crownfall Abyss. They have torchlight, treasure, and a Lantern at the heart of each.
 
 **Battle**
 - Classic turn-based side-view combat: Attack / Skill / **Combo** / Item / Defend / Run
-- **9 combo techs**: dual and triple attacks such as Flame Edge, Crossfang, Twin Stars and Lantern Light. They use every member's turn and MP.
+- **12 combo techs**: dual and triple attacks such as Flame Edge, Crossfang, Twin Stars, Shadow Waltz, Lantern Light and Last Light (taught in Lastlight). They use every member's turn and MP.
 - Elemental weaknesses, crits, stealing, buffs, poison / sleep / silence / regen, and auto-revive
-- **52 monsters** in 20 drawn families, including **8 boss battles**: a two-phase final battle, a sea monster, the First King, and an optional superboss dragon
+- **63 monsters** in 21 drawn families, including **10 boss battles**: two two-phase finales, a sea monster, the First King, and an optional superboss dragon
 
 **Progression**
 - Levels, learned spells, and weapon / armor / accessory slots, with 20 accessories
 - **Formation** menu: four fight, and the reserve earns half EXP
-- **The Aerie Arena**: five cups of back-to-back battles with unique prizes, up to the Grand Champion gauntlet
-- **8 side quests** in a quest log, with the main objective always shown
+- **Orrin's Forge**: monsters drop materials (Ember Cores, Frost Crystals, Sun Gold, Star Shards, Dusk Silk, Abyss Ash). Bring them to Orrin in Ironhold to forge 9 pieces of gear, including each hero's best weapon. The bestiary shows who drops what.
+- **Fishing**: get a rod from the Ice Fisher in Frostmere, then fish any pond, river, harbor or sea. 13 kinds of fish, each with its own spots, and a timing mini-game that gets harder for rarer fish. One legend only rises once every Lantern burns.
+- **The Aerie Arena**: six cups of back-to-back battles with unique prizes, up to the Grand Champion gauntlet and the post-game Eclipse Cup
+- **10 side quests** in a quest log, with the main objective always shown
 - A **bestiary** with stats, weaknesses, steals and skills, and a **world map** with your next objective marked
 - **New Game+**: finish the story to replay with your levels and gear against stronger enemies
 
@@ -77,6 +86,8 @@ Beyond the main quest, the desert holds the tomb of the king who lit the first L
 | Monster Scholar | Sable, Frostmere | Silk Ribbon |
 | The First King | Sultana Imara, Mirage | The airship *Aurora* |
 | Arena Legend | Arena Master, Aerie | Lantern Crown |
+| The Ones That Got Away | Ice Fisher, Frostmere | Angler's Ring (6 kinds), Moonfin Charm (all 13) |
+| Orrin's Forge | Orrin, Ironhold (after The Stonebrand) | Orrin's Seal (forge 3 items) |
 
 ### Arena cups
 
@@ -87,6 +98,7 @@ Beyond the main quest, the desert holds the tomb of the king who lit the first L
 | Gold | 32+ | Sage Circlet |
 | Platinum | 36+ | Phoenix Charm |
 | Grand Champion | 42+ | Lantern Crown |
+| Eclipse Cup (after Chapter VI) | 46+ | Eclipse Mantle |
 
 ## Screenshots
 
@@ -101,7 +113,9 @@ Beyond the main quest, the desert holds the tomb of the king who lit the first L
 | ![Arena](docs/screenshots/arena.png) | ![Astral Wyrm](docs/screenshots/astral-wyrm.png) |
 | ![Frostmere](docs/screenshots/frostmere.png) | ![Final boss](docs/screenshots/final-boss.png) |
 | ![World map](docs/screenshots/world-map.png) | ![Bestiary](docs/screenshots/bestiary.png) |
-| ![Ending](docs/screenshots/ending.png) | |
+| ![Ending](docs/screenshots/ending.png) | ![The Ashen Isle](docs/screenshots/ashen-isle.png) |
+| ![Lastlight](docs/screenshots/lastlight.png) | ![Crownfall Abyss](docs/screenshots/crownfall-abyss.png) |
+| ![The Hollow Crown](docs/screenshots/hollow-crown.png) | ![Fishing](docs/screenshots/fishing.png) |
 
 ## Code layout
 
@@ -117,12 +131,15 @@ Beyond the main quest, the desert holds the tomb of the king who lit the first L
 | `src/field.js` | Exploration: movement, ship and airship, camera, NPCs, chests, stairs, random encounters, dungeon lighting |
 | `src/interior.js` | Building interiors: layouts, furniture, counters, searchable containers |
 | `src/battle.js` | Turn-based combat, targeting, combos, statuses, damage formulas, spell effects, rewards, New Game+ scaling |
-| `src/menu.js` | Field menu (items, magic, equip, status, formation, quests, bestiary, world map, save), shops, inns |
+| `src/menu.js` | Field menu (items, magic, equip, status, formation, quests, bestiary, world map, save, config), shops, inns |
+| `src/crafts.js` | The fishing mini-game and Orrin's forge |
 | `src/story.js` | NPC dialogue, cutscenes, story flags, side quests, arena, boss events, title screen, ending, main loop |
 
 Story events are written as plain `async` functions (`await say(...)`, `await startBattle(...)`), so adding a scene or quest is mostly writing dialogue.
 
 **Debug:** add `?noenc` to the URL to turn off random encounters.
+
+The world generator builds the Ashen Isle with everything else, then sinks it. `applyWorldFlags` raises it once `G.flags.isle` is set, so older saves keep working. New world locations use the letters `A`–`G` for towns and `1`–`7` for dungeons (`isLoc()` in `core.js`).
 
 ## License
 

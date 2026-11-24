@@ -58,6 +58,17 @@ function rgba(hex, a) {
   return `rgba(${parseInt(c.substr(0, 2), 16)},${parseInt(c.substr(2, 2), 16)},${parseInt(c.substr(4, 2), 16)},${a})`;
 }
 
+// world-map location tiles: towns A–G, dungeons 1–7
+const LOC_RE = /^[A-G1-7]$/;
+const isLoc = c => typeof c === 'string' && LOC_RE.test(c);
+
+// ---------- settings (persist separately from the save file) ----------
+const CFG_KEY = 'lanternfall_cfg_v1';
+const TEXT_SPEEDS = [{ label: 'Normal', v: 55 }, { label: 'Fast', v: 120 }, { label: 'Instant', v: 99999 }];
+const CFG = { dash: false, textSpeed: 0, muted: false };
+try { Object.assign(CFG, JSON.parse(localStorage.getItem(CFG_KEY)) || {}); } catch (e) { }
+function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(CFG)); } catch (e) { } }
+
 // ---------- input ----------
 const KEYMAP = {
   ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right',
@@ -226,7 +237,7 @@ class Dialog {
     const lines = wrapText(ctx, msg, W - 80, this.f);
     for (let i = 0; i < lines.length; i += 3) this.pages.push(lines.slice(i, i + 3));
     this.page = 0; this.chars = 0; this.choices = opts.choices || null; this.ci = 0;
-    this.top = !!opts.top; this.speed = opts.speed || 55;
+    this.top = !!opts.top; this.speed = opts.speed || (TEXT_SPEEDS[CFG.textSpeed] || TEXT_SPEEDS[0]).v;
   }
   get pageText() { return this.pages[this.page].join('\n'); }
   done() { return this.chars >= this.pageText.length; }
@@ -466,6 +477,36 @@ const TRACKS = {
       { w: 'drum', g: 0.045, s: 'k:4 h:4 s:4 h:4 '.repeat(8) }
     ]
   },
+  ash: {
+    bpm: 104, voices: [
+      { w: 'square', g: 0.038, s: 'E5:4 F5:2 E5:2 B4:8 | C5:4 B4:2 A4:2 B4:8 | E5:4 G5:2 F5:2 E5:4 D5:4 | E5:12 r:4 | B5:4 A5:2 G5:2 F5:4 E5:4 | G5:4 F5:2 E5:2 D5:8 | C5:4 D5:4 E5:4 F5:4 | E5:16' },
+      { w: 'triangle', g: 0.13, s: pump(['E2', 'E2', 'C2', 'E2', 'E2', 'C2', 'D2', 'E2'], 'half') },
+      { w: 'drum', g: 0.04, s: 'k:4 h:4 s:4 h:2 h:2 '.repeat(8) }
+    ]
+  },
+  ashtown: {
+    bpm: 88, voices: [
+      { w: 'square', g: 0.036, s: 'A4:4 C5:4 E5:8 | D5:4 C5:2 B4:2 A4:8 | F4:4 A4:4 C5:8 | B4:12 r:4 | A4:4 C5:4 E5:6 G5:2 | F5:4 E5:4 D5:8 | C5:4 B4:4 A4:4 G#4:4 | A4:16' },
+      { w: 'triangle', g: 0.13, s: 'A2:8 E2:8 | D2:8 A2:8 | F2:8 C3:8 | E2:8 G#2:8 | A2:8 E2:8 | D2:8 F2:8 | E2:8 E2:8 | A2:16' },
+      { w: 'triangle', g: 0.04, s: 'E4:4 A4:4 E4:4 A4:4 | F4:4 A4:4 F4:4 A4:4 | F4:4 A4:4 F4:4 C5:4 | E4:4 G#4:4 E4:4 B4:4 | E4:4 A4:4 E4:4 C5:4 | F4:4 A4:4 D4:4 F4:4 | E4:4 G#4:4 E4:4 B4:4 | A4:8 E4:8' }
+    ]
+  },
+  abyss: {
+    bpm: 66, voices: [
+      { w: 'square', g: 0.03, s: 'B3:8 C4:8 | B3:4 A#3:4 B3:8 | F#4:8 G4:8 | F#4:16 | D4:8 C#4:8 | C4:4 B3:4 A#3:8 | B3:4 C4:4 C#4:4 D4:4 | B3:16' },
+      { w: 'triangle', g: 0.15, s: 'B1:16 | G1:16 | B1:16 | F#1:16 | G1:16 | E1:16 | F#1:16 | B1:16' },
+      { w: 'triangle', g: 0.035, s: 'r:8 F#5:8 | r:16 | r:8 G5:8 | r:16 | r:8 D5:8 | r:16 | r:8 C#5:8 | r:16' },
+      { w: 'drum', g: 0.03, s: 'k:16 '.repeat(8) }
+    ]
+  },
+  crown: {
+    bpm: 150, voices: [
+      { w: 'square', g: 0.042, s: 'C5:2 C5:2 Eb5:2 G5:2 C6:4 B5:4 | Ab5:2 G5:2 F5:2 Eb5:2 D5:8 | C5:2 C5:2 Eb5:2 G5:2 D6:4 C6:4 | B5:12 r:4 | Ab5:4 G5:4 F5:4 Eb5:4 | F5:4 Eb5:4 D5:4 C5:4 | B4:4 D5:4 G5:4 F5:4 | C5:8 G5:8' },
+      { w: 'sawtooth', g: 0.035, s: pump(['C2', 'Ab1', 'F1', 'G1', 'Ab1', 'F1', 'G1', 'C2']) },
+      { w: 'triangle', g: 0.05, s: 'G4:16 | F4:16 | Eb4:16 | D4:16 | C4:16 | Ab3:16 | B3:16 | C4:16' },
+      { w: 'drum', g: 0.06, s: 'k:2 h:2 s:2 h:2 k:2 k:2 s:2 h:2 '.repeat(8) }
+    ]
+  },
   victory: {
     bpm: 140, loop: false, voices: [
       { w: 'square', g: 0.05, s: 'G4:2 C5:2 E5:2 G5:6 E5:2 G5:2 C6:16' },
@@ -504,7 +545,7 @@ const Audio_ = {
       if (this.pending) { const p = this.pending; this.pending = null; this.play(p, true); }
     } catch (e) { console.warn(e); }
   },
-  setMuted(m) { this.muted = m; if (this.master) this.master.gain.value = m ? 0 : 0.9; },
+  setMuted(m) { this.muted = m; CFG.muted = m; saveCfg(); if (this.master) this.master.gain.value = m ? 0 : 0.9; },
   toggleMute() { this.setMuted(!this.muted); toast(this.muted ? 'Sound off (M)' : 'Sound on (M)'); },
   play(name, force) {
     if (!force && this.curName === name) return;
@@ -622,6 +663,11 @@ const Audio_ = {
       case 'ko': tone('sawtooth', 400, 60, 0.5, 0.08); break;
       case 'boom': noise(0.8, 0.8, 300, 'lowpass'); tone('sine', 80, 30, 0.8, 0.2); break;
       case 'lantern': [392, 523, 659, 784, 1046, 1318].forEach((f, i) => tone('sine', f, 0, 0.5, 0.06, i * 0.12)); break;
+      case 'splash': noise(0.35, 0.3, 700, 'lowpass'); tone('sine', 500, 180, 0.25, 0.05); break;
+      case 'bite': tone('square', 1500, 0, 0.05, 0.07); tone('square', 1800, 0, 0.06, 0.07, 0.07); break;
+      case 'reel': for (let i = 0; i < 3; i++) tone('triangle', 700 + i * 140, 0, 0.04, 0.05, i * 0.03); break;
+      case 'forge': noise(0.08, 0.6, 3000, 'highpass'); tone('square', 1320, 660, 0.35, 0.06); tone('triangle', 220, 0, 0.3, 0.08); break;
     }
   }
 };
+Audio_.muted = !!CFG.muted;

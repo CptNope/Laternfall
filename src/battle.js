@@ -18,7 +18,7 @@ class Battle {
       const d = ngScale(MONSTERS[id]);
       seen[id] = (seen[id] || 0) + 1;
       const name = counts[id] > 1 ? `${d.name} ${String.fromCharCode(64 + seen[id])}` : d.name;
-      return { id, def: d, name, bs: d.boss ? (d.fam === 'king' || d.fam === 'king2' ? 1 : 1.15) : 1.35, hp: d.hp, maxhp: d.hp, alive: true, flash: 0, shake: 0, alpha: 1, dying: 0, status: {}, lunge: 0, stolen: false };
+      return { id, def: d, name, bs: d.boss ? (d.fam === 'king' || d.fam === 'king2' || d.fam === 'crown' ? 1 : 1.15) : 1.35, hp: d.hp, maxhp: d.hp, alive: true, flash: 0, shake: 0, alpha: 1, dying: 0, status: {}, lunge: 0, stolen: false };
     });
     this.layout();
     ids.forEach(id => G.seen[id] = 1);
@@ -596,7 +596,7 @@ class Battle {
   }
   combosFor(m) {
     const P = BP();
-    return COMBOS.filter(c => c.members.includes(m.id) && c.members.every((id, j) => {
+    return COMBOS.filter(c => c.members.includes(m.id) && (!c.flag || G.flags[c.flag]) && c.members.every((id, j) => {
       const p = P.find(x => x.id === id);
       return p && alive(p) && !p.status.sleep && !p.status.silence && p.mp >= c.mp[j];
     }));
@@ -660,9 +660,9 @@ class Battle {
       this.msg = it.name;
       a.pose = 'cast'; await wait(250);
       if (it.effect === 'bomb') {
-        const ts = this.liveEnemies();
-        await this.playFx('fire', ts.map(e => this.enemyCenter(e)));
-        for (const e of ts) this.damageEnemy(e, Math.round(it.amount * this.weakMult(e.def, 'fire') * rnd(0.9, 1.1)));
+        const ts = this.liveEnemies(), el = it.elem || 'fire';
+        await this.playFx(it.fx || 'fire', ts.map(e => this.enemyCenter(e)));
+        for (const e of ts) this.damageEnemy(e, Math.round(it.amount * this.weakMult(e.def, el) * rnd(0.9, 1.1)));
       } else {
         const ts = it.target === 'allies' ? BP().map((_, k) => k) : [c.target];
         await this.playFx(it.effect === 'revive' ? 'holy' : 'heal', ts.map(k => this.memberCenter(k)));
@@ -690,6 +690,7 @@ class Battle {
             const mult = s.power * this.weakMult(tg.def, s.elem);
             const dmg = this.physDamage(this.memberAtk(i) * (s.elem === 'holy' ? 1 + stat(m, 'mag') / 200 : 1), tg.def.def, mult);
             this.damageEnemy(tg, dmg);
+            if (s.mug && h === 0 && !tg.stolen && tg.def.steal && Math.random() < clamp(0.5 + (stat(m, 'spd') - tg.def.spd) * 0.02, 0.25, 0.9)) { tg.stolen = true; addItem(tg.def.steal); Audio_.sfx('item'); this.num(p.x, p.y - 30, ITEMS[tg.def.steal].name, '#ffe9a8'); }
             if (s.poison && tg.alive && !tg.def.boss) { tg.status.poison = true; await this.playFx('poison', [p]); }
             else if (s.poison && tg.alive && tg.def.boss && Math.random() < 0.4) { tg.status.poison = true; await this.playFx('poison', [p]); }
             a.pose = null; await wait(120);
@@ -739,6 +740,15 @@ class Battle {
         const ts = this.resolveTargets('ally', c.target);
         await this.playFx('heal', ts.map(k => this.memberCenter(k)));
         for (const k of ts) this.healMember(k, Math.round((s.power + stat(m, 'mag') * 1.5) * (s.scale || 1) * rnd(0.95, 1.05)));
+      } else if (s.type === 'sanctuary') {
+        const ts = BP().map((_, k) => k);
+        await this.playFx('holy', ts.map(k => this.memberCenter(k)));
+        for (const k of ts) {
+          const t = BP()[k], p = this.memberCenter(k);
+          if (!alive(t)) { t.hp = Math.floor(maxHp(t) * 0.5); this.num(p.x, p.y, 'Revived', '#7aff9a'); }
+          else this.healMember(k, Math.round((s.power + stat(m, 'mag') * 1.5) * s.scale * rnd(0.95, 1.05)));
+          t.status.poison = false; t.status.sleep = 0; t.status.silence = 0;
+        }
       } else if (s.type === 'revive') {
         const k = c.target;
         await this.playFx('holy', [this.memberCenter(k)]);
@@ -851,7 +861,9 @@ class Battle {
     for (const e of this.enemies) {
       xp += e.def.xp; gold += e.def.gold;
       if (e.def.drop && Math.random() < e.def.drop[1]) drops.push(e.def.drop[0]);
+      if (e.def.mat && Math.random() < e.def.mat[1]) drops.push(e.def.mat[0]);
     }
+    if (BP().some(m => alive(m) && accOf(m) && accOf(m).goldx)) gold = Math.round(gold * 1.5);
     G.gold += gold;
     const msgs = [];
     for (const m of BP()) if (alive(m)) { const a = accOf(m); msgs.push(...gainXp(m, Math.round(xp * (a && a.xp ? a.xp : 1)))); }

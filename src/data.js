@@ -7,7 +7,7 @@ const HEROES = {
     name: 'Arin', cls: 'Lamplighter', skill: 'Valor',
     base: { hp: 62, mp: 10, str: 12, def: 8, mag: 5, spd: 8 },
     grow: { hp: 14, mp: 1.8, str: 2.4, def: 1.8, mag: 0.9, spd: 1.0 },
-    spells: [['cure', 3], ['sunstrike', 6], ['rally', 11], ['valor', 18]],
+    spells: [['cure', 3], ['sunstrike', 6], ['rally', 11], ['valor', 18], ['dawnbreak', 42]],
     look: { skin: '#f1c9a0', hair: '#7a3e1d', style: 'spiky', body: '#2e5fb8', accent: '#e8c24a', cape: '#b8322e', weapon: 'sword' },
     start: { weapon: 'bronze_sword', armor: 'leather' },
     bio: 'A young lamplighter of Brightwater. Steady hand, stubborn heart.'
@@ -16,7 +16,7 @@ const HEROES = {
     name: 'Lyra', cls: 'Flamecaller', skill: 'Magic',
     base: { hp: 42, mp: 22, str: 6, def: 5, mag: 13, spd: 9 },
     grow: { hp: 9.5, mp: 4, str: 1.0, def: 1.1, mag: 2.6, spd: 1.1 },
-    spells: [['fire', 1], ['ice', 2], ['bolt', 4], ['sleep', 6], ['fira', 9], ['blizzara', 11], ['thundara', 13], ['flare', 20], ['starfall', 24]],
+    spells: [['fire', 1], ['ice', 2], ['bolt', 4], ['sleep', 6], ['fira', 9], ['blizzara', 11], ['thundara', 13], ['flare', 20], ['starfall', 24], ['supernova', 44]],
     look: { skin: '#f6d6b8', hair: '#c9472f', style: 'long', body: '#7b3fa8', accent: '#f0d36a', hat: 'witch', weapon: 'staff' },
     start: { weapon: 'oak_staff', armor: 'cloth_robe' },
     bio: 'Arin\'s oldest friend. Talks to fire like it is a stubborn cat.'
@@ -25,7 +25,7 @@ const HEROES = {
     name: 'Oswin', cls: 'Tide Priest', skill: 'Prayer',
     base: { hp: 50, mp: 20, str: 9, def: 8, mag: 11, spd: 7 },
     grow: { hp: 11.5, mp: 3.4, str: 1.5, def: 1.6, mag: 2.2, spd: 0.9 },
-    spells: [['cure', 1], ['purify', 1], ['cura', 7], ['raise', 9], ['barrier', 12], ['holy', 15], ['renew', 16], ['curaga', 19]],
+    spells: [['cure', 1], ['purify', 1], ['cura', 7], ['raise', 9], ['barrier', 12], ['holy', 15], ['renew', 16], ['curaga', 19], ['sanctuary', 42]],
     look: { skin: '#e2b48c', hair: '#d8d8d8', style: 'bald', body: '#e9ecf2', accent: '#3a8fd0', beard: true, weapon: 'mace' },
     start: { weapon: 'iron_mace', armor: 'silk_robe' },
     bio: 'An old priest of the sea who dreams of things before they happen.'
@@ -34,7 +34,7 @@ const HEROES = {
     name: 'Kestrel', cls: 'Rogue', skill: 'Tricks',
     base: { hp: 52, mp: 12, str: 11, def: 6, mag: 6, spd: 14 },
     grow: { hp: 12, mp: 1.8, str: 2.3, def: 1.3, mag: 1.0, spd: 1.6 },
-    spells: [['steal', 1], ['twin', 1], ['smoke', 1], ['venom', 14], ['shadowstep', 20]],
+    spells: [['steal', 1], ['twin', 1], ['smoke', 1], ['venom', 14], ['shadowstep', 20], ['mug', 26], ['thousand', 42]],
     look: { skin: '#c98e62', hair: '#1f1b2e', style: 'pony', body: '#2f6b4a', accent: '#c7c7c7', hood: true, weapon: 'dagger' },
     start: { weapon: 'steel_dagger', armor: 'thief_vest' },
     bio: 'A quick-fingered thief from the Ironhold undercity. Owes nobody.'
@@ -43,7 +43,7 @@ const HEROES = {
     name: 'Selene', cls: 'Duskmage', skill: 'Dusk',
     base: { hp: 46, mp: 24, str: 7, def: 6, mag: 14, spd: 11 },
     grow: { hp: 10.5, mp: 4, str: 1.1, def: 1.2, mag: 2.75, spd: 1.3 },
-    spells: [['shade', 1], ['drain', 1], ['gravity', 1], ['nightfall', 1], ['requiem', 28]],
+    spells: [['shade', 1], ['drain', 1], ['gravity', 1], ['nightfall', 1], ['requiem', 28], ['eventide', 44]],
     look: { skin: '#f6d6b8', hair: '#a03a2a', style: 'long', body: '#3a2a5a', accent: '#c04aa8', robe: true, weapon: 'staff' },
     start: { weapon: 'crescent_rod', armor: 'sage_robe' },
     bio: 'Lyra\'s elder sister. Seven years in the dark taught her its spells — and how to turn them back on it.'
@@ -82,6 +82,12 @@ const SPELLS = {
   smoke: { name: 'Smoke Bomb', mp: 3, type: 'escape', target: 'self', fx: 'none', desc: 'Guaranteed escape (not from bosses).' },
   venom: { name: 'Venom Edge', mp: 7, type: 'phys', power: 1.3, poison: true, target: 'enemy', fx: 'poison', desc: 'Strike and poison.' },
   shadowstep: { name: 'Shadowstep', mp: 15, type: 'phys', hits: 3, power: 0.9, target: 'enemy', fx: 'slash', desc: 'Three strikes from nowhere.' },
+  mug: { name: 'Mug', mp: 6, type: 'phys', power: 1.2, mug: true, target: 'enemy', fx: 'slash', desc: 'Strike, and pocket something on the way out.' },
+  thousand: { name: 'Thousand Cuts', mp: 24, type: 'phys', hits: 5, power: 0.85, target: 'enemy', fx: 'slash', desc: 'Five strikes faster than thought.' },
+  dawnbreak: { name: 'Dawnbreak', mp: 28, type: 'phys', elem: 'holy', power: 3.8, target: 'enemy', fx: 'holy', desc: 'The sunrise, swung. A lamplighter\'s last lesson.' },
+  supernova: { name: 'Supernova', mp: 52, type: 'dmg', elem: 'none', power: 165, target: 'enemies', fx: 'flare', desc: 'Lyra stops holding back.' },
+  sanctuary: { name: 'Sanctuary', mp: 40, type: 'sanctuary', power: 80, scale: 1.2, target: 'allies', fx: 'holy', desc: 'Revive the fallen and restore the whole party.' },
+  eventide: { name: 'Eventide', mp: 46, type: 'dmg', elem: 'dark', power: 150, drain: true, target: 'enemies', fx: 'dark', desc: 'Night falls gently on all foes, and takes a little back.' },
   // enemy abilities
   e_spores: { name: 'Spore Cloud', type: 'dmg', elem: 'none', power: 6, target: 'allies', fx: 'poison', poison: 0.5 },
   e_bite: { name: 'Venom Bite', type: 'phys', power: 1.1, target: 'ally', fx: 'slash', poison: 0.6 },
@@ -108,7 +114,12 @@ const SPELLS = {
   e_crush: { name: 'Crushing Coil', type: 'phys', power: 1.7, target: 'ally', fx: 'hit' },
   e_needles: { name: 'Needle Storm', type: 'phys', power: 0.7, target: 'allies', fx: 'slash' },
   e_sandstorm: { name: 'Sandstorm', type: 'dmg', elem: 'none', power: 12, target: 'allies', fx: 'sand' },
-  e_whirl: { name: 'Maelstrom', type: 'dmg', elem: 'water', power: 18, target: 'allies', fx: 'water' }
+  e_whirl: { name: 'Maelstrom', type: 'dmg', elem: 'water', power: 18, target: 'allies', fx: 'water' },
+  e_crownfall: { name: 'Crownfall', type: 'dmg', elem: 'dark', power: 58, target: 'allies', fx: 'dark' },
+  e_nightsong: { name: 'Night Song', type: 'status', status: 'sleep', chance: 0.4, target: 'allies', fx: 'sleep' },
+  e_ashstorm: { name: 'Ash Storm', type: 'dmg', elem: 'fire', power: 34, target: 'allies', fx: 'fire', poison: 0.3 },
+  e_shatter: { name: 'Shatter', type: 'phys', power: 2.0, target: 'ally', fx: 'hit' },
+  e_hushall: { name: 'Hollow Hush', type: 'status', status: 'silence', chance: 0.4, target: 'allies', fx: 'dark' }
 };
 
 // items
@@ -125,11 +136,35 @@ const ITEMS = {
   megalixir: { name: 'Megalixir', price: 0, kind: 'use', effect: 'megalixir', target: 'allies', desc: 'Fully restores the whole party.' },
   remedy: { name: 'Remedy', price: 60, kind: 'use', effect: 'remedy', target: 'ally', desc: 'Cures poison, sleep and silence.' },
   bomb: { name: 'Ember Bomb', price: 90, kind: 'use', effect: 'bomb', amount: 90, target: 'enemies', battleOnly: true, desc: 'Deals fire damage to all foes.' },
+  star_bomb: { name: 'Star Bomb', price: 900, kind: 'use', effect: 'bomb', amount: 420, elem: 'holy', fx: 'holy', target: 'enemies', battleOnly: true, desc: 'Bursts with holy light on all foes.' },
+  // forging materials (dropped by monsters; Orrin works them in Ironhold)
+  ember_core: { name: 'Ember Core', price: 400, kind: 'mat', desc: 'Still warm. From fire-born monsters of Emberdeep and the Ashen Isle.' },
+  frost_crystal: { name: 'Frost Crystal', price: 400, kind: 'mat', desc: 'Never melts. From the beasts of the frozen north.' },
+  sun_gold: { name: 'Sun Gold', price: 600, kind: 'mat', desc: 'Tomb gold that remembers the desert sun.' },
+  star_shard: { name: 'Star Shard', price: 800, kind: 'mat', desc: 'A splinter of fallen sky, from the Starfall Observatory.' },
+  dusk_silk: { name: 'Dusk Silk', price: 700, kind: 'mat', desc: 'Shadow, woven thin. From creatures of the Hollow Night.' },
+  abyss_ash: { name: 'Abyss Ash', price: 1200, kind: 'mat', desc: 'Ash from the Crownfall Abyss. It drinks lamplight.' },
+  // fish (catch with the Old Fishing Rod)
+  minnow: { name: 'Brook Minnow', price: 20, kind: 'fish', desc: 'Tiny and wriggly. Mittens would approve.' },
+  trout: { name: 'River Trout', price: 80, kind: 'fish', desc: 'Speckled and strong. Found in fresh water.' },
+  goldcarp: { name: 'Golden Carp', price: 600, kind: 'fish', desc: 'A rare gold-scaled carp from Brightwater\'s pond.' },
+  seabass: { name: 'Sea Bass', price: 90, kind: 'fish', desc: 'A fine catch from the open sea.' },
+  mackerel: { name: 'Silver Mackerel', price: 140, kind: 'fish', desc: 'Flashes like a coin in the water.' },
+  eel: { name: 'Harbor Eel', price: 220, kind: 'fish', desc: 'Slippery. Port Halden\'s fishwives fry them whole.' },
+  icepike: { name: 'Ice Pike', price: 260, kind: 'fish', desc: 'A cold, toothy hunter from Frostmere.' },
+  frostchar: { name: 'Frost Char', price: 320, kind: 'fish', desc: 'Its belly glows faintly, like the northern lights.' },
+  sturgeon: { name: 'Snow Sturgeon', price: 1200, kind: 'fish', desc: 'Ancient and enormous. Rarely seen in Frostmere.' },
+  catfish: { name: 'Oasis Catfish', price: 300, kind: 'fish', desc: 'Whiskered and wise. It has seen many caravans.' },
+  pearlfish: { name: 'Mirage Pearlfish', price: 1500, kind: 'fish', desc: 'Some say it isn\'t really there. It is.' },
+  embereel: { name: 'Ember Eel', price: 900, kind: 'fish', desc: 'Lives in the warm ash-shallows of the Ashen Isle.' },
+  koi: { name: 'Lantern Koi', price: 5000, kind: 'fish', desc: 'A legend. It glows like a lit Lantern.' },
   // key items
   locket: { name: 'Nell\'s Locket', price: 0, kind: 'key', desc: 'A silver locket with a tiny painted gull inside.' },
   stonebrand: { name: 'Stonebrand', price: 0, kind: 'key', desc: 'Orrin\'s ancestral forge-hammer. Heavier than it looks.' },
   sun_seal: { name: 'Sun Seal', price: 0, kind: 'key', desc: 'The royal seal of Mirage. It opens the First King\'s tomb.' },
   star_chart: { name: 'Star Chart', price: 0, kind: 'key', desc: 'Wren\'s chart. One constellation is circled: the Fifth Flame.' },
+  lastlight_lamp: { name: 'Lamp of Lastlight', price: 0, kind: 'key', desc: 'Lit from Lastlight\'s thousand-year fire. The Abyss\'s mist fears it.' },
+  fishing_rod: { name: 'Old Fishing Rod', price: 0, kind: 'key', desc: 'Face water and press Enter to fish. Stand by the shore, a pond or a pier.' },
   // accessories (anyone can wear)
   gale_sandals: { name: 'Gale Sandals', price: 0, kind: 'acc', spd: 12, desc: 'SPD +12. Arena prize.' },
   champion_belt: { name: 'Champion Belt', price: 0, kind: 'acc', atk: 12, def: 12, desc: 'ATK +12, DEF +12. Arena prize.' },
@@ -151,6 +186,13 @@ const ITEMS = {
   ember_heart: { name: 'Ember Heart', price: 0, kind: 'acc', atk: 5, regen: true, desc: 'ATK +5. Restores HP every round.' },
   silk_ribbon: { name: 'Silk Ribbon', price: 0, kind: 'acc', def: 8, mag: 8, immune: ['poison', 'sleep', 'silence'], desc: 'DEF +8, MAG +8. Prevents all ailments.' },
   fifth_flame: { name: 'The Fifth Flame', price: 0, kind: 'acc', all: 15, regen: true, immune: ['poison', 'sleep', 'silence'], desc: 'All stats +15. Regen. Prevents all ailments.' },
+  angler_ring: { name: 'Angler\'s Ring', price: 0, kind: 'acc', atk: 8, spd: 8, goldx: 1.5, desc: 'ATK +8, SPD +8. +50% gold from battles.' },
+  moonfin: { name: 'Moonfin Charm', price: 0, kind: 'acc', all: 12, regen: true, fewer: true, desc: 'All +12. Regen. Halves random encounters.' },
+  forge_ring: { name: 'Forgeheart Ring', price: 0, kind: 'acc', atk: 14, def: 14, desc: 'ATK +14, DEF +14. Forged by Orrin.' },
+  orrin_seal: { name: 'Orrin\'s Seal', price: 0, kind: 'acc', atk: 6, def: 18, immune: ['poison', 'sleep', 'silence'], desc: 'ATK +6, DEF +18. Prevents all ailments.' },
+  eclipse_mantle: { name: 'Eclipse Mantle', price: 0, kind: 'acc', def: 24, mag: 24, reraise: true, immune: ['silence'], desc: 'DEF +24, MAG +24. Revives once per battle. Prevents silence.' },
+  nightglass: { name: 'Nightglass Locket', price: 0, kind: 'acc', all: 18, immune: ['sleep'], desc: 'All +18. Prevents sleep. A drop of gentle night.' },
+  twin_crown: { name: 'Crown of Dusk & Dawn', price: 0, kind: 'acc', all: 25, regen: true, immune: ['poison', 'sleep', 'silence'], desc: 'All +25. Regen. No ailments. Both halves of the first crown, at peace.' },
   // weapons
   bronze_sword: { name: 'Bronze Sword', price: 60, kind: 'weapon', who: ['arin'], atk: 5, desc: 'A village blade.' },
   iron_sword: { name: 'Iron Sword', price: 380, kind: 'weapon', who: ['arin'], atk: 13, desc: 'Honest iron.' },
@@ -180,6 +222,16 @@ const ITEMS = {
   sky_staff: { name: 'Sky Staff', price: 8500, kind: 'weapon', who: ['lyra'], atk: 12, mag: 34, desc: 'Light as a cloud.' },
   pharaoh_mace: { name: 'Gilded Mace', price: 0, kind: 'weapon', who: ['oswin'], atk: 34, mag: 22, desc: 'Gold from the First King\'s tomb.' },
   sand_kris: { name: 'Sand Kris', price: 0, kind: 'weapon', who: ['kestrel'], atk: 40, spd: 5, desc: 'Wavy and wicked.' },
+  ashsteel_blade: { name: 'Ashsteel Blade', price: 22000, kind: 'weapon', who: ['arin'], atk: 62, desc: 'Quenched in the Ashen Isle\'s cinders.' },
+  cinder_staff: { name: 'Cinder Staff', price: 20000, kind: 'weapon', who: ['lyra'], atk: 14, mag: 44, desc: 'The tip never stops smouldering.' },
+  ash_mace: { name: 'Ashen Mace', price: 20000, kind: 'weapon', who: ['oswin'], atk: 42, mag: 30, desc: 'Grey iron, blessed in Lastlight.' },
+  ash_kris: { name: 'Ash Kris', price: 21000, kind: 'weapon', who: ['kestrel'], atk: 54, spd: 8, desc: 'Leaves a trail of sparks.' },
+  umbral_rod: { name: 'Umbral Rod', price: 24000, kind: 'weapon', who: ['selene'], atk: 14, mag: 50, desc: 'Shadow, held gently.' },
+  oathblade: { name: 'Lamplighter\'s Oath', price: 0, kind: 'weapon', who: ['arin'], atk: 88, mag: 20, desc: 'Forged by Orrin. It burns brighter in the dark.' },
+  phoenix_staff: { name: 'Phoenix Staff', price: 0, kind: 'weapon', who: ['lyra'], atk: 20, mag: 66, desc: 'Forged by Orrin. Its flame relights itself.' },
+  tidecaller: { name: 'Tidecaller', price: 0, kind: 'weapon', who: ['oswin'], atk: 62, mag: 48, desc: 'Forged by Orrin. The sea answers it.' },
+  gloamfang: { name: 'Gloamfang', price: 0, kind: 'weapon', who: ['kestrel'], atk: 80, spd: 14, desc: 'Forged by Orrin. Cuts twice for every swing you see.' },
+  evenstar: { name: 'Evenstar', price: 0, kind: 'weapon', who: ['selene'], atk: 22, mag: 66, desc: 'Forged by Orrin. The first star of evening.' },
   // armor
   leather: { name: 'Leather Armor', price: 50, kind: 'armor', who: ['arin', 'kestrel', 'oswin'], def: 3, desc: 'Basic protection.' },
   cloth_robe: { name: 'Cloth Robe', price: 40, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 2, mag: 1, desc: 'Simple robe.' },
@@ -191,7 +243,13 @@ const ITEMS = {
   mythril_mail: { name: 'Mythril Mail', price: 0, kind: 'armor', who: ['arin', 'oswin'], def: 25, desc: 'Shimmering mail.' },
   star_robe: { name: 'Star Robe', price: 0, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 20, mag: 14, desc: 'The night sky, sewn.' },
   shadow_garb: { name: 'Shadow Garb', price: 0, kind: 'armor', who: ['kestrel'], def: 22, spd: 7, desc: 'Drinks the light.' },
-  dawn_plate: { name: 'Dawn Plate', price: 0, kind: 'armor', who: ['arin', 'oswin'], def: 35, desc: 'Warm to the touch.' }
+  dawn_plate: { name: 'Dawn Plate', price: 0, kind: 'armor', who: ['arin', 'oswin'], def: 35, desc: 'Warm to the touch.' },
+  ash_mail: { name: 'Ash Mail', price: 18000, kind: 'armor', who: ['arin', 'oswin'], def: 32, desc: 'Dark plates, light as cinders.' },
+  ash_robe: { name: 'Ash Robe', price: 16000, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 24, mag: 16, desc: 'Woven by the weavers of Lastlight.' },
+  ash_garb: { name: 'Ash Garb', price: 17000, kind: 'armor', who: ['kestrel'], def: 26, spd: 8, desc: 'Grey as smoke, and as hard to catch.' },
+  ember_plate: { name: 'Emberforged Plate', price: 0, kind: 'armor', who: ['arin', 'oswin'], def: 48, desc: 'Forged by Orrin with a heart of embers.' },
+  night_weave: { name: 'Night Weave', price: 0, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 34, mag: 24, desc: 'Forged by Orrin — well, sewn. He insists it counts.' },
+  gloam_leathers: { name: 'Gloam Leathers', price: 0, kind: 'armor', who: ['kestrel'], def: 36, spd: 12, desc: 'Forged by Orrin. Silent as a held breath.' }
 };
 
 // monsters
@@ -248,6 +306,18 @@ const MONSTERS = {
   firstking: { name: 'Ozymar, the First King', fam: 'king', boss: true, size: 1.1, c: ['#3a2a10', '#e8c84a', '#ffb040'], hp: 6200, atk: 138, def: 74, mag: 110, spd: 24, xp: 9000, gold: 6000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_sandstorm' }, { w: 1, a: 'e_hush' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_cleave' }], steal: 'megalixir' },
   wyrm: { name: 'Astral Wyrm', fam: 'wyrm', boss: true, size: 1.35, c: ['#1a2a5a', '#0a1028', '#9ad8ff'], hp: 12000, atk: 182, def: 88, mag: 150, spd: 30, xp: 20000, gold: 10000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_meteor' }, { w: 2, a: 'e_starbreath' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_dreamfog' }, { w: 1, a: 'e_crush' }], steal: 'megalixir' },
   king: { name: 'The Hollow King', fam: 'king', boss: true, size: 1.3, c: ['#120a20', '#e8c84a', '#8a3aff'], hp: 6500, atk: 165, def: 82, mag: 135, spd: 28, xp: 0, gold: 0, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_cleave' }], steal: 'megalixir' },
+  // ---- Chapter VI: the Ashen Isle and the Crownfall Abyss ----
+  ashhound: { name: 'Ash Hound', fam: 'beast', c: ['#5a5458', '#2a2428'], hp: 1500, atk: 196, def: 84, mag: 60, spd: 28, xp: 640, gold: 420, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_blaze' }], steal: 'xpotion', mat: ['abyss_ash', 0.12] },
+  cinderwisp: { name: 'Cinder Wisp', fam: 'ghost', c: ['#ffa06a', '#8a2a10'], hp: 1200, atk: 120, def: 84, mag: 176, spd: 26, xp: 600, gold: 400, weak: ['ice', 'holy'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_fire' }, { w: 1, a: 'e_hush' }], steal: 'hiether', mat: ['ember_core', 0.2] },
+  cinderknight: { name: 'Cinder Knight', fam: 'knight', c: ['#4a2a1a', '#1a0a05', '#ff7a2a'], hp: 2000, atk: 212, def: 108, mag: 60, spd: 18, xp: 760, gold: 520, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }], drop: ['xpotion', 0.2], steal: 'megalixir', mat: ['abyss_ash', 0.15] },
+  ashgolem: { name: 'Ash Colossus', fam: 'golem', size: 1.15, c: ['#5a5a5e', '#2a2a2e', '#ff5a2a'], hp: 2600, atk: 220, def: 136, mag: 40, spd: 10, xp: 820, gold: 600, weak: ['bolt'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }, { w: 1, a: 'e_ashstorm' }], steal: 'xpotion', mat: ['ember_core', 0.25] },
+  crownshard: { name: 'Crown Shard', fam: 'eye', c: ['#e8c84a', '#3a1a5a', '#ff5ac8'], hp: 1500, atk: 140, def: 90, mag: 196, spd: 30, xp: 700, gold: 500, weak: ['bolt'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_dreamfog' }], steal: 'hiether', mat: ['abyss_ash', 0.2] },
+  nightmare: { name: 'Nightmare', fam: 'beast', size: 1.3, c: ['#2a1a3a', '#0a0514'], hp: 2600, atk: 232, def: 100, mag: 90, spd: 26, xp: 880, gold: 600, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_crush' }, { w: 1, a: 'e_drain' }], steal: 'megalixir', mat: ['dusk_silk', 0.25] },
+  abyssooze: { name: 'Abyss Ooze', fam: 'slime', c: ['#4a1a4a', '#100410'], hp: 2000, atk: 196, def: 96, mag: 188, spd: 18, xp: 760, gold: 520, weak: ['holy'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_eclipse' }, { w: 1, a: 'e_hush' }], steal: 'hiether', mat: ['abyss_ash', 0.2] },
+  herald: { name: 'Hollow Herald', fam: 'witch', c: ['#0a0a1a', '#e8c84a', '#a8a8ff'], hp: 2100, atk: 140, def: 88, mag: 206, spd: 24, xp: 820, gold: 560, weak: ['holy'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_heal' }, { w: 1, a: 'e_nightsong' }], steal: 'elixir', mat: ['dusk_silk', 0.2] },
+  gloamknight: { name: 'Gloam Knight', fam: 'knight', c: ['#2a2a3a', '#0a0a14', '#e8e8ff'], hp: 2800, atk: 240, def: 124, mag: 70, spd: 20, xp: 960, gold: 680, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }, { w: 1, a: 'e_shatter' }], drop: ['megalixir', 0.1], steal: 'megalixir', mat: ['abyss_ash', 0.25] },
+  crown: { name: 'The Hollow Crown', fam: 'crown', boss: true, size: 1.1, c: ['#e8c84a', '#3a2a3a', '#ff5ac8'], hp: 11000, atk: 205, def: 92, mag: 192, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'e_crownfall' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_hushall' }, { w: 1, a: 'e_dreamfog' }, { w: 1, a: 'e_meteor' }], steal: 'megalixir' },
+  orun: { name: 'Orun, the Night-Bearer', fam: 'king', pale: true, boss: true, size: 1.15, c: ['#3a3a5a', '#c8c8e8', '#8ad8ff'], hp: 12500, atk: 232, def: 98, mag: 204, spd: 34, xp: 45000, gold: 25000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_nightsong' }, { w: 1, a: 'e_starbreath' }], steal: 'megalixir' },
   king2: { name: 'Hollow King, Unbound', fam: 'king2', boss: true, size: 1.3, c: ['#05020a', '#ff5ac8', '#5affe8'], hp: 5200, atk: 175, def: 78, mag: 148, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_blaze' }], steal: 'megalixir' }
 };
 
@@ -263,6 +333,8 @@ const ENCOUNTERS = {
   r5: [{ w: 3, g: ['sandworm'] }, { w: 2, g: ['scorpion', 'scorpion'] }, { w: 2, g: ['bandit', 'bandit'] }, { w: 2, g: ['cactoid', 'cactoid', 'cactoid'] }, { w: 1, g: ['bandit', 'scorpion', 'cactoid'] }],
   d6: [{ w: 3, g: ['mummy', 'mummy'] }, { w: 2, g: ['scarab', 'scarab'] }, { w: 2, g: ['sphinx'] }, { w: 2, g: ['tombpriest', 'mummy'] }, { w: 1, g: ['gildedgolem'] }, { w: 1, g: ['gildedgolem', 'tombpriest'] }],
   d5: [{ w: 3, g: ['starspawn', 'astralknight'] }, { w: 2, g: ['voiddrake'] }, { w: 2, g: ['nebulaslime', 'cometimp', 'nebulaslime'] }, { w: 2, g: ['astralknight', 'cometimp'] }, { w: 1, g: ['voiddrake', 'starspawn'] }],
+  r6: [{ w: 3, g: ['ashhound', 'ashhound'] }, { w: 2, g: ['cinderwisp', 'cinderwisp', 'cinderwisp'] }, { w: 2, g: ['cinderknight'] }, { w: 2, g: ['ashgolem'] }, { w: 1, g: ['cinderknight', 'cinderwisp'] }, { w: 1, g: ['ashhound', 'ashgolem'] }],
+  d7: [{ w: 3, g: ['crownshard', 'gloamknight'] }, { w: 2, g: ['nightmare'] }, { w: 2, g: ['abyssooze', 'abyssooze'] }, { w: 2, g: ['herald', 'crownshard'] }, { w: 1, g: ['gloamknight', 'herald'] }, { w: 1, g: ['nightmare', 'abyssooze'] }],
   d4: [{ w: 3, g: ['voidslime', 'wraith'] }, { w: 2, g: ['dreadknight'] }, { w: 2, g: ['nightgaze', 'nightgaze'] }, { w: 2, g: ['hollowknight', 'voidslime'] }, { w: 1, g: ['chimera', 'nightgaze'] }, { w: 1, g: ['dreadknight', 'wraith'] }]
 };
 
@@ -278,11 +350,52 @@ const SHOPS = {
   aerie_items: ['xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
   aerie_arms: ['moon_scepter', 'sunsteel_blade', 'sky_staff', 'scholar_lens', 'echo_bell', 'desert_veil'],
   frostmere_items: ['hipotion', 'xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
-  frostmere_arms: ['swift_boots', 'echo_bell', 'wake_charm', 'scholar_lens', 'guard_ring', 'power_ring']
+  frostmere_arms: ['swift_boots', 'echo_bell', 'wake_charm', 'scholar_lens', 'guard_ring', 'power_ring'],
+  lastlight_items: ['xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb', 'star_bomb'],
+  lastlight_arms: ['ashsteel_blade', 'cinder_staff', 'ash_mace', 'ash_kris', 'umbral_rod', 'ash_mail', 'ash_robe', 'ash_garb']
+};
+
+// Forging materials dropped by existing monsters (new monsters list theirs inline)
+for (const [mat, ids] of Object.entries({
+  ember_core: ['magmaslime', 'firebat', 'embergolem'],
+  frost_crystal: ['frostwolf', 'icegolem', 'snowimp'],
+  sun_gold: ['scarab', 'gildedgolem', 'sphinx', 'mummy'],
+  star_shard: ['starspawn', 'astralknight', 'cometimp', 'voiddrake', 'nebulaslime'],
+  dusk_silk: ['wraith', 'nightgaze', 'voidslime', 'dreadknight', 'hollowknight', 'chimera']
+})) for (const id of ids) MONSTERS[id].mat = [mat, 0.22];
+
+// Orrin's forge (Ironhold). Unlocked once the Stonebrand is home.
+const RECIPES = [
+  { out: 'forge_ring', mats: { ember_core: 2, frost_crystal: 2 }, gold: 3000 },
+  { out: 'ember_plate', mats: { ember_core: 4, sun_gold: 3 }, gold: 8000 },
+  { out: 'night_weave', mats: { dusk_silk: 3, frost_crystal: 3 }, gold: 8000 },
+  { out: 'gloam_leathers', mats: { dusk_silk: 3, star_shard: 2 }, gold: 8000 },
+  { out: 'oathblade', mats: { star_shard: 3, sun_gold: 2, abyss_ash: 3 }, gold: 20000 },
+  { out: 'phoenix_staff', mats: { ember_core: 4, star_shard: 3, abyss_ash: 2 }, gold: 18000 },
+  { out: 'tidecaller', mats: { frost_crystal: 3, sun_gold: 2, abyss_ash: 2 }, gold: 18000 },
+  { out: 'gloamfang', mats: { dusk_silk: 4, abyss_ash: 3 }, gold: 18000 },
+  { out: 'evenstar', mats: { dusk_silk: 3, star_shard: 3, abyss_ash: 2 }, gold: 18000 }
+];
+
+// Fishing: where each fish bites. 'w' is weight; harder fish need more reel hits.
+const FISH = {
+  minnow: { diff: 1 }, trout: { diff: 1 }, goldcarp: { diff: 3 }, seabass: { diff: 1 }, mackerel: { diff: 2 }, eel: { diff: 2 },
+  icepike: { diff: 2 }, frostchar: { diff: 2 }, sturgeon: { diff: 3 }, catfish: { diff: 2 }, pearlfish: { diff: 3 }, embereel: { diff: 3 }, koi: { diff: 3 }
+};
+const FISH_SPOTS = {
+  brightwater: [{ w: 6, f: 'minnow' }, { w: 4, f: 'trout' }, { w: 1, f: 'goldcarp' }],
+  halden: [{ w: 5, f: 'seabass' }, { w: 3, f: 'mackerel' }, { w: 2, f: 'eel' }],
+  sea: [{ w: 6, f: 'seabass' }, { w: 4, f: 'mackerel' }, { w: 1, f: 'eel' }],
+  river: [{ w: 5, f: 'trout' }, { w: 5, f: 'minnow' }],
+  frostmere: [{ w: 5, f: 'icepike' }, { w: 4, f: 'frostchar' }, { w: 1, f: 'sturgeon' }],
+  mirage: [{ w: 7, f: 'catfish' }, { w: 1, f: 'pearlfish' }],
+  shrine: [{ w: 4, f: 'eel' }, { w: 4, f: 'mackerel' }, { w: 2, f: 'seabass' }],
+  lastlight: [{ w: 4, f: 'embereel' }, { w: 4, f: 'catfish' }, { w: 2, f: 'trout' }],
+  ash: [{ w: 3, f: 'embereel' }, { w: 5, f: 'seabass' }, { w: 2, f: 'mackerel' }]
 };
 
 function xpForLevel(L) { return L <= 1 ? 0 : Math.round(8 * Math.pow(L - 1, 2.3) + 12 * (L - 1)); }
-const MAX_LEVEL = 40;
+const MAX_LEVEL = 50;
 
 // Combo techs: members must all be in the battle party, awake, unsilenced and have the MP.
 const COMBOS = [
@@ -294,7 +407,10 @@ const COMBOS = [
   { id: 'tidebreaker', name: 'Tidebreaker', members: ['oswin', 'kestrel'], mp: [8, 6], type: 'phys', elem: 'water', power: 2.3, target: 'enemy', fx: 'water', desc: 'A wave with a knife in it.' },
   { id: 'eclipse_blade', name: 'Eclipse Blade', members: ['arin', 'selene'], mp: [8, 10], type: 'phys', elem: 'dark', power: 3.0, target: 'enemy', fx: 'dark', desc: 'A blade of night, swung by daylight.' },
   { id: 'twin_stars', name: 'Twin Stars', members: ['lyra', 'selene'], mp: [16, 16], type: 'dmg', elem: 'none', power: 120, target: 'enemies', fx: 'flare', desc: 'The sisters\' song. Devastates all foes.' },
-  { id: 'lantern_light', name: 'Lantern Light', members: ['arin', 'lyra', 'oswin'], mp: [14, 18, 18], type: 'dmg', elem: 'holy', power: 160, heal: 0.4, target: 'enemies', fx: 'holy', desc: 'The first flame, remembered. Heals the party.' }
+  { id: 'lantern_light', name: 'Lantern Light', members: ['arin', 'lyra', 'oswin'], mp: [14, 18, 18], type: 'dmg', elem: 'holy', power: 160, heal: 0.4, target: 'enemies', fx: 'holy', desc: 'The first flame, remembered. Heals the party.' },
+  { id: 'shadow_waltz', name: 'Shadow Waltz', members: ['kestrel', 'selene'], mp: [10, 10], type: 'phys', elem: 'dark', power: 1.1, hits: 4, target: 'enemy', fx: 'dark', desc: 'Two shadows dancing. Four dark strikes.' },
+  { id: 'twilight_psalm', name: 'Twilight Psalm', members: ['oswin', 'selene'], mp: [14, 14], type: 'dmg', elem: 'none', power: 95, heal: 0.25, target: 'enemies', fx: 'flare', desc: 'A prayer sung in light and dark. Heals the party.' },
+  { id: 'last_light', name: 'Last Light', members: ['arin', 'lyra', 'selene'], mp: [20, 24, 24], type: 'dmg', elem: 'holy', power: 230, heal: 0.2, target: 'enemies', fx: 'holy', flag: 'combo_lastlight', desc: 'Lastlight\'s secret: three who carried the flame through the dark.' }
 ];
 // Arena cups at Aerie
 const ARENA_CUPS = [
@@ -302,5 +418,6 @@ const ARENA_CUPS = [
   { id: 'silver', name: 'Silver Cup', level: 28, rounds: [['revenant', 'revenant'], ['embergolem', 'sphinx'], ['mummy', 'tombpriest', 'mummy']], prize: 'champion_belt', gold: 4000 },
   { id: 'gold', name: 'Gold Cup', level: 32, rounds: [['hollowknight', 'nightgaze'], ['chimera', 'wraith'], ['dreadknight', 'dreadknight']], prize: 'sage_circlet', gold: 7000 },
   { id: 'platinum', name: 'Platinum Cup', level: 36, rounds: [['astralknight', 'starspawn'], ['voiddrake', 'voiddrake'], ['firstking']], prize: 'phoenix_charm', gold: 12000 },
-  { id: 'champion', name: 'Grand Champion', level: 42, rounds: [['warden'], ['vesper'], ['leviathan', 'leviathan'], ['wyrm']], prize: 'lantern_crown', gold: 30000 }
+  { id: 'champion', name: 'Grand Champion', level: 42, rounds: [['warden'], ['vesper'], ['leviathan', 'leviathan'], ['wyrm']], prize: 'lantern_crown', gold: 30000 },
+  { id: 'eclipse', name: 'Eclipse Cup', level: 46, unlock: 'boss_abyss', rounds: [['gloamknight', 'gloamknight'], ['nightmare', 'herald'], ['cinderknight', 'ashgolem', 'cinderknight'], ['orun']], prize: 'eclipse_mantle', gold: 50000 }
 ];

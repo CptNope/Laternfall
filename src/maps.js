@@ -29,8 +29,12 @@ const WORLD_LOC = {
   3: { x: 52, y: 6, dungeon: 'mine', name: 'Emberdeep Mines' },
   4: { x: 60, y: 40, dungeon: 'spire', name: 'Hollow Spire' },
   5: { x: 9, y: 12, dungeon: 'observatory', name: 'Starfall Observatory' },
-  6: { x: 85, y: 45, dungeon: 'tomb', name: 'Tomb of the First King' }
+  6: { x: 85, y: 45, dungeon: 'tomb', name: 'Tomb of the First King' },
+  // Chapter VI — the Ashen Isle (hidden under the sea until G.flags.isle)
+  G: { x: 79, y: 9, town: 'lastlight', name: 'Lastlight' },
+  7: { x: 88, y: 7, dungeon: 'abyss', name: 'Crownfall Abyss' }
 };
+const ISLE_LOCS = ['G', '7'];
 const SHIP_HOME = { x: 40, y: 38 };
 const BRIDGE_Y = 43;
 function riverX(y) { return 29 + Math.round(Math.sin(y * 0.35) * 1.2); }
@@ -43,7 +47,8 @@ function genWorld() {
     { id: 'B', cx: 44, cy: 12, rx: 24, ry: 8.5, ok: (x, y) => y <= 21 && x <= 69 },
     { id: 'F', cx: 84, cy: 33, rx: 11, ry: 15, ok: (x, y) => x >= 73 },
     { id: 'C', cx: 60, cy: 40, rx: 7.5, ry: 6.5, ok: (x, y) => x >= 52 && y >= 32 },
-    { id: 'E', cx: 9, cy: 12, rx: 5.5, ry: 4.5, ok: (x, y) => x <= 15 && y <= 20 }
+    { id: 'E', cx: 9, cy: 12, rx: 5.5, ry: 4.5, ok: (x, y) => x <= 15 && y <= 20 },
+    { id: 'H', cx: 84, cy: 8, rx: 10, ry: 5, ok: (x, y) => x >= 74 && y <= 14 }
   ];
   for (let y = 0; y < h; y++) {
     tiles.push([]); region.push([]);
@@ -69,6 +74,7 @@ function genWorld() {
     let c = '.';
     if (reg === 'C') c = e > 0.68 ? '^' : m > 0.5 ? 'd' : 'q';
     else if (reg === 'F') c = e > 0.66 ? 'm' : hash(x, y, 91) < 0.07 ? 'v' : 'z';
+    else if (reg === 'H') c = e > 0.7 ? '^' : m > 0.6 ? 'd' : '.';
     else if (reg === 'B') {
       const snow = y < 10;
       if (e > 0.62) c = snow ? 'M' : '^'; else if (e > 0.57) c = snow ? '*' : 'n'; else if (m > 0.55) c = snow ? 'P' : 'T'; else c = snow ? '*' : '.';
@@ -101,7 +107,7 @@ function genWorld() {
     let x = x0, y = y0;
     const step = () => {
       const c = at(x, y);
-      if (/[A-F1-6]/.test(c)) return;
+      if (isLoc(c)) return;
       if (c === '~' || c === 'r') { if (allowWater && c === '~') { set(x, y, '='); region[y][x] = region[y][x] || 'A'; } return; }
       set(x, y, '=');
     };
@@ -138,7 +144,8 @@ function genWorld() {
   // place locations
   for (const k in WORLD_LOC) {
     const L = WORLD_LOC[k];
-    if (tiles[L.y][L.x] === '~') region[L.y][L.x] = region[L.y][L.x] || (k === '4' ? 'C' : 'A');
+    if (ISLE_LOCS.includes(k)) region[L.y][L.x] = 'H';
+    else if (tiles[L.y][L.x] === '~') region[L.y][L.x] = region[L.y][L.x] || (k === '4' ? 'C' : 'A');
     clearAround(L.x, L.y, 1, k === '1');
     tiles[L.y][L.x] = k;
   }
@@ -166,6 +173,17 @@ function genWorld() {
     if (d > 1.5 && d < 2.6 && !(x < 60 && Math.abs(y - 40) <= 1) && region[y][x] === 'C' && tiles[y][x] !== '~') tiles[y][x] = '^';
   }
   road(54, 40, 59, 40);
+  // Ashen Isle: a crater ring of black rock around the Abyss, open to the west
+  for (let y = 2; y <= 12; y++) for (let x = 83; x <= 94; x++) {
+    const d = Math.hypot(x - 88, y - 7);
+    if (isLoc(tiles[y][x])) continue;
+    if (d < 3.6) { if (tiles[y][x] === '~' || d < 2.6) tiles[y][x] = d < 3.1 ? '.' : 's'; region[y][x] = 'H'; }
+    if (d > 1.5 && d < 2.6 && !(x < 88 && Math.abs(y - 7) <= 1)) tiles[y][x] = '^';
+  }
+  road(80, 9, 86, 7, false, true);
+  // snapshot the isle, then sink it: applyWorldFlags raises it after the ending
+  const isle = [];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (region[y][x] === 'H') { isle.push([x, y, tiles[y][x]]); tiles[y][x] = '~'; region[y][x] = null; }
   // the Leviathan's whirlpool: open sea nearest a fixed point
   let whirl = null, wd = 1e9;
   for (let y = 3; y < h - 3; y++) for (let x = 3; x < w - 3; x++) {
@@ -175,7 +193,7 @@ function genWorld() {
     const d = Math.hypot(x - 50, y - 29);
     if (d < wd) { wd = d; whirl = { x, y }; }
   }
-  const m = new GameMap({ id: 'world', kind: 'world', w, h, tiles, region, name: 'World', whirl });
+  const m = new GameMap({ id: 'world', kind: 'world', w, h, tiles, region, name: 'World', whirl, isle });
   return m;
 }
 function worldRegionAt(map, x, y) {
@@ -187,12 +205,14 @@ function worldRegionAt(map, x, y) {
   if (reg === 'C') return 'r4';
   if (reg === 'E') return 'r3';
   if (reg === 'F' || reg === 'G') return 'r5';
+  if (reg === 'H') return 'r6';
   return 'r1';
 }
 function worldBattleBG(map, x, y) {
   const c = map.at(x, y), reg = map.region[y] && map.region[y][x];
   if (c === '~' || c === 'r') return 'sea';
   if (reg === 'C') return 'dusk';
+  if (reg === 'H') return 'ash';
   if (reg === 'F' || reg === 'G') return 'desert';
   if (c === '*' || c === 'P' || c === 'M') return 'snow';
   if (c === 'T') return 'forest';
@@ -290,7 +310,21 @@ const TOWN_DEFS = {
     decor: [[16, 13, 'a'], [24, 14, 'c'], [1, 9, 'l'], [24, 9, 'l'], [9, 17, 'l'], [16, 17, 'l'], [7, 9, 'P'], [18, 9, 'P']]
   }
 };
-const TOWN_SOLID = new Set(['t', 'P', 'r', '~', 'F', 'w', 'c', 'a', 'g', 'l', 'm']);
+TOWN_DEFS.lastlight = {
+  name: 'Lastlight', w: 24, h: 18, border: 'r', theme: 'ash', music: 'ashtown', loc: 'G',
+  exits: [[11, 17], [12, 17]],
+  buildings: [
+    { x: 2, y: 2, w: 6, h: 4, kind: 'inn', roof: '#5a4a5a', sign: 'inn', id: 'inn', price: 300, chimney: true, wall: '#8a8480' },
+    { x: 9, y: 1, w: 6, h: 5, kind: 'hall', roof: '#7a3a2a', sign: 'hall', id: 'wardhall', wall: '#9a948a' },
+    { x: 17, y: 2, w: 5, h: 4, kind: 'chapel', roof: '#4a3a5a', id: 'chapel' },
+    { x: 2, y: 10, w: 5, h: 4, kind: 'shop', roof: '#3a5a4a', sign: 'item', id: 'items', shop: 'lastlight_items', wall: '#8a8480' },
+    { x: 17, y: 10, w: 5, h: 4, kind: 'shop', roof: '#6a3a2a', sign: 'arms', id: 'arms', shop: 'lastlight_arms', chimney: true, wall: '#8a8480' }
+  ],
+  paths: [[11, 6, 12, 17], [3, 6, 20, 7], [4, 14, 19, 14]],
+  water: [[8, 15, 3, 2]],
+  decor: [[11, 9, 'b'], [12, 9, 'b'], [8, 9, 'l'], [15, 9, 'l'], [8, 12, 'g'], [9, 12, 'g'], [15, 12, 'g'], [20, 16, 'c'], [3, 16, 'c'], [14, 16, 'l']]
+};
+const TOWN_SOLID = new Set(['t', 'P', 'r', '~', 'F', 'w', 'c', 'a', 'g', 'l', 'm', 'b']);
 function buildTown(id) {
   const d = TOWN_DEFS[id];
   const tiles = [];
@@ -298,7 +332,7 @@ function buildTown(id) {
     tiles.push([]);
     for (let x = 0; x < d.w; x++) {
       const edge = x === 0 || y === 0 || x === d.w - 1 || y === d.h - 1;
-      tiles[y].push(edge ? d.border : (hash(x, y, 31) < 0.06 && d.theme !== 'stone' ? 'f' : '.'));
+      tiles[y].push(edge ? d.border : (hash(x, y, 31) < 0.06 && d.theme !== 'stone' && d.theme !== 'ash' ? 'f' : '.'));
     }
   }
   for (const [x, y, w, h] of d.water || []) for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) tiles[yy][xx] = '~';
@@ -307,7 +341,7 @@ function buildTown(id) {
   for (const [x, y, c] of d.decor || []) tiles[y][x] = c;
   for (const [x, y] of d.exits) tiles[y][x] = ':';
   const buildings = d.buildings.map(b => ({ ...b, doorX: b.x + Math.floor(b.w / 2) }));
-  if (d.theme === 'snow' || d.theme === 'sand') for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) if (tiles[y][x] === 'f') tiles[y][x] = '.';
+  if (d.theme === 'snow' || d.theme === 'sand' || d.theme === 'ash') for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) if (tiles[y][x] === 'f') tiles[y][x] = '.';
   const m = new GameMap({ id, kind: 'town', w: d.w, h: d.h, tiles, buildings, theme: d.theme, name: d.name, music: d.music, loc: d.loc });
   return m;
 }
@@ -325,7 +359,9 @@ const DUNGEONS = {
   tomb: { name: 'Tomb of the First King', theme: 'tomb', floors: 3, w: 36, h: 28, seed: 606, enc: 'd6', bg: 'tomb', loc: '6', deco2: 'o',
     loot: [['hiether', 'gold:5000', 'xpotion', 'desert_veil'], ['pharaoh_mace', 'sand_kris', 'elixir', 'megalixir'], ['nocturne', 'xpotion', 'hiether']], boss: 'firstking', lantern: 'sun', lanternCol: '#ffc04a' },
   observatory: { name: 'Starfall Observatory', theme: 'astral', floors: 3, w: 36, h: 28, seed: 505, enc: 'd5', bg: 'astral', loc: '5', deco2: 'k',
-    loot: [['swift_boots', 'megalixir', 'gold:8000', 'xpotion'], ['ember_heart', 'celestia', 'astral_mace', 'elixir'], ['lightbringer', 'comet_edge', 'megalixir', 'hiether']], boss: 'wyrm', lantern: 'fifth', lanternCol: '#a8d8ff' }
+    loot: [['swift_boots', 'megalixir', 'gold:8000', 'xpotion'], ['ember_heart', 'celestia', 'astral_mace', 'elixir'], ['lightbringer', 'comet_edge', 'megalixir', 'hiether']], boss: 'wyrm', lantern: 'fifth', lanternCol: '#a8d8ff' },
+  abyss: { name: 'Crownfall Abyss', theme: 'abyss', floors: 4, w: 38, h: 30, seed: 707, enc: 'd7', bg: 'abyss', loc: '7', deco: 'L', deco2: 'k',
+    loot: [['abyss_ash', 'xpotion', 'gold:12000', 'hiether'], ['ash_robe', 'megalixir', 'abyss_ash', 'star_bomb'], ['ash_mail', 'elixir', 'abyss_ash', 'megalixir'], ['nightglass', 'megalixir', 'gold:20000', 'abyss_ash']], boss: 'crown', lantern: 'night', lanternCol: '#b8a8ff' }
 };
 const DUNGEON_SOLID = new Set(['#', '~', 'L', 'o', 'k']);
 function genDungeonFloor(did, f) {
