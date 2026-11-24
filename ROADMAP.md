@@ -115,10 +115,10 @@ gantt
 
 | Milestone | Theme | Headline | Target | Status |
 | --- | --- | --- | --- | --- |
-| **1.3.x** | Stabilise | Real-HP balance pass, mobile check, CI, tagged releases | Nov 2026 | ✅ Done in 1.4.0 except ST-2 and ST-4 |
+| **1.3.x** | Stabilise | Real-HP balance pass, mobile check, CI, tagged releases | Nov 2026 | ✅ Done in 1.4.0 (tags pushed for 1.6.0) except ST-2 |
 | **1.4** | Comfort | Save slots, auto-save, battle speed, gamepad, accessibility | Nov 2026 | ✅ Done (1.4.0, finished in 1.5.0) |
 | **1.5** | Heroes | A personal quest for each of the five heroes, with an ultimate weapon and a Limit | Dec 2026 | ✅ Done (1.5.0) |
-| **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | May 2027 | 🟡 In review (1.6.0: DS-1 to DS-7) |
+| **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | Nov 2026 | ✅ Done (1.6.0: DS-1 to DS-7) |
 | **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ⚪ Planned |
 | **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ⚪ Planned |
 | **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 💭 Exploring |
@@ -153,7 +153,7 @@ Make 1.3.0 solid before building on it.
 | ✅ ST-1 | **Balance pass at real HP**: play Chapter VI's finale at Lv 42, 45 and 50 without debug changes | The 1.3.0 tests shrank boss HP to finish quickly | M |
 | ST-2 | **Touch-device pass**: fishing, forge and Config on a phone in landscape | The fishing timing window was only tested with a keyboard | S |
 | ✅ ST-3 | **CI**: run `tools/playtest.py` on every pull request with GitHub Actions and attach screenshots | Catches broken saves and JS errors automatically | M |
-| ST-4 | **Tag releases** `v1.0.0`–`v1.3.0` and publish GitHub Releases | The changelog and itch builds can then link to real tags | S |
+| ✅ ST-4 | **Tag releases** `v1.0.0`–`v1.3.0` and publish GitHub Releases | The changelog and itch builds can then link to real tags | S |
 | ✅ ST-5 | **itch.io update**: Chapter VI devlog, new screenshots, updated feature list | `docs/itch/itch-page.md` still describes 1.2 | S |
 | ✅ ST-6 | **Lastlight barrels** may hand out Abyss Ash early; decide whether that's intended | Forge balance | XS |
 | ✅ ST-7 | **Eclipse Cup EXP**: Orun gives 45,000 EXP on every rematch | Possible EXP farm; harmless at the level cap, but worth a decision | XS |
@@ -163,7 +163,7 @@ Make 1.3.0 solid before building on it.
 
 **Result (1.5.0).** All five hero quests shipped, with Limits, campfire talks and the Festival of Lanterns. The new bosses were tuned with the simulator: the Lamp-Eater and the Abbot are the gentler two, the Hearth Warden and Vane the hardest (83–87% at Lv 44), and Selene's solo duel takes about 12 rounds.
 
-**Result (1.4.0).** The simulator showed the finale was long (25–28 rounds) but harmless. Both bosses now act twice per round with less HP: Lv 42 wins 68–82% in about 22 rounds, Lv 45 wins every time in 19, and Lv 50 finishes in 13. ST-6 and ST-7 were kept as they are (see the changelog). **Still open:** ST-2 (try fishing and the new R button on a real phone) and ST-4 (push the tags; the table under [Release process](#release-process) lists the commits).
+**Result (1.4.0).** The simulator showed the finale was long (25–28 rounds) but harmless. Both bosses now act twice per round with less HP: Lv 42 wins 68–82% in about 22 rounds, Lv 45 wins every time in 19, and Lv 50 finishes in 13. ST-6 and ST-7 were kept as they are (see the changelog). **Still open:** ST-2 (try fishing and the new R button on a real phone). ST-4 is done: every version is tagged and has a GitHub Release.
 
 > **Observation:** at the levels the simulator assumed, the Hollow King (Lv 32) and the Astral Wyrm (Lv 36) were never lost, with almost no healing items used. They were left alone because nobody has measured what level players actually reach them at. A good follow-up is to add play-time level checkpoints to the harness and re-run the simulator at those levels.
 
@@ -452,7 +452,7 @@ flowchart LR
    ```
 6. Zip `index.html` as `lanternfall-web.zip`, upload it to itch.io (tick "played in the browser") and post a devlog.
 
-**Backfilling tags (ST-4).** These commits match the versions in the changelog:
+**Backfilled tags (ST-4, done).** Each tag below has a [GitHub Release](https://github.com/CptNope/Laternfall/releases) with that version's `index.html` attached:
 
 | Tag | Commit |
 | --- | --- |
@@ -461,6 +461,10 @@ flowchart LR
 | `v1.2.0` | `1197c6d` (merge of #2) |
 | `v1.2.1` | `f737c3b` (merge of #3) |
 | `v1.3.0` | `a5dbeeb` (merge of #4) |
+| `v1.3.1` | `f837072` (merge of #5) |
+| `v1.4.0` | `4154a08` (merge of #6) |
+| `v1.5.0` | `a8abeb1` (merge of #7) |
+| `v1.6.0` | the merge of the 1.6.0 changelog pull request |
 
 ---
 
