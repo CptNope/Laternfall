@@ -734,8 +734,7 @@ async function runChapterEnding() {
   G.scene = Field; Field.playMusic();
   await fadeTo(0, 800);
   await narrate('The Eclipse Cup is now open at the Aerie Arena.');
-  const c = await choose(null, 'Record your journey?', ['Save', 'Not now'], 0);
-  if (c === 0 && saveGame()) { Audio_.sfx('save'); await narrate('Your journey has been recorded.'); }
+  await promptSave();
 }
 
 // ------------- Frostmere -------------
@@ -996,30 +995,33 @@ async function titleMenu() {
   G.scene = TitleScene; TitleScene.t = 0;
   Audio_.play('title');
   await fadeTo(0, 600);
+  let idx = hasSave() ? 1 : 0;
   while (true) {
-    const ngp = saveFlag('ending');
-    const items = [{ label: 'New Game' }, { label: 'Continue', disabled: !hasSave() }, { label: ngp ? `New Game+ (${(saveFlag('ngplus') || 0) + 1})` : 'New Game+', disabled: !ngp }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }];
-    const k0 = await listMenu({ x: W / 2 - 100, y: 190, w: 200, rows: 4, items, cancel: false, index: hasSave() ? 1 : 0, help: i => i === 2 ? (ngp ? 'Keep your levels, gear and items. Enemies grow stronger.' : 'Finish the story to unlock New Game+.') : '' , helpY: H - 60 });
-    const k = k0 === 3 ? 2 : k0 === 2 ? 3 : k0;
-    if (k === 3) { await newGamePlus(); return; }
+    const ngSlots = ALL_SLOTS.filter(s => { const d = readSlot(s); return d && d.flags && d.flags.ending; });
+    const latest = latestSlot(), ls = latest && slotSummary(latest);
+    const items = [{ label: 'New Game' }, { label: 'Continue', disabled: !latest }, { label: 'Load Game', disabled: !latest }, { label: 'New Game+', disabled: !ngSlots.length }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }];
+    const helps = ['Begin a new journey.', ls ? `${ls.place} · ${ls.chapter} · ${ls.time}` : 'No saved journey yet.', 'Choose a save slot.', ngSlots.length ? 'Keep your levels, gear and items. Enemies grow stronger.' : 'Finish the story to unlock New Game+.', 'Toggle music and sound (or press M).'];
+    const k = await listMenu({ x: W / 2 - 100, y: 186, w: 200, rows: 5, items, cancel: false, index: idx, help: i => helps[i], helpY: H - 60 });
+    idx = k;
     if (k === 0) { await newGame(); return; }
-    if (k === 1) {
-      if (loadGame()) {
-        await fadeTo(1, 500);
-        G.maps = {};
-        Field.enter(G.mapId, G.x, G.y, G.dir);
-        await fadeTo(0, 500);
-        if (G.mapId === 'world') await worldEvents();
-        return;
-      }
-    }
-    if (k === 2) Audio_.toggleMute();
+    if (k === 1 && await resumeFrom(latest)) return;
+    if (k === 2) { const s = await pickSlot('load'); if (s && await resumeFrom(s)) return; }
+    if (k === 3) { const s = ngSlots.length === 1 ? ngSlots[0] : await pickSlot('load', 'New Game+ from…', d => d.flags && d.flags.ending); if (s && readSlot(s).flags.ending) { await newGamePlus(s); return; } }
+    if (k === 4) Audio_.toggleMute();
   }
 }
+async function resumeFrom(slot) {
+  if (!loadGame(slot)) return false;
+  await fadeTo(1, 500);
+  G.maps = {};
+  Field.enter(G.mapId, G.x, G.y, G.dir);
+  await fadeTo(0, 500);
+  if (G.mapId === 'world') await worldEvents();
+  return true;
+}
 const BlackScene = { lines: [], t: 0, tick(dt) { this.t += dt; }, update() { }, draw(g) { g.fillStyle = '#05040c'; g.fillRect(0, 0, W, H); this.lines.forEach((l, i) => { g.save(); g.globalAlpha = clamp((this.t - l.at) / 1.2, 0, 1); text(g, l.s, W / 2, 130 + i * 44, { size: 20, fam: SERIF, align: 'center', color: '#e8dcc8' }); g.restore(); }); } };
-function saveFlag(k) { try { const d = JSON.parse(localStorage.getItem(SAVE_KEY)); return d && d.flags ? d.flags[k] : null; } catch (e) { return null; } }
-async function newGamePlus() {
-  if (!loadGame()) return newGame();
+async function newGamePlus(slot) {
+  if (!loadGame(slot)) return newGame();
   const carry = {}; G.party.forEach(m => carry[m.id] = { ...m, status: {} });
   const inv = {}; for (const k in G.inv) if (ITEMS[k] && ITEMS[k].kind !== 'key') inv[k] = G.inv[k];
   for (const m of G.party) for (const sl of ['weapon', 'armor', 'acc']) if (m[sl]) { /* equipped gear stays on the carried member */ }
@@ -1035,6 +1037,7 @@ async function newGame(plus) {
   G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
   G.seen = plus ? plus.seen : {}; G.killed = plus ? plus.killed : {};
   if (plus) G.flags.ngplus = plus.ng;
+  if (!plus) G.slot = SAVE_SLOTS.find(s => !hasSave(s)) || '1';
   G.scene = BlackScene; BlackScene.lines = []; BlackScene.t = 0;
   await fadeTo(0, 400);
   const story = ['Long ago, the Hollow Night swallowed the world.', 'Four Lanterns were lit to chain it beneath the earth —', 'Ember, Tide, Stone, and Dawn.', 'For a thousand years, their flames held.', '...Until tonight.'];
@@ -1127,10 +1130,12 @@ function frameInner(now) {
   const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
   Input.update(dt);
   if (Input.p('mute')) Audio_.toggleMute();
-  updateTimers(dt); updateFade(dt);
+  // battle speed: battles run their timers and animations faster; dialogue boxes do not
+  const bs = G.scene instanceof Battle ? BATTLE_SPEEDS[CFG.battleSpeed || 0].v : 1;
+  updateTimers(dt * bs); updateFade(dt);
   const uiBusy = UI.update(dt);
   if (!uiBusy && !Script.running && G.scene && G.scene.update) G.scene.update(dt);
-  if (G.scene && G.scene.tick) G.scene.tick(dt);
+  if (G.scene && G.scene.tick) G.scene.tick(dt * bs);
   ctx.setTransform(SCALE * DPR, 0, 0, SCALE * DPR, 0, 0);
   ctx.clearRect(0, 0, W, H);
   if (G.scene) G.scene.draw(ctx);

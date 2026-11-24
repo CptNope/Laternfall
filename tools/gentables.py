@@ -49,8 +49,8 @@ for code, title in AREAS:
 out['monsters'] = '\n'.join(parts)
 WHERE = {'gloomcap': 'Whisperwood Hollow 2F', 'warden': 'Sunken Shrine 2F', 'vesper': 'Emberdeep Mines 3F', 'leviathan': 'Whirlpool, open sea (bounty)', 'firstking': 'Tomb of the First King 3F',
          'wyrm': 'Starfall Observatory 3F (optional)', 'king': 'Hollow Spire 3F (phase 1)', 'king2': 'Hollow Spire 3F (phase 2)', 'crown': 'Crownfall Abyss 4F (phase 1)', 'orun': 'Crownfall Abyss 4F (phase 2)'}
-rows = [[f"**{M[b]['name']}**", w, M[b]['hp'], M[b]['atk'], M[b]['mag'], M[b]['spd'], ', '.join(map(cap, M[b].get('weak', []))) or '—', nm(M[b]['steal']), ', '.join(S[a['a']]['name'] for a in M[b].get('acts', []) if a['a'] != 'attack')] for b, w in WHERE.items()]
-out['bosses'] = tbl(['Boss', 'Where', 'HP', 'ATK', 'MAG', 'SPD', 'Weak to', 'Steal', 'Special attacks'], rows)
+rows = [[f"**{M[b]['name']}**", w, M[b]['hp'], M[b]['atk'], M[b]['mag'], M[b]['spd'], M[b].get('actions', 1), ', '.join(map(cap, M[b].get('weak', []))) or '—', nm(M[b]['steal']), ', '.join(S[a['a']]['name'] for a in M[b].get('acts', []) if a['a'] != 'attack')] for b, w in WHERE.items()]
+out['bosses'] = tbl(['Boss', 'Where', 'HP', 'ATK', 'MAG', 'SPD', 'Turns', 'Weak to', 'Steal', 'Special attacks'], rows)
 # equipment
 def eqrow(k, it):
     stats = ' '.join(filter(None, [it.get('atk') and f"ATK+{it['atk']}", it.get('def') and f"DEF+{it['def']}", it.get('mag') and f"MAG+{it['mag']}", it.get('spd') and f"SPD+{it['spd']}", it.get('all') and f"All+{it['all']}"]))

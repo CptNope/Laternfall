@@ -32,7 +32,7 @@ How the engine works, for anyone reading or changing the code. It covers how the
 | Runs from `file://` | No modules, no `fetch`, no workers. The scripts are concatenated into one inline `<script>`. |
 | One global scope | Files share top-level `const`s and functions, so load order matters (see [Modules](#modules)). |
 | 640×480 logical canvas | Drawing code uses fixed coordinates; `resize()` scales the canvas to fit the window at full device-pixel sharpness. |
-| Plays on touch | Every action maps to one of 8 inputs: `up`, `down`, `left`, `right`, `ok`, `cancel`, `mute`, `run`. |
+| Plays on touch and gamepad | Every action maps to one of 8 inputs: `up`, `down`, `left`, `right`, `ok`, `cancel`, `mute`, `run`. |
 
 ---
 
@@ -127,6 +127,7 @@ sequenceDiagram
 ```
 
 - `dt` is capped at 50 ms so a stall doesn't teleport anything.
+- **Battle speed:** while `G.scene` is a `Battle`, timers and scene animation run at `dt × BATTLE_SPEEDS[CFG.battleSpeed]` (1×, 2× or 4×). Dialogue boxes keep normal speed so messages stay readable.
 - `frame()` wraps everything in `try/catch` and logs each distinct error **once**, so one bad draw can't freeze the game.
 
 ---
@@ -207,14 +208,18 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     K[keydown / keyup<br/>KEYMAP by e.code] --> D[Input.down]
-    T[Touch D-pad and A/B<br/>pointer events] --> V[Input.vdown]
+    T[Touch D-pad, A, B, R<br/>pointer events] --> V[Input.vdown]
+    GP[Gamepad API<br/>polled every frame] --> PD[Input.pad]
     D --> U[Input.update dt]
     V --> U
+    PD --> U
     U --> P["Input.p(action)<br/>pressed this frame, with key repeat"]
     U --> Hh["Input.h(action)<br/>held"]
 ```
 
 - Arrow keys repeat after 0.3 s, every 0.08 s.
+- **Gamepads** (standard mapping) are read through `PAD_BUTTONS`: D-pad or left stick to move, A = ok, B/Y/Start = cancel, X = run, Select = mute.
+- A `ListMenu` can take `hotkeys: { action: value }` to close with a value when that action is pressed. The battle menu uses `{ run: -10 }` for *repeat last turn*.
 - `UI.update` clears pressed state after the top component reads it, so one press never triggers two things.
 - **Run** is `Input.h('run') !== CFG.dash`: with auto-dash on, holding Shift walks instead.
 
@@ -376,6 +381,7 @@ classDiagram
 | Option | Effect |
 | --- | --- |
 | `boss: true` | No running, a boss intro line, boss music; sleep and silence don't work |
+| *(monster)* `actions: 2` | The monster gets that many turns per round (the Hollow Crown and Orun) |
 | `bg` | Battle background key (`plains`, `abyss`, `crownfall`, …) |
 | `music` | Override the track (`final`, `crown`) |
 | `arena: true`, `canRun: false` | Arena rules; a loss returns to the arena instead of a game over |
@@ -431,10 +437,12 @@ Browsers block audio until the first key press or tap (`Audio_.unlock()`).
 
 ## Game state and saves
 
-Everything that persists lives in the global `G` (`party.js`). `saveGame()` writes the fields below as JSON to `localStorage['lanternfall_save_v1']`.
+Everything that persists lives in the global `G` (`party.js`). `saveGame(slot)` writes the fields below as JSON to `localStorage['lanternfall_save_v2_<slot>']`. There are three manual slots (`1`, `2`, `3`) and one auto-save slot (`auto`).
 
 | Field | Type | Meaning |
 | --- | --- | --- |
+| `version` | number | Save format version (currently `2`) |
+| `savedAt` | ms timestamp | Shown in slot menus; **Continue** picks the newest |
 | `party` | `{id, level, xp, hp, mp, weapon, armor, acc}[]` | Heroes in formation order; the first four fight |
 | `inv` | `{itemId: count}` | Inventory, including key items |
 | `gold`, `playTime` | number | |
@@ -447,16 +455,38 @@ Everything that persists lives in the global `G` (`party.js`). `saveGame()` writ
 
 ```mermaid
 flowchart LR
-    G[(G in memory)] -- saveGame --> LS[(localStorage<br/>lanternfall_save_v1)]
-    LS -- loadGame --> G
+    G[(G in memory)] -- "saveGame(slot)" --> LS[(lanternfall_save_v2_1 / 2 / 3 / auto)]
+    LS -- "readSlot → migrateSave → loadGame(slot)" --> G
+    OLD[(lanternfall_save_v1<br/>1.0–1.3)] -- copied once into slot 1<br/>original kept --> LS
     G -- maps rebuilt from seeds --> M[G.maps cache]
     M -- applyWorldFlags / populate --> V[What you see]
-    CFGs[(localStorage<br/>lanternfall_cfg_v1)] <--> CFG[CFG settings]
+    CFGs[(lanternfall_cfg_v1)] <--> CFG[CFG settings]
 ```
 
-There is **no schema version** in the save yet; [ROADMAP TD-1](../ROADMAP.md#technical-debt) covers adding one. Until then, only add new flags, never rename old ones, and give every new field a default in `loadGame()`.
+### Versioning and migrations
 
----
+Every save carries a `version`. When a slot is read, `migrateSave` applies `MIGRATIONS[v]` step by step until the save reaches `SAVE_VERSION`. To change the save format:
+
+1. Bump `SAVE_VERSION`.
+2. Add `MIGRATIONS[oldVersion] = d => ({ ...d, version: oldVersion + 1, /* reshape */ })`.
+3. Never delete old migrations: a player may skip several releases.
+
+```mermaid
+flowchart LR
+    v1[v1 save<br/>no version] -- "MIGRATIONS[1]" --> v2[v2<br/>version, savedAt]
+    v2 -. "MIGRATIONS[2], when needed" .-> v3[v3 …]
+```
+
+### When the game saves
+
+| Trigger | Slot |
+| --- | --- |
+| Menu → Save | The slot you choose |
+| Resting at an inn, the Chapter VI epilogue | Current slot (one press), or choose a slot |
+| The ending credits | Current slot |
+| Entering a town or dungeon (if Auto-save is on) | `auto` |
+
+`G.slot` is the current slot. It's set when you load or save, and a new game picks the first empty slot.
 
 ## Story flags reference
 
@@ -490,3 +520,6 @@ There is **no schema version** in the save yet; [ROADMAP TD-1](../ROADMAP.md#tec
 | `muted` | boolean | `Audio_` |
 | `dash` | boolean | `Field.startMove` |
 | `textSpeed` | 0 Normal (55 chars/s), 1 Fast (120), 2 Instant | `Dialog` |
+| `battleSpeed` | 0 (1×), 1 (2×), 2 (4×) | `frameInner` while in battle |
+| `autosave` | boolean (default on) | `autoSave()` |
+| `noEnc` | boolean; only takes effect after the ending | `Field.encounterCheck` |

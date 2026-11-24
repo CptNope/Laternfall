@@ -7,7 +7,7 @@ Usage:
     python3 tools/playtest.py [index.html] [outdir] [scenario ...]
     python3 tools/playtest.py index.html /tmp/shots chapter systems
 
-Scenarios: chapter, orun, systems, newgame, readme (default: chapter orun systems newgame).
+Scenarios: chapter, orun, systems, newgame, comfort, readme (default: chapter orun systems newgame comfort).
 Needs: pip install playwright && playwright install chromium
        (or set CHROME=/path/to/chrome to use an installed browser).
 See docs/TESTING.md for what each scenario covers."""
@@ -17,7 +17,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -66,7 +66,8 @@ async def main():
 
         async def boot(save):
             await pg.goto('file://' + PATH)
-            await ev(f"localStorage.setItem('lanternfall_save_v1', {json.dumps(json.dumps(save))})")
+            # seed an old-format (1.x) save: the game migrates it into slot 1 on load
+            await ev(f"localStorage.clear(); localStorage.setItem('lanternfall_save_v1', {json.dumps(json.dumps(save))})")
             await pg.reload(); await pg.wait_for_timeout(900)
             await press('Enter')  # Continue
             await pg.wait_for_timeout(1300)
@@ -209,6 +210,59 @@ async def main():
                 if await ev("(UI.top() && UI.top().state) || null") == 'bite': await press('Enter', 1, 60); break
                 await pg.wait_for_timeout(60)
             await pg.wait_for_timeout(500); await pg.screenshot(path=f'{OUT}/fishing.png')
+
+        if want('comfort'):
+            s2 = json.loads(json.dumps(POST)); s2['flags'].update({'isle': True}); s2['mapId'] = 'world'; s2['x'] = 38; s2['y'] = 39
+            await boot(s2); await until_idle()
+            mig = await ev("(() => { const d = readSlot('1'); return d && [d.version, d.party.length]; })()")
+            print('migrated v1 -> slot 1:', mig, 'legacy kept:', await ev("!!localStorage.getItem('lanternfall_save_v1')"))
+            # manual save to slot 2 and the slot summary
+            await ev("saveGame('2')")
+            print('slot 2:', await ev("(() => { const s = slotSummary('2'); return [s.place, s.chapter, s.lv]; })()"))
+            # auto-save on entering a town
+            await run("await enterLocation('B')", 1200); await until_idle()
+            print('auto slot:', await ev("(() => { const s = slotSummary('auto'); return s && s.place; })()"))
+            await run("await saveToSlot()", 400); await shot('22_save_slots'); await until_idle(20, 'Escape')
+            # Config shows all rows; set battle speed 4x
+            await run("await configMenu()", 400); await shot('23_config'); await press('Escape', 1); await until_idle(20, 'Escape')
+            await ev("CFG.battleSpeed = 2")
+            # battle: round 1 attack with everyone, round 2 repeat with Shift
+            await ev("MONSTERS.ogre.hp = 99999")
+            await run("await startBattle(['ogre'], {})", 1500)
+            for i in range(12):
+                if await ev("G.scene.active >= 0 && UI.top() && UI.top().items && UI.top().items[0].label === 'Attack'"): break
+                await pg.wait_for_timeout(200)
+            for i in range(4): await press('Enter', 1, 120); await press('Enter', 1, 120)  # Attack, target × 4 heroes
+            for i in range(60):
+                if await ev("G.scene.prevCmds && G.scene.active === 0 && !!UI.top()"): break
+                await pg.wait_for_timeout(150)
+            await shot('24_repeat_hint')
+            r0 = await ev("G.scene.enemies[0].hp")
+            await press('Shift', 1, 100)
+            for i in range(60):
+                if await ev("G.scene.active === 0 && G.scene.enemies[0].hp < " + str(r0)): break
+                await pg.wait_for_timeout(150)
+            print('repeat dealt damage:', await ev("G.scene.enemies[0].hp < " + str(r0)))
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110)
+            await ev("MONSTERS.ogre.hp = 300; CFG.battleSpeed = 0")
+            # optimise gear: give Arin a better sword and optimise
+            await ev("addItem('lightbringer'); addItem('oathblade')")
+            n = await ev("optimiseGear(G.party[0])")
+            print('optimise changed', n, '->', await ev("G.party[0].weapon"))
+            # dialogue log
+            await run("await dialogueLog()", 400); await shot('25_log'); await press('Escape', 1); await until_idle(20, 'Escape')
+            # gamepad: fake a pad holding D-pad down and check the hero walks
+            await ev("Field.enter('brightwater', 11, 11, 'down'); window.__pad = true; navigator.getGamepads = () => [window.__pad ? { buttons: Array.from({length: 16}, (_, i) => ({ pressed: i === 13 })), axes: [0, 0] } : null]")
+            y0 = await ev("G.y"); await pg.wait_for_timeout(700); await ev("window.__pad = false"); await pg.wait_for_timeout(300)
+            print('gamepad moved', y0, '->', await ev("G.y"))
+            # encounter toggle (post-game only)
+            await ev("CFG.noEnc = true; G.encSteps = 0; Field.map = getMap('world'); G.mapId = 'world'; G.x = 20; G.y = 40; Field.encounterCheck(1)")
+            await pg.wait_for_timeout(600)
+            print('no encounter with toggle:', await ev("G.scene === Field"))
+            await ev("CFG.noEnc = false")
+            # the title screen lists slots and Load Game
+            await pg.reload(); await pg.wait_for_timeout(1000); await shot('26_title')
+            await press('ArrowDown', 2); await press('Enter', 1, 400); await shot('27_load_menu')
 
         print('ERRORS:', len(errs))
         for e in errs[:30]: print('  ', e)

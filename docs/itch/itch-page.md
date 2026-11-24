@@ -31,23 +31,26 @@ You are Arin, the young lamplighter of Brightwater. When the Ember Lantern goes 
 
 ### Features
 - **5 playable heroes**: a lamplighter, a flamecaller, a tide priest, a rogue, and a duskmage with a story of her own
-- **Classic turn-based battles** with magic, elemental weaknesses, stealing, status effects, and **9 combo techs** where two or three heroes attack together
-- **A big world to explore** on foot, by ship and by airship: 6 towns, 6 dungeons (16 floors), a desert continent, and a valley you can only reach by air
+- **Classic turn-based battles** with magic, elemental weaknesses, stealing, status effects, and **12 combo techs** where two or three heroes attack together
+- **A big world to explore** on foot, by ship and by airship: 7 towns, 7 dungeons (20 floors), a desert continent, and a valley you can only reach by air
+- **Chapter VI: The Crownless King**: a post-game story on an island that rises from the sea after the credits
 - **Walk inside every building**: shopkeepers behind counters, inns, homes and a palace, plus barrels and pots to search for hidden treasure
-- **52 monsters** and **8 boss battles**, including a two-phase final battle, a sea monster, a forgotten king and an optional superboss dragon
-- **8 side quests**, a **5-cup Arena**, a **bestiary**, a **world map**, 20 accessories, and **New Game+**
-- An original chiptune soundtrack and a full ending with an epilogue for every hero
+- **63 monsters** and **10 boss battles**, including two two-phase finales, a sea monster, a forgotten king and an optional superboss dragon
+- **Fishing** (13 fish) and **forging** (9 recipes from monster materials)
+- **10 side quests**, a **6-cup Arena**, a **bestiary**, a **world map**, 27 accessories, and **New Game+**
+- **Comfortable to play**: 3 save slots and auto-save, battle speed up to 4×, repeat-last-turn, gamepad support, a dialogue log
+- An original chiptune soundtrack of 18 tracks and a full ending with an epilogue for every hero
 
 ### Controls
-| | Keyboard | Touch |
-| --- | --- | --- |
-| Move | Arrow keys / WASD | D-pad |
-| Confirm / talk / search | Enter, Space or Z | A |
-| Menu / back | Esc or X | B |
-| Walk faster | Hold Shift | — |
-| Sound on/off | M | in the menu |
+| | Keyboard | Touch | Gamepad |
+| --- | --- | --- | --- |
+| Move | Arrow keys / WASD | D-pad | D-pad / stick |
+| Confirm / talk / search | Enter, Space or Z | A | A |
+| Menu / back | Esc or X | B | B / Start |
+| Walk faster, repeat battle turn | Shift | R | X |
+| Sound on/off | M | in the menu | Select |
 
-Your progress saves in your browser. Save from the menu anywhere, or when you rest at an inn.
+Your progress saves in your browser: three slots plus an auto-save. Save from the menu anywhere, or when you rest at an inn.
 
 ### Support
 Lanternfall is free. If you enjoyed it, a small donation helps me keep making games. Thank you!

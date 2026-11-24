@@ -147,6 +147,7 @@ class Battle {
       bar(g, 506, y + 20, 34, 3, m.mp / Math.max(1, maxMp(m)), '#6aa8ff');
       text(g, `Lv${m.level}`, 618, y + 5, { size: 12, color: '#ffe9a8', align: 'right' });
     });
+    if (this.active >= 0 && this.prevCmds && !this.prevCmds.some(c => c && c.type === 'run')) text(g, 'Shift / R / X: repeat last turn', 12, 312, { size: 12, color: 'rgba(220,228,255,.85)' });
     if (this.msg) {
       g.font = font(17, true);
       const w = Math.max(220, g.measureText(this.msg).width + 50);
@@ -369,7 +370,8 @@ class Battle {
       // build order
       const order = [];
       party.forEach((c, i) => { if (c && c.type !== 'partner') order.push({ side: 'p', i, c, spd: stat(BP()[i], 'spd') * rnd(0.8, 1.2) + (c.type === 'defend' ? 999 : 0) }); });
-      if (!this.preempt) this.enemies.forEach((e, i) => { if (e.alive) order.push({ side: 'e', i, spd: e.def.spd * rnd(0.8, 1.2) }); });
+      // late bosses may act more than once per round (def.actions)
+      if (!this.preempt) this.enemies.forEach((e, i) => { if (e.alive) for (let a = 0; a < (e.def.actions || 1); a++) order.push({ side: 'e', i, spd: e.def.spd * rnd(0.8, 1.2) - a * 6 }); });
       this.preempt = false;
       order.sort((a, b) => b.spd - a.spd);
       this.pa.forEach(p => p.defend = false);
@@ -425,6 +427,11 @@ class Battle {
       this.pa[i].dx = -14;
       const c = await this.chooseCommand(m, i);
       this.pa[i].dx = 0;
+      if (c === 'repeat') {
+        // re-use last round's commands for everyone who can still act
+        const P = BP();
+        return this.prevCmds.map((pc, j) => pc && alive(P[j]) && !P[j].status.sleep ? { ...pc } : null);
+      }
       if (c === 'back') {
         let j = i - 1; while (j >= 0 && (!alive(BP()[j]) || BP()[j].status.sleep)) j--;
         if (j >= 0 && cmds[j] && cmds[j].type === 'partner') j = cmds[j].from;
@@ -440,6 +447,7 @@ class Battle {
       }
       i++;
     }
+    this.prevCmds = cmds.slice();
     return cmds;
   }
   async chooseCommand(m, idx) {
@@ -455,7 +463,9 @@ class Battle {
         { label: 'Defend' },
         { label: 'Run', disabled: !!this.opts.boss }
       ];
-      const k = await listMenu({ x: 8, y: 330, w: 200, rows: 6, rowH: 21, items, index: this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: 15 });
+      const canRepeat = this.prevCmds && !this.prevCmds.some(c => c && c.type === 'run');
+      const k = await listMenu({ x: 8, y: 330, w: 200, rows: 6, rowH: 21, items, index: this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: 15, hotkeys: canRepeat ? { run: -10 } : null });
+      if (k === -10) return 'repeat';
       this.lastCmd = this.lastCmd || {}; if (k >= 0) this.lastCmd[idx] = k;
       if (k < 0) return 'back';
       if (k === 0) { const tg = await this.pickTarget('enemy'); if (tg !== null && tg !== undefined) return { type: 'attack', target: tg }; continue; }

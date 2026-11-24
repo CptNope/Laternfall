@@ -217,7 +217,7 @@ const Field = {
     }
   },
   encounterCheck(w) {
-    if (NO_ENC || G.flags.noEnc) return;
+    if (NO_ENC || G.flags.noEnc || (CFG.noEnc && G.flags.ending)) return;
     G.encSteps -= partyHasAcc('fewer') ? w * 0.5 : w;
     if (G.encSteps > 0) return;
     G.encSteps = irnd(14, 30);
@@ -362,6 +362,7 @@ async function enterLocation(ch) {
     if (ey === d.h - 1) { sy = ey - 1; dir = 'up'; } else if (ex === 0) { sx = 1; dir = 'right'; }
     await changeMap(L.town, sx, sy, dir);
     await onEnterTown(L.town);
+    autoSave();
   } else {
     const ok = await canEnterDungeon(L.dungeon);
     if (!ok) return;
@@ -369,6 +370,7 @@ async function enterLocation(ch) {
     const [x, y] = freeNeighbor(m, m.up.x, m.up.y);
     await changeMap(m.id, x, y, 'down');
     await onEnterDungeon(L.dungeon);
+    autoSave();
   }
 }
 async function leaveTown() {
