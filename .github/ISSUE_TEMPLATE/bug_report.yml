@@ -1,0 +1,63 @@
+name: 🐞 Bug report
+description: Something in the game is broken, crashes or looks wrong.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping make Lanternfall better. The more detail you give, the faster it gets fixed.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What went wrong, and what did you expect to happen instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can we see it happen?
+      description: Where were you (town, dungeon and floor, battle) and what did you do just before?
+      placeholder: |
+        1. Go to …
+        2. Open …
+        3. …
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where are you playing?
+      options:
+        - itch.io (in the browser)
+        - The index.html file from this repository
+        - GitHub Pages or another host
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: e.g. Chrome 131 on Windows 11, Safari on iPhone 15
+    validations:
+      required: true
+  - type: dropdown
+    id: controls
+    attributes:
+      label: Controls
+      multiple: true
+      options:
+        - Keyboard
+        - Touch screen
+        - Gamepad
+  - type: input
+    id: version
+    attributes:
+      label: Game version
+      description: The newest entry in CHANGELOG.md, if you know it.
+      placeholder: e.g. 1.6.0
+  - type: textarea
+    id: console
+    attributes:
+      label: Error messages or screenshots
+      description: If you can, open the browser console (F12) and paste any red errors here. Screenshots help too.

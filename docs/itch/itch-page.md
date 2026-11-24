@@ -56,7 +56,10 @@ Your progress saves in your browser: three slots plus an auto-save. Save from th
 ### Support
 Lanternfall is free. If you enjoyed it, a small donation helps me keep making games. Thank you!
 
+(Donations use itch.io's built-in "Support This Game" button: https://cptnope.itch.io/lanternfall/purchase)
+
 Made by **Jeremy Anderson** — [jeremyanderson.tech](https://jeremyanderson.tech)
+About the game, screenshots and help: [Lanternfall on jeremyanderson.tech](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/)
 Source code on GitHub: [github.com/CptNope/Laternfall](https://github.com/CptNope/Laternfall)
 
 ## Files to upload
