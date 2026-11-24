@@ -1,6 +1,6 @@
 name: 💡 Idea or suggestion
 description: Suggest a feature, a quest, a balance change or anything else.
-labels: [idea]
+labels: [enhancement]
 body:
   - type: markdown
     attributes:
