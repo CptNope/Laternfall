@@ -1,0 +1,26 @@
+name: 💡 Idea or suggestion
+description: Suggest a feature, a quest, a balance change or anything else.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are welcome! Check the [roadmap](https://github.com/CptNope/Laternfall/blob/main/ROADMAP.md) first, in case it's already planned.
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: What would you like to see, and why would it make the game better?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of the game?
+      options:
+        - Story and quests
+        - Battles and balance
+        - World and exploration
+        - Menus and controls
+        - Music and art
+        - Something else

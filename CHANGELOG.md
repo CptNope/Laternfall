@@ -46,6 +46,7 @@ xychart-beta
 Planned as **1.6.0 · *Deeper systems***. It delivers DS-1 to DS-7 from the [roadmap](ROADMAP.md#16--deeper-systems).
 
 ### Added
+- **Support links across the repository**: a Sponsor button (`.github/FUNDING.yml`) and a README badge and section pointing to the [itch.io donation page](https://cptnope.itch.io/lanternfall/purchase), links to the [project write-up](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/), `.github/SUPPORT.md`, and issue forms for bug reports and ideas with links to play, donate and read more.
 - **The Lantern Board**: from level 30 each level-up gives an **Ember** (and at the cap, one per 20,000 EXP). Spend them on a 12-node board per hero (Status → Enter): stat nodes, a Great Flame, three passives and a capstone. Eleven passives in all, including Counter, Quick Limit, Auto-Regen, Auto-Haste, MP Saver, Lookout, Ghost Step, Wildfire, Twilight, Tidal Grace and Lamplighter's Resolve.
 - **Cooking**: innkeepers cook your fish into 11 meals that buff the party for the next 3 battles (ATK, DEF, MAG, SPD, Regen, Haste, no ailments, +EXP, +gold, or everything). The active meal shows under the menu.
 - **New statuses**: **Blind** (attacks miss half the time), **Slow** and **Haste**. New skills: Oswin's **Haste** (Lv 24), Kestrel's **Flash Powder** (Lv 18) and Selene's **Slow**. Seven monsters and 11 bosses use the new statuses; Remedy and Purify cure them.

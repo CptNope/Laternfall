@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 🎮 Play Lanternfall
+    url: https://cptnope.itch.io/lanternfall
+    about: Free in your browser, on desktop or mobile.
+  - name: 💛 Donate on itch.io
+    url: https://cptnope.itch.io/lanternfall/purchase
+    about: Lanternfall is free. A donation helps more games get made.
+  - name: 📰 Read about the game
+    url: https://jeremyanderson.tech/project/lanternfall-browser-jrpg/
+    about: How Lanternfall was made, with screenshots and help.
+  - name: ✉️ Email the developer
+    url: mailto:info@jeremyanderson.tech
+    about: For anything that isn't a bug report or an idea.

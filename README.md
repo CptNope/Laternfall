@@ -1,6 +1,8 @@
 # Lanternfall — A Tale of the Four Flames
 
 [![Play on itch.io](https://img.shields.io/badge/play-itch.io-fa5c5c?logo=itchdotio&logoColor=white)](https://cptnope.itch.io/lanternfall)
+[![Donate on itch.io](https://img.shields.io/badge/donate-itch.io-e8a84a?logo=itchdotio&logoColor=white)](https://cptnope.itch.io/lanternfall/purchase)
+[![Read the write-up](https://img.shields.io/badge/write--up-jeremyanderson.tech-2f6b4a)](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/)
 [![Version](https://img.shields.io/badge/version-1.6.0-e8c24a)](CHANGELOG.md)
 [![Play-test](https://github.com/CptNope/Laternfall/actions/workflows/playtest.yml/badge.svg)](https://github.com/CptNope/Laternfall/actions/workflows/playtest.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3a8fd0)](LICENSE)
@@ -14,6 +16,8 @@ A classic 16-bit-style JRPG where **every pixel and every note is generated in c
 | | |
 | --- | --- |
 | 🎮 **[Play now](https://cptnope.itch.io/lanternfall)** | Free in your browser, on desktop or mobile |
+| 💛 **[Donate](https://cptnope.itch.io/lanternfall/purchase)** | Lanternfall is free; a donation helps more games get made |
+| 📰 **[Read the write-up](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/)** | How it was made, on jeremyanderson.tech |
 | 📖 **[Game guide](docs/GAME_GUIDE.md)** | Walkthrough, every monster, item, quest, fish and recipe |
 | 🗺️ **[Roadmap](ROADMAP.md)** | What's planned next |
 | 📝 **[Changelog](CHANGELOG.md)** | What changed in each version |
@@ -32,6 +36,7 @@ A classic 16-bit-style JRPG where **every pixel and every note is generated in c
 - [How it's made](#how-its-made)
 - [Documentation](#documentation)
 - [What's next](#whats-next)
+- [Support Lanternfall](#support-lanternfall)
 - [Contributing](#contributing)
 - [Credits and license](#credits-and-license)
 
@@ -349,6 +354,8 @@ flowchart LR
 | [Roadmap](ROADMAP.md) | Everyone | Milestones 1.3.x to 2.0, the backlog, technical debt, the release process |
 | [Changelog](CHANGELOG.md) | Everyone | Every version since 1.0.0 |
 | [itch.io page copy](docs/itch/itch-page.md) | Store | Store text and assets |
+| [Project write-up](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/) | Everyone | How the game was made, screenshots and help, on jeremyanderson.tech |
+| [Getting help and support](.github/SUPPORT.md) | Players | Bug reports, ideas, email and ways to support the game |
 
 ---
 
@@ -368,6 +375,17 @@ The full plan, with priorities and technical debt, is in [ROADMAP.md](ROADMAP.md
 
 ---
 
+## Support Lanternfall
+
+Lanternfall is free, with **no ads and no purchases**, and it will stay that way. If you enjoy it, here's how you can help:
+
+- 💛 **[Donate on itch.io](https://cptnope.itch.io/lanternfall/purchase)**. Any amount helps more games get made. The **Sponsor** button at the top of this repository links there too.
+- ⭐ **Star this repository**, and rate or comment on the [itch.io page](https://cptnope.itch.io/lanternfall).
+- 📣 **Share it.** Send the game, or the [write-up on jeremyanderson.tech](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/), to someone who misses 16-bit RPGs.
+- 🐞 **Report bugs and suggest ideas** with the [issue forms](https://github.com/CptNope/Laternfall/issues/new/choose). See [getting help](.github/SUPPORT.md).
+
+---
+
 ## Contributing
 
 1. Read the [modding guide](docs/MODDING.md) to find where your change goes.
@@ -375,12 +393,12 @@ The full plan, with priorities and technical debt, is in [ROADMAP.md](ROADMAP.md
 3. Run `python3 tools/playtest.py`; it should end with `ERRORS: 0`. CI runs it on your pull request as well. If you touched a boss, run `python3 tools/balance_sim.py`.
 4. Add a line to [CHANGELOG.md](CHANGELOG.md) under `[Unreleased]`, and open a pull request.
 
-Ideas and bug reports are welcome as issues. [How to propose something](ROADMAP.md#how-to-propose-something) explains what helps.
+Ideas and bug reports are welcome as [issues](https://github.com/CptNope/Laternfall/issues/new/choose). [How to propose something](ROADMAP.md#how-to-propose-something) explains what helps.
 
 ---
 
 ## Credits and license
 
-Made by **Jeremy Anderson** · [jeremyanderson.tech](https://jeremyanderson.tech) · [itch.io](https://cptnope.itch.io/lanternfall)
+Made by **Jeremy Anderson** · [jeremyanderson.tech](https://jeremyanderson.tech) · [Lanternfall write-up](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/) · [itch.io](https://cptnope.itch.io/lanternfall) · [Donate](https://cptnope.itch.io/lanternfall/purchase)
 
 MIT. See [LICENSE](LICENSE).
