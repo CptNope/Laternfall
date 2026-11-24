@@ -241,7 +241,7 @@ async function cookMenu(keeper = 'Cook') {
   if (k < 0) return false;
   const id = ids[k];
   for (const [f, n] of Object.entries(MEALS[id].needs)) addItem(f, -n);
-  G.meal = { id, left: MEAL_BATTLES };
+  G.meal = { id, left: MEAL_BATTLES }; G.flags.cooked = true;
   Audio_.sfx('heal');
   await narrate(`The party shares a ${MEALS[id].name}. ${MEALS[id].desc} (next ${MEAL_BATTLES} battles)`);
   return true;

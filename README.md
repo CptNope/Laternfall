@@ -48,7 +48,13 @@ A classic 16-bit-style JRPG where **every pixel and every note is generated in c
 
 **Run it locally:** open `index.html` in any modern browser. It's one self-contained file with no dependencies, and no build step is needed to play.
 
-**Host it yourself:** enable **GitHub Pages** for this repo (Settings → Pages → deploy from branch `main`, root folder), and the game is served at `https://cptnope.github.io/Laternfall/`.
+**Install it as an app (1.8):** open **[cptnope.github.io/Laternfall](https://cptnope.github.io/Laternfall/)** and choose **Install** on the title screen (or your browser's install button; on iPhone and iPad, Share → *Add to Home Screen*). It opens in its own window and plays **offline**. The itch.io page can't install, because it runs the game inside a frame.
+
+**Desktop downloads (1.8):** each tagged release has Windows, macOS and Linux builds attached on the [Releases page](https://github.com/CptNope/Laternfall/releases). They're unsigned, so Windows SmartScreen and macOS Gatekeeper will ask you to confirm the first time (on macOS: right-click → Open).
+
+**Moving your saves:** saves live in the browser or app you play in. **Transfer saves** on the title screen exports every slot, your settings and trophies to a file, and imports them on another device.
+
+**Host it yourself:** enable **GitHub Pages** for your fork (Settings → Pages → deploy from branch `main`, root folder). `build.py` writes the manifest, service worker and icons that make it installable.
 
 ### Controls
 
@@ -63,7 +69,7 @@ A classic 16-bit-style JRPG where **every pixel and every note is generated in c
 | Fish (with a rod) | Enter while facing water | A | A |
 | Sound on/off | M | Menu → Config | Select |
 
-**Config** (Menu → Config) has sound, **auto-dash**, **text speed** (Normal, Fast, Instant), **battle speed** (1×, 2×, 4×), **auto-save**, and (after the ending) **encounters on/off**. Settings are remembered between sessions.
+**Config** (Menu → Config) has sound, **auto-dash**, **text speed** (Normal, Fast, Instant), **battle speed** (1×, 2×, 4×), **auto-save**, **large text**, **high contrast**, rebindable **controls**, (after the ending) **encounters on/off**, a **speedrun timer** with Lantern splits, and a **battery saver** (30 fps). Settings are remembered between sessions.
 
 **Saving:** three save slots plus an auto-save that writes whenever you enter a town or dungeon. Save from the menu anywhere, or with one press when you rest at an inn. On the title screen, *Continue* picks up your newest save and *Load Game* opens any slot. Saves from older versions move into slot 1 automatically.
 
@@ -121,8 +127,9 @@ flowchart LR
 | Side quests | **21** | Combo techs and Limits | **12** and **5** |
 | Arena cups | **6** | Weapons, armour, accessories | **48**, **23**, **42** |
 | Fish | **13** | Forge recipes | **12** |
-| Music tracks | **21** | Image or audio files | **0** |
-| Level cap | **50**, then the Lantern Board | Source lines | ~8,350 across 14 files |
+| Music tracks | **21** | Image or audio files | **0** in the game (the app icons are drawn by a script) |
+| Level cap | **50**, then the Lantern Board | Source lines | ~8,600 across 15 files |
+| Trophies | **30** | Platforms | Browser, installable app (offline), Windows, macOS, Linux |
 | Lantern Board passives | **11** | Meals | **11** |
 | Ways to travel | **5**: foot, ship, airship, diving bell, lanternmoth | Treasure maps | **5** |
 
@@ -206,6 +213,8 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 - Battle speed up to 4×, *repeat last turn* with one button, and a dialogue **Log**
 - **Gamepad** support, a touch **R** button, auto-dash, **rebindable keys**, adjustable text speed, **large text** and **high-contrast** windows
 - **Equip → Optimise** puts on the best gear you own in one step
+- **Installable and offline** (1.8): install from GitHub Pages as an app, or download the Windows, macOS and Linux builds
+- **30 trophies** shared by every save, a **speedrun timer** with splits at each Lantern, and **Transfer saves** to move between devices
 
 **Sound**
 - An original chiptune soundtrack of 21 tracks (title, overworld, sea, sky, desert, towns, dungeons, the Spire, the Ashen Isle, the Abyss, the sea floor, Nerith, the Undermarket, battle, boss, two final battles, victory, ending, game over), sequenced live in Web Audio
@@ -340,8 +349,11 @@ flowchart LR
 | `src/crafts.js` | The fishing mini-game and Orrin's forge |
 | `src/hearts.js` | The five hero quests, Limits unlocking, campfire talks and the Festival of Lanterns |
 | `src/deep.js` | 1.7 The Drowned Kingdom: diving and surfacing, Nerith, the Palace and the Rift, treasure maps, lanternmoths and the Undermarket |
+| `src/platform.js` | 1.8: install as an app, transfer saves, trophies, the speedrun timer and splits, the battery saver |
 | `src/story.js` | NPC dialogue, cutscenes, story flags, quests, the arena, boss events, the title screen, the endings, the main loop |
-| `tools/` | The play-test harness, the boss balance simulator, the guide-table generator and the diagram checker |
+| `manifest.webmanifest`, `sw.js`, `icons/` | Generated: the installable-app files (`build.py`, `tools/make_icons.py`) |
+| `src-tauri/` | The desktop app (Tauri): a native window around `index.html`, built by CI |
+| `tools/` | The play-test harness, the boss balance simulator, the guide-table generator, the icon renderer and the diagram checker |
 
 **Debug:** add `?noenc` to the URL to turn off random encounters. There are more tricks in [TESTING.md](docs/TESTING.md#debugging-tricks).
 

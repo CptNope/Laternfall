@@ -71,6 +71,7 @@ The exit code is `0` when there were no errors and `1` otherwise, so it can gate
 | `hearts` | All five hero quests from a post-Chapter-VI save: Elder Maren and the 12 lamps (the last wakes the Lamp-Eater), Mira and the Ember Caves riddles and Hearth Warden, Wenna and the Grotto, the jail trapdoor and Vane, an inn dream where Selene fights alone, every hero using a Limit in one battle, a campfire talk, the festival | Each quest's `*_done` and `limit_*` flags and weapon; the Undercity exits to the jail; Limit gauges empty after use; Heartlight received | `30`–`41` |
 | `depth` | The 1.6 systems from a Lv 45 save at the Ironhold inn (seeded as a 1.x save, so it also tests the v1→v3 migration) | 19 named checks: 16 Embers each after migration; lighting Vigor with the keyboard; Counter and MP Saver; Vigor's +10% HP; cooking Grilled Trout at the inn and its +12% ATK; fire healing a Magma Slime; Haste and Slow turn speed; the meal counting down; Vane's phase change and its announcement; a rare steal; Sable's two rewards; the board and meal surviving save/load. A failed check counts as an error | `42`–`47` |
 | `drowned` | 1.7 from a post-game save in Port Halden (Oswin's quest done) | 22 named checks: Wenna's chart; Brann's bell and its cost; diving onto the sea floor below the spot; entering Nerith; the palace staying shut until Ysolde; Nereus, the Crown and the Rift opening; the Tide and Tidesong; surfacing at another spot; digging map 1; map drops; Old Ivy and a moth ride with no battles; the Undermarket in and out; black-market prices; a save on the sea floor | `48`–`57` |
+| `platform` | 1.8 from a fresh start and a post-game save | 13 named checks: trophies unlocking from flags and stored outside the slots; Light Fingers from a rare steal; pre-1.8 saves marking earlier splits unknown; a split's time and delta; play time counting in battle; the battery saver's frame rate; save export, import and refusing a foreign file; and, over a local web server, the service worker taking control, the manifest parsing and an offline reload | `58`–`62` |
 | `readme` | Takes clean screenshots for the README | — | Lastlight, Ashen Isle, Abyss, Hollow Crown, fishing |
 
 ```mermaid
@@ -224,7 +225,7 @@ tools/check_mermaid.sh README.md ROADMAP.md CHANGELOG.md docs/*.md
 
 1. builds the game and fails if `index.html` doesn't match `src/` (someone forgot to run `build.py`);
 2. regenerates the game guide and fails if `docs/GAME_GUIDE.md` is out of date;
-3. runs the `chapter`, `systems`, `newgame`, `comfort`, `hearts`, `depth` and `drowned` scenarios, failing on any JavaScript error or failed check;
+3. also checks `manifest.webmanifest` and `sw.js` match the build, then runs the `chapter`, `systems`, `newgame`, `comfort`, `hearts`, `depth`, `drowned` and `platform` scenarios, failing on any JavaScript error or failed check;
 4. uploads the screenshots as a `playtest-screenshots` artifact.
 
 ```mermaid

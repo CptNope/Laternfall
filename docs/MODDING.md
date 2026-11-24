@@ -44,6 +44,7 @@ flowchart TD
 - [Add an arena cup](#add-an-arena-cup)
 - [Add a place on the sea floor](#add-a-place-on-the-sea-floor)
 - [Change the Lantern Board](#change-the-lantern-board)
+- [Add a trophy](#add-a-trophy)
 - [Regenerating the guide tables](#regenerating-the-guide-tables)
 - [Pull request checklist](#pull-request-checklist)
 
@@ -485,6 +486,21 @@ ARENA_CUPS.push({ id: 'tidal', name: 'Tidal Cup', level: 40, unlock: 'boss_reef'
 - `BOARD_LEVEL` and `EMBER_CAP_XP` in `src/party.js` set when Embers start and how much EXP past the cap buys one.
 
 The board is saved per hero as `board` (lit node ids), `embers` and `capxp`. If you remove a node id, add a save migration that drops it from `board`.
+
+---
+
+## Add a trophy
+
+**Files:** `src/platform.js`
+
+Add an entry to `TROPHIES`. `test(flags)` runs twice a second during play; when it first returns true the trophy is earned for good.
+
+```js
+{ id: 'reef', name: 'Queen of the Reef', desc: 'Defeat the Reef Queen.', test: f => f.boss_reef },
+{ id: 'secret', name: 'Hush', desc: '???', secret: 'Shown once earned.', test: f => f.found_secret },
+```
+
+Keep `id` stable: it's the key in the player's stored trophies. Keep each entry on one line in the `{ id: …, name: …, desc: … }` order shown, because `tools/extract.js` reads the names for the game guide with a pattern.
 
 ---
 

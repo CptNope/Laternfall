@@ -41,15 +41,19 @@ How the engine works, for anyone reading or changing the code. It covers how the
 ```mermaid
 flowchart LR
     subgraph src/
-      core[core.js] --> data[data.js] --> art[art.js] --> dart[deep_art.js] --> maps[maps.js] --> party[party.js] --> field[field.js] --> interior[interior.js] --> battle[battle.js] --> menu[menu.js] --> crafts[crafts.js] --> hearts[hearts.js] --> deep[deep.js] --> story[story.js]
+      core[core.js] --> data[data.js] --> art[art.js] --> dart[deep_art.js] --> maps[maps.js] --> party[party.js] --> field[field.js] --> interior[interior.js] --> battle[battle.js] --> menu[menu.js] --> crafts[crafts.js] --> hearts[hearts.js] --> deep[deep.js] --> plat[platform.js] --> story[story.js]
     end
     story --> B[build.py<br/>concatenate in order]
     B --> H[index.html<br/>HTML + CSS + touch pad + one inline script]
+    B --> MF[manifest.webmanifest<br/>sw.js]
+    IC[tools/make_icons.py] --> ICO[icons/*.png]
     H --> P[Play: open in a browser]
-    H --> I[itch.io: zip index.html]
+    H & MF & ICO --> GP[GitHub Pages: installable app, offline]
+    H & MF & ICO --> I[itch.io: zip]
+    H & ICO --> T[src-tauri: desktop builds in CI]
 ```
 
-`build.py` joins the files in the order listed in its `order=[...]` and writes `index.html` with the page shell (canvas, touch D-pad, A/B buttons and CSS). **Always edit `src/` and rebuild.** Edits made directly to `index.html` are overwritten by the next build.
+`build.py` joins the files in the order listed in its `order=[...]` and writes `index.html` with the page shell (canvas, touch D-pad, A/B buttons and CSS). Since 1.8 it also writes `manifest.webmanifest` and `sw.js`, the service worker that caches the game for offline play. Its cache name is a hash of the build, so every new `index.html` replaces the old cache. The page is fetched network-first (updates arrive when online), everything else cache-first. The service worker only registers over http(s); opened as a file, the game runs exactly as before. The icons in `icons/` come from `tools/make_icons.py`, which draws them in Chrome with the game's own drawing helpers; rerun it only when the icon changes. **Always edit `src/` and rebuild.** Edits made directly to `index.html` are overwritten by the next build.
 
 ```bash
 python3 build.py   # prints the byte size of the new index.html
@@ -73,6 +77,7 @@ python3 build.py   # prints the byte size of the new index.html
 | `crafts.js` | The fishing mini-game, Orrin's forge, the Lantern Board screen and cooking | `FishingUI` `goFishing` `forgeMenu` `lanternBoard` `cookMenu` |
 | `hearts.js` | The five hero quests, Limits unlocking, campfire talks, the Festival of Lanterns | `learnLimit` `worldQuestEntities` `interiorQuestEntities` `innDream` `campfireTalk` `heartsQuests` |
 | `deep_art.js` | 1.7 drawing: sea-floor tiles and light, town moods, the dive spot, bell and moth, three monster families and three battle backgrounds. Registers itself with `art.js` | `drawDeepTile` `drawDeepLight` `drawTownMood` `drawBell` `drawMoth` `drawDeepMap` |
+| `platform.js` | 1.8: install prompt and service-worker registration, save export and import, trophies, speedrun splits, the battery saver. `platformTick(dt)` runs every frame from the main loop | `installApp` `exportSaves` `importSaves` `Trophies` `TROPHIES` `trophyRoom` `checkSplits` `drawSpeedrun` `frameSkip` |
 | `deep.js` | 1.7 The Drowned Kingdom: diving and surfacing, Nerith's people, the palace and Rift bosses, treasure maps, lanternmoths, the Undermarket, the 1.7 quest log | `diveDown` `surfacePrompt` `talkYsolde` `palaceBoss` `hadalBoss` `digTreasure` `treasureMapDrop` `lampMoth` `shopPrice` `deepQuests` `worldPos` |
 | `story.js` | NPCs and dialogue, doors, cutscenes, bosses, quests, the title screen, the ending, **and the main loop** | `townNpcs` `bossEncounter` `questList` `mainObjective` `worldEvents` `titleMenu` `frame` |
 
@@ -504,8 +509,9 @@ Everything that persists lives in the global `G` (`party.js`). `saveGame(slot)` 
 | `savedAt` | ms timestamp | Shown in slot menus; **Continue** picks the newest |
 | `party` | `{id, level, xp, hp, mp, weapon, armor, acc, limit, board, embers, capxp}[]` | Heroes in formation order; the first four fight. `board` is the lit Lantern Board node ids |
 | `meal` | `{id, left}` or null | The active meal and how many battles it has left |
+| `splits` | `{flag: seconds or null}` | Speedrun splits for this run (1.8); `null` means the Lantern was lit before splits existed |
 | `inv` | `{itemId: count}` | Inventory, including key items |
-| `gold`, `playTime` | number | |
+| `gold`, `playTime` | number | Play time counts on the field and, since 1.8, in battle |
 | `flags` | `{key: any}` | **All story progress**; see below |
 | `seen`, `killed` | `{monsterId: n}` | Bestiary |
 | `mapId`, `x`, `y`, `dir` | | Where to resume |

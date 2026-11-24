@@ -184,11 +184,13 @@ async function configMenu() {
       { label: 'High contrast', right: CFG.contrast ? 'On' : 'Off', act: () => toggle('contrast'), help: 'Solid black windows with bright borders.' },
       { label: 'Controls…', right: '', help: 'Change which keys do what.' },
       { label: 'Encounters', right: !G.flags.ending ? '—' : CFG.noEnc ? 'Off' : 'On', disabled: !G.flags.ending, act: () => toggle('noEnc'), help: G.flags.ending ? 'Turn random battles off for exploring. Bosses still fight.' : 'Unlocked after you finish the story.' },
+      { label: 'Speedrun timer', right: CFG.speedrun ? 'On' : 'Off', act: () => toggle('speedrun'), help: 'Show play time on screen, with splits at each Lantern.' },
+      { label: 'Battery saver', right: CFG.battery ? 'On' : 'Off', act: () => toggle('battery'), help: 'Draw at 30 frames a second instead of 60. Easier on phones and laptops.' },
       { label: 'Done', help: '' }
     ];
     const done = rows.length - 1;
     // Enter or Left/Right changes a setting; the menu re-opens to show the new value
-    const k = await listMenu({ x: 170, y: 100, w: 300, rows: rows.length, title: 'Config', items: rows, index: idx, help: i => rows[i].help, helpY: H - 52,
+    const k = await listMenu({ x: 170, y: 52, w: 300, rows: rows.length, title: 'Config', items: rows, index: idx, help: i => rows[i].help, helpY: H - 52,
       lr(i, d) { if (rows[i].act && !rows[i].disabled) { rows[i].act(d); Audio_.sfx('cursor'); UI.close(this, -2 - i); } } });
     if (k === -1 || k === done) return;
     if (k <= -2) { idx = -2 - k; continue; }

@@ -1,0 +1,20 @@
+[package]
+name = "lanternfall"
+version = "1.8.0"
+description = "Lanternfall — A Tale of the Four Flames (desktop build)"
+authors = ["CptNope"]
+license = "MIT"
+repository = "https://github.com/CptNope/Laternfall"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+opt-level = "s"

@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Lanternfall — A Tale of the Four Flames</title>
+<meta name="description" content="A complete 16-bit-style JRPG that runs in your browser. No downloads, no image or audio files.">
+<meta name="theme-color" content="#07060f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
 html,body{margin:0;height:100%;background:#05040c;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
 body{display:flex;align-items:center;justify-content:center}
@@ -96,8 +104,9 @@ const isLoc = c => typeof c === 'string' && LOC_RE.test(c);
 const CFG_KEY = 'lanternfall_cfg_v1';
 const BATTLE_SPEEDS = [{ label: '1×', v: 1 }, { label: '2×', v: 2 }, { label: '4×', v: 4 }];
 const TEXT_SPEEDS = [{ label: 'Normal', v: 55 }, { label: 'Fast', v: 120 }, { label: 'Instant', v: 99999 }];
-const CFG = { dash: false, textSpeed: 0, muted: false, autosave: true, battleSpeed: 0, noEnc: false, bigText: false, contrast: false, keys: null };
-try { Object.assign(CFG, JSON.parse(localStorage.getItem(CFG_KEY)) || {}); } catch (e) { }
+const CFG = { dash: false, textSpeed: 0, muted: false, autosave: true, battleSpeed: 0, noEnc: false, bigText: false, contrast: false, keys: null, speedrun: false, battery: false };
+function loadCfg() { try { Object.assign(CFG, JSON.parse(localStorage.getItem(CFG_KEY)) || {}); } catch (e) { } }
+loadCfg();
 function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(CFG)); } catch (e) { } }
 
 // ---------- input ----------
@@ -3831,7 +3840,7 @@ function genDungeonFloor(did, f) {
 //  PARTY & GAME STATE
 // ============================================================
 const G = {
-  party: [], inv: {}, gold: 0, flags: {}, playTime: 0,
+  party: [], inv: {}, gold: 0, flags: {}, playTime: 0, splits: {},
   mapId: 'world', x: 0, y: 0, dir: 'down',
   ship: null, onShip: false, airship: null, inAir: false, carry: null, encSteps: 20, lastInn: null, seen: {}, killed: {},
   scene: null, maps: {}, slot: '1'
@@ -3974,7 +3983,7 @@ function saveData() {
     party: G.party.map(m => ({ id: m.id, level: m.level, xp: m.xp, hp: m.hp, mp: m.mp, weapon: m.weapon, armor: m.armor, acc: m.acc || null, limit: m.limit || 0, board: m.board || [], embers: m.embers || 0, capxp: m.capxp || 0 })),
     meal: G.meal || null,
     seen: G.seen, killed: G.killed,
-    inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime,
+    inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime, splits: G.splits || {},
     mapId: G.mapId, x: G.x, y: G.y, dir: G.dir, ship: G.ship, onShip: G.onShip, lastInn: G.lastInn, airship: G.airship, inAir: G.inAir, carry: G.carry
   };
 }
@@ -3998,6 +4007,8 @@ function loadGame(slot = latestSlot()) {
   G.party = d.party.map(p => { const m = { acc: null, board: [], embers: 0, ...p, status: {} }; m.hp = clamp(m.hp, 0, maxHp(m)); m.mp = clamp(m.mp, 0, maxMp(m)); return m; });
   G.seen = d.seen || {}; G.killed = d.killed || {};
   G.inv = d.inv || {}; G.gold = d.gold || 0; G.flags = d.flags || {}; G.playTime = d.playTime || 0;
+  // saves from before 1.8 have no splits: Lanterns already lit count as unknown (null), never as a time
+  G.splits = d.splits || Object.fromEntries(SPLITS.filter(([f]) => G.flags[f]).map(([f]) => [f, null]));
   G.mapId = d.mapId; G.x = d.x; G.y = d.y; G.dir = d.dir || 'down';
   G.ship = d.ship || null; G.onShip = !!d.onShip; G.lastInn = d.lastInn || null; G.airship = d.airship || null; G.inAir = !!d.inAir; G.carry = d.carry || null;
   G.meal = d.meal || null;
@@ -5001,7 +5012,7 @@ class Battle {
   takeSteal(tg, p) {
     const got = this.rollSteal(tg);
     if (!got) return null;
-    tg.stolen = true; addItem(got.id); Audio_.sfx(got.rare ? 'chest' : 'item');
+    tg.stolen = true; addItem(got.id); Audio_.sfx(got.rare ? 'chest' : 'item'); if (got.rare) G.flags.stole_rare = true;
     if (p) this.num(p.x, p.y - 30, (got.rare ? '★ ' : '') + ITEMS[got.id].name, got.rare ? '#ffd23a' : '#ffe9a8');
     return got;
   }
@@ -5315,6 +5326,7 @@ class Battle {
     }));
   }
   async doCombo(i, c) {
+    G.flags.used_combo = true;
     const cb = COMBOS.find(x => x.id === c.combo), P = BP();
     const idx = cb.members.map(id => P.findIndex(p => p.id === id));
     if (idx.some(j => j < 0 || !alive(P[j]) || P[j].status.sleep || P[j].status.silence || P[j].mp < cb.mp[cb.members.indexOf(P[j].id)])) {
@@ -5344,6 +5356,7 @@ class Battle {
     await wait(250); this.msg = null;
   }
   async doLimit(i, c) {
+    G.flags.used_limit = true;
     const P = BP(), m = P[i], a = this.pa[i];
     if (!limitReady(m)) return;
     m.limit = 0;
@@ -5892,11 +5905,13 @@ async function configMenu() {
       { label: 'High contrast', right: CFG.contrast ? 'On' : 'Off', act: () => toggle('contrast'), help: 'Solid black windows with bright borders.' },
       { label: 'Controls…', right: '', help: 'Change which keys do what.' },
       { label: 'Encounters', right: !G.flags.ending ? '—' : CFG.noEnc ? 'Off' : 'On', disabled: !G.flags.ending, act: () => toggle('noEnc'), help: G.flags.ending ? 'Turn random battles off for exploring. Bosses still fight.' : 'Unlocked after you finish the story.' },
+      { label: 'Speedrun timer', right: CFG.speedrun ? 'On' : 'Off', act: () => toggle('speedrun'), help: 'Show play time on screen, with splits at each Lantern.' },
+      { label: 'Battery saver', right: CFG.battery ? 'On' : 'Off', act: () => toggle('battery'), help: 'Draw at 30 frames a second instead of 60. Easier on phones and laptops.' },
       { label: 'Done', help: '' }
     ];
     const done = rows.length - 1;
     // Enter or Left/Right changes a setting; the menu re-opens to show the new value
-    const k = await listMenu({ x: 170, y: 100, w: 300, rows: rows.length, title: 'Config', items: rows, index: idx, help: i => rows[i].help, helpY: H - 52,
+    const k = await listMenu({ x: 170, y: 52, w: 300, rows: rows.length, title: 'Config', items: rows, index: idx, help: i => rows[i].help, helpY: H - 52,
       lr(i, d) { if (rows[i].act && !rows[i].disabled) { rows[i].act(d); Audio_.sfx('cursor'); UI.close(this, -2 - i); } } });
     if (k === -1 || k === done) return;
     if (k <= -2) { idx = -2 - k; continue; }
@@ -6544,7 +6559,7 @@ async function cookMenu(keeper = 'Cook') {
   if (k < 0) return false;
   const id = ids[k];
   for (const [f, n] of Object.entries(MEALS[id].needs)) addItem(f, -n);
-  G.meal = { id, left: MEAL_BATTLES };
+  G.meal = { id, left: MEAL_BATTLES }; G.flags.cooked = true;
   Audio_.sfx('heal');
   await narrate(`The party shares a ${MEALS[id].name}. ${MEALS[id].desc} (next ${MEAL_BATTLES} battles)`);
   return true;
@@ -7102,7 +7117,7 @@ async function lampMoth() {
   if (!hasItem('moth_whistle')) { await narrate(G.flags.q_moth ? 'Pale moths circle the lamp. Old Ivy\'s whistle would call one down.' : 'The roadside lamp burns small and steady. Big pale moths circle it, drowsy with the light.'); return; }
   const c = await choose(null, 'A lanternmoth the size of a pony rests on the lamp. Ride it?', ['Ride', 'Leave it'], 1);
   if (c !== 0) return;
-  G.onMoth = true; Audio_.sfx('buff'); Audio_.play('sky');
+  G.onMoth = true; G.flags.rode_moth = true; Audio_.sfx('buff'); Audio_.play('sky');
   toast('No monsters on a moth · Enter to land');
 }
 async function dismountMoth() {
@@ -7193,6 +7208,218 @@ function deepQuests() {
   if (f.q_moth) q.push({ title: 'Lanternmoths', giver: 'Old Ivy, Brightwater', done: true, reward: 'Moth Whistle', desc: 'Talk to any lit roadside lamp to ride a lanternmoth: fast, low, and no monsters. Moths can\'t cross water or mountains.' });
   if (mapsFound()) q.push({ title: 'Buried Treasure', giver: 'Whisper, the Undermarket', done: !!f.whisper_done, reward: '50,000 gold', desc: f.whisper_done ? 'Five maps, five holes, one very surprised map-seller.' : `Dig up all five treasure maps. Carried maps are marked on your world map; stand on the spot and press Enter. (${mapsDug()}/5 dug)` });
   return q;
+}
+
+'use strict';
+// ============================================================
+//  PLATFORM (1.8): install as an app, moving saves between devices,
+//  trophies, the speedrun timer and splits, and the battery saver.
+//  Loaded after deep.js and before story.js. The trophy and split checks
+//  run from the main loop (platformTick), never at load time.
+// ============================================================
+
+// ---------------- install (PWA) ----------------
+// build.py writes manifest.webmanifest, sw.js and icons/ beside index.html. The service worker only
+// registers when the game is served over http(s); opened as a file, the game simply runs as before.
+const PWA = { prompt: null };
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => { }); });
+}
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); PWA.prompt = e; });
+window.addEventListener('appinstalled', () => { PWA.prompt = null; toast('Lanternfall is installed'); });
+function isInstalled() {
+  try { return matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || navigator.standalone === true || !!window.__TAURI__; } catch (e) { return false; }
+}
+async function installApp() {
+  if (PWA.prompt) {
+    PWA.prompt.prompt();
+    const r = await PWA.prompt.userChoice.catch(() => null);
+    PWA.prompt = null;
+    if (r && r.outcome === 'accepted') return;
+  }
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const framed = window.top !== window.self;
+  await sayAll([
+    ['Install', framed ? 'Inside the itch.io page the game can\'t install itself. Open it at its own address (see the itch.io page or the README), or download the desktop version.'
+      : ios ? 'On iPhone or iPad: tap Share, then "Add to Home Screen".' : 'In Chrome or Edge, use the install icon at the right of the address bar, or the browser menu: "Install Lanternfall".'],
+    ['Install', 'Once installed, the game opens in its own window and plays offline. Saves stay on this device: use Transfer saves on the title screen to move them.']
+  ]);
+}
+
+// ---------------- moving saves between devices ----------------
+const SAVE_KEYS = () => [...ALL_SLOTS.map(s => SAVE_PREFIX + s), CFG_KEY, TROPHY_KEY, SPLIT_KEY];
+function exportSaves() {
+  const data = { game: 'lanternfall', exported: new Date().toISOString(), keys: {} };
+  for (const k of SAVE_KEYS()) { const v = localStorage.getItem(k); if (v !== null) data.keys[k] = v; }
+  return JSON.stringify(data);
+}
+function importSaves(text) {
+  const data = JSON.parse(text);
+  if (!data || data.game !== 'lanternfall' || !data.keys) throw new Error('Not a Lanternfall save file');
+  const allowed = new Set(SAVE_KEYS());
+  let n = 0;
+  for (const [k, v] of Object.entries(data.keys)) if (allowed.has(k) && typeof v === 'string') { localStorage.setItem(k, v); n++; }
+  loadCfg(); applyKeymap(); Trophies.load();
+  return n;
+}
+function pickFile() {
+  return new Promise(res => {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.json,application/json';
+    inp.onchange = () => { const f = inp.files && inp.files[0]; if (!f) return res(null); const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = () => res(null); r.readAsText(f); };
+    window.addEventListener('focus', () => setTimeout(() => { if (!inp.files || !inp.files.length) res(null); }, 800), { once: true });
+    inp.click();
+  });
+}
+async function transferMenu() {
+  const k = await listMenu({ x: W / 2 - 130, y: 170, w: 260, rows: 3, title: 'Transfer saves', items: [{ label: 'Export to a file' }, { label: 'Import from a file' }, { label: 'Back' }],
+    help: i => ['Download every save slot, your settings and trophies as one file.', 'Load a file exported from another browser or device. Slots in the file replace the ones here.', ''][i], helpY: H - 60 });
+  if (k === 0) {
+    const blob = new Blob([exportSaves()], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `lanternfall-saves-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    await narrate('Your saves were downloaded as a file. Import it on another device from this same menu.');
+  } else if (k === 1) {
+    const text = await pickFile();
+    if (!text) return;
+    try { const n = importSaves(text); Audio_.sfx('chest'); await narrate(`Imported ${n} entries. Your saves are ready to load.`); }
+    catch (e) { Audio_.sfx('buzz'); await narrate('That file isn\'t a Lanternfall save export.'); }
+  }
+}
+
+// ---------------- trophies ----------------
+// Trophies belong to the player, not the save: earned once, kept across every slot and New Game+.
+const TROPHY_KEY = 'lanternfall_trophies_v1';
+const anyHero = fn => G.party.some(fn);
+const TROPHIES = [
+  // the story
+  { id: 'ember', name: 'First Light', desc: 'Relight the Ember Lantern.', test: f => f.lantern1 },
+  { id: 'tide', name: 'High Water', desc: 'Relight the Tide Lantern.', test: f => f.lantern2 },
+  { id: 'stone', name: 'Heart of Stone', desc: 'Relight the Stone Lantern.', test: f => f.lantern3 },
+  { id: 'dawn', name: 'Lanternfall', desc: 'Finish the story.', test: f => f.ending },
+  { id: 'crown', name: 'The Crown Falls', desc: 'Finish Chapter VI in the Crownfall Abyss.', test: f => f.boss_abyss },
+  { id: 'aurora', name: 'Sky-Bound', desc: 'Win the skyship Aurora from the First King.', test: f => f.boss_tomb },
+  { id: 'fifth', name: 'The Fifth Flame', desc: 'Find the Fifth Flame in the Starfall Observatory.', test: f => f.lantern5 },
+  // side stories
+  { id: 'leviathan', name: 'Calm Waters', desc: 'Defeat the Leviathan.', test: f => f.leviathan },
+  { id: 'wyrm', name: 'Starslayer', desc: 'Defeat the Astral Wyrm.', test: f => f.boss_observatory },
+  { id: 'road', name: 'His Father\'s Rounds', desc: 'Light all twelve roadside lamps.', test: f => f.road_done },
+  { id: 'hearts', name: 'Five Hearts', desc: 'Finish every hero\'s personal quest.', test: f => f.festival },
+  { id: 'nerith', name: 'Let Go', desc: 'Free Nerith from its drowned king.', test: f => f.boss_palace },
+  { id: 'tide_boss', name: 'Unforgettable', desc: '???', secret: 'Defeat the Tide That Remembers.', test: f => f.tide_done },
+  { id: 'champion', name: 'Grand Champion', desc: 'Win the first five cups at the Aerie Arena.', test: f => f.cup_champion },
+  { id: 'eclipse', name: 'Eclipse', desc: 'Win the Eclipse Cup.', test: f => f.cup_eclipse },
+  // collecting
+  { id: 'fisher', name: 'The One That Didn\'t Get Away', desc: 'Catch every kind of fish.', test: f => f.fish_r2 },
+  { id: 'forge', name: 'Family of the Forge', desc: 'Forge three pieces of gear with Orrin.', test: f => f.forge_done },
+  { id: 'bestiary', name: 'Natural Historian', desc: 'Record every creature in the bestiary.', test: f => f.codex_all },
+  { id: 'treasure', name: 'X Marks Every Spot', desc: 'Dig up all five treasure maps.', test: f => [1, 2, 3, 4, 5].every(k => f['dug_' + k]) },
+  { id: 'rare', name: 'Light Fingers', desc: 'Steal a rare (★) item.', test: f => f.stole_rare },
+  { id: 'cook', name: 'Second Helpings', desc: 'Eat a meal cooked at an inn.', test: f => f.cooked },
+  { id: 'moth', name: 'Moth to a Flame', desc: 'Ride a lanternmoth.', test: f => f.rode_moth },
+  { id: 'deep', name: 'Into the Deep', desc: 'Dive to the sea floor.', test: f => f.seen_deep },
+  { id: 'rich', name: 'Lamplighter\'s Fortune', desc: 'Carry 500,000 gold.', test: () => G.gold >= 500000 },
+  // growing
+  { id: 'limit', name: 'Past the Limit', desc: 'Use a Limit in battle.', test: f => f.used_limit },
+  { id: 'combo', name: 'Together', desc: 'Use a combo tech in battle.', test: f => f.used_combo },
+  { id: 'lv50', name: 'Fifty', desc: 'Raise a hero to level 50.', test: () => anyHero(m => m.level >= MAX_LEVEL) },
+  { id: 'board', name: 'Every Lamp Lit', desc: 'Light a hero\'s whole Lantern Board.', test: () => anyHero(m => (m.board || []).length >= Object.keys(BOARD_NODES).length - 1) },
+  { id: 'ngplus', name: 'Once More, With Feeling', desc: 'Start New Game+.', test: f => f.ngplus },
+  // speed
+  { id: 'speed', name: 'Lamplighter\'s Dash', desc: 'Finish the story in under 5 hours of play time.', test: f => f.ending && G.splits && G.splits.ending && G.splits.ending < 5 * 3600 }
+];
+const Trophies = {
+  got: {},
+  load() { try { this.got = JSON.parse(localStorage.getItem(TROPHY_KEY) || '{}') || {}; } catch (e) { this.got = {}; } },
+  save() { try { localStorage.setItem(TROPHY_KEY, JSON.stringify(this.got)); } catch (e) { } },
+  count() { return TROPHIES.filter(t => this.got[t.id]).length; },
+  give(id) {
+    if (this.got[id]) return;
+    const t = TROPHIES.find(x => x.id === id); if (!t) return;
+    this.got[id] = Date.now(); this.save();
+    Audio_.sfx('levelup'); toast(`🏆 ${t.name}`);
+  },
+  check() {
+    const f = G.flags || {};
+    for (const t of TROPHIES) if (!this.got[t.id]) { let ok = false; try { ok = !!t.test(f); } catch (e) { } if (ok) this.give(t.id); }
+  }
+};
+Trophies.load();
+async function trophyRoom() {
+  let idx = 0;
+  const panel = openPanel(g => {
+    const t = TROPHIES[idx], got = Trophies.got[t.id];
+    drawWindow(g, 40, 384, 560, 72);
+    text(g, got ? t.name : (t.secret ? '???' : t.name), 56, 394, { size: 17, bold: true, color: got ? '#ffd27a' : '#8890c0' });
+    text(g, got ? new Date(got).toLocaleDateString() : 'Not yet', 584, 396, { size: 13, align: 'right', color: got ? '#7aff9a' : '#8890c0' });
+    text(g, got && t.secret ? t.secret : t.desc, 56, 420, { size: 14 });
+  });
+  await listMenu({
+    x: 40, y: 24, w: 560, rows: 10, rowH: 28, title: `Trophies  ${Trophies.count()} / ${TROPHIES.length}`,
+    items: TROPHIES.map(t => ({ label: (Trophies.got[t.id] ? '🏆 ' : '· ') + (Trophies.got[t.id] || !t.secret ? t.name : '???'), right: Trophies.got[t.id] ? '' : '—', color: Trophies.got[t.id] ? '#ffe9a8' : '#8890c0' })),
+    onChange: i => idx = i
+  });
+  closePanel(panel);
+}
+
+// ---------------- speedrun timer and splits ----------------
+const SPLIT_KEY = 'lanternfall_splits_v1';
+const SPLITS = [['lantern1', 'Ember Lantern'], ['lantern2', 'Tide Lantern'], ['lantern3', 'Stone Lantern'], ['ending', 'Dawn Lantern']];
+let splitFlash = null;   // { name, time, delta, t }
+function bestSplits() { try { return JSON.parse(localStorage.getItem(SPLIT_KEY) || '{}') || {}; } catch (e) { return {}; } }
+function fmtClock(s) {
+  s = Math.max(0, s); const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = Math.floor(s % 60), ds = Math.floor(s * 10) % 10;
+  return `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${ds}`;
+}
+function checkSplits() {
+  if (!G.splits) G.splits = {};
+  for (const [flag, name] of SPLITS) {
+    if (!G.flags[flag] || G.splits[flag] !== undefined) continue;
+    G.splits[flag] = G.playTime;
+    if (G.flags.ngplus) continue;   // New Game+ runs aren't comparable
+    const best = bestSplits(), delta = best[flag] ? G.playTime - best[flag] : null;
+    splitFlash = { name, time: G.playTime, delta, t: 5 };
+    const complete = SPLITS.every(([f]) => typeof G.splits[f] === 'number');
+    if (flag === 'ending' && complete && (!best.ending || G.playTime < best.ending)) {
+      try { localStorage.setItem(SPLIT_KEY, JSON.stringify({ ...G.splits })); } catch (e) { }
+      if (CFG.speedrun) toast('New best time!');
+    }
+  }
+}
+function drawSpeedrun(g, dt) {
+  if (!CFG.speedrun || G.scene === TitleScene || !G.party.length) return;
+  const w = 118;
+  g.save(); g.globalAlpha = 0.85; rrect(g, W - w - 6, 6, w, 24, 6, 'rgba(8,6,20,.85)', 'rgba(255,233,168,.5)', 1.2); g.restore();
+  text(g, fmtClock(G.playTime), W - 12, 10, { size: 15, align: 'right', bold: true, color: '#ffe9a8', fam: 'monospace' });
+  if (splitFlash) {
+    splitFlash.t -= dt; if (splitFlash.t <= 0) { splitFlash = null; return; }
+    const d = splitFlash.delta, dcol = d === null ? '#c8d0f0' : d <= 0 ? '#7aff9a' : '#ff8a8a';
+    g.save(); g.globalAlpha = clamp(splitFlash.t, 0, 1);
+    rrect(g, W - 214, 34, 208, 40, 6, 'rgba(8,6,20,.85)', 'rgba(255,233,168,.5)', 1.2);
+    text(g, splitFlash.name, W - 202, 38, { size: 13, color: '#ffe9a8' });
+    text(g, fmtClock(splitFlash.time), W - 14, 38, { size: 13, align: 'right', fam: 'monospace' });
+    text(g, d === null ? 'first split' : (d <= 0 ? '−' : '+') + fmtClock(Math.abs(d)), W - 14, 55, { size: 12, align: 'right', color: dcol, fam: 'monospace' });
+    g.restore();
+  }
+}
+
+// ---------------- called every frame from the main loop ----------------
+let platformT = 0;
+function platformTick(dt) {
+  if (G.scene && G.scene.enemies && G.scene !== TitleScene) G.playTime += dt;   // battles count toward play time too (real time)
+  platformT += dt;
+  if (platformT < 0.5) return;
+  platformT = 0;
+  if (!G.party.length || G.scene === TitleScene) return;
+  checkSplits();
+  Trophies.check();
+}
+// Battery saver: draw at most 30 frames a second (the game logic still uses real time)
+function frameSkip(now) {
+  if (!CFG.battery) return false;
+  if (now - (frameSkip.last || 0) < 1000 / 31) return true;
+  frameSkip.last = now;
+  return false;
 }
 
 'use strict';
@@ -8135,7 +8362,7 @@ function interiorNpcs(m) {
     if (t === 'mirage') { out.push({ x: 6, y: 2, look: { skin: '#a8724a', hair: '#1f1b2e', style: 'long', body: '#3a8a8a', accent: '#e8c24a', robe: true }, talk: talkImara, name: 'Sultana Imara', mark: !f.sunseal }); out.push({ x: 2, y: 5, look: { ...LOOKS.guard, skin: '#8d5a3a', hat: 'cap', accent: '#e8c24a' }, talk: async () => say('Palace Guard', 'Bow when you speak to the Sultana. Or don\'t. She says she finds bowing tedious.') }); }
     else if (t === 'lastlight') out.push({ x: 6, y: 2, look: npcLook(78, { style: 'bun', robe: true, body: '#5a3a3a' }), talk: async () => sayAll([['Archivist Bren', 'The Order\'s records. A thousand years of the same entry: "The crown has not fallen. The fire still burns. Nobody caught any fish."'], ['Archivist Bren', G.flags.boss_abyss ? 'I\'ve started a new page. It says: "It\'s over." I keep reading it.' : 'There are older pages, from before the sea. Orun\'s handwriting. Lullabies, mostly. He was a terrible speller.']]) });
     else if (t === 'ironhold') out.push({ x: 6, y: 2, look: LOOKS.guard, talk: async () => say('Lieutenant Varga', G.flags.lantern3 ? 'The mines are quiet. The Captain\'s actually smiling. It\'s unsettling.' : 'The Captain\'s out in the square. He doesn\'t like being cooped up in here with the paperwork.'), wander: true });
-    else out.push({ x: 6, y: 2, look: npcLook(77, { style: 'bald', beard: true, robe: true }), talk: async () => say('Scribe Tam', 'The Elder\'s records go back three hundred years. Every Lamplighter of Brightwater is written here. Your father\'s name is on the last page, Arin. Yours will be next.') });
+    else out.push({ x: 6, y: 2, look: npcLook(77, { style: 'bald', beard: true, robe: true }), name: 'Scribe Tam', talk: async () => { await say('Scribe Tam', Trophies.count() ? `The Hall of Lamplighters. Every deed is written here. You have ${Trophies.count()} of ${TROPHIES.length} so far. Have a look.` : 'The Elder\'s records go back three hundred years. Every Lamplighter of Brightwater is written here. Your father\'s name is on the last page, Arin. Yours will be next.'); await trophyRoom(); } });
   }
   if (m.ikind === 'study') out.push({ x: 3, y: 6, look: { style: 'spiky', body: '#3a3a6a', accent: '#e8d070' }, talk: async () => say('Apprentice Pell', 'Wren lets me polish the lenses. It\'s the most important job in Frostmere. Probably.') });
   if (m.ikind === 'house') {
@@ -8253,15 +8480,20 @@ async function titleMenu() {
   while (true) {
     const ngSlots = ALL_SLOTS.filter(s => { const d = readSlot(s); return d && d.flags && d.flags.ending; });
     const latest = latestSlot(), ls = latest && slotSummary(latest);
-    const items = [{ label: 'New Game' }, { label: 'Continue', disabled: !latest }, { label: 'Load Game', disabled: !latest }, { label: 'New Game+', disabled: !ngSlots.length }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }];
-    const helps = ['Begin a new journey.', ls ? `${ls.place} · ${ls.chapter} · ${ls.time}` : 'No saved journey yet.', 'Choose a save slot.', ngSlots.length ? 'Keep your levels, gear and items. Enemies grow stronger.' : 'Finish the story to unlock New Game+.', 'Toggle music and sound (or press M).'];
-    const k = await listMenu({ x: W / 2 - 100, y: 186, w: 200, rows: 5, items, cancel: false, index: idx, help: i => helps[i], helpY: H - 60 });
+    const items = [{ label: 'New Game' }, { label: 'Continue', disabled: !latest }, { label: 'Load Game', disabled: !latest }, { label: 'New Game+', disabled: !ngSlots.length }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' },
+      { label: `Trophies  ${Trophies.count()}/${TROPHIES.length}` }, { label: 'Transfer saves' }, { label: 'Install', disabled: isInstalled() }];
+    const helps = ['Begin a new journey.', ls ? `${ls.place} · ${ls.chapter} · ${ls.time}` : 'No saved journey yet.', 'Choose a save slot.', ngSlots.length ? 'Keep your levels, gear and items. Enemies grow stronger.' : 'Finish the story to unlock New Game+.', 'Toggle music and sound (or press M).',
+      'Achievements, shared by every save.', 'Move your saves to another browser or device.', isInstalled() ? 'Already running as an app.' : 'Install Lanternfall as an app that plays offline.'];
+    const k = await listMenu({ x: W / 2 - 100, y: 176, w: 200, rows: 8, items, cancel: false, index: idx, help: i => helps[i], helpY: H - 44 });
     idx = k;
     if (k === 0) { await newGame(); return; }
     if (k === 1 && await resumeFrom(latest)) return;
     if (k === 2) { const s = await pickSlot('load'); if (s && await resumeFrom(s)) return; }
     if (k === 3) { const s = ngSlots.length === 1 ? ngSlots[0] : await pickSlot('load', 'New Game+ from…', d => d.flags && d.flags.ending); if (s && readSlot(s).flags.ending) { await newGamePlus(s); return; } }
     if (k === 4) Audio_.toggleMute();
+    if (k === 5) await trophyRoom();
+    if (k === 6) await transferMenu();
+    if (k === 7) await installApp();
   }
 }
 async function resumeFrom(slot) {
@@ -8288,7 +8520,7 @@ async function newGame(plus) {
   G.party = [];
   if (plus) { G.party.push({ ...G.carry.arin, status: {} }, { ...G.carry.lyra, status: {} }); healAll(); }
   else G.party = [makeMember('arin', 1), makeMember('lyra', 1)];
-  G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
+  G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.splits = {}; G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
   G.seen = plus ? plus.seen : {}; G.killed = plus ? plus.killed : {};
   if (plus) G.flags.ngplus = plus.ng;
   if (!plus) G.slot = SAVE_SLOTS.find(s => !hasSave(s)) || '1';
@@ -8377,6 +8609,7 @@ async function runEnding() {
 // ------------- main loop -------------
 let lastT = performance.now();
 function frame(now) {
+  if (frameSkip(now)) { requestAnimationFrame(frame); return; }
   try { frameInner(now); } catch (e) { if (!frame.seen) frame.seen = new Set(); if (!frame.seen.has(String(e))) { frame.seen.add(String(e)); console.error(e); } }
   requestAnimationFrame(frame);
 }
@@ -8390,11 +8623,13 @@ function frameInner(now) {
   const uiBusy = UI.update(dt);
   if (!uiBusy && !Script.running && G.scene && G.scene.update) G.scene.update(dt);
   if (G.scene && G.scene.tick) G.scene.tick(dt * bs);
+  platformTick(dt);
   ctx.setTransform(SCALE * DPR, 0, 0, SCALE * DPR, 0, 0);
   ctx.clearRect(0, 0, W, H);
   if (G.scene) G.scene.draw(ctx);
   UI.draw(ctx);
   drawToasts(ctx, dt);
+  drawSpeedrun(ctx, dt);
   if (Fade.v > 0) { ctx.save(); ctx.globalAlpha = Fade.v; ctx.fillStyle = Fade.color; ctx.fillRect(0, 0, W, H); ctx.restore(); }
 }
 Fade.v = 1;

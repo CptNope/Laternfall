@@ -7,7 +7,7 @@ Usage:
     python3 tools/playtest.py [index.html] [outdir] [scenario ...]
     python3 tools/playtest.py index.html /tmp/shots chapter systems
 
-Scenarios: chapter, orun, systems, newgame, comfort, hearts, depth, drowned, readme (default: all but readme).
+Scenarios: chapter, orun, systems, newgame, comfort, hearts, depth, drowned, platform, readme (default: all but readme).
 Needs: pip install playwright && playwright install chromium
        (or set CHROME=/path/to/chrome to use an installed browser).
 See docs/TESTING.md for what each scenario covers."""
@@ -17,7 +17,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -531,6 +531,69 @@ async def main():
             # --- save on the sea floor and load it back ---
             await ev("Field.enter('deep', 24, 14, 'down'); saveGame('3'); Field.enter('world', 40, 15, 'down'); loadGame('3')")
             check(await ev("G.mapId === 'deep' && G.x === 24 && slotSummary('3').place === 'The Sea Floor'"), 'a save on the sea floor loads back on the sea floor')
+
+        if want('platform'):
+            def check(ok, label):
+                print(('ok   ' if ok else 'FAIL ') + label)
+                if not ok: errs.append('check failed: ' + label)
+            # --- the title screen's new rows ---
+            await pg.goto('file://' + PATH); await ev("localStorage.clear()"); await pg.reload(); await pg.wait_for_timeout(1200)
+            await press('ArrowDown', 5, 120); await pg.wait_for_timeout(300); await shot('58_title_platform')
+            await press('Enter', 1, 400); await pg.wait_for_timeout(300); await shot('59_trophies_empty'); await press('Escape', 1, 300)
+            # --- trophies: earned from flags, kept outside the save ---
+            s = json.loads(json.dumps(POST)); s['flags'].update({'lantern1': True})
+            await boot(s); await until_idle()
+            await pg.wait_for_timeout(1300)
+            check(await ev("!!Trophies.got.ember && !!Trophies.got.dawn && !Trophies.got.nerith"), 'trophies unlock from story flags')
+            check(await ev("JSON.parse(localStorage.getItem('lanternfall_trophies_v1')).ember > 0"), 'trophies are stored outside the save slots')
+            await ev("G.flags.stole_rare = true"); await pg.wait_for_timeout(700)
+            check(await ev("!!Trophies.got.rare"), 'a rare steal earns Light Fingers')
+            await run("await trophyRoom()", 400); await shot('60_trophy_room'); await press('Escape', 1, 300); await until_idle(10, 'Escape')
+            # --- speedrun timer and splits ---
+            check(await ev("G.splits.ending === null && G.splits.lantern1 === null"), 'a pre-1.8 save marks earlier splits as unknown, not as times')
+            await ev("CFG.speedrun = true; G.playTime = 3725.4; G.splits = { lantern1: 1000, lantern3: null, ending: null }; localStorage.setItem('lanternfall_splits_v1', JSON.stringify({ lantern2: 2000 })); G.flags.lantern2 = true")
+            await pg.wait_for_timeout(800); await shot('61_speedrun_split')
+            check(await ev("G.splits.lantern2 > 3725 && splitFlash && splitFlash.delta > 0"), 'a split records the time and the difference from the best')
+            pt = await ev("G.playTime")
+            await run("await startBattle(['slime'])", 2200)
+            check(await ev(f"G.playTime > {pt} + 1.5"), 'play time keeps counting during battles')
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110)
+            await ev("CFG.speedrun = false")
+            # --- battery saver: about 30 frames a second ---
+            await ev("window.__n = 0; const f0 = frameInner; frameInner = n => { window.__n++; f0(n); }")
+            await pg.wait_for_timeout(1000); full = await ev("window.__n")
+            await ev("CFG.battery = true; window.__n = 0"); await pg.wait_for_timeout(1000); saver = await ev("window.__n")
+            await ev("CFG.battery = false")
+            check(saver < 36 and full > saver * 1.4, f'battery saver halves the frame rate ({full} → {saver} fps)')
+            # --- config rows ---
+            await run("await configMenu()", 400); await shot('62_config_platform'); await press('Escape', 1, 300); await until_idle(10, 'Escape')
+            # --- transfer saves ---
+            await ev("saveGame('2')")
+            blob = await ev("exportSaves()")
+            await ev("localStorage.removeItem(SAVE_PREFIX + '2')")
+            check(await ev("!readSlot('2')"), 'slot 2 deleted before import')
+            n = await ev(f"importSaves({json.dumps(blob)})")
+            check(await ev("!!readSlot('2') && readSlot('2').party.length === 5") and n >= 3, f'an exported file restores the saves ({n} entries)')
+            check(await ev("(() => { try { importSaves('{\"game\":\"other\"}'); return false; } catch (e) { return true; } })()"), 'a file from another game is refused')
+            # --- installable app: served over http, the service worker caches the game for offline play ---
+            import threading, http.server, socketserver
+            root = str(pathlib.Path(PATH).parent)
+            class Q(http.server.SimpleHTTPRequestHandler):
+                def __init__(self, *a, **k): super().__init__(*a, directory=root, **k)
+                def log_message(self, *a): pass
+            socketserver.TCPServer.allow_reuse_address = True
+            srv = socketserver.TCPServer(('127.0.0.1', 0), Q); port = srv.server_address[1]
+            threading.Thread(target=srv.serve_forever, daemon=True).start()
+            ctx2 = await b.new_context(viewport={'width': 640, 'height': 480}); pg2 = await ctx2.new_page()
+            pg2.on('pageerror', lambda e: errs.append('pwa: ' + str(e)))
+            await pg2.goto(f'http://127.0.0.1:{port}/index.html'); await pg2.wait_for_timeout(2500); await pg2.reload(); await pg2.wait_for_timeout(1500)
+            check(await pg2.evaluate("!!navigator.serviceWorker.controller"), 'the service worker controls the page')
+            cdp = await ctx2.new_cdp_session(pg2)
+            m = await cdp.send('Page.getAppManifest')
+            check(not m.get('errors') and 'Lanternfall' in (m.get('data') or ''), 'the web app manifest parses')
+            await ctx2.set_offline(True); await pg2.reload(); await pg2.wait_for_timeout(1500)
+            check(await pg2.evaluate("typeof Trophies === 'object' && document.title.startsWith('Lanternfall')"), 'the game reloads offline')
+            await ctx2.close(); srv.shutdown()
 
         print('ERRORS:', len(errs))
         for e in errs[:30]: print('  ', e)

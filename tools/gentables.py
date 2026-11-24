@@ -130,6 +130,7 @@ for t, n in SHOPN.items():
     rows.append([f"**{n}**", ', '.join(nm(k) for k in D['SHOPS'][t + '_items']), ', '.join(nm(k) for k in D['SHOPS'][t + '_arms'])])
 out['shops'] = tbl(['Town', 'Item shop', 'Arms and trinkets'], rows)
 bm = lambda k: D['BLACKMARKET_PRICES'].get(k) or I[k]['price'] * D['BLACKMARKET_MARKUP']
+out['trophies'] = tbl(['Trophy', 'How to earn it'], [[f"🏆 **{t['name']}**", t['secret'] + ' *(hidden in the game until earned)*' if t.get('secret') else t['desc']] for t in D['TROPHIES']])
 out['blackmarket'] = tbl(['Item', 'Black-market price', 'Normal price'], [[nm(k), bm(k), I[k]['price'] or '—'] for k in D['SHOPS']['blackmarket']])
 loot = lambda l: f"{int(l[5:]):,} gold" if l.startswith('gold:') else nm(l)
 out['treasures'] = tbl(['Map', 'Where it points', 'Where to get it', 'Treasure'], [[f"**{nm('tmap' + k)}**", I['tmap' + k]['desc'], t['source'], ', '.join(loot(l) for l in t['loot'])] for k, t in D['TREASURES'].items()])

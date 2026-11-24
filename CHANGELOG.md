@@ -14,7 +14,8 @@ timeline
     2026-11-19 : 1.0.0 First playable : 1.1.0 Frostmere and side quests
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
     2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance : 1.5.0 Hearts of the Lamplighters : 1.6.0 Deeper systems
-    Next : 1.7.0 The Drowned Kingdom
+    2026-11-24 : 1.7.0 The Drowned Kingdom
+    Next : 1.8.0 Install anywhere
 ```
 
 ```mermaid
@@ -38,13 +39,33 @@ xychart-beta
 | 1.4.0 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#6](https://github.com/CptNope/Laternfall/pull/6) |
 | 1.5.0 | 2026-11-23 | 7 | 10 (26) | 75 (15) | 16 | 5 | [#7](https://github.com/CptNope/Laternfall/pull/7) |
 | 1.6.0 | 2026-11-23 | 7 | 10 (26) | 75 (15) | 17 | 5 | [#8](https://github.com/CptNope/Laternfall/pull/8) |
-| 1.7.0 | next | 9 | 12 (32) | 89 (17) | 21 | 5 | this release |
+| 1.7.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 89 (17) | 21 | 5 | [#13](https://github.com/CptNope/Laternfall/pull/13) |
+| 1.8.0 | next | 9 | 12 (32) | 89 (17) | 21 | 5 | this release |
 
 ---
 
 ## [Unreleased]
 
-Planned as **1.7.0 · *The Drowned Kingdom***. It delivers WD-1 to WD-6 from the [roadmap](ROADMAP.md#17--the-drowned-kingdom).
+Planned as **1.8.0 · *Install anywhere***. It delivers PL-1 to PL-4 from the [roadmap](ROADMAP.md#18--install-anywhere), and the first part of TD-4.
+
+### Added
+- **Install as an app (PWA).** `build.py` now also writes `manifest.webmanifest` and an offline service worker (`sw.js`) beside `index.html`, and `tools/make_icons.py` draws the app icons with the game's own drawing helpers. Served from GitHub Pages, the game installs to a home screen or desktop and plays offline. **Install** on the title screen opens the browser's install prompt, or explains how (Share → Add to Home Screen on iOS). `index.html` is still one self-contained file that runs when opened directly.
+- **Desktop builds** for Windows, macOS (universal) and Linux, using Tauri (`src-tauri/`). A new `Desktop builds` workflow builds all three on every version tag and attaches the installers to the GitHub Release; pull requests that touch the desktop files get a Linux compile check.
+- **Transfer saves** on the title screen: export every save slot, your settings, trophies and best splits to one file, and import it in another browser, the installed app or the desktop build.
+- **30 trophies** for the story, side stories, collecting and growing, one of them hidden. They're kept outside the save slots, so they carry across every slot and New Game+. See them on the title screen or from Scribe Tam in Brightwater's hall.
+- **Speedrun timer** (Config): play time on screen, with a split at each main Lantern showing the difference from your best run.
+- **Battery saver** (Config): draws at 30 frames a second instead of 60.
+- `platform` play-test scenario: 13 checks covering trophies, splits, battle play time, the battery saver, save export and import, and the installed app (service worker, manifest, an offline reload over a local web server). Added to CI.
+
+### Changed
+- **Play time now counts during battles**, in real time, so faster battle speeds really are faster. Saves keep the time they already had.
+- CI also checks that `manifest.webmanifest` and `sw.js` match the build.
+
+---
+
+## [1.7.0] — 2026-11-24, merged but not yet tagged · *The Drowned Kingdom*
+
+It delivers WD-1 to WD-6 from the [roadmap](ROADMAP.md#17--the-drowned-kingdom).
 
 ### Added
 - **The diving bell and the sea floor.** After Oswin's quest, Sister Wenna finds Tessaly's Chart and Brann fits the *Dawnrunner* with a diving bell (2 Frost Crystals and 1 Sun Gold). Sail onto one of four patches of black water and press Enter to dive to a new map under the sea, lit only by the bell's lamp. Walk onto a bell line to surface. The Map screen gets a Sea Floor view (Shift).
@@ -279,6 +300,7 @@ Shipped together with 1.0.0 in pull request #1.
 - The full main story, with an ending.
 
 [Unreleased]: https://github.com/CptNope/Laternfall/compare/v1.6.0...HEAD
+[1.7.0]: https://github.com/CptNope/Laternfall/pull/13
 [1.6.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.6.0
 [1.5.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.5.0
 [1.4.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.4.0

@@ -3,7 +3,7 @@
 //  PARTY & GAME STATE
 // ============================================================
 const G = {
-  party: [], inv: {}, gold: 0, flags: {}, playTime: 0,
+  party: [], inv: {}, gold: 0, flags: {}, playTime: 0, splits: {},
   mapId: 'world', x: 0, y: 0, dir: 'down',
   ship: null, onShip: false, airship: null, inAir: false, carry: null, encSteps: 20, lastInn: null, seen: {}, killed: {},
   scene: null, maps: {}, slot: '1'
@@ -146,7 +146,7 @@ function saveData() {
     party: G.party.map(m => ({ id: m.id, level: m.level, xp: m.xp, hp: m.hp, mp: m.mp, weapon: m.weapon, armor: m.armor, acc: m.acc || null, limit: m.limit || 0, board: m.board || [], embers: m.embers || 0, capxp: m.capxp || 0 })),
     meal: G.meal || null,
     seen: G.seen, killed: G.killed,
-    inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime,
+    inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime, splits: G.splits || {},
     mapId: G.mapId, x: G.x, y: G.y, dir: G.dir, ship: G.ship, onShip: G.onShip, lastInn: G.lastInn, airship: G.airship, inAir: G.inAir, carry: G.carry
   };
 }
@@ -170,6 +170,8 @@ function loadGame(slot = latestSlot()) {
   G.party = d.party.map(p => { const m = { acc: null, board: [], embers: 0, ...p, status: {} }; m.hp = clamp(m.hp, 0, maxHp(m)); m.mp = clamp(m.mp, 0, maxMp(m)); return m; });
   G.seen = d.seen || {}; G.killed = d.killed || {};
   G.inv = d.inv || {}; G.gold = d.gold || 0; G.flags = d.flags || {}; G.playTime = d.playTime || 0;
+  // saves from before 1.8 have no splits: Lanterns already lit count as unknown (null), never as a time
+  G.splits = d.splits || Object.fromEntries(SPLITS.filter(([f]) => G.flags[f]).map(([f]) => [f, null]));
   G.mapId = d.mapId; G.x = d.x; G.y = d.y; G.dir = d.dir || 'down';
   G.ship = d.ship || null; G.onShip = !!d.onShip; G.lastInn = d.lastInn || null; G.airship = d.airship || null; G.inAir = !!d.inAir; G.carry = d.carry || null;
   G.meal = d.meal || null;

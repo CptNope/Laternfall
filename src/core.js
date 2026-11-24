@@ -66,8 +66,9 @@ const isLoc = c => typeof c === 'string' && LOC_RE.test(c);
 const CFG_KEY = 'lanternfall_cfg_v1';
 const BATTLE_SPEEDS = [{ label: '1×', v: 1 }, { label: '2×', v: 2 }, { label: '4×', v: 4 }];
 const TEXT_SPEEDS = [{ label: 'Normal', v: 55 }, { label: 'Fast', v: 120 }, { label: 'Instant', v: 99999 }];
-const CFG = { dash: false, textSpeed: 0, muted: false, autosave: true, battleSpeed: 0, noEnc: false, bigText: false, contrast: false, keys: null };
-try { Object.assign(CFG, JSON.parse(localStorage.getItem(CFG_KEY)) || {}); } catch (e) { }
+const CFG = { dash: false, textSpeed: 0, muted: false, autosave: true, battleSpeed: 0, noEnc: false, bigText: false, contrast: false, keys: null, speedrun: false, battery: false };
+function loadCfg() { try { Object.assign(CFG, JSON.parse(localStorage.getItem(CFG_KEY)) || {}); } catch (e) { } }
+loadCfg();
 function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(CFG)); } catch (e) { } }
 
 // ---------- input ----------

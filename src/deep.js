@@ -248,7 +248,7 @@ async function lampMoth() {
   if (!hasItem('moth_whistle')) { await narrate(G.flags.q_moth ? 'Pale moths circle the lamp. Old Ivy\'s whistle would call one down.' : 'The roadside lamp burns small and steady. Big pale moths circle it, drowsy with the light.'); return; }
   const c = await choose(null, 'A lanternmoth the size of a pony rests on the lamp. Ride it?', ['Ride', 'Leave it'], 1);
   if (c !== 0) return;
-  G.onMoth = true; Audio_.sfx('buff'); Audio_.play('sky');
+  G.onMoth = true; G.flags.rode_moth = true; Audio_.sfx('buff'); Audio_.play('sky');
   toast('No monsters on a moth · Enter to land');
 }
 async function dismountMoth() {
