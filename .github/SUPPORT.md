@@ -11,6 +11,6 @@
 
 Lanternfall is free, with no ads and no purchases, and it will stay that way. If you enjoy it:
 
-- 💛 **[Donate on itch.io](https://cptnope.itch.io/lanternfall/purchase)**. Any amount helps more games get made.
+- 💛 **[Donate on itch.io](https://cptnope.itch.io/lanternfall/donate)**. Any amount helps more games get made.
 - ⭐ Star this repository, and rate or comment on the [itch.io page](https://cptnope.itch.io/lanternfall).
 - 📣 Share the game, or the [write-up on jeremyanderson.tech](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/), with someone who misses 16-bit RPGs.
