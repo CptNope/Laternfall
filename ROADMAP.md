@@ -2,8 +2,8 @@
 
 Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
 
-- **Current release:** 1.4.0 *Comfort*. **In review:** 1.5.0 *Hearts of the Lamplighters*. See [CHANGELOG.md](CHANGELOG.md#unreleased).
-- **Next up:** 1.6 *Deeper systems* (cooking, smarter enemies, more statuses), with 1.8 *Install anywhere* (PWA) as a quick parallel win.
+- **Current release:** 1.5.0 *Hearts of the Lamplighters*. **In review:** 1.6.0 *Deeper systems* (DS-1 to DS-7). See [CHANGELOG.md](CHANGELOG.md#unreleased).
+- **Next up:** 1.7 *The Drowned Kingdom*, with 1.8 *Install anywhere* (PWA) as a quick parallel win. The rest of 1.6 (day and night, weather, the card game, stealth) is optional and can ship as 1.6.x.
 - ✅ marks items that are done.
 
 ## Contents
@@ -39,51 +39,53 @@ These rules decide what makes the cut.
 
 ```mermaid
 mindmap
-  root((Lanternfall 1.3))
+  root((Lanternfall 1.6))
     World
       7 towns
-      7 dungeons, 20 floors
+      10 dungeons, 26 floors
       Ship and airship
-      Walk-in interiors
+      12 roadside lamps
     Story
       Main quest: 4 Lanterns
-      Tomb of the First King
       Chapter VI post-game
-      10 side quests
+      Five hero quests and a festival
+      17 side quests
     Battle
       5 heroes, 4 active
-      36 skills, 12 combos
-      63 monsters, 10 bosses
-      Arena: 6 cups
+      39 skills, 12 combos, 5 Limits
+      75 monsters, 15 bosses with phases
+      Blind, Slow, Haste
+      Resists, absorbs, enemy AI
     Systems
-      Equipment and 27 accessories
-      Fishing: 13 fish
+      Lantern Board: 11 passives
+      36 accessories, rare steals
+      Fishing 13 fish, cooking 11 meals
       Forge: 9 recipes
-      Bestiary and world map
-      New Game+
+      3 save slots, New Game+
     Tech
       Canvas 2D vector art
       Web Audio chiptune, 18 tracks
       Single-file build
-      Headless play-test harness
+      Play-test harness, battle simulator, CI
 ```
 
 ### Content by area
 
 ```mermaid
 pie showData
-    title Lines of source by module (1.3.0)
-    "art.js: all drawing" : 1480
-    "story.js: dialogue and events" : 1144
-    "battle.js: combat" : 910
-    "core.js: engine, UI, audio" : 673
-    "maps.js: world, towns, dungeons" : 499
-    "field.js: exploration" : 440
-    "menu.js: menus" : 451
-    "data.js: game data" : 423
-    "crafts.js: fishing, forge" : 154
+    title Lines of source by module (1.6.0)
+    "art.js: all drawing" : 1516
+    "story.js: dialogue and events" : 1193
+    "battle.js: combat" : 1062
+    "core.js: engine, UI, audio" : 706
+    "menu.js: menus" : 590
+    "data.js: game data" : 532
+    "maps.js: world, towns, dungeons" : 511
+    "field.js: exploration" : 448
+    "hearts.js: hero quests" : 300
+    "crafts.js: fishing, forge, board, cooking" : 248
+    "party.js: state, saves, board" : 195
     "interior.js: buildings" : 145
-    "party.js: state, saves" : 86
 ```
 
 ---
@@ -100,9 +102,9 @@ gantt
     section Comfort
     1.4 Comfort and accessibility    :done, m14, 2026-11-23, 1d
     section Heroes
-    1.5 Hearts of the Lamplighters   :active, m15, 2026-11-23, 2w
+    1.5 Hearts of the Lamplighters   :done, m15, 2026-11-23, 1d
     section Depth
-    1.6 Deeper systems               :m16, after m15, 8w
+    1.6 Deeper systems               :active, m16, 2026-11-23, 2w
     section World
     1.7 The Drowned Kingdom          :m17, after m16, 10w
     section Platform
@@ -115,8 +117,8 @@ gantt
 | --- | --- | --- | --- | --- |
 | **1.3.x** | Stabilise | Real-HP balance pass, mobile check, CI, tagged releases | Nov 2026 | ✅ Done in 1.4.0 except ST-2 and ST-4 |
 | **1.4** | Comfort | Save slots, auto-save, battle speed, gamepad, accessibility | Nov 2026 | ✅ Done (1.4.0, finished in 1.5.0) |
-| **1.5** | Heroes | A personal quest for each of the five heroes, with an ultimate weapon and a Limit | Dec 2026 | 🟡 In review (1.5.0) |
-| **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | May 2027 | ⚪ Planned |
+| **1.5** | Heroes | A personal quest for each of the five heroes, with an ultimate weapon and a Limit | Dec 2026 | ✅ Done (1.5.0) |
+| **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | May 2027 | 🟡 In review (1.6.0: DS-1 to DS-7) |
 | **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ⚪ Planned |
 | **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ⚪ Planned |
 | **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 💭 Exploring |
@@ -239,26 +241,26 @@ flowchart LR
 
 ### 1.6 · Deeper systems
 
-| ID | Item | Description | Size |
-| --- | --- | --- | --- |
-| DS-1 | **Lantern Board** | After level 30, a small node grid per hero spends "Embers" (earned with EXP) on stats and passive skills | L |
-| DS-2 | **Cooking** | Combine fish with shop ingredients at inns into meals that buff the next 3 battles. Gives fish a use beyond selling | M |
-| DS-3 | **Smarter enemy AI** | Targeting rules (focus the weakest hero, heal allies, counter-attack) and scripted boss phases | M |
-| DS-4 | **More statuses** | Blind (miss chance), Slow, Haste, Berserk, Stop. New accessories that prevent them | M |
-| DS-5 | **Elemental resistances and absorbs** | Today monsters only have `weak`; add `resist` and `absorb` | S |
-| DS-6 | **Steal tiers** | A rare steal slot per monster, more likely with Mug | S |
-| DS-7 | **Monster codex rewards** | Sable gives a reward at 45 and at 63 creatures | XS |
-| DS-8 | **Day and night** | Visual tint, different night encounters, a few NPCs who only appear at night | M |
-| DS-9 | **Weather** | Snow in Frostmere and sandstorms in the Sunscar, drawn in code; some affect battle | M |
-| DS-10 | **"Lanterns & Lies"** | A small in-world card game against NPCs, for prizes | L |
-| DS-11 | **Stealth sections** | Guard sight lines on the field (from HR-5); a stealth replay of the Undercity | L |
+| ID | Item | Description | Outcome | Size |
+| --- | --- | --- | --- | --- |
+| ✅ DS-1 | **Lantern Board** | After level 30, a small node grid per hero spends "Embers" (earned with EXP) on stats and passive skills | Shipped: 12 nodes per hero, 11 passives, Embers past the cap too | L |
+| ✅ DS-2 | **Cooking** | Combine fish with shop ingredients at inns into meals that buff the next 3 battles. Gives fish a use beyond selling | Shipped with fish only (11 meals); shop ingredients were left out to keep it simple | M |
+| ✅ DS-3 | **Smarter enemy AI** | Targeting rules (focus the weakest hero, heal allies, counter-attack) and scripted boss phases | Shipped: weakest / casters / healer AI and phases for all 15 bosses. Counter-attacks went to the heroes (a Lantern Board passive) | M |
+| ✅ DS-4 | **More statuses** | Blind (miss chance), Slow, Haste, Berserk, Stop. New accessories that prevent them | Shipped Blind, Slow and Haste. **Berserk and Stop are still open** | M |
+| ✅ DS-5 | **Elemental resistances and absorbs** | Today monsters only have `weak`; add `resist` and `absorb` | Shipped: 23 monsters | S |
+| ✅ DS-6 | **Steal tiers** | A rare steal slot per monster, more likely with Mug | Shipped: 13 monsters; the Thief's Gloves double the chance instead of Mug | S |
+| ✅ DS-7 | **Monster codex rewards** | Sable gives a reward at 45 and at 63 creatures | Shipped at 45 and at all 75 | XS |
+| DS-8 | **Day and night** | Visual tint, different night encounters, a few NPCs who only appear at night | Open | M |
+| DS-9 | **Weather** | Snow in Frostmere and sandstorms in the Sunscar, drawn in code; some affect battle | Open | M |
+| DS-10 | **"Lanterns & Lies"** | A small in-world card game against NPCs, for prizes | Open | L |
+| DS-11 | **Stealth sections** | Guard sight lines on the field (from HR-5); a stealth replay of the Undercity | Open | L |
 
 ```mermaid
 stateDiagram-v2
     direction LR
     [*] --> Catch: Fishing (1.3)
     Catch --> Sell: Shop
-    Catch --> Cook: Inn kitchen (1.6)
+    Catch --> Cook: Inn kitchen (1.6 ✅)
     Cook --> Meal
     Meal --> Buff: Next 3 battles
     Catch --> Collect: Ice Fisher quest
@@ -367,9 +369,9 @@ quadrantChart
 | 8 | QL-5 | Gamepad ✅ | 1.4 | Medium | Medium |
 | 9 | HR-1 | Limit gauge ✅ | 1.5 | High | Medium |
 | 10 | HR-2–6 | Hero quests ✅ | 1.5 | High | High |
-| 11 | DS-2 | Cooking | 1.6 | Medium | Medium |
-| 12 | DS-3 | Enemy AI | 1.6 | Medium | Medium |
-| 13 | DS-1 | Lantern Board | 1.6 | Medium | High |
+| 11 | DS-2 | Cooking ✅ | 1.6 | Medium | Medium |
+| 12 | DS-3 | Enemy AI ✅ | 1.6 | Medium | Medium |
+| 13 | DS-1 | Lantern Board ✅ | 1.6 | Medium | High |
 | 14 | WD-1–2 | Drowned Kingdom | 1.7 | High | High |
 | 15 | EN-2 | Save versioning ✅ (moved up into 1.4 as TD-1) | 1.4 | High | Medium |
 
@@ -401,7 +403,7 @@ Things in the code today that will slow future work down.
 | ✅ TD-6 | **Balance is checked by ad hoc simulation** | none | Regressions when stats change | Commit a battle simulator under `tools/` | 1.3.x |
 | TD-7 | **`art.js` is about 1,480 lines** | `art.js` | Hard to navigate | Split by family (EN-5) | 2.0 |
 | TD-8 | **Strings are inline in code** | `story.js` and others | Blocks localisation | String table (EN-6) | 2.0 |
-| TD-9 | **Bosses fight with fixed weighted moves** | `battle.js` | Late bosses feel flat | Phase scripts (DS-3) | 1.6 |
+| ✅ TD-9 | **Bosses fight with fixed weighted moves** | `battle.js` | Late bosses feel flat | Phase scripts (DS-3): `phases` on each boss | 1.6 |
 
 ---
 

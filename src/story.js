@@ -71,7 +71,7 @@ function townNpcs(id) {
   ];
   if (id === 'frostmere') return [
     N(12, 8, 31, { skin: '#e8c8a8', hair: '#c8c8d8', style: 'long', body: '#2a3a6a', accent: '#e8d070', robe: true, beard: true }, talkWren, { mark: !f.q_stars || (f.lantern3 && !f.chart), name: 'Wren' }),
-    N(16, 13, 32, { skin: '#f1c9a0', hair: '#e8e0d0', style: 'bun', body: '#6a3a5a', accent: '#c0a040', robe: true }, talkSable, { mark: !f.q_scholar || (!f.scholar_done && seenCount() >= 30), name: 'Sable' }),
+    N(16, 13, 32, { skin: '#f1c9a0', hair: '#e8e0d0', style: 'bun', body: '#6a3a5a', accent: '#c0a040', robe: true }, talkSable, { mark: !f.q_scholar || (!f.scholar_done && seenCount() >= 30) || (f.scholar_done && !f.codex45 && seenCount() >= 45) || (f.codex45 && !f.codex_all && seenCount() >= Object.keys(MONSTERS).length), name: 'Sable' }),
     N(14, 16, 33, { body: '#5a6a7a', hat: 'cap', accent: '#c0c0c0' }, talkFisher, { name: 'Ice Fisher', mark: !f.q_fish || (fishKinds() >= 6 && !f.fish_r1) || (fishKinds() >= Object.keys(FISH).length && !f.fish_r2) }),
     N(8, 11, 34, { style: 'spiky', body: '#3a6a9a' }, talkFrostKid, { wander: true }),
     N(20, 8, 35, { body: '#7a5a3a', hat: 'cap', accent: '#5a3a1f', beard: true }, talkTrapper, { wander: true }),
@@ -802,7 +802,18 @@ async function talkSable() {
     addItem('silk_ribbon'); f.scholar_done = true; Audio_.sfx('chest');
     await narrate('Received the Silk Ribbon! (Accessory: DEF +8, MAG +8, prevents all ailments)'); return;
   }
-  await say('Sable', f.scholar_done ? `Every creature you\'ve met is in my book now. ${n} of ${total}. Go and find me the rest, won\'t you?` : `You\'ve recorded ${n} creatures so far. Thirty, dear. Check your bestiary in the menu.`);
+  if (f.scholar_done && !f.codex45 && n >= 45) {
+    await sayAll([['Sable', `${n}! You\'ve been busy. The archive hasn\'t had a book this thick since before the Long Night.`], ['Sable', 'Here: my old reading glass. It shows you what a creature is thinking. Mostly "lunch".']]);
+    addItem('scholar_monocle'); f.codex45 = true; Audio_.sfx('chest');
+    await narrate('Received the Scholar\'s Monocle! (Accessory: MAG +14, +25% EXP, prevents blind)'); return;
+  }
+  if (f.codex45 && !f.codex_all && n >= total) {
+    await sayAll([['Sable', `All ${total}. Every single one.`], ['Sable', 'I never thought I\'d finish it. Take the archive\'s seal. It\'s yours more than mine now.']]);
+    addItem('bestiary_seal'); f.codex_all = true; Audio_.sfx('chest');
+    await narrate('Received the Bestiary Seal! (Accessory: all stats +14, rare steals twice as likely)'); return;
+  }
+  if (f.codex_all) { await say('Sable', 'The finished bestiary is on the archive\'s top shelf. Scholars come all the way from Aerie to read it.'); return; }
+  await say('Sable', f.scholar_done ? `${n} of ${total} creatures recorded. Bring me ${f.codex45 ? 'every last one' : 'forty-five'} and I\'ll have something special for you.` : `You\'ve recorded ${n} creatures so far. Thirty, dear. Check your bestiary in the menu.`);
 }
 async function talkFisher() {
   const f = G.flags, n = fishKinds(), total = Object.keys(FISH).length;
@@ -984,6 +995,7 @@ function questList() {
   q.push(...heartsQuests());
   if (f.arenaMet) { const n = ARENA_CUPS.slice(0, 5).filter(c => f['cup_' + c.id]).length; q.push({ title: 'Arena Legend', giver: 'Arena Master, Aerie', done: !!f.cup_champion, reward: 'Lantern Crown', desc: f.cup_champion ? 'Grand Champions of the Aerie Arena!' : `Win all five cups at the Aerie Arena. (${n}/5 won)` }); }
   if (f.q_scholar) q.push({ title: 'Monster Scholar', giver: 'Sable, Frostmere', done: !!f.scholar_done, reward: 'Silk Ribbon', desc: f.scholar_done ? 'Your notes are in Sable\'s bestiary.' : `Record 30 different creatures in your bestiary, then visit Sable. (${seenCount()}/30)` });
+  if (f.scholar_done) { const tot = Object.keys(MONSTERS).length, goal = f.codex45 ? tot : 45; q.push({ title: 'The Complete Bestiary', giver: 'Sable, Frostmere', done: !!f.codex_all, reward: f.codex45 ? 'Bestiary Seal' : 'Scholar\'s Monocle', desc: f.codex_all ? 'Every creature is recorded. Sable\'s book is finished.' : `Record ${f.codex45 ? 'every creature' : '45 creatures'}, then visit Sable. (${seenCount()}/${goal})` }); }
   return q;
 }
 function mainObjective() {

@@ -152,3 +152,97 @@ async function forgeMenu() {
     }
   }
 }
+
+// ============================================================
+//  LANTERN BOARD (1.6): spend Embers on stat nodes and passives
+// ============================================================
+const BOARD_STAT_NAME = { hp: 'Max HP', mp: 'Max MP', str: 'Attack', def: 'Defense', mag: 'Magic', spd: 'Speed' };
+function boardNodeInfo(m, n) {
+  const h = BOARD_HERO[m.id];
+  if (n === 'spark') return { name: 'The Spark', desc: 'Where every hero\'s light begins. Ignite the nodes next to a lit one.' };
+  if (n === 'big') return { name: 'Great Flame', desc: `${BOARD_STAT_NAME[h.big]} +20.` };
+  const p = nodePassive(m, n);
+  if (p) return { name: (n === 'cap' ? '★ ' : '') + PASSIVES[p].name, desc: PASSIVES[p].desc, passive: true };
+  const [s, v] = BOARD_STATS[n];
+  const names = { hp: 'Vigor', mp: 'Focus', atk: 'Might', mag: 'Insight', def: 'Ward', spd: 'Swiftness' };
+  return { name: names[n], desc: `${BOARD_STAT_NAME[s]} +${v < 1 ? Math.round(v * 100) + '%' : v}.` };
+}
+const BOARD_POS = (n) => ({ x: 110 + BOARD_NODES[n].x * 70, y: 100 + BOARD_NODES[n].y * 58 });
+async function lanternBoard(mi) {
+  let idx = mi;
+  const ids = Object.keys(BOARD_NODES);
+  let cur = 'spark';
+  const ui = {
+    update() {
+      const m = G.party[idx];
+      if (Input.p('cancel')) { Audio_.sfx('cancel'); UI.close(this); return; }
+      // the run key (Shift) flips to the next hero
+      if (Input.p('run') && G.party.length > 1) { idx = (idx + 1) % G.party.length; Audio_.sfx('cursor'); }
+      const dirs = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] };
+      for (const d in dirs) if (Input.p(d)) {
+        const [dx, dy] = dirs[d], a = BOARD_NODES[cur];
+        let best = null, bd = 1e9;
+        for (const n of ids) {
+          if (n === cur) continue;
+          const b = BOARD_NODES[n], vx = b.x - a.x, vy = b.y - a.y;
+          const along = vx * dx + vy * dy; if (along <= 0) continue;
+          const dist = along + Math.abs(vx * dy - vy * dx) * 2;
+          if (dist < bd) { bd = dist; best = n; }
+        }
+        if (best) { cur = best; Audio_.sfx('cursor'); }
+      }
+      if (Input.p('ok')) {
+        if (boardBuy(m, cur)) Audio_.sfx('lantern');
+        else Audio_.sfx('buzz');
+      }
+    },
+    draw(g) {
+      const m = G.party[idx];
+      drawWindow(g, 20, 16, 600, 448);
+      text(g, `${memberName(m)}'s Lantern Board`, 40, 30, { size: 22, bold: true, fam: SERIF });
+      text(g, `Embers: ${m.embers || 0}`, 600, 34, { size: 16, align: 'right', color: '#ffd27a' });
+      if (m.level < BOARD_LEVEL && !(m.embers || m.board && m.board.length)) text(g, `Embers come from Level ${BOARD_LEVEL}.`, 600, 56, { size: 12, align: 'right', color: '#b8c4ee' });
+      else if (m.level >= MAX_LEVEL) text(g, `Next Ember: ${EMBER_CAP_XP - (m.capxp || 0)} EXP`, 600, 56, { size: 12, align: 'right', color: '#b8c4ee' });
+      for (const n of ids) for (const l of BOARD_NODES[n].links) if (n < l) {
+        const a = BOARD_POS(n), b = BOARD_POS(l), lit = boardOwned(m, n) && boardOwned(m, l);
+        line(g, a.x, a.y, b.x, b.y, lit ? '#ffd27a' : 'rgba(200,210,255,.25)', lit ? 3 : 2);
+      }
+      for (const n of ids) {
+        const p = BOARD_POS(n), own = boardOwned(m, n), can = boardCanBuy(m, n), info = boardNodeInfo(m, n);
+        const r = n === 'cap' ? 17 : info.passive || n === 'big' ? 14 : 11;
+        if (own) { g.save(); g.globalAlpha = 0.35 + Math.sin(performance.now() / 300) * 0.1; circle(g, p.x, p.y, r + 8, '#ffb84a'); g.restore(); }
+        circle(g, p.x, p.y, r, own ? '#ffd27a' : can ? '#4a4a78' : '#24243a', can ? '#ffe9a8' : '#8890c0', can ? 2.5 : 1.5);
+        if (!own) text(g, String(BOARD_NODES[n].cost), p.x, p.y - 7, { size: 12, bold: true, align: 'center', color: can ? '#fff' : '#8890c0' });
+        if (n === cur) circle(g, p.x, p.y, r + 5, null, '#fff', 2);
+      }
+      const info = boardNodeInfo(m, cur), N = BOARD_NODES[cur];
+      drawWindow(g, 40, 372, 560, 80);
+      text(g, info.name, 56, 382, { size: 17, bold: true, color: info.passive ? '#9ad8ff' : '#ffe9a8' });
+      text(g, boardOwned(m, cur) ? 'Lit' : `${N.cost} Ember${N.cost > 1 ? 's' : ''}`, 584, 384, { size: 14, align: 'right', color: boardOwned(m, cur) ? '#7aff9a' : boardCanBuy(m, cur) ? '#ffd27a' : '#8890c0' });
+      text(g, info.desc, 56, 406, { size: 14 });
+      text(g, `Enter: ignite   ${G.party.length > 1 ? 'Shift: next hero   ' : ''}Esc: back`, 56, 428, { size: 12, color: '#b8c4ee' });
+    }
+  };
+  await UI.push(ui);
+}
+
+// ============================================================
+//  COOKING (1.6): fish → meals at inns, a buff for MEAL_BATTLES battles
+// ============================================================
+function mealReady(id) { return Object.entries(MEALS[id].needs).every(([f, n]) => (G.inv[f] || 0) >= n); }
+function hasAnyFish() { return Object.keys(G.inv).some(k => ITEMS[k] && ITEMS[k].kind === 'fish'); }
+async function cookMenu(keeper = 'Cook') {
+  const ids = Object.keys(MEALS);
+  const k = await listMenu({
+    x: 60, y: 60, w: 520, rows: 11, rowH: 26, title: 'Cook a meal',
+    items: ids.map(id => ({ label: MEALS[id].name, right: Object.entries(MEALS[id].needs).map(([f, n]) => `${ITEMS[f].name} ${G.inv[f] || 0}/${n}`).join(', '), disabled: !mealReady(id) })),
+    help: i => `${MEALS[ids[i]].desc} Lasts ${MEAL_BATTLES} battles.${mealNow() ? ' (Replaces your current meal.)' : ''}`
+  });
+  if (k < 0) return false;
+  const id = ids[k];
+  for (const [f, n] of Object.entries(MEALS[id].needs)) addItem(f, -n);
+  G.meal = { id, left: MEAL_BATTLES };
+  Audio_.sfx('heal');
+  await narrate(`The party shares a ${MEALS[id].name}. ${MEALS[id].desc} (next ${MEAL_BATTLES} battles)`);
+  return true;
+}

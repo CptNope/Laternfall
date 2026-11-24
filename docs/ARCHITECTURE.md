@@ -62,15 +62,15 @@ python3 build.py   # prints the byte size of the new index.html
 | File | Responsibility | Defines (main symbols) |
 | --- | --- | --- |
 | `core.js` | Canvas and scaling, utilities, input, timers and fades, the script runner, the UI stack, dialogue, list menus, toasts, settings, the chiptune sequencer and sound effects | `W` `H` `TS`, `hash` `mulberry` `weighted`, `Input`, `wait` `fadeTo`, `runScript`, `UI`, `say` `narrate` `choose` `listMenu`, `CFG`, `TRACKS`, `Audio_`, `isLoc` |
-| `data.js` | Pure game data | `HEROES` `SPELLS` `ITEMS` `MONSTERS` `ENCOUNTERS` `SHOPS` `COMBOS` `ARENA_CUPS` `RECIPES` `FISH` `FISH_SPOTS` `MAX_LEVEL` `xpForLevel` |
+| `data.js` | Pure game data | `HEROES` `SPELLS` `ITEMS` `MONSTERS` `ENCOUNTERS` `SHOPS` `COMBOS` `ARENA_CUPS` `RECIPES` `FISH` `FISH_SPOTS` `MEALS` `BOARD_NODES` `BOARD_HERO` `PASSIVES` `STATUS_TURNS` `MAX_LEVEL` `xpForLevel` |
 | `art.js` | Every drawing function: world, town and dungeon tiles, buildings, characters, weapons, monsters, battle backgrounds, title art | `drawWorldTile` `drawTownTile` `drawDungeonTile` `drawBuilding` `drawChar` `drawMonster` `drawBattleBG` `DTHEME` `WPAL` |
 | `maps.js` | World generation, town layouts, dungeon floor generation | `GameMap` `WORLD_LOC` `genWorld` `TOWN_DEFS` `buildTown` `DUNGEONS` `genDungeonFloor` |
-| `party.js` | Game state `G`, stats, levelling, inventory, save and load | `G` `makeMember` `stat` `gainXp` `addItem` `saveGame` `loadGame` |
+| `party.js` | Game state `G`, stats, levelling, Embers and the Lantern Board's effects, meals, inventory, save and load | `G` `makeMember` `stat` `gainXp` `boardBuy` `hasPassive` `spellCost` `mealNow` `immune` `cureAll` `addItem` `saveGame` `loadGame` |
 | `field.js` | The exploration scene: movement, ship and airship, NPCs, encounters, lighting, map changes | `Field` `getMap` `populate` `changeMap` `enterLocation` `worldTrack` `fishingSpot` |
 | `interior.js` | Building interiors from templates, plus searchable containers | `INT_TEMPLATES` `buildInterior` `enterInterior` `interiorInteract` |
 | `battle.js` | The battle scene and combat rules | `Battle` `startBattle` `applyItemEffect` `ngScale` |
 | `menu.js` | The field menu and its pages, shops, inns, quest log, bestiary, world map, config | `openMainMenu` `openShop` `innStay` `questMenu` `configMenu` |
-| `crafts.js` | The fishing mini-game and Orrin's forge | `FishingUI` `goFishing` `forgeMenu` |
+| `crafts.js` | The fishing mini-game, Orrin's forge, the Lantern Board screen and cooking | `FishingUI` `goFishing` `forgeMenu` `lanternBoard` `cookMenu` |
 | `hearts.js` | The five hero quests, Limits unlocking, campfire talks, the Festival of Lanterns | `learnLimit` `worldQuestEntities` `interiorQuestEntities` `innDream` `campfireTalk` `heartsQuests` |
 | `story.js` | NPCs and dialogue, doors, cutscenes, bosses, quests, the title screen, the ending, **and the main loop** | `townNpcs` `bossEncounter` `questList` `mainObjective` `worldEvents` `titleMenu` `frame` |
 
@@ -365,11 +365,15 @@ classDiagram
       enemies[]
       pa[] party animation state
       buffs rally, barrier
-      opts boss, bg, music, arena, canRun, keepScene, noVictory
+      opts boss, bg, music, arena, canRun, keepScene, noVictory, party
       run() result
       commandPhase()
       partyAct(i, cmd)
       enemyAct(e)
+      enemyTarget(e)
+      checkPhase(e)
+      weakMult(def, elem)
+      takeSteal(e, point)
       doCombo(i, cmd)
       victory()
       playFx(kind, points)
@@ -399,7 +403,32 @@ classDiagram
 
 Each hero's `m.limit` (0–100, saved with the party) rises by `damage ÷ max HP × 140` whenever they're hit, once `G.flags['limit_<id>']` is set. `limitReady(m)` adds a ★ command at the top of the battle menu, and `Battle.doLimit(i, cmd)` runs that hero's effect (defined in `LIMITS` in `data.js`, implemented in `battle.js`). *Repeat last turn* turns a spent Limit into an Attack.
 
-Enemy moves are picked with `weighted(def.acts)`. `ngScale(def)` applies New Game+ multipliers. The full formulas are in the [game guide](GAME_GUIDE.md#formulas).
+### Enemy turns
+
+```mermaid
+flowchart TD
+    T[enemyAct e] --> P{e.phaseNew?}
+    P -->|yes| PM[Announce the phase message]
+    P -->|no| S
+    PM --> S{Asleep?}
+    S -->|yes| Z[Skip turn]
+    S -->|no| A["Pick a move: weighted(e.phase.acts or def.acts)"]
+    A --> HL{"ai: 'healer' and a monster<br/>below half HP?"}
+    HL -->|70%| HEAL[Use its heal on the most hurt monster]
+    HL -->|no| SIL{Silenced and the move is magic?}
+    SIL -->|yes| ATK[Attack instead]
+    SIL -->|no| TG["enemyTarget(e): ai 'weakest' / 'magehunter' / random"]
+    ATK --> TG
+    TG --> HIT["Blind: 50% miss · Ghost Step: 25% dodge<br/>then damage, statuses, Counter"]
+```
+
+`damageEnemy(e, dmg, col, crit, elem)` handles absorbs (`weakMult` returns `-1`; the hit heals) and calls `checkPhase(e)`, which moves a boss into its next `phases` entry once its HP falls below that entry's `hp` share. The phase takes effect at once (its `actions` count from the next round); the message is shown on the boss's next turn. `ngScale(def)` applies New Game+ multipliers. The full formulas are in the [game guide](GAME_GUIDE.md#formulas).
+
+### Lantern Board, passives and meals
+
+- `stat(m, s)` is `(base + gear + board) × meal`. `maxHp` and `maxMp` add the board but not the meal.
+- `hasPassive(m, id)` checks the lit `p1`/`p2`/`p3`/`cap` nodes against `BOARD_HERO[m.id]`. `battle.js` reads it in a few places: turn start (Auto-Regen, Auto-Haste, Lookout), `damageMember` (Quick Limit, Resolve), `enemyAct` (Ghost Step, Counter), damage and healing (Wildfire, Twilight, Tidal Grace) and `spellCost` (MP Saver).
+- `G.meal = { id, left }` counts down at the end of every `Battle.run()`, whatever the result. `mealIs(effect)` and `mealMult(stat)` read it; `immune()` treats the Hotpot's `ward` as immunity to every ailment.
 
 ---
 
@@ -452,9 +481,10 @@ Everything that persists lives in the global `G` (`party.js`). `saveGame(slot)` 
 
 | Field | Type | Meaning |
 | --- | --- | --- |
-| `version` | number | Save format version (currently `2`) |
+| `version` | number | Save format version (currently `3`) |
 | `savedAt` | ms timestamp | Shown in slot menus; **Continue** picks the newest |
-| `party` | `{id, level, xp, hp, mp, weapon, armor, acc}[]` | Heroes in formation order; the first four fight |
+| `party` | `{id, level, xp, hp, mp, weapon, armor, acc, limit, board, embers, capxp}[]` | Heroes in formation order; the first four fight. `board` is the lit Lantern Board node ids |
+| `meal` | `{id, left}` or null | The active meal and how many battles it has left |
 | `inv` | `{itemId: count}` | Inventory, including key items |
 | `gold`, `playTime` | number | |
 | `flags` | `{key: any}` | **All story progress**; see below |
@@ -485,7 +515,8 @@ Every save carries a `version`. When a slot is read, `migrateSave` applies `MIGR
 ```mermaid
 flowchart LR
     v1[v1 save<br/>no version] -- "MIGRATIONS[1]" --> v2[v2<br/>version, savedAt]
-    v2 -. "MIGRATIONS[2], when needed" .-> v3[v3 …]
+    v2 -- "MIGRATIONS[2] (1.6)" --> v3[v3<br/>board, embers, capxp, meal]
+    v3 -. "MIGRATIONS[3], when needed" .-> v4[v4 …]
 ```
 
 ### When the game saves

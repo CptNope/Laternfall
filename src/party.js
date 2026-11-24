@@ -15,8 +15,44 @@ function makeMember(id, level = 1) {
   return m;
 }
 function baseStat(m, s) { const d = HEROES[m.id]; return Math.floor(d.base[s] + d.grow[s] * (m.level - 1)); }
-function maxHp(m) { return baseStat(m, 'hp'); }
-function maxMp(m) { return baseStat(m, 'mp'); }
+function maxHp(m) { return baseStat(m, 'hp') + boardBonus(m, 'hp'); }
+function maxMp(m) { return baseStat(m, 'mp') + boardBonus(m, 'mp'); }
+// ---------- Lantern Board ----------
+const BOARD_LEVEL = 30, EMBER_CAP_XP = 20000;
+function boardOwned(m, n) { return n === 'spark' || !!(m.board && m.board.includes(n)); }
+function boardBonus(m, s) {
+  if (!m.board || !m.board.length) return 0;
+  let v = 0;
+  for (const n of m.board) {
+    const b = BOARD_STATS[n];
+    if (b && b[0] === s) v += (s === 'hp' || s === 'mp') ? Math.round(baseStat(m, s) * b[1]) : b[1];
+    if (n === 'big' && BOARD_HERO[m.id] && BOARD_HERO[m.id].big === s) v += 20;
+  }
+  return v;
+}
+function boardOpen(m) { return m.level >= BOARD_LEVEL || (m.embers || 0) > 0 || !!(m.board && m.board.length); }
+function nodePassive(m, n) { const h = BOARD_HERO[m.id]; return h && ['p1', 'p2', 'p3', 'cap'].includes(n) ? h[n] : null; }
+function hasPassive(m, p) { return !!(m && m.board && m.board.some(n => nodePassive(m, n) === p)); }
+function boardCanBuy(m, n) {
+  const N = BOARD_NODES[n];
+  return !!N && !boardOwned(m, n) && (m.embers || 0) >= N.cost && N.links.some(l => boardOwned(m, l));
+}
+function boardBuy(m, n) {
+  if (!boardCanBuy(m, n)) return false;
+  const oh = maxHp(m), om = maxMp(m);
+  m.embers -= BOARD_NODES[n].cost; m.board = [...(m.board || []), n];
+  m.hp += maxHp(m) - oh; m.mp += maxMp(m) - om;
+  return true;
+}
+function spellCost(m, id) { const c = SPELLS[id].mp || 0; return hasPassive(m, 'mp_saver') ? Math.ceil(c * 0.75) : c; }
+// ---------- meals (cooked at inns, last MEAL_BATTLES battles) ----------
+function mealNow() { return G.meal && G.meal.left > 0 ? MEALS[G.meal.id] : null; }
+function mealIs(effect) { const ml = mealNow(); return !!ml && (ml.effect === effect || (ml.effect === 'all' && effect === 'regen')); }
+function mealMult(s) {
+  const ml = mealNow(); if (!ml || !ml.amount || s === 'hp' || s === 'mp') return 1;
+  const e = ml.effect;
+  return (e === s || e === 'all' || (e === 'power' && (s === 'str' || s === 'mag'))) ? 1 + ml.amount : 1;
+}
 function gearBonus(m, s) {
   let v = 0;
   for (const slot of ['weapon', 'armor', 'acc']) {
@@ -27,10 +63,11 @@ function gearBonus(m, s) {
   return v;
 }
 function accOf(m) { return m.acc ? ITEMS[m.acc] : null; }
-function immune(m, st) { const a = accOf(m); return !!(a && a.immune && a.immune.includes(st)); }
+function immune(m, st) { if (mealIs('ward') && AILMENTS.includes(st)) return true; const a = accOf(m); return !!(a && a.immune && a.immune.includes(st)); }
+function cureAll(m) { m.status.poison = false; for (const s of ['sleep', 'silence', 'blind', 'slow']) m.status[s] = 0; }
 function partyHasAcc(flag) { return G.party.some(m => { const a = accOf(m); return a && a[flag]; }); }
 function canEquip(it, id) { return !it.who || it.who.includes(id); }
-function stat(m, s) { return baseStat(m, s) + gearBonus(m, s); }
+function stat(m, s) { return Math.round((baseStat(m, s) + gearBonus(m, s) + boardBonus(m, s)) * mealMult(s)); }
 function spellsOf(m) { return HEROES[m.id].spells.filter(([, l]) => m.level >= l).map(([s]) => s); }
 function memberName(m) { return HEROES[m.id].name; }
 function alive(m) { return m.hp > 0; }
@@ -44,7 +81,13 @@ function addMember(id) {
 }
 function gainXp(m, n) {
   const msgs = [];
-  if (m.level >= MAX_LEVEL) return msgs;
+  if (m.level >= MAX_LEVEL) {
+    // past the cap, EXP turns into Embers for the Lantern Board
+    m.capxp = (m.capxp || 0) + n; let got = 0;
+    while (m.capxp >= EMBER_CAP_XP) { m.capxp -= EMBER_CAP_XP; m.embers = (m.embers || 0) + 1; got++; }
+    if (got) msgs.push(`${memberName(m)} gained ${got > 1 ? got + ' Embers' : 'an Ember'}!`);
+    return msgs;
+  }
   m.xp += n;
   while (m.level < MAX_LEVEL && m.xp >= xpForLevel(m.level + 1)) {
     const oh = maxHp(m), om = maxMp(m);
@@ -53,6 +96,7 @@ function gainXp(m, n) {
     m.hp += maxHp(m) - oh; m.mp += maxMp(m) - om;
     msgs.push(`${memberName(m)} reached level ${m.level}!`);
     for (const s of spellsOf(m)) if (!before.has(s)) msgs.push(`${memberName(m)} learned ${SPELLS[s].name}!`);
+    if (m.level >= BOARD_LEVEL) { m.embers = (m.embers || 0) + 1; msgs.push(m.level === BOARD_LEVEL ? `${memberName(m)} gained an Ember! (The Lantern Board is open: see Status)` : `${memberName(m)} gained an Ember!`); }
   }
   return msgs;
 }
@@ -63,14 +107,20 @@ function healAll() { for (const m of G.party) { m.hp = maxHp(m); m.mp = maxMp(m)
 // ---------- save / load ----------
 // Three manual slots plus an auto-save slot. Every save carries a `version`; older saves are
 // upgraded by MIGRATIONS in order when they are read, so the save shape can change safely.
-const SAVE_VERSION = 2;
+const SAVE_VERSION = 3;
 const SAVE_PREFIX = 'lanternfall_save_v2_';
 const LEGACY_SAVE_KEY = 'lanternfall_save_v1';          // 1.0–1.3: a single slot, no version
 const SAVE_SLOTS = ['1', '2', '3'];
 const ALL_SLOTS = [...SAVE_SLOTS, 'auto'];
 const MIGRATIONS = {
   // v1 → v2: saves gained a version and a timestamp; nothing else changed shape
-  1: d => ({ ...d, version: 2, savedAt: d.savedAt || 0 })
+  1: d => ({ ...d, version: 2, savedAt: d.savedAt || 0 }),
+  // v2 → v3 (1.6): the Lantern Board. Heroes already past Lv 30 get the Embers they would have earned.
+  2: d => {
+    const up = p => ({ ...p, board: p.board || [], embers: p.embers !== undefined ? p.embers : Math.max(0, p.level - 29), capxp: p.capxp || 0 });
+    const carry = d.carry ? Object.fromEntries(Object.entries(d.carry).map(([k, p]) => [k, up(p)])) : d.carry;
+    return { ...d, version: 3, party: (d.party || []).map(up), carry, meal: d.meal || null };
+  }
 };
 function migrateSave(d) {
   if (!d) return null;
@@ -93,7 +143,8 @@ function readSlot(slot) {
 function saveData() {
   return {
     version: SAVE_VERSION, savedAt: Date.now(),
-    party: G.party.map(m => ({ id: m.id, level: m.level, xp: m.xp, hp: m.hp, mp: m.mp, weapon: m.weapon, armor: m.armor, acc: m.acc || null, limit: m.limit || 0 })),
+    party: G.party.map(m => ({ id: m.id, level: m.level, xp: m.xp, hp: m.hp, mp: m.mp, weapon: m.weapon, armor: m.armor, acc: m.acc || null, limit: m.limit || 0, board: m.board || [], embers: m.embers || 0, capxp: m.capxp || 0 })),
+    meal: G.meal || null,
     seen: G.seen, killed: G.killed,
     inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime,
     mapId: G.mapId, x: G.x, y: G.y, dir: G.dir, ship: G.ship, onShip: G.onShip, lastInn: G.lastInn, airship: G.airship, inAir: G.inAir, carry: G.carry
@@ -116,11 +167,12 @@ function latestSlot() {
 function loadGame(slot = latestSlot()) {
   const d = slot && readSlot(slot);
   if (!d) return false;
-  G.party = d.party.map(p => { const m = { acc: null, ...p, status: {} }; m.hp = clamp(m.hp, 0, maxHp(m)); m.mp = clamp(m.mp, 0, maxMp(m)); return m; });
+  G.party = d.party.map(p => { const m = { acc: null, board: [], embers: 0, ...p, status: {} }; m.hp = clamp(m.hp, 0, maxHp(m)); m.mp = clamp(m.mp, 0, maxMp(m)); return m; });
   G.seen = d.seen || {}; G.killed = d.killed || {};
   G.inv = d.inv || {}; G.gold = d.gold || 0; G.flags = d.flags || {}; G.playTime = d.playTime || 0;
   G.mapId = d.mapId; G.x = d.x; G.y = d.y; G.dir = d.dir || 'down';
   G.ship = d.ship || null; G.onShip = !!d.onShip; G.lastInn = d.lastInn || null; G.airship = d.airship || null; G.inAir = !!d.inAir; G.carry = d.carry || null;
+  G.meal = d.meal || null;
   G.slot = slot === 'auto' ? (G.slot || '1') : slot;
   return true;
 }

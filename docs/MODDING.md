@@ -42,6 +42,7 @@ flowchart TD
 - [Add music or a sound effect](#add-music-or-a-sound-effect)
 - [Add a fish or a forge recipe](#add-a-fish-or-a-forge-recipe)
 - [Add an arena cup](#add-an-arena-cup)
+- [Change the Lantern Board](#change-the-lantern-board)
 - [Regenerating the guide tables](#regenerating-the-guide-tables)
 - [Pull request checklist](#pull-request-checklist)
 
@@ -60,11 +61,15 @@ emberfox: {
   size: 0.9,                                    // optional scale
   hp: 900, atk: 150, def: 60, mag: 80, spd: 24,
   xp: 400, gold: 300,
-  weak: ['ice'],                                // fire, ice, bolt, holy, dark, water
+  weak: ['ice'],                                // fire, ice, bolt, holy, dark, water: ×1.6
+  resist: ['fire'],                             // optional: ×0.5
+  absorb: ['water'],                            // optional: hits heal it instead
+  ai: 'weakest',                                // optional: 'weakest', 'magehunter' or 'healer' (see below)
   acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_blaze' }],  // weighted moves; 'attack' or an e_* skill
   drop: ['hipotion', 0.2],                      // item and chance after the battle
   mat: ['ember_core', 0.2],                     // forge material and chance (optional)
   steal: 'ether',                               // what Kestrel can steal
+  rare: ['megalixir', 0.1],                     // optional ★ rare steal: tried first, with this chance
   actions: 1                                    // optional: turns per round (late bosses use 2)
 },
 ```
@@ -75,7 +80,14 @@ emberfox: {
 d3: [ ..., { w: 2, g: ['emberfox', 'emberfox'] } ],
 ```
 
-The bestiary picks it up automatically. Its total, the quest log and Sable's quest all count `MONSTERS`.
+The bestiary picks it up automatically. Its total, the quest log and Sable's quests (45 creatures, then all of them) all count `MONSTERS`, so adding a monster raises the bar for the Bestiary Seal.
+
+| `ai` | Behaviour |
+| --- | --- |
+| *(none)* | Random living hero |
+| `weakest` | 60%: the hero with the lowest HP share |
+| `magehunter` | 60%: Lyra, Oswin or Selene (`CASTERS` in `data.js`) |
+| `healer` | When any monster is below half HP, 70% chance to use its heal (a `type: 'heal'` move in `acts`) on the most hurt monster |
 
 ### Balancing
 
@@ -173,10 +185,11 @@ spells: [ ..., ['emberwave', 30] ],
 | `heal` | Heals | `power`, `scale` |
 | `revive` | Revives one ally | — |
 | `sanctuary` | Revives and heals everyone | `power`, `scale` |
-| `cure` | Clears ailments | — |
+| `cure` | Clears ailments (poison, sleep, silence, blind, slow) | — |
 | `regen` | Applies Regen | — |
+| `haste` | Applies Haste to one ally (and clears Slow) | — |
 | `buff` | Party buff | `buff: 'rally' \| 'barrier'` |
-| `status` | Sleep or silence a foe | `status`, `chance` |
+| `status` | Sleep, silence, blind or slow a foe (`target: 'enemy'` or `'enemies'`) | `status`, `chance`. Turn counts are in `STATUS_TURNS`; bosses ignore sleep and silence and resist blind (×0.3) and slow (×0.5) |
 | `gravity` | Percentage damage | — |
 | `steal`, `escape` | Kestrel's tricks | — |
 
@@ -371,6 +384,14 @@ if (did === 'reef') {
 
 For **two phases**, start the first battle with `{ keepScene: true, noVictory: true }`, play a scene, then start the second (see `abyssFinale()`). Boss monsters need `boss: true` in `MONSTERS`, which blocks running and makes them immune to sleep and silence.
 
+**Phases.** Give a boss `phases` to change its tactics as it gets hurt. When its HP falls to `hp` × max HP, it announces `msg` on its next turn and uses the new `acts` (and `actions`, if set) from then on:
+
+```js
+phases: [{ hp: 0.5, msg: 'The Reef Queen calls the tide!', acts: [{ w: 2, a: 'attack' }, { w: 3, a: 'e_tidal' }, { w: 1, a: 'e_slowall' }] }]
+```
+
+Swap moves rather than stacking damage: run `tools/balance_sim.py` afterwards and keep the win rates where they were.
+
 ---
 
 ## Change the world map
@@ -422,6 +443,14 @@ FISH_SPOTS.reef = [{ w: 5, f: 'reefsnapper' }, { w: 5, f: 'eel' }];   // town id
 RECIPES.push({ out: 'emberbrand', mats: { ember_core: 3, sun_gold: 1 }, gold: 9000 });
 ```
 
+To make the fish cookable, add a meal (the inn's **Cook a meal** list reads `MEALS` in order):
+
+```js
+MEALS.snapper_curry = { name: 'Snapper Curry', needs: { reefsnapper: 1, minnow: 2 }, effect: 'def', amount: 0.15, desc: 'DEF +15%.' };
+// effect: 'str' | 'def' | 'mag' | 'spd' (×(1 + amount)), 'power' (ATK and MAG), 'all' (all stats, plus Regen),
+//         'regen' | 'haste' (start battles with it), 'ward' (no ailments), 'xp' | 'gold' (reward × (1 + amount))
+```
+
 Water inside a dungeon is fishable when `FISH_SPOTS[dungeonId]` exists. The fishing quest's target ("every kind") is `Object.keys(FISH).length`, so it grows on its own. Keep the Ice Fisher's dialogue hints in step.
 
 ---
@@ -434,6 +463,20 @@ ARENA_CUPS.push({ id: 'tidal', name: 'Tidal Cup', level: 40, unlock: 'boss_reef'
 ```
 
 `unlock` hides the cup until that flag is set. *Arena Legend* only counts the first five cups.
+
+---
+
+## Change the Lantern Board
+
+**Files:** `src/data.js` (layout and passives), `src/battle.js` (what a passive does)
+
+- `BOARD_NODES`: every node's grid position (`x` 0–6, `y` 0–4), Ember `cost` and `links`. A node can be lit when any linked node is lit; `spark` starts lit. The guide's board diagram is written by hand in `tools/game_guide.tpl.md`, so update it too.
+- `BOARD_STATS`: what the stat nodes give. Values under 1 are a share of the base stat (`hp`, `mp`); the rest are flat.
+- `BOARD_HERO`: per hero, which passive sits on `p1`, `p2`, `p3` and `cap`, and which stat the Great Flame (`big`) raises by 20.
+- `PASSIVES`: names and descriptions. To add one, put it here, give it to a hero in `BOARD_HERO`, and check it in battle with `hasPassive(m, 'id')` (see how `counter`, `ghost_step` or `limit_charge` are used in `battle.js`).
+- `BOARD_LEVEL` and `EMBER_CAP_XP` in `src/party.js` set when Embers start and how much EXP past the cap buys one.
+
+The board is saved per hero as `board` (lit node ids), `embers` and `capxp`. If you remove a node id, add a save migration that drops it from `board`.
 
 ---
 
