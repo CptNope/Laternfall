@@ -8,7 +8,7 @@ let BATTLE_PARTY = null;
 function BP() { return BATTLE_PARTY || G.party; }
 class Battle {
   constructor(ids, opts) {
-    BATTLE_PARTY = G.party.slice(0, 4);
+    BATTLE_PARTY = opts.party ? G.party.filter(m => opts.party.includes(m.id)) : G.party.slice(0, 4);
     this.opts = opts; this.bg = opts.bg || 'plains'; this.t = 0;
     this.fx = []; this.nums = []; this.msg = null; this.active = -1; this.flash = null; this.shake = 0;
     const counts = {};
@@ -137,6 +137,7 @@ class Battle {
       const col = !alive(m) ? '#ff7a7a' : m.hp / maxHp(m) < 0.25 ? '#ffd27a' : '#fff';
       if (i === this.active) { g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(222, y - 2, 402, 27); }
       text(g, memberName(m), 230, y + 3, { size: 15, bold: true, color: col });
+      if (limitUnlocked(m)) { const full = (m.limit || 0) >= 100; bar(g, 230, y + 22, 62, 3, (m.limit || 0) / 100, full ? (Math.sin(this.t * 10) > 0 ? '#ffd23a' : '#fff4c0') : '#e8a84a'); }
       const tags = [m.status.poison && ['PSN', '#8aff7a'], m.status.sleep && ['SLP', '#c8b8ff'], m.status.silence && ['SIL', '#ffb0d0'], m.status.regen && ['RGN', '#9ad8ff']].filter(Boolean);
       tags.slice(0, 2).forEach(([tg, c], k) => text(g, tg, 302 + k * 24, y + 5, { size: 10, bold: true, color: c }));
       text(g, `${m.hp}`, 420, y + 3, { size: 15, color: col, align: 'right' });
@@ -430,7 +431,7 @@ class Battle {
       if (c === 'repeat') {
         // re-use last round's commands for everyone who can still act
         const P = BP();
-        return this.prevCmds.map((pc, j) => pc && alive(P[j]) && !P[j].status.sleep ? { ...pc } : null);
+        return this.prevCmds.map((pc, j) => pc && alive(P[j]) && !P[j].status.sleep ? (pc.type === 'limit' ? { type: 'attack', target: null } : { ...pc }) : null);
       }
       if (c === 'back') {
         let j = i - 1; while (j >= 0 && (!alive(BP()[j]) || BP()[j].status.sleep)) j--;
@@ -455,7 +456,9 @@ class Battle {
     while (true) {
       const spells = spellsOf(m);
       const usable = Object.keys(G.inv).filter(k => ITEMS[k].kind === 'use' && ITEMS[k].field !== 'world');
+      const lim = limitReady(m);
       const items = [
+        ...(lim ? [{ label: '★ ' + LIMITS[m.id].name, color: '#ffd23a' }] : []),
         { label: 'Attack' },
         { label: m.status.silence ? d.skill + ' (silenced)' : d.skill, disabled: !spells.length || !!m.status.silence },
         { label: 'Combo', disabled: !this.combosFor(m).length },
@@ -464,10 +467,17 @@ class Battle {
         { label: 'Run', disabled: !!this.opts.boss }
       ];
       const canRepeat = this.prevCmds && !this.prevCmds.some(c => c && c.type === 'run');
-      const k = await listMenu({ x: 8, y: 330, w: 200, rows: 6, rowH: 21, items, index: this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: 15, hotkeys: canRepeat ? { run: -10 } : null });
-      if (k === -10) return 'repeat';
-      this.lastCmd = this.lastCmd || {}; if (k >= 0) this.lastCmd[idx] = k;
-      if (k < 0) return 'back';
+      const k0 = await listMenu({ x: 8, y: lim ? 314 : 330, w: 200, rows: items.length, rowH: lim ? 19 : 21, items, index: lim ? 0 : this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: lim ? 14 : 15, hotkeys: canRepeat ? { run: -10 } : null,
+        help: i => lim && i === 0 ? LIMITS[m.id].desc : '' });
+      if (k0 === -10) return 'repeat';
+      if (k0 < 0) return 'back';
+      if (lim && k0 === 0) {
+        const tg = LIMITS[m.id].target === 'enemy' ? await this.pickTarget('enemy') : 'all';
+        if (tg !== null && tg !== undefined) return { type: 'limit', target: tg };
+        continue;
+      }
+      const k = lim ? k0 - 1 : k0;
+      this.lastCmd = this.lastCmd || {}; this.lastCmd[idx] = k;
       if (k === 0) { const tg = await this.pickTarget('enemy'); if (tg !== null && tg !== undefined) return { type: 'attack', target: tg }; continue; }
       if (k === 1) {
         const sp = await listMenu({
@@ -587,6 +597,7 @@ class Battle {
   kill(e) { e.hp = 0; e.alive = false; e.dying = 0; e.status = {}; G.killed[e.id] = (G.killed[e.id] || 0) + 1; Audio_.sfx('ko'); }
   damageMember(i, dmg) {
     const m = BP()[i];
+    if (limitUnlocked(m) && alive(m)) m.limit = Math.min(100, (m.limit || 0) + dmg / maxHp(m) * 140);
     m.hp = Math.max(0, m.hp - dmg);
     if (m.status.sleep && Math.random() < 0.6) m.status.sleep = 0;
     this.pa[i].flash = 0.4; this.pa[i].shake = 0.3;
@@ -640,11 +651,56 @@ class Battle {
     idx.forEach(j => { this.pa[j].pose = null; this.pa[j].dx = 0; });
     await wait(250); this.msg = null;
   }
+  async doLimit(i, c) {
+    const P = BP(), m = P[i], a = this.pa[i];
+    if (!limitReady(m)) return;
+    m.limit = 0;
+    this.msg = LIMITS[m.id].name;
+    a.pose = 'cast'; a.dx = -24;
+    this.screenFlash('#fff4c0', 0.6, 0.4); Audio_.sfx('levelup');
+    await wait(600);
+    const foes = () => this.liveEnemies();
+    const party = () => P.map((_, k) => k).filter(k => alive(P[k]));
+    const magHit = (e, power, elem) => Math.max(1, Math.round((power + stat(m, 'mag')) * rnd(0.95, 1.05) * this.weakMult(e.def, elem) - e.def.mag * 0.4));
+    if (m.id === 'arin') {
+      const tg = this.resolveTargets('enemy', c.target)[0];
+      if (tg) { await this.playFx('holy', [this.enemyCenter(tg)]); this.damageEnemy(tg, this.physDamage(this.memberAtk(i) * (1 + stat(m, 'mag') / 200), tg.def.def, 5 * this.weakMult(tg.def, 'holy')), '#ffd27a', true); }
+      await this.playFx('heal', P.map((_, k) => this.memberCenter(k)));
+      P.forEach((p, k) => { if (!alive(p)) { p.hp = Math.floor(maxHp(p) * 0.4); const q = this.memberCenter(k); this.num(q.x, q.y, 'Revived', '#7aff9a'); } else this.healMember(k, Math.round(maxHp(p) * 0.3)); });
+    } else if (m.id === 'lyra') {
+      const ts = foes(); await this.playFx('fire', ts.map(e => this.enemyCenter(e))); await this.playFx('flare', ts.map(e => this.enemyCenter(e)));
+      for (const e of ts) this.damageEnemy(e, magHit(e, 300, 'fire'), '#ffd27a', true);
+      for (const k of party()) { P[k].status.regen = 5; const q = this.memberCenter(k); this.num(q.x, q.y, 'Regen', '#9ad8ff'); }
+    } else if (m.id === 'oswin') {
+      const ts = foes(); await this.playFx('water', ts.map(e => this.enemyCenter(e)));
+      for (const e of ts) this.damageEnemy(e, magHit(e, 180, 'water'), '#ffd27a', true);
+      await this.playFx('heal', party().map(k => this.memberCenter(k)));
+      for (const k of party()) { this.healMember(k, maxHp(P[k])); P[k].status.poison = false; P[k].status.sleep = 0; P[k].status.silence = 0; }
+      this.buffs.barrier = 4;
+    } else if (m.id === 'kestrel') {
+      await this.stepForward(i, async () => {
+        for (let h = 0; h < 6 && foes().length; h++) {
+          const tg = c.target && c.target.alive ? c.target : pick(foes());
+          a.pose = 'attack'; await this.playFx('slash', [this.enemyCenter(tg)]);
+          this.damageEnemy(tg, this.physDamage(this.memberAtk(i), tg.def.def, 1.0), '#ffd27a', true); a.pose = null; await wait(60);
+        }
+      });
+      for (const e of this.enemies) if (!e.stolen && e.def.steal) { e.stolen = true; addItem(e.def.steal); const q = this.enemyCenter(e); this.num(q.x, q.y - 30, ITEMS[e.def.steal].name, '#ffe9a8'); }
+      Audio_.sfx('item');
+    } else if (m.id === 'selene') {
+      const ts = foes(); await this.playFx('dark', ts.map(e => this.enemyCenter(e)));
+      let total = 0;
+      for (const e of ts) { const d = magHit(e, 260, 'dark'); total += Math.min(d, e.hp); this.damageEnemy(e, d, '#ffd27a', true); if (e.alive && !e.def.boss) e.status.sleep = 3; }
+      const ks = party(); for (const k of ks) this.healMember(k, Math.round(total / Math.max(1, ks.length)));
+    }
+    a.pose = null; a.dx = 0; await wait(300); this.msg = null;
+  }
   async partyAct(i, c) {
     const m = BP()[i], a = this.pa[i];
     if (m.status.sleep) { const p = this.memberCenter(i); this.num(p.x, p.y, 'Asleep', '#c8b8ff'); await wait(300); return; }
     if (c.type === 'defend') return;
     if (c.type === 'combo') return this.doCombo(i, c);
+    if (c.type === 'limit') return this.doLimit(i, c);
     if (c.type === 'attack') {
       const tg = this.resolveTargets('enemy', c.target)[0];
       if (!tg) return;

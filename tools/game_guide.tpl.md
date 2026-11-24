@@ -9,11 +9,13 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 ## Contents
 
 - [Walkthrough](#walkthrough)
+- [Hearts of the Lamplighters](#hearts-of-the-lamplighters)
 - [The world](#the-world)
 - [Towns, inns and shops](#towns-inns-and-shops)
 - [Dungeons](#dungeons)
 - [The party](#the-party)
 - [Combo techs](#combo-techs)
+- [Limits](#limits)
 - [How battles work](#how-battles-work)
 - [Bosses](#bosses)
 - [Monsters by area](#monsters-by-area)
@@ -58,11 +60,12 @@ flowchart TD
     AS -.-> AE[Aerie and the Arena]
     K -. Wren's chart .-> OB[Starfall Observatory<br/>Superboss: Astral Wyrm]
     M -. after ending .-> EC[Eclipse Cup, Lantern Koi]
+    M -. after ending .-> HL[Hearts of the Lamplighters<br/>five hero quests]
 
     classDef boss fill:#5a2a3a,stroke:#ff8a8a,color:#fff
     classDef opt fill:#24324a,stroke:#8ab0ff,color:#fff
     class C,F,J,L,P boss
-    class LV,MI,TB,AS,AE,OB,EC opt
+    class LV,MI,TB,AS,AE,OB,EC,HL opt
 ```
 
 ### Act by act
@@ -76,6 +79,7 @@ flowchart TD
 | Optional | Open the First King's tomb with the Sun Seal | Tomb of the First King, south of Mirage (Lv 26+) | The airship *Aurora* |
 | Optional | Find the Fifth Flame with Wren's Star Chart | Starfall Observatory, the island west of Frostmere (Lv 32+) | The Fifth Flame accessory |
 | VI · Night | Bring the Hollow Crown down | Crownfall Abyss on the Ashen Isle (Lv 42+) | The Night Lantern, the Eclipse Cup |
+| Hearts | Five personal quests, one per hero | All over the world (Lv 44+) | Limits, ultimate weapons, the Festival of Lanterns |
 
 ### Chapter VI in detail
 
@@ -98,6 +102,38 @@ sequenceDiagram
     A-->>P: Night Lantern lit, Crown of Dusk and Dawn, epilogue
     P->>L: Ione's thanks: 30,000 gold and 3 Megalixirs
 ```
+
+---
+
+## Hearts of the Lamplighters
+
+After the ending, each hero has something left unfinished. The quests can be done in any order, and each one needs its hero in the party. Finishing one teaches that hero a **[Limit](#limits)** and gives them an ultimate weapon. Finish all five for the **Festival of Lanterns**.
+
+```mermaid
+flowchart LR
+    E([After the ending]) --> R & G & D & K & S
+    R[Elder Maren<br/>Father's Ledger] --> R2[Relight 12 roadside lamps<br/>marked on the world map] --> R3[Last lamp: the Lamp-Eater] --> R4[Sunbearer + First Light]
+    G[Mira<br/>Mother's Grimoire] --> G2[Ember Caves:<br/>two riddle braziers] --> G3[Hearth Warden<br/>asks the third riddle] --> G4[Hearthstaff + Phoenix Rite]
+    D[Sister Wenna<br/>The Last Letter] --> D2[Sea Mother's Grotto] --> D3[The Drowned Abbot] --> D4[Abbot's Bell + High Tide]
+    K[Ironhold jail guard<br/>Vane's Marker] --> K2[Trapdoor to the Undercity] --> K3[Guildmaster Vane] --> K4[Pickpocket's Prize + Grand Larceny]
+    S[Mira<br/>Selene can't sleep] --> S2[Rest at any inn] --> S3[Solo duel in a dream:<br/>Vesper's Echo] --> S4[Duskstar + Long Night]
+    R4 & G4 & D4 & K4 & S4 --> F([Festival of Lanterns<br/>Heartlight])
+```
+
+| Quest | Hero | Start | Where | Boss | Reward |
+| --- | --- | --- | --- | --- | --- |
+| The Lamplighter's Road | Arin | Elder Maren, Brightwater | 12 lamps beside the roads on every continent, including the Isle of Dusk and the Ashen Isle | The Lamp-Eater (appears at the last lamp) | Sunbearer, ★ First Light |
+| Mother's Grimoire | Lyra | Mira, Brightwater | Ember Caves (`8`), in the hills north of the Brightwater road | Hearth Warden | Hearthstaff, ★ Phoenix Rite |
+| The Drowned Priesthood | Oswin | Sister Wenna, Port Halden chapel | Sea Mother's Grotto (`9`), on the coast east of Port Halden | The Drowned Abbot | Abbot's Bell, ★ High Tide |
+| Old Debts | Kestrel | The guard in the Ironhold jail | The Undercity, through a trapdoor in the jail | Guildmaster Vane (acts twice) | Pickpocket's Prize, ★ Grand Larceny |
+| Echo of Vesper | Selene | Mira, Brightwater | A dream: rest at any inn | Vesper's Echo (**Selene fights alone**) | Duskstar, ★ Long Night |
+| The Festival of Lanterns | Everyone | Elder Maren, after all five | Brightwater | — | Heartlight |
+
+**Tips**
+
+- **The riddles** in the Ember Caves are Lyra's mother's bedtime riddles. A wrong answer summons Kiln Imps; you can try again afterwards. Answering the Hearth Warden's riddle correctly fully restores the party before the fight.
+- **Selene's dream** can't end in a game over. If she loses, she simply wakes up, and the dream returns at the next inn. Bring Ethers: her draining spells keep her alive, but they cost MP.
+- **Campfire talks:** using a **Tent** on the world map sometimes starts a short conversation around the fire. There are eight, each heard once, depending on who is in the party and how far the story has gone.
 
 ---
 
@@ -149,12 +185,29 @@ flowchart LR
 | 5 | Starfall Observatory | Dungeon, 3F | Small island west of Frostmere | Starfall Observatory |
 | 6 | Tomb of the First King | Dungeon, 3F | South of Mirage | Tomb |
 | 7 | Crownfall Abyss | Dungeon, 4F | The crater east of Lastlight | Crownfall Abyss |
+| 8 | Ember Caves | Dungeon, 2F | Hills north of the Brightwater road (Lyra's quest) | Ember Caves |
+| 9 | Sea Mother's Grotto | Dungeon, 2F | East coast of the Port Halden peninsula (Oswin's quest) | Sea Mother's Grotto |
+| — | The Undercity | Dungeon, 2F | A trapdoor in the Ironhold jail (Kestrel's quest) | The Undercity |
 
 ### Saving
 
 - **Three save slots** plus an **Auto** slot. Save from **Menu → Save** anywhere, or when you rest at an inn ("Save to slot N" is one press).
 - **Auto-save** writes to the Auto slot every time you enter a town or dungeon. You can turn it off in Config.
 - On the title screen, **Continue** loads your most recent save and **Load Game** lets you pick any slot. Saves from before 1.4 move into slot 1 automatically.
+
+### Settings (Menu → Config)
+
+| Setting | Options | What it does |
+| --- | --- | --- |
+| Sound | On / Off | Music and effects (also the M key) |
+| Auto-dash | On / Off | Run everywhere; hold Shift, R or the gamepad's X to walk |
+| Text speed | Normal / Fast / Instant | How fast dialogue appears |
+| Battle speed | 1× / 2× / 4× | Speeds up battle animations; messages still wait for you |
+| Auto-save | On / Off | Save to the Auto slot on entering towns and dungeons |
+| Large text | On / Off | Bigger dialogue text |
+| High contrast | On / Off | Solid black windows with bright yellow borders |
+| Controls… | — | Rebind any action to any key (Confirm and Back always keep a key), or reset |
+| Encounters | On / Off | Random battles; can only be turned off after the ending |
 
 ### Getting around
 
@@ -229,6 +282,14 @@ Four heroes fight at once. Arrange them in **Menu → Formation**; the fifth wai
 Choose **Combo** in battle. Every member must be in the active four, awake, not silenced, and have the MP. A combo uses **all of their turns**.
 
 {{combos}}
+
+---
+
+## Limits
+
+Each hero learns one **Limit** by finishing their [personal quest](#hearts-of-the-lamplighters). A gold gauge under the hero's name in battle fills as they **take damage**, and it stays full between battles. When it's full, a ★ command appears at the top of their battle menu. Using it is free, costs no MP, and empties the gauge.
+
+{{limits}}
 
 ---
 
@@ -317,13 +378,23 @@ xychart-beta
 - **Astral Wyrm**: Dream Fog sends the whole party to sleep, so equip sleep immunity on at least two heroes.
 - **The Hollow Crown and Orun**: both **act twice per round** (the *Turns* column). Crownfall hits everyone hard, so keep **Barrier** up, and carry **Remedies**: Hollow Hush can silence Oswin. The Lamp of Lastlight heals you between the phases. **Last Light** (Arin + Lyra + Selene) is the strongest combo in the game.
 
-**How hard is the finale?** `tools/balance_sim.py` fights it 40 times per setup with the real battle code and a simple AI (no combos):
+**How hard are the late bosses?** `tools/balance_sim.py`, 60 fights each, gear from the Spire and the tomb:
+
+| Fight | Party | Win rate | Median rounds | Knockouts per fight |
+| --- | --- | --- | --- | --- |
+| The Lamp-Eater | Lv 44 | 100% | 12 | 0 |
+| The Drowned Abbot | Lv 44 | 98% | 11 | 0.2 |
+| Guildmaster Vane | Lv 44 (with Kestrel) | 87% | 9 | 1.8 |
+| Hearth Warden | Lv 44 | 83% | 11 | 2.0 |
+| Vesper's Echo | Selene alone, Lv 44 | 100% | 12 | 0 |
+
+**How hard is the finale?** `tools/balance_sim.py` fights it 60 times per setup with the real battle code and a simple AI (no combos or Limits, since those come later):
 
 | Party | Win rate | Median rounds | Knockouts per fight |
 | --- | --- | --- | --- |
-| Lv 42, Lastlight shop gear | 68% | 22 | 2.4 |
-| Lv 42, gear from the Spire and tomb | 82% | 22 | 1.4 |
-| Lv 45, gear from the Spire and tomb | 100% | 19 | 0.2 |
+| Lv 42, Lastlight shop gear | 67% | 23 | 2.2 |
+| Lv 42, gear from the Spire and tomb | 90% | 23 | 1.0 |
+| Lv 45, gear from the Spire and tomb | 98% | 20 | 0.1 |
 | Lv 50, forged weapons, arena prizes | 100% | 13 | 0 |
 
 ---
@@ -370,6 +441,12 @@ flowchart LR
 | Arena Legend | Arena Master, Aerie | Win the first five cups | Lantern Crown |
 | **The Ones That Got Away** | Ice Fisher, Frostmere | Catch every kind of fish (6 kinds for the first reward) | Angler's Ring, Moonfin Charm |
 | **Orrin's Forge** | Orrin, Ironhold (after The Stonebrand) | Forge three items | Orrin's Seal |
+| **The Lamplighter's Road** | Elder Maren (after the ending) | Relight 12 roadside lamps | Sunbearer, ★ First Light |
+| **Mother's Grimoire** | Mira (after the ending) | Ember Caves riddles and the Hearth Warden | Hearthstaff, ★ Phoenix Rite |
+| **The Drowned Priesthood** | Sister Wenna (after the ending) | The Drowned Abbot in the Sea Mother's Grotto | Abbot's Bell, ★ High Tide |
+| **Old Debts** | Ironhold jail guard (after the ending) | Guildmaster Vane in the Undercity | Pickpocket's Prize, ★ Grand Larceny |
+| **Echo of Vesper** | Mira (after the ending) | Selene's solo dream duel | Duskstar, ★ Long Night |
+| **The Festival of Lanterns** | Elder Maren | Finish all five hero quests | Heartlight |
 
 ---
 

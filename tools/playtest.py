@@ -7,7 +7,7 @@ Usage:
     python3 tools/playtest.py [index.html] [outdir] [scenario ...]
     python3 tools/playtest.py index.html /tmp/shots chapter systems
 
-Scenarios: chapter, orun, systems, newgame, comfort, readme (default: chapter orun systems newgame comfort).
+Scenarios: chapter, orun, systems, newgame, comfort, hearts, readme (default: all but readme).
 Needs: pip install playwright && playwright install chromium
        (or set CHROME=/path/to/chrome to use an installed browser).
 See docs/TESTING.md for what each scenario covers."""
@@ -17,7 +17,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -260,9 +260,119 @@ async def main():
             await pg.wait_for_timeout(600)
             print('no encounter with toggle:', await ev("G.scene === Field"))
             await ev("CFG.noEnc = false")
+            # rebind Confirm to J through the Controls page, check it, then reset
+            await run("await controlsMenu()", 400)
+            for k in range(4): await press('ArrowDown', 1, 80)        # Up, Down, Left, Right -> Confirm
+            await press('Enter', 1, 300); await pg.keyboard.press('KeyJ'); await pg.wait_for_timeout(300)
+            print('rebind: J ->', await ev("KEYMAP.KeyJ"), '| Enter ->', await ev("KEYMAP.Enter || null"), '| saved', await ev("!!CFG.keys"))
+            await shot('28_controls')
+            await ev("CFG.keys = null; saveCfg(); applyKeymap()"); await press('Escape', 2); await until_idle(20, 'Escape')
+            print('reset: Enter ->', await ev("KEYMAP.Enter"))
+            # large text + high contrast
+            await ev("CFG.bigText = true; CFG.contrast = true")
+            await run("await say('Lyra', 'Large text and high-contrast windows make long dialogue easier to read on a phone held at arm\\'s length.')", 900)
+            await shot('29_bigtext_contrast'); await until_idle()
+            await ev("CFG.bigText = false; CFG.contrast = false")
             # the title screen lists slots and Load Game
             await pg.reload(); await pg.wait_for_timeout(1000); await shot('26_title')
             await press('ArrowDown', 2); await press('Enter', 1, 400); await shot('27_load_menu')
+
+        if want('hearts'):
+            s3 = json.loads(json.dumps(POST))
+            s3['flags'].update({'isle': True, 'chapter6': True, 'boss_abyss': True, 'lantern_abyss': True})
+            s3['inv'].update({'tent': 3}); s3['mapId'] = 'brightwater'; s3['x'] = 5; s3['y'] = 9; s3['dir'] = 'up'
+            await boot(s3); await until_idle()
+            for b_ in ['lampeater', 'hearthwarden', 'abbot', 'vane']: await ev(f"MONSTERS.{b_}.hp = 300")
+            await ev("MONSTERS.echo.hp = 20")   # Selene fights alone; the harness only presses Attack
+            # --- Arin: the road ---
+            await run("await talkElder()"); await until_idle()
+            await ev("for (let i = 0; i < 11; i++) G.flags['lamp_' + i] = true")
+            await run("await changeMap('world', 82, 6, 'right')", 800); await until_idle()
+            print('lamp entities on world:', await ev("Field.map.entities.filter(e => e.kind === 'roadlamp').length"))
+            await run("await worldMapView()", 500); await shot('30_map_lamps'); await press('Escape'); await until_idle(20, 'Escape')
+            await ev("G.x = 82; G.y = 6; G.dir = 'right'")
+            await shot('31_roadlamp')
+            await run("await Field.map.entities.find(e => e.kind === 'roadlamp' && !e.lit).talk()", 300)
+            for i in range(40):
+                if await ev("G.scene instanceof Battle"): break
+                await press('Enter', 1, 150)
+            await pg.wait_for_timeout(1500); await shot('32_lampeater'); await until_idle(500, 'Enter', 100)
+            await run("await changeMap('brightwater', 5, 9, 'up')", 800); await until_idle()
+            await run("await talkElder()"); await until_idle()
+            print('arin:', await ev("[G.flags.road_done, G.flags.limit_arin, hasItem('sunbearer')]"))
+            # --- Lyra: the grimoire, Ember Caves ---
+            await run("await talkMother()"); await until_idle()
+            await run("await changeMap('world', 19, 41, 'up')", 700); await until_idle()
+            await run("await enterLocation('8')", 1200); await until_idle(); await shot('33_embercave')
+            await run("const m = getMap('embercave:0'); const sp = m.extras.spot; await changeMap(m.id, sp.x, sp.y + 1, 'up')", 800); await until_idle()
+            await run("await Field.map.entities.find(e => e.kind === 'riddle').talk()", 600)
+            for i in range(10):
+                if await ev("!!(UI.top() && UI.top().choices)"): break
+                await press('Enter', 1, 200)
+            await shot('34_riddle'); await until_idle()
+            print('riddle 0 (answered Fire):', await ev("G.flags.riddle_0"))
+            await ev("window.askRiddle = async () => true; G.flags.riddle_1 = true")
+            await run("const m = getMap('embercave:1'); const b = m.extras.boss; await changeMap(m.id, b.x, b.y + 3, 'up')", 800); await until_idle()
+            await run("await bossEncounter('embercave')", 300); await until_idle(500, 'Enter', 100)
+            print('lyra:', await ev("[G.flags.grimoire_done, G.flags.limit_lyra, hasItem('hearthstaff')]"))
+            # --- Oswin: the grotto ---
+            await run("await enterInterior('halden', TOWN_DEFS.halden.buildings[1])", 800); await until_idle()
+            await run("await Field.map.entities.find(e => e.name === undefined && e.mark).talk()", 300); await until_idle()
+            print('q_grotto', await ev("G.flags.q_grotto"))
+            await run("await changeMap('world', 41, 40, 'right')", 700); await until_idle()
+            await run("await enterLocation('9')", 1200); await until_idle(); await shot('35_grotto')
+            await run("const m = getMap('grotto:1'); const b = m.extras.boss; await changeMap(m.id, b.x, b.y + 3, 'up')", 800); await until_idle()
+            await run("await bossEncounter('grotto')", 300); await until_idle(500, 'Enter', 100)
+            print('oswin:', await ev("[G.flags.grotto_done, G.flags.limit_oswin, hasItem('abbots_bell')]"))
+            # --- Kestrel: the Undercity ---
+            await run("await enterInterior('ironhold', TOWN_DEFS.ironhold.buildings[2])", 800); await until_idle()
+            await run("await talkJailGuard(); refreshEntities()"); await until_idle()
+            print('hatch:', await ev("Field.map.entities.filter(e => e.kind === 'hatch').length"))
+            await run("await Field.map.entities.find(e => e.kind === 'hatch').talk()", 1200); await until_idle(); await shot('36_undercity')
+            await run("const m = getMap('undercity:1'); const b = m.extras.boss; await changeMap(m.id, b.x, b.y + 3, 'up')", 800); await until_idle()
+            await run("await bossEncounter('undercity')", 300); await until_idle(500, 'Enter', 100)
+            print('kestrel:', await ev("[G.flags.debt_done, G.flags.limit_kestrel, hasItem('pickpocket')]"))
+            await run("const m = getMap('undercity:0'); await changeMap(m.id, m.up.x, m.up.y + 1, 'up'); await stairs(-1)", 900); await until_idle()
+            print('undercity exit ->', await ev("G.mapId"))
+            # --- Selene: the dream ---
+            await run("await changeMap('brightwater', 12, 9, 'up')", 700); await until_idle()
+            await run("await talkMother()"); await until_idle()
+            print('q_echo after Mira:', await ev("G.flags.q_echo"), 'selene in party:', await ev("inParty('selene')"))
+            await run("await innStay('brightwater', 10)", 400)
+            for i in range(60):
+                if await ev("G.scene instanceof Battle"): break
+                await press('Enter', 1, 150)
+            await pg.wait_for_timeout(1600); await shot('37_echo_solo'); await until_idle(500, 'Enter', 100)
+            print('selene:', await ev("[G.flags.echo_done, G.flags.limit_selene, hasItem('duskstar')]"))
+            # --- Limits in battle ---
+            await ev("G.party.forEach(m => m.limit = 100); MONSTERS.ogre.hp = 99999")
+            await run("await startBattle(['ogre', 'ogre'], {})", 1600)
+            for i in range(12):
+                if await ev("G.scene.active === 0 && !!UI.top()"): break
+                await pg.wait_for_timeout(200)
+            await shot('38_limit_menu')
+            # every hero picks their ★ Limit (top of the menu) and a target if asked
+            for i in range(4):
+                await press('Enter', 1, 250)
+                if await ev("!!(UI.top() && UI.top().kind === 'enemy')"): await press('Enter', 1, 250)
+            for i in range(80):
+                if await ev("G.scene.active === 0 && !!UI.top()"): break
+                await pg.wait_for_timeout(150)
+            print('after limits: gauges', await ev("BP().map(m => Math.round(m.limit))"), 'foe damage', await ev("G.scene.enemies.map(e => e.maxhp - e.hp)"), 'stolen', await ev("G.scene.enemies.map(e => e.stolen)"))
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110)
+            await ev("MONSTERS.ogre.hp = 300")
+            # --- campfire + festival ---
+            await run("await changeMap('world', 16, 44, 'up')", 700); await until_idle()
+            await run("await campfireTalk()", 300); await shot('39_campfire'); await until_idle()
+            print('campfire flags', await ev("Object.keys(G.flags).filter(k => k.startsWith('camp_'))"))
+            await run("await changeMap('brightwater', 5, 9, 'up')", 700); await until_idle()
+            await run("await talkElder()", 400)
+            for i in range(20):
+                if await ev("G.scene === BlackScene"): break
+                await press('Enter', 1, 200)
+            await pg.wait_for_timeout(5000); await shot('40_festival'); await until_idle(200, 'Enter', 150)
+            print('festival', await ev("[G.flags.festival, hasItem('heartlight')]"))
+            await run("await questMenu()", 400); await press('ArrowDown', 3); await shot('41_quests'); await until_idle(20, 'Escape')
 
         print('ERRORS:', len(errs))
         for e in errs[:30]: print('  ', e)

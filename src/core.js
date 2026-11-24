@@ -58,15 +58,15 @@ function rgba(hex, a) {
   return `rgba(${parseInt(c.substr(0, 2), 16)},${parseInt(c.substr(2, 2), 16)},${parseInt(c.substr(4, 2), 16)},${a})`;
 }
 
-// world-map location tiles: towns A–G, dungeons 1–7
-const LOC_RE = /^[A-G1-7]$/;
+// world-map location tiles: towns A–G, dungeons 1–9
+const LOC_RE = /^[A-G1-9]$/;
 const isLoc = c => typeof c === 'string' && LOC_RE.test(c);
 
 // ---------- settings (persist separately from the save file) ----------
 const CFG_KEY = 'lanternfall_cfg_v1';
 const BATTLE_SPEEDS = [{ label: '1×', v: 1 }, { label: '2×', v: 2 }, { label: '4×', v: 4 }];
 const TEXT_SPEEDS = [{ label: 'Normal', v: 55 }, { label: 'Fast', v: 120 }, { label: 'Instant', v: 99999 }];
-const CFG = { dash: false, textSpeed: 0, muted: false, autosave: true, battleSpeed: 0, noEnc: false };
+const CFG = { dash: false, textSpeed: 0, muted: false, autosave: true, battleSpeed: 0, noEnc: false, bigText: false, contrast: false, keys: null };
 try { Object.assign(CFG, JSON.parse(localStorage.getItem(CFG_KEY)) || {}); } catch (e) { }
 function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(CFG)); } catch (e) { } }
 
@@ -77,6 +77,11 @@ const KEYMAP = {
   Escape: 'cancel', KeyX: 'cancel', Backspace: 'cancel', KeyQ: 'cancel', KeyC: 'cancel',
   KeyM: 'mute', ShiftLeft: 'run', ShiftRight: 'run'
 };
+const DEFAULT_KEYMAP = { ...KEYMAP };
+// CFG.keys holds the player's bindings as { code: action }; it replaces the defaults entirely
+function applyKeymap() { for (const k in KEYMAP) delete KEYMAP[k]; Object.assign(KEYMAP, CFG.keys || DEFAULT_KEYMAP); }
+applyKeymap();
+const KeyCapture = { cb: null };   // set while the Controls page waits for a key
 const ACTIONS = ['up', 'down', 'left', 'right', 'ok', 'cancel', 'mute', 'run'];
 const REPEAT = new Set(['up', 'down', 'left', 'right']);
 // Standard-mapping gamepads: D-pad or left stick, A ok, B cancel, X run, Y/Start menu, Select mute
@@ -113,6 +118,7 @@ const Input = {
   clear() { for (const a of ACTIONS) this.fired[a] = false; }
 };
 window.addEventListener('keydown', e => {
+  if (KeyCapture.cb) { e.preventDefault(); const cb = KeyCapture.cb; KeyCapture.cb = null; cb(e.code); return; }
   const a = KEYMAP[e.code];
   Audio_.unlock();
   if (a) {
@@ -202,10 +208,11 @@ function drawWindow(g, x, y, w, h, alpha = 0.94) {
   g.save();
   g.globalAlpha = alpha;
   const gr = g.createLinearGradient(0, y, 0, y + h);
-  gr.addColorStop(0, '#2b4bb8'); gr.addColorStop(1, '#0c1650');
+  if (CFG.contrast) { gr.addColorStop(0, '#000'); gr.addColorStop(1, '#000'); g.globalAlpha = 1; }
+  else { gr.addColorStop(0, '#2b4bb8'); gr.addColorStop(1, '#0c1650'); }
   roundRect(g, x, y, w, h, 7); g.fillStyle = gr; g.fill();
   g.globalAlpha = 1;
-  g.lineWidth = 3; g.strokeStyle = '#e9eefc'; g.stroke();
+  g.lineWidth = 3; g.strokeStyle = CFG.contrast ? '#ffe24a' : '#e9eefc'; g.stroke();
   roundRect(g, x + 3.5, y + 3.5, w - 7, h - 7, 5); g.lineWidth = 1; g.strokeStyle = 'rgba(120,150,255,.55)'; g.stroke();
   g.restore();
 }
@@ -248,7 +255,8 @@ function bar(g, x, y, w, h, v, col, back = 'rgba(0,0,0,.5)') {
 class Dialog {
   constructor(name, msg, opts = {}) {
     this.name = name; this.opts = opts;
-    this.f = font(17);
+    this.big = !!CFG.bigText;
+    this.f = font(this.big ? 21 : 17);
     this.pages = [];
     const lines = wrapText(ctx, msg, W - 80, this.f);
     for (let i = 0; i < lines.length; i += 3) this.pages.push(lines.slice(i, i + 3));
@@ -276,7 +284,7 @@ class Dialog {
     }
   }
   draw(g) {
-    const h = 104, y = this.top ? 12 : H - h - 12, x = 12, w = W - 24;
+    const h = this.big ? 122 : 104, y = this.top ? 12 : H - h - 12, x = 12, w = W - 24;
     drawWindow(g, x, y, w, h);
     if (this.name) {
       g.font = font(15, true);
@@ -285,7 +293,7 @@ class Dialog {
       text(g, this.name, x + 21, y - 15, { size: 15, bold: true, color: '#ffe9a8' });
     }
     const lines = this.pageText.slice(0, Math.floor(this.chars)).split('\n');
-    lines.forEach((l, i) => text(g, l, x + 22, y + 16 + i * 26, { font: this.f }));
+    lines.forEach((l, i) => text(g, l, x + 22, y + 16 + i * (this.big ? 32 : 26), { font: this.f }));
     const last = this.page === this.pages.length - 1;
     if (this.done() && !(this.choices && last)) {
       const t = performance.now() / 1000;

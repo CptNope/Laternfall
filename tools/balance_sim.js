@@ -37,6 +37,7 @@
     if (dead.length && !P.some(p => p.id === 'oswin' && alive(p))) { const r = item('plume', dead[0]); if (r) return r; }
     if (dead.length >= 2 && G.inv.megalixir > 0 && m.id !== 'oswin') return item('megalixir', 'all');
     if (hpPct(P[lowest]) < 0.25 && !P.some(p => p.id === 'oswin' && alive(p) && p.mp >= 9)) { const r = item('xpotion', lowest); if (r) return r; }
+    if (limitReady(m)) return { type: 'limit', target: LIMITS[m.id].target === 'enemy' ? boss : 'all' };
     // buffs
     if (m.id === 'arin' && b.opts.boss && b.buffs.rally <= 0 && has(m, 'rally')) return spell('rally', 'all');
     // damage
@@ -44,7 +45,7 @@
       arin: ['dawnbreak', 'valor', 'sunstrike'],
       lyra: live.length > 1 ? ['supernova', 'starfall', 'flare'] : ['supernova', 'flare', 'starfall'],
       kestrel: ['thousand', 'shadowstep', 'twin'],
-      selene: boss && boss.hp > boss.maxhp * 0.45 && boss.def.boss ? ['gravity', 'eventide', 'requiem'] : ['eventide', 'requiem', 'nightfall'],
+      selene: boss && boss.def.boss && boss.hp > 6000 && boss.hp > boss.maxhp * 0.45 ? ['gravity', 'eventide', 'requiem'] : ['eventide', 'requiem', 'nightfall'],
       oswin: ['holy']
     }[m.id] || [];
     for (const s of order) if (has(m, s)) return spell(s, SPELLS[s].target === 'enemies' ? 'all' : boss);

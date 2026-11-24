@@ -2,8 +2,8 @@
 
 Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
 
-- **Current release:** 1.3.1. **In review:** 1.4.0 *Comfort*, which finishes most of 1.3.x and 1.4. See [CHANGELOG.md](CHANGELOG.md#unreleased).
-- **Next up:** the rest of 1.4 (key rebinding, text size, shop compare), then 1.5 *Hearts of the Lamplighters*.
+- **Current release:** 1.4.0 *Comfort*. **In review:** 1.5.0 *Hearts of the Lamplighters*. See [CHANGELOG.md](CHANGELOG.md#unreleased).
+- **Next up:** 1.6 *Deeper systems* (cooking, smarter enemies, more statuses), with 1.8 *Install anywhere* (PWA) as a quick parallel win.
 - ✅ marks items that are done.
 
 ## Contents
@@ -98,9 +98,9 @@ gantt
     section Stabilise
     1.3.x Stabilise                  :done, m13, 2026-11-23, 1d
     section Comfort
-    1.4 Comfort and accessibility    :active, m14, 2026-11-23, 4w
+    1.4 Comfort and accessibility    :done, m14, 2026-11-23, 1d
     section Heroes
-    1.5 Hearts of the Lamplighters   :m15, after m14, 8w
+    1.5 Hearts of the Lamplighters   :active, m15, 2026-11-23, 2w
     section Depth
     1.6 Deeper systems               :m16, after m15, 8w
     section World
@@ -114,8 +114,8 @@ gantt
 | Milestone | Theme | Headline | Target | Status |
 | --- | --- | --- | --- | --- |
 | **1.3.x** | Stabilise | Real-HP balance pass, mobile check, CI, tagged releases | Nov 2026 | ✅ Done in 1.4.0 except ST-2 and ST-4 |
-| **1.4** | Comfort | Save slots, auto-save, battle speed, gamepad, accessibility | Dec 2026 | 🟡 8 of 12 in 1.4.0 |
-| **1.5** | Heroes | A personal quest for each of the five heroes, with an ultimate weapon and a Limit | Mar 2027 | ⚪ Planned |
+| **1.4** | Comfort | Save slots, auto-save, battle speed, gamepad, accessibility | Nov 2026 | ✅ Done (1.4.0, finished in 1.5.0) |
+| **1.5** | Heroes | A personal quest for each of the five heroes, with an ultimate weapon and a Limit | Dec 2026 | 🟡 In review (1.5.0) |
 | **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | May 2027 | ⚪ Planned |
 | **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ⚪ Planned |
 | **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ⚪ Planned |
@@ -134,8 +134,8 @@ flowchart LR
     D -. Lantern Board data format .-> E
     classDef now fill:#ffe9a8,stroke:#c0902a,color:#222
     classDef done fill:#9adf9a,stroke:#2f6b4a,color:#122
-    class S done
-    class C now
+    class S,C done
+    class H now
 ```
 
 ---
@@ -158,6 +158,8 @@ Make 1.3.0 solid before building on it.
 | ✅ ST-8 | **Map labels** for Lastlight and the Abyss before visiting | The world map hides names until visited, so the new isle reads as blank | XS |
 
 **Done when:** a level-45 party can clear the finale in 12–20 rounds with no debug changes, the harness runs in CI, and `v1.3.1` is tagged.
+
+**Result (1.5.0).** All five hero quests shipped, with Limits, campfire talks and the Festival of Lanterns. The new bosses were tuned with the simulator: the Lamp-Eater and the Abbot are the gentler two, the Hearth Warden and Vane the hardest (83–87% at Lv 44), and Selene's solo duel takes about 12 rounds.
 
 **Result (1.4.0).** The simulator showed the finale was long (25–28 rounds) but harmless. Both bosses now act twice per round with less HP: Lv 42 wins 68–82% in about 22 rounds, Lv 45 wins every time in 19, and Lv 50 finishes in 13. ST-6 and ST-7 were kept as they are (see the changelog). **Still open:** ST-2 (try fishing and the new R button on a real phone) and ST-4 (push the tags; the table under [Release process](#release-process) lists the commits).
 
@@ -193,12 +195,12 @@ flowchart TB
 | ✅ QL-3 | **Battle speed** (1×, 2×, 4×) | Scale the `wait()` timers inside battles | S |
 | ✅ QL-4 | **Repeat last turn** (R / L button) | `lastCmd` already stores each hero's last menu choice | S |
 | ✅ QL-5 | **Gamepad support** through the Gamepad API | Map to the existing `Input` actions | M |
-| QL-6 | **Key rebinding** in Config | Edits `KEYMAP` and persists in `CFG` | S |
-| QL-7 | **Text size and high-contrast windows** | `drawWindow` and `font()` are already central, so this is cheap | S |
-| QL-8 | **Status icons** that don't rely on colour (PSN, SLP, SIL glyphs) | Accessibility | S |
+| ✅ QL-6 | **Key rebinding** in Config | Edits `KEYMAP` and persists in `CFG` | S |
+| ✅ QL-7 | **Text size and high-contrast windows** | `drawWindow` and `font()` are already central, so this is cheap | S |
+| ✅ QL-8 | **Status icons** that don't rely on colour (PSN, SLP, SIL glyphs) | Already the case: statuses are shown as text tags | S |
 | ✅ QL-9 | **Dialogue backlog**: press a key to reread the last 20 lines | Story-heavy game | S |
 | ✅ QL-10 | **Optimise equipment** button in Equip | Picks the best stat total per slot | S |
-| QL-11 | **Shop: compare** every party member at once for armour and accessories | Extends `drawShopDetail` | S |
+| ✅ QL-11 | **Shop: compare** every party member at once for armour and accessories | Already the case: the shop's detail panel lists every member | S |
 | ✅ QL-12 | **Encounter toggle** in Config, unlocked after the ending | Today it's only the `?noenc` debug flag | XS |
 
 ### 1.5 · Hearts of the Lamplighters
@@ -226,14 +228,14 @@ flowchart LR
 
 | ID | Item | Requirements | Size |
 | --- | --- | --- | --- |
-| HR-1 | **Limit gauge** in battle (fills on damage taken; one Limit per hero) | Battle UI space next to the MP bar | M |
-| HR-2 | Arin: *The Lamplighter's Road*. Find and relight 12 roadside lamps across the world | New world entity type `lamp` | M |
-| HR-3 | Lyra: *Mother's Grimoire*. A riddle mini-dungeon | Reuses `genDungeonFloor` with a fixed seed | M |
-| HR-4 | Oswin: *The Sea Mother's Grotto*. A boss fight | New boss art | M |
-| HR-5 | Kestrel: *The Undercity Heist*. Stealth: avoid guards' sight lines | Needs NPC vision cones in `field.js` | L |
-| HR-6 | Selene: *Echo of Vesper*. A solo mirror battle | Solo battles need `BATTLE_PARTY` overrides | M |
-| HR-7 | **Campfire conversations**: party banter when resting with a Tent | `say()` scenes keyed off story flags | S |
-| HR-8 | **Epilogue additions** that change with completed personal quests | Edit `runEnding()` | S |
+| ✅ HR-1 | **Limit gauge** in battle (fills on damage taken; one Limit per hero) | Battle UI space next to the MP bar | M |
+| ✅ HR-2 | Arin: *The Lamplighter's Road*. Find and relight 12 roadside lamps across the world | New world entity type `lamp` | M |
+| ✅ HR-3 | Lyra: *Mother's Grimoire*. A riddle mini-dungeon | Reuses `genDungeonFloor` with a fixed seed | M |
+| ✅ HR-4 | Oswin: *The Sea Mother's Grotto*. A boss fight | New boss art | M |
+| ✅ HR-5 | Kestrel: *Old Debts*. The Undercity under the Ironhold jail, and Guildmaster Vane | Shipped as a dungeon; **stealth with guard sight lines is still open** (moved to 1.6 as DS-11) | L |
+| ✅ HR-6 | Selene: *Echo of Vesper*. A solo mirror battle | Solo battles need `BATTLE_PARTY` overrides | M |
+| ✅ HR-7 | **Campfire conversations**: party banter when resting with a Tent | `say()` scenes keyed off story flags | S |
+| ✅ HR-8 | **Epilogue additions** that change with completed personal quests | Shipped as the **Festival of Lanterns** scene (the quests are post-game, after the original epilogue) | S |
 
 ### 1.6 · Deeper systems
 
@@ -249,6 +251,7 @@ flowchart LR
 | DS-8 | **Day and night** | Visual tint, different night encounters, a few NPCs who only appear at night | M |
 | DS-9 | **Weather** | Snow in Frostmere and sandstorms in the Sunscar, drawn in code; some affect battle | M |
 | DS-10 | **"Lanterns & Lies"** | A small in-world card game against NPCs, for prizes | L |
+| DS-11 | **Stealth sections** | Guard sight lines on the field (from HR-5); a stealth replay of the Undercity | L |
 
 ```mermaid
 stateDiagram-v2
@@ -362,8 +365,8 @@ quadrantChart
 | 6 | QL-4 | Repeat last turn ✅ | 1.4 | Medium | Low |
 | 7 | PL-1 | PWA offline install | 1.8 | Medium | Low |
 | 8 | QL-5 | Gamepad ✅ | 1.4 | Medium | Medium |
-| 9 | HR-1 | Limit gauge | 1.5 | High | Medium |
-| 10 | HR-2–6 | Hero quests | 1.5 | High | High |
+| 9 | HR-1 | Limit gauge ✅ | 1.5 | High | Medium |
+| 10 | HR-2–6 | Hero quests ✅ | 1.5 | High | High |
 | 11 | DS-2 | Cooking | 1.6 | Medium | Medium |
 | 12 | DS-3 | Enemy AI | 1.6 | Medium | Medium |
 | 13 | DS-1 | Lantern Board | 1.6 | Medium | High |

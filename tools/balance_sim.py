@@ -49,6 +49,14 @@ SCENARIOS = [
     ('Chapter VI finale Lv50 best', P4(50), BEST, [['crown'], ['orun']], True),
     ('Abyss trash Lv42 shop', P4(42), SHOP, [['gloamknight', 'herald', 'crownshard']], False),
     ('Eclipse Cup final Lv46 mid', P4(46), MID, [['orun']], False),
+    # 1.5 Hearts of the Lamplighters: post-game bosses, recommended Lv 44+
+    ('Lamp-Eater Lv44 mid', P4(44), MID, [['lampeater']], False),
+    ('Hearth Warden Lv44 mid', P4(44), MID, [['hearthwarden']], False),
+    ('Drowned Abbot Lv44 mid', P4(44), MID, [['abbot']], False),
+    ('Guildmaster Vane Lv44 mid', P4(44, ('arin', 'lyra', 'oswin', 'kestrel')), MID, [['vane']], False),
+    ("Vesper's Echo, Selene alone Lv44 mid", [['selene', 44]], MID, [['echo']], False),
+    ("Vesper's Echo, Selene alone Lv48 shop", [['selene', 48]], SHOP, [['echo']], False),
+    ('Hearts trash Lv44 shop', P4(44), SHOP, [['enforcer', 'cutpurse', 'cutpurse']], False),
 ]
 
 async def main():

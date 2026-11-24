@@ -164,6 +164,10 @@ const ITEMS = {
   sun_seal: { name: 'Sun Seal', price: 0, kind: 'key', desc: 'The royal seal of Mirage. It opens the First King\'s tomb.' },
   star_chart: { name: 'Star Chart', price: 0, kind: 'key', desc: 'Wren\'s chart. One constellation is circled: the Fifth Flame.' },
   lastlight_lamp: { name: 'Lamp of Lastlight', price: 0, kind: 'key', desc: 'Lit from Lastlight\'s thousand-year fire. The Abyss\'s mist fears it.' },
+  fathers_ledger: { name: 'Father\'s Ledger', price: 0, kind: 'key', desc: 'Arin\'s father\'s rounds: twelve roadside lamps on the four roads, all dark now.' },
+  grimoire: { name: 'Mother\'s Grimoire', price: 0, kind: 'key', desc: 'Lyra and Selene\'s mother\'s book of flames. The last page is a riddle.' },
+  priest_letter: { name: 'The Last Letter', price: 0, kind: 'key', desc: 'From the drowned priesthood of the Sea Mother. It names a grotto on the east coast.' },
+  debt_note: { name: 'Vane\'s Marker', price: 0, kind: 'key', desc: 'Kestrel\'s old debt to the Undercity Guild, with interest. A lot of interest.' },
   fishing_rod: { name: 'Old Fishing Rod', price: 0, kind: 'key', desc: 'Face water and press Enter to fish. Stand by the shore, a pond or a pier.' },
   // accessories (anyone can wear)
   gale_sandals: { name: 'Gale Sandals', price: 0, kind: 'acc', spd: 12, desc: 'SPD +12. Arena prize.' },
@@ -192,6 +196,7 @@ const ITEMS = {
   orrin_seal: { name: 'Orrin\'s Seal', price: 0, kind: 'acc', atk: 6, def: 18, immune: ['poison', 'sleep', 'silence'], desc: 'ATK +6, DEF +18. Prevents all ailments.' },
   eclipse_mantle: { name: 'Eclipse Mantle', price: 0, kind: 'acc', def: 24, mag: 24, reraise: true, immune: ['silence'], desc: 'DEF +24, MAG +24. Revives once per battle. Prevents silence.' },
   nightglass: { name: 'Nightglass Locket', price: 0, kind: 'acc', all: 18, immune: ['sleep'], desc: 'All +18. Prevents sleep. A drop of gentle night.' },
+  heartlight: { name: 'Heartlight', price: 0, kind: 'acc', all: 20, reraise: true, immune: ['poison', 'sleep', 'silence'], desc: 'All +20. Revives once per battle. No ailments. Five lights, one lantern.' },
   twin_crown: { name: 'Crown of Dusk & Dawn', price: 0, kind: 'acc', all: 25, regen: true, immune: ['poison', 'sleep', 'silence'], desc: 'All +25. Regen. No ailments. Both halves of the first crown, at peace.' },
   // weapons
   bronze_sword: { name: 'Bronze Sword', price: 60, kind: 'weapon', who: ['arin'], atk: 5, desc: 'A village blade.' },
@@ -231,6 +236,11 @@ const ITEMS = {
   phoenix_staff: { name: 'Phoenix Staff', price: 0, kind: 'weapon', who: ['lyra'], atk: 20, mag: 66, desc: 'Forged by Orrin. Its flame relights itself.' },
   tidecaller: { name: 'Tidecaller', price: 0, kind: 'weapon', who: ['oswin'], atk: 62, mag: 48, desc: 'Forged by Orrin. The sea answers it.' },
   gloamfang: { name: 'Gloamfang', price: 0, kind: 'weapon', who: ['kestrel'], atk: 80, spd: 14, desc: 'Forged by Orrin. Cuts twice for every swing you see.' },
+  sunbearer: { name: 'Sunbearer', price: 0, kind: 'weapon', who: ['arin'], atk: 100, mag: 28, desc: 'Lit from twelve roadside lamps. Arin\'s father\'s blade, reforged.' },
+  hearthstaff: { name: 'Hearthstaff', price: 0, kind: 'weapon', who: ['lyra'], atk: 26, mag: 84, desc: 'Lyra\'s mother\'s staff. It is always warm.' },
+  abbots_bell: { name: 'Abbot\'s Bell', price: 0, kind: 'weapon', who: ['oswin'], atk: 72, mag: 64, desc: 'The drowned priesthood\'s bell. It rings like the tide coming in.' },
+  pickpocket: { name: 'Pickpocket\'s Prize', price: 0, kind: 'weapon', who: ['kestrel'], atk: 94, spd: 20, desc: 'Vane\'s own knife. Kestrel says she found it.' },
+  duskstar: { name: 'Duskstar', price: 0, kind: 'weapon', who: ['selene'], atk: 28, mag: 84, desc: 'The first star after sunset, held in Selene\'s hand.' },
   evenstar: { name: 'Evenstar', price: 0, kind: 'weapon', who: ['selene'], atk: 22, mag: 66, desc: 'Forged by Orrin. The first star of evening.' },
   // armor
   leather: { name: 'Leather Armor', price: 50, kind: 'armor', who: ['arin', 'kestrel', 'oswin'], def: 3, desc: 'Basic protection.' },
@@ -318,6 +328,19 @@ const MONSTERS = {
   gloamknight: { name: 'Gloam Knight', fam: 'knight', c: ['#2a2a3a', '#0a0a14', '#e8e8ff'], hp: 2800, atk: 240, def: 124, mag: 70, spd: 20, xp: 960, gold: 680, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }, { w: 1, a: 'e_shatter' }], drop: ['megalixir', 0.1], steal: 'megalixir', mat: ['abyss_ash', 0.25] },
   crown: { name: 'The Hollow Crown', fam: 'crown', boss: true, actions: 2, size: 1.1, c: ['#e8c84a', '#3a2a3a', '#ff5ac8'], hp: 8000, atk: 205, def: 92, mag: 192, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'e_crownfall' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_hushall' }, { w: 1, a: 'e_dreamfog' }, { w: 1, a: 'e_meteor' }], steal: 'megalixir' },
   orun: { name: 'Orun, the Night-Bearer', fam: 'king', pale: true, boss: true, actions: 2, size: 1.15, c: ['#3a3a5a', '#c8c8e8', '#8ad8ff'], hp: 9500, atk: 232, def: 98, mag: 204, spd: 34, xp: 45000, gold: 25000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_nightsong' }, { w: 1, a: 'e_starbreath' }], steal: 'megalixir' },
+  // ---- 1.5 Hearts of the Lamplighters: the five personal quests ----
+  kilnimp: { name: 'Kiln Imp', fam: 'imp', c: ['#ff9a4a', '#8a2a0a'], hp: 1600, atk: 150, def: 84, mag: 190, spd: 32, xp: 650, gold: 450, weak: ['ice'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_fire' }, { w: 1, a: 'e_blaze' }], steal: 'hiether', mat: ['ember_core', 0.25] },
+  cindersnake: { name: 'Cinder Serpent', fam: 'serpent', c: ['#c04a1a', '#3a0a05'], hp: 1900, atk: 205, def: 96, mag: 120, spd: 24, xp: 700, gold: 480, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_crush' }, { w: 1, a: 'e_blaze' }], steal: 'xpotion', mat: ['ember_core', 0.2] },
+  deepone: { name: 'Deep One', fam: 'serpent', size: 1.15, c: ['#1a3a5a', '#050f1a'], hp: 2000, atk: 200, def: 96, mag: 170, spd: 26, xp: 720, gold: 500, weak: ['bolt'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_whirl' }, { w: 1, a: 'e_drain' }], steal: 'hiether', mat: ['frost_crystal', 0.2] },
+  pearlguard: { name: 'Pearl Guard', fam: 'crab', size: 1.1, c: ['#e8e0f0', '#6a5a8a'], hp: 2300, atk: 215, def: 150, mag: 60, spd: 16, xp: 760, gold: 900, weak: ['bolt'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_shatter' }], steal: 'megalixir', mat: ['sun_gold', 0.2] },
+  cutpurse: { name: 'Guild Cutpurse', fam: 'goblin', c: ['#6a6a7a', '#2a2a3a'], hp: 1500, atk: 200, def: 84, mag: 60, spd: 44, xp: 640, gold: 1200, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_bite' }], drop: ['xpotion', 0.25], steal: 'elixir', mat: ['dusk_silk', 0.2] },
+  enforcer: { name: 'Guild Enforcer', fam: 'ogre', size: 1.1, c: ['#5a4a6a', '#2a2a3a'], hp: 2700, atk: 235, def: 110, mag: 40, spd: 16, xp: 820, gold: 900, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }, { w: 1, a: 'e_cleave' }], steal: 'megalixir', mat: ['sun_gold', 0.15] },
+  sewerooze: { name: 'Sewer Ooze', fam: 'slime', c: ['#7a9a3a', '#2a3a10'], hp: 1700, atk: 180, def: 90, mag: 170, spd: 18, xp: 640, gold: 420, weak: ['fire'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_spores' }, { w: 1, a: 'e_bite' }], steal: 'remedy', mat: ['dusk_silk', 0.2] },
+  lampeater: { name: 'The Lamp-Eater', fam: 'ghost', boss: true, size: 1.8, c: ['#4a4a6a', '#0a0a14'], hp: 12500, atk: 210, def: 90, mag: 218, spd: 30, actions: 2, xp: 16000, gold: 8000, weak: ['holy'], acts: [{ w: 2, a: 'e_drain' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_meteor' }, { w: 1, a: 'e_hush' }], steal: 'megalixir' },
+  hearthwarden: { name: 'Hearth Warden', fam: 'golem', boss: true, size: 1.5, c: ['#8a3a1a', '#3a1a0a', '#ffb04a'], hp: 9500, atk: 238, def: 120, mag: 196, spd: 20, actions: 2, xp: 16000, gold: 8000, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_blaze' }, { w: 1, a: 'e_ashstorm' }, { w: 1, a: 'e_slam' }], steal: 'megalixir' },
+  abbot: { name: 'The Drowned Abbot', fam: 'warden', boss: true, size: 1.55, c: ['#2a4a6a', '#d8d0c0', '#8af0ff'], hp: 9000, atk: 210, def: 98, mag: 222, spd: 24, actions: 2, xp: 16000, gold: 8000, weak: ['bolt'], acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_lullaby' }], steal: 'megalixir' },
+  vane: { name: 'Guildmaster Vane', fam: 'knight', boss: true, size: 1.25, c: ['#3a2a1a', '#1a1008', '#e8c84a'], hp: 8500, atk: 226, def: 104, mag: 80, spd: 42, actions: 2, xp: 16000, gold: 20000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_needles' }, { w: 1, a: 'e_bite' }, { w: 1, a: 'e_shatter' }], steal: 'megalixir' },
+  echo: { name: 'Vesper\'s Echo', fam: 'witch', boss: true, size: 1.4, c: ['#2a1a40', '#c04aa8', '#ffd0f0'], hp: 2600, atk: 218, def: 70, mag: 150, spd: 26, xp: 12000, gold: 0, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_shadow' }, { w: 1, a: 'e_drain' }], steal: 'elixir' },
   king2: { name: 'Hollow King, Unbound', fam: 'king2', boss: true, size: 1.3, c: ['#05020a', '#ff5ac8', '#5affe8'], hp: 5200, atk: 175, def: 78, mag: 148, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_blaze' }], steal: 'megalixir' }
 };
 
@@ -335,6 +358,9 @@ const ENCOUNTERS = {
   d5: [{ w: 3, g: ['starspawn', 'astralknight'] }, { w: 2, g: ['voiddrake'] }, { w: 2, g: ['nebulaslime', 'cometimp', 'nebulaslime'] }, { w: 2, g: ['astralknight', 'cometimp'] }, { w: 1, g: ['voiddrake', 'starspawn'] }],
   r6: [{ w: 3, g: ['ashhound', 'ashhound'] }, { w: 2, g: ['cinderwisp', 'cinderwisp', 'cinderwisp'] }, { w: 2, g: ['cinderknight'] }, { w: 2, g: ['ashgolem'] }, { w: 1, g: ['cinderknight', 'cinderwisp'] }, { w: 1, g: ['ashhound', 'ashgolem'] }],
   d7: [{ w: 3, g: ['crownshard', 'gloamknight'] }, { w: 2, g: ['nightmare'] }, { w: 2, g: ['abyssooze', 'abyssooze'] }, { w: 2, g: ['herald', 'crownshard'] }, { w: 1, g: ['gloamknight', 'herald'] }, { w: 1, g: ['nightmare', 'abyssooze'] }],
+  d8: [{ w: 3, g: ['kilnimp', 'kilnimp'] }, { w: 2, g: ['cindersnake'] }, { w: 2, g: ['cinderwisp', 'kilnimp', 'cinderwisp'] }, { w: 2, g: ['ashgolem'] }, { w: 1, g: ['cindersnake', 'kilnimp'] }],
+  d9: [{ w: 3, g: ['deepone'] }, { w: 2, g: ['pearlguard'] }, { w: 2, g: ['deepone', 'abyssooze'] }, { w: 1, g: ['pearlguard', 'deepone'] }, { w: 1, g: ['herald', 'deepone'] }],
+  d10: [{ w: 3, g: ['cutpurse', 'cutpurse'] }, { w: 2, g: ['enforcer'] }, { w: 2, g: ['sewerooze', 'sewerooze'] }, { w: 1, g: ['enforcer', 'cutpurse'] }, { w: 1, g: ['cutpurse', 'sewerooze', 'cutpurse'] }],
   d4: [{ w: 3, g: ['voidslime', 'wraith'] }, { w: 2, g: ['dreadknight'] }, { w: 2, g: ['nightgaze', 'nightgaze'] }, { w: 2, g: ['hollowknight', 'voidslime'] }, { w: 1, g: ['chimera', 'nightgaze'] }, { w: 1, g: ['dreadknight', 'wraith'] }]
 };
 
@@ -412,6 +438,18 @@ const COMBOS = [
   { id: 'twilight_psalm', name: 'Twilight Psalm', members: ['oswin', 'selene'], mp: [14, 14], type: 'dmg', elem: 'none', power: 95, heal: 0.25, target: 'enemies', fx: 'flare', desc: 'A prayer sung in light and dark. Heals the party.' },
   { id: 'last_light', name: 'Last Light', members: ['arin', 'lyra', 'selene'], mp: [20, 24, 24], type: 'dmg', elem: 'holy', power: 230, heal: 0.2, target: 'enemies', fx: 'holy', flag: 'combo_lastlight', desc: 'Lastlight\'s secret: three who carried the flame through the dark.' }
 ];
+// Limits: one per hero, unlocked by finishing that hero's personal quest (flag limit_<id>).
+// The gauge fills as the hero takes damage and carries over between battles.
+const LIMITS = {
+  arin: { name: 'First Light', target: 'enemy', desc: 'A blade of dawn on one foe. Revives and heals the whole party.' },
+  lyra: { name: 'Phoenix Rite', target: 'enemies', desc: 'Fire on every foe, then the party gains Regen.' },
+  oswin: { name: 'High Tide', target: 'enemies', desc: 'A wave on every foe. Fully heals the party, cures ailments and raises Barrier.' },
+  kestrel: { name: 'Grand Larceny', target: 'enemy', desc: 'Six lightning strikes, and steals from every foe.' },
+  selene: { name: 'Long Night', target: 'enemies', desc: 'Darkness on every foe; heals the party with what it takes. Puts ordinary foes to sleep.' }
+};
+const limitUnlocked = m => !!(LIMITS[m.id] && G.flags['limit_' + m.id]);
+const limitReady = m => limitUnlocked(m) && (m.limit || 0) >= 100;
+
 // Arena cups at Aerie
 const ARENA_CUPS = [
   { id: 'bronze', name: 'Bronze Cup', level: 24, rounds: [['hobgoblin', 'hobgoblin', 'hobgoblin'], ['ogre', 'ogre'], ['magmaslime', 'firebat', 'magmaslime']], prize: 'gale_sandals', gold: 2000 },

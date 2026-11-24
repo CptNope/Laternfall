@@ -13,8 +13,8 @@ timeline
     title Lanternfall releases
     2026-11-19 : 1.0.0 First playable : 1.1.0 Frostmere and side quests
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
-    2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness
-    Next : 1.4.0 Comfort, save slots, balance
+    2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance
+    Next : 1.5.0 Hearts of the Lamplighters
 ```
 
 ```mermaid
@@ -35,13 +35,44 @@ xychart-beta
 | 1.2.1 | 2026-11-21 | 6 | 6 (16) | 52 (8) | 8 | 5 | [#3](https://github.com/CptNope/Laternfall/pull/3) |
 | 1.3.0 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#4](https://github.com/CptNope/Laternfall/pull/4) |
 | 1.3.1 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#5](https://github.com/CptNope/Laternfall/pull/5) |
-| 1.4.0 | next | 7 | 7 (20) | 63 (10) | 10 | 5 | this release |
+| 1.4.0 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#6](https://github.com/CptNope/Laternfall/pull/6) |
+| 1.5.0 | next | 7 | 10 (26) | 75 (15) | 16 | 5 | this release |
 
 ---
 
 ## [Unreleased]
 
-Planned as **1.4.0 · *Comfort***. It covers the 1.3.x *Stabilise* milestone and most of 1.4 *Comfort* from the [roadmap](ROADMAP.md).
+Planned as **1.5.0 · *Hearts of the Lamplighters***. It finishes the 1.4 *Comfort* milestone and delivers 1.5 from the [roadmap](ROADMAP.md).
+
+### Added
+- **Hearts of the Lamplighters**: five post-game personal quests, one per hero. Each ends in a Limit and an ultimate weapon.
+  - **Arin, *The Lamplighter's Road***: relight 12 roadside lamps across the world (shown on the world map). The last one wakes **the Lamp-Eater**. Reward: Sunbearer.
+  - **Lyra, *Mother's Grimoire***: the **Ember Caves** (new location `8`), with riddle braziers in Lyra's mother's voice and the **Hearth Warden**. Reward: Hearthstaff.
+  - **Oswin, *The Drowned Priesthood***: the **Sea Mother's Grotto** (new location `9`) and **the Drowned Abbot**, Oswin's old teacher. Reward: Abbot's Bell.
+  - **Kestrel, *Old Debts***: a trapdoor in the Ironhold jail leads to **the Undercity** and **Guildmaster Vane**. Reward: Pickpocket's Prize.
+  - **Selene, *Echo of Vesper***: rest at an inn to face **Vesper's Echo** in a solo dream duel. Losing just wakes her up. Reward: Duskstar.
+  - **The Festival of Lanterns** after all five, with the **Heartlight** accessory.
+- **Limits**: a gauge for each hero that fills as they take damage and carries over between battles. When it's full, a ★ command appears: First Light, Phoenix Rite, High Tide, Grand Larceny and Long Night.
+- **Campfire talks**: eight one-time party conversations when you rest with a Tent on the world map.
+- 12 new monsters: Kiln Imp, Cinder Serpent, Deep One, Pearl Guard, Guild Cutpurse, Guild Enforcer, Sewer Ooze, and the five bosses.
+- **Controls** page in Config: rebind any key; Confirm and Back can't be left unbound; there's a reset option.
+- **Large text** and **high-contrast windows** options in Config.
+- `hearts` play-test scenario (all five quests, Limits, a campfire talk, the festival); boss scenarios for the simulator.
+- Battles can use a custom party (`opts.party`), and dungeons can exit to a map other than the world (`exitTo`) or skip the Lantern (`noLantern`).
+
+### Changed
+- World location codes now run `1`–`9`.
+- Once Chapter VI is done, the main objective points to the Hearts quests, then the festival.
+- The simulator's AI saves Gravity for very large bosses, which changed the finale's simulated numbers slightly (they're still in range).
+
+### Fixed
+- Losing a battle that isn't a game over (Selene's dream) left the battle as the active scene, so the next battle crashed while drawing.
+
+---
+
+## [1.4.0] — 2026-11-23 · *Comfort*
+
+It covers the 1.3.x *Stabilise* milestone and most of 1.4 *Comfort* from the [roadmap](ROADMAP.md).
 
 ### Added
 - **Three save slots plus an auto-save slot.** Menu → Save opens a slot picker that shows the place, chapter, party levels, play time, gold, Lanterns lit and when it was saved. Inns offer a one-press "Save to slot N".
@@ -194,6 +225,7 @@ Shipped together with 1.0.0 in pull request #1.
 - The full main story, with an ending.
 
 [Unreleased]: https://github.com/CptNope/Laternfall/compare/main...HEAD
+[1.4.0]: https://github.com/CptNope/Laternfall/pull/6
 [1.3.1]: https://github.com/CptNope/Laternfall/pull/5
 [1.3.0]: https://github.com/CptNope/Laternfall/pull/4
 [1.2.1]: https://github.com/CptNope/Laternfall/pull/3

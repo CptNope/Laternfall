@@ -9,11 +9,13 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 ## Contents
 
 - [Walkthrough](#walkthrough)
+- [Hearts of the Lamplighters](#hearts-of-the-lamplighters)
 - [The world](#the-world)
 - [Towns, inns and shops](#towns-inns-and-shops)
 - [Dungeons](#dungeons)
 - [The party](#the-party)
 - [Combo techs](#combo-techs)
+- [Limits](#limits)
 - [How battles work](#how-battles-work)
 - [Bosses](#bosses)
 - [Monsters by area](#monsters-by-area)
@@ -58,11 +60,12 @@ flowchart TD
     AS -.-> AE[Aerie and the Arena]
     K -. Wren's chart .-> OB[Starfall Observatory<br/>Superboss: Astral Wyrm]
     M -. after ending .-> EC[Eclipse Cup, Lantern Koi]
+    M -. after ending .-> HL[Hearts of the Lamplighters<br/>five hero quests]
 
     classDef boss fill:#5a2a3a,stroke:#ff8a8a,color:#fff
     classDef opt fill:#24324a,stroke:#8ab0ff,color:#fff
     class C,F,J,L,P boss
-    class LV,MI,TB,AS,AE,OB,EC opt
+    class LV,MI,TB,AS,AE,OB,EC,HL opt
 ```
 
 ### Act by act
@@ -76,6 +79,7 @@ flowchart TD
 | Optional | Open the First King's tomb with the Sun Seal | Tomb of the First King, south of Mirage (Lv 26+) | The airship *Aurora* |
 | Optional | Find the Fifth Flame with Wren's Star Chart | Starfall Observatory, the island west of Frostmere (Lv 32+) | The Fifth Flame accessory |
 | VI · Night | Bring the Hollow Crown down | Crownfall Abyss on the Ashen Isle (Lv 42+) | The Night Lantern, the Eclipse Cup |
+| Hearts | Five personal quests, one per hero | All over the world (Lv 44+) | Limits, ultimate weapons, the Festival of Lanterns |
 
 ### Chapter VI in detail
 
@@ -98,6 +102,38 @@ sequenceDiagram
     A-->>P: Night Lantern lit, Crown of Dusk and Dawn, epilogue
     P->>L: Ione's thanks: 30,000 gold and 3 Megalixirs
 ```
+
+---
+
+## Hearts of the Lamplighters
+
+After the ending, each hero has something left unfinished. The quests can be done in any order, and each one needs its hero in the party. Finishing one teaches that hero a **[Limit](#limits)** and gives them an ultimate weapon. Finish all five for the **Festival of Lanterns**.
+
+```mermaid
+flowchart LR
+    E([After the ending]) --> R & G & D & K & S
+    R[Elder Maren<br/>Father's Ledger] --> R2[Relight 12 roadside lamps<br/>marked on the world map] --> R3[Last lamp: the Lamp-Eater] --> R4[Sunbearer + First Light]
+    G[Mira<br/>Mother's Grimoire] --> G2[Ember Caves:<br/>two riddle braziers] --> G3[Hearth Warden<br/>asks the third riddle] --> G4[Hearthstaff + Phoenix Rite]
+    D[Sister Wenna<br/>The Last Letter] --> D2[Sea Mother's Grotto] --> D3[The Drowned Abbot] --> D4[Abbot's Bell + High Tide]
+    K[Ironhold jail guard<br/>Vane's Marker] --> K2[Trapdoor to the Undercity] --> K3[Guildmaster Vane] --> K4[Pickpocket's Prize + Grand Larceny]
+    S[Mira<br/>Selene can't sleep] --> S2[Rest at any inn] --> S3[Solo duel in a dream:<br/>Vesper's Echo] --> S4[Duskstar + Long Night]
+    R4 & G4 & D4 & K4 & S4 --> F([Festival of Lanterns<br/>Heartlight])
+```
+
+| Quest | Hero | Start | Where | Boss | Reward |
+| --- | --- | --- | --- | --- | --- |
+| The Lamplighter's Road | Arin | Elder Maren, Brightwater | 12 lamps beside the roads on every continent, including the Isle of Dusk and the Ashen Isle | The Lamp-Eater (appears at the last lamp) | Sunbearer, ★ First Light |
+| Mother's Grimoire | Lyra | Mira, Brightwater | Ember Caves (`8`), in the hills north of the Brightwater road | Hearth Warden | Hearthstaff, ★ Phoenix Rite |
+| The Drowned Priesthood | Oswin | Sister Wenna, Port Halden chapel | Sea Mother's Grotto (`9`), on the coast east of Port Halden | The Drowned Abbot | Abbot's Bell, ★ High Tide |
+| Old Debts | Kestrel | The guard in the Ironhold jail | The Undercity, through a trapdoor in the jail | Guildmaster Vane (acts twice) | Pickpocket's Prize, ★ Grand Larceny |
+| Echo of Vesper | Selene | Mira, Brightwater | A dream: rest at any inn | Vesper's Echo (**Selene fights alone**) | Duskstar, ★ Long Night |
+| The Festival of Lanterns | Everyone | Elder Maren, after all five | Brightwater | — | Heartlight |
+
+**Tips**
+
+- **The riddles** in the Ember Caves are Lyra's mother's bedtime riddles. A wrong answer summons Kiln Imps; you can try again afterwards. Answering the Hearth Warden's riddle correctly fully restores the party before the fight.
+- **Selene's dream** can't end in a game over. If she loses, she simply wakes up, and the dream returns at the next inn. Bring Ethers: her draining spells keep her alive, but they cost MP.
+- **Campfire talks:** using a **Tent** on the world map sometimes starts a short conversation around the fire. There are eight, each heard once, depending on who is in the party and how far the story has gone.
 
 ---
 
@@ -149,12 +185,29 @@ flowchart LR
 | 5 | Starfall Observatory | Dungeon, 3F | Small island west of Frostmere | Starfall Observatory |
 | 6 | Tomb of the First King | Dungeon, 3F | South of Mirage | Tomb |
 | 7 | Crownfall Abyss | Dungeon, 4F | The crater east of Lastlight | Crownfall Abyss |
+| 8 | Ember Caves | Dungeon, 2F | Hills north of the Brightwater road (Lyra's quest) | Ember Caves |
+| 9 | Sea Mother's Grotto | Dungeon, 2F | East coast of the Port Halden peninsula (Oswin's quest) | Sea Mother's Grotto |
+| — | The Undercity | Dungeon, 2F | A trapdoor in the Ironhold jail (Kestrel's quest) | The Undercity |
 
 ### Saving
 
 - **Three save slots** plus an **Auto** slot. Save from **Menu → Save** anywhere, or when you rest at an inn ("Save to slot N" is one press).
 - **Auto-save** writes to the Auto slot every time you enter a town or dungeon. You can turn it off in Config.
 - On the title screen, **Continue** loads your most recent save and **Load Game** lets you pick any slot. Saves from before 1.4 move into slot 1 automatically.
+
+### Settings (Menu → Config)
+
+| Setting | Options | What it does |
+| --- | --- | --- |
+| Sound | On / Off | Music and effects (also the M key) |
+| Auto-dash | On / Off | Run everywhere; hold Shift, R or the gamepad's X to walk |
+| Text speed | Normal / Fast / Instant | How fast dialogue appears |
+| Battle speed | 1× / 2× / 4× | Speeds up battle animations; messages still wait for you |
+| Auto-save | On / Off | Save to the Auto slot on entering towns and dungeons |
+| Large text | On / Off | Bigger dialogue text |
+| High contrast | On / Off | Solid black windows with bright yellow borders |
+| Controls… | — | Rebind any action to any key (Confirm and Back always keep a key), or reset |
+| Encounters | On / Off | Random battles; can only be turned off after the ending |
 
 ### Getting around
 
@@ -206,6 +259,9 @@ Each dungeon's floors are generated from a fixed seed, so every player gets the 
 | **Hollow Spire** | 3 | The Hollow King | Dawn Lantern | Dawn Plate, Dawnblade, Elixir, Ember Scepter, Hi-Ether, Megalixir, Seraph Mace, Shadow Fang, Shadow Garb, X-Potion, 3000 gold |
 | **Tomb of the First King** | 3 | Ozymar, the First King | Sun Lantern | Desert Veil, Elixir, Gilded Mace, Hi-Ether, Megalixir, Nocturne, Sand Kris, X-Potion, 5000 gold |
 | **Starfall Observatory** | 3 | Astral Wyrm | Fifth Lantern | Astral Mace, Celestia, Comet Edge, Elixir, Ember Heart, Hi-Ether, Lightbringer, Megalixir, Swift Boots, X-Potion, 8000 gold |
+| **Ember Caves** | 2 | Hearth Warden | — (hero quest) | Ember Core, Hi-Ether, Megalixir, Star Bomb, X-Potion, 6000 gold |
+| **Sea Mother's Grotto** | 2 | The Drowned Abbot | — (hero quest) | Elixir, Frost Crystal, Hi-Ether, Megalixir, Sun Gold, X-Potion, 6000 gold |
+| **The Undercity** | 2 | Guildmaster Vane | — (hero quest) | Dusk Silk, Elixir, Megalixir, X-Potion, 24000 gold |
 | **Crownfall Abyss** | 4 | The Hollow Crown | Night Lantern | Abyss Ash, Ash Mail, Ash Robe, Elixir, Hi-Ether, Megalixir, Nightglass Locket, Star Bomb, X-Potion, 32000 gold |
 
 ---
@@ -309,6 +365,20 @@ Choose **Combo** in battle. Every member must be in the active four, awake, not 
 
 ---
 
+## Limits
+
+Each hero learns one **Limit** by finishing their [personal quest](#hearts-of-the-lamplighters). A gold gauge under the hero's name in battle fills as they **take damage**, and it stays full between battles. When it's full, a ★ command appears at the top of their battle menu. Using it is free, costs no MP, and empties the gauge.
+
+| Hero | Limit | Target | Effect | Learned from |
+| --- | --- | --- | --- | --- |
+| **Arin** | ★ First Light | One foe | A blade of dawn on one foe. Revives and heals the whole party. | The Lamplighter's Road |
+| **Lyra** | ★ Phoenix Rite | All foes | Fire on every foe, then the party gains Regen. | Mother's Grimoire |
+| **Oswin** | ★ High Tide | All foes | A wave on every foe. Fully heals the party, cures ailments and raises Barrier. | The Drowned Priesthood |
+| **Kestrel** | ★ Grand Larceny | One foe | Six lightning strikes, and steals from every foe. | Old Debts |
+| **Selene** | ★ Long Night | All foes | Darkness on every foe; heals the party with what it takes. Puts ordinary foes to sleep. | Echo of Vesper |
+
+---
+
 ## How battles work
 
 ```mermaid
@@ -386,6 +456,11 @@ Bosses are immune to Sleep and Silence. Kestrel's Venom Edge poisons bosses 40% 
 | **Hollow King, Unbound** | Hollow Spire 3F (phase 2) | 5200 | 175 | 148 | 32 | 1 | — | Megalixir | Crown of Ash, Eclipse, Drain, Frost Breath, Blaze |
 | **The Hollow Crown** | Crownfall Abyss 4F (phase 1) | 8000 | 205 | 192 | 32 | 2 | — | Megalixir | Crownfall, Shadow Bolt, Hollow Hush, Dream Fog, Meteor Rain |
 | **Orun, the Night-Bearer** | Crownfall Abyss 4F (phase 2) | 9500 | 232 | 204 | 34 | 2 | — | Megalixir | Crown of Ash, Drain, Frost Breath, Night Song, Starfire Breath |
+| **The Lamp-Eater** | The last roadside lamp (Arin) | 12500 | 210 | 218 | 30 | 2 | Holy | Megalixir | Drain, Shadow Bolt, Meteor Rain, Hush |
+| **Hearth Warden** | Ember Caves 2F (Lyra) | 9500 | 238 | 196 | 20 | 2 | Ice | Megalixir | Blaze, Ash Storm, Slam |
+| **The Drowned Abbot** | Sea Mother's Grotto 2F (Oswin) | 9000 | 210 | 222 | 24 | 2 | Bolt | Megalixir | Maelstrom, Drain, Lullaby |
+| **Guildmaster Vane** | The Undercity 2F (Kestrel) | 8500 | 226 | 80 | 42 | 2 | — | Megalixir | Needle Storm, Venom Bite, Shatter |
+| **Vesper's Echo** | Selene's dream, solo (Selene) | 2600 | 218 | 150 | 26 | 1 | Holy | Elixir | Shadow Bolt, Drain |
 
 ```mermaid
 xychart-beta
@@ -405,13 +480,23 @@ xychart-beta
 - **Astral Wyrm**: Dream Fog sends the whole party to sleep, so equip sleep immunity on at least two heroes.
 - **The Hollow Crown and Orun**: both **act twice per round** (the *Turns* column). Crownfall hits everyone hard, so keep **Barrier** up, and carry **Remedies**: Hollow Hush can silence Oswin. The Lamp of Lastlight heals you between the phases. **Last Light** (Arin + Lyra + Selene) is the strongest combo in the game.
 
-**How hard is the finale?** `tools/balance_sim.py` fights it 40 times per setup with the real battle code and a simple AI (no combos):
+**How hard are the late bosses?** `tools/balance_sim.py`, 60 fights each, gear from the Spire and the tomb:
+
+| Fight | Party | Win rate | Median rounds | Knockouts per fight |
+| --- | --- | --- | --- | --- |
+| The Lamp-Eater | Lv 44 | 100% | 12 | 0 |
+| The Drowned Abbot | Lv 44 | 98% | 11 | 0.2 |
+| Guildmaster Vane | Lv 44 (with Kestrel) | 87% | 9 | 1.8 |
+| Hearth Warden | Lv 44 | 83% | 11 | 2.0 |
+| Vesper's Echo | Selene alone, Lv 44 | 100% | 12 | 0 |
+
+**How hard is the finale?** `tools/balance_sim.py` fights it 60 times per setup with the real battle code and a simple AI (no combos or Limits, since those come later):
 
 | Party | Win rate | Median rounds | Knockouts per fight |
 | --- | --- | --- | --- |
-| Lv 42, Lastlight shop gear | 68% | 22 | 2.4 |
-| Lv 42, gear from the Spire and tomb | 82% | 22 | 1.4 |
-| Lv 45, gear from the Spire and tomb | 100% | 19 | 0.2 |
+| Lv 42, Lastlight shop gear | 67% | 23 | 2.2 |
+| Lv 42, gear from the Spire and tomb | 90% | 23 | 1.0 |
+| Lv 45, gear from the Spire and tomb | 98% | 20 | 0.1 |
 | Lv 50, forged weapons, arena prizes | 100% | 13 | 0 |
 
 ---
@@ -549,6 +634,32 @@ Ordered roughly as you meet them.
 | Abyss Ooze | 2000 | 196 | 188 | Holy | Hi-Ether | Abyss Ash (20%) | 760 | 520 |
 | Hollow Herald | 2100 | 140 | 206 | Holy | Elixir | Dusk Silk (20%) | 820 | 560 |
 
+#### Ember Caves (Lyra's quest)
+
+| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Kiln Imp | 1600 | 150 | 190 | Ice | Hi-Ether | Ember Core (25%) | 650 | 450 |
+| Cinder Serpent | 1900 | 205 | 120 | Ice | X-Potion | Ember Core (20%) | 700 | 480 |
+| Cinder Wisp | 1200 | 120 | 176 | Ice, Holy | Hi-Ether | Ember Core (20%) | 600 | 400 |
+| Ash Colossus | 2600 | 220 | 40 | Bolt | X-Potion | Ember Core (25%) | 820 | 600 |
+
+#### Sea Mother's Grotto (Oswin's quest)
+
+| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Deep One | 2000 | 200 | 170 | Bolt | Hi-Ether | Frost Crystal (20%) | 720 | 500 |
+| Pearl Guard | 2300 | 215 | 60 | Bolt | Megalixir | Sun Gold (20%) | 760 | 900 |
+| Abyss Ooze | 2000 | 196 | 188 | Holy | Hi-Ether | Abyss Ash (20%) | 760 | 520 |
+| Hollow Herald | 2100 | 140 | 206 | Holy | Elixir | Dusk Silk (20%) | 820 | 560 |
+
+#### The Undercity (Kestrel's quest)
+
+| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guild Cutpurse | 1500 | 200 | 60 | — | Elixir | X-Potion (25%), Dusk Silk (20%) | 640 | 1200 |
+| Guild Enforcer | 2700 | 235 | 40 | — | Megalixir | Sun Gold (15%) | 820 | 900 |
+| Sewer Ooze | 1700 | 180 | 170 | Fire | Remedy | Dusk Silk (20%) | 640 | 420 |
+
 ---
 
 ## Side quests
@@ -585,6 +696,12 @@ flowchart LR
 | Arena Legend | Arena Master, Aerie | Win the first five cups | Lantern Crown |
 | **The Ones That Got Away** | Ice Fisher, Frostmere | Catch every kind of fish (6 kinds for the first reward) | Angler's Ring, Moonfin Charm |
 | **Orrin's Forge** | Orrin, Ironhold (after The Stonebrand) | Forge three items | Orrin's Seal |
+| **The Lamplighter's Road** | Elder Maren (after the ending) | Relight 12 roadside lamps | Sunbearer, ★ First Light |
+| **Mother's Grimoire** | Mira (after the ending) | Ember Caves riddles and the Hearth Warden | Hearthstaff, ★ Phoenix Rite |
+| **The Drowned Priesthood** | Sister Wenna (after the ending) | The Drowned Abbot in the Sea Mother's Grotto | Abbot's Bell, ★ High Tide |
+| **Old Debts** | Ironhold jail guard (after the ending) | Guildmaster Vane in the Undercity | Pickpocket's Prize, ★ Grand Larceny |
+| **Echo of Vesper** | Mira (after the ending) | Selene's solo dream duel | Duskstar, ★ Long Night |
+| **The Festival of Lanterns** | Elder Maren | Finish all five hero quests | Heartlight |
 
 ---
 
@@ -647,11 +764,11 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 
 | Material | Value (shops pay half) | Dropped by |
 | --- | --- | --- |
-| **Ember Core** | 400 | Magma Slime, Fire Bat, Ember Golem, Cinder Wisp, Ash Colossus |
-| **Frost Crystal** | 400 | Frost Wolf, Ice Golem, Snow Imp |
-| **Sun Gold** | 600 | Mummy, Gilded Scarab, Sphinx, Gilded Golem |
+| **Ember Core** | 400 | Magma Slime, Fire Bat, Ember Golem, Cinder Wisp, Ash Colossus, Kiln Imp, Cinder Serpent |
+| **Frost Crystal** | 400 | Frost Wolf, Ice Golem, Snow Imp, Deep One |
+| **Sun Gold** | 600 | Mummy, Gilded Scarab, Sphinx, Gilded Golem, Pearl Guard, Guild Enforcer |
 | **Star Shard** | 800 | Starspawn, Astral Knight, Nebula Slime, Void Drake, Comet Imp |
-| **Dusk Silk** | 700 | Hollow Knight, Night Gaze, Shade Wraith, Chimera, Void Slime, Dread Knight, Nightmare, Hollow Herald |
+| **Dusk Silk** | 700 | Hollow Knight, Night Gaze, Shade Wraith, Chimera, Void Slime, Dread Knight, Nightmare, Hollow Herald, Guild Cutpurse, Sewer Ooze |
 | **Abyss Ash** | 1200 | Ash Hound, Cinder Knight, Crown Shard, Abyss Ooze, Gloam Knight |
 
 | Forges | Type | Materials | Gold | Stats |
@@ -685,6 +802,7 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | **Ashsteel Blade** | ATK+62 | 22000 | Lastlight shop | Quenched in the Ashen Isle's cinders. |
 | **Lightbringer** | ATK+70 MAG+14 | — | Chest, quest or boss | Starlight given an edge. |
 | **Lamplighter's Oath** | ATK+88 MAG+20 | — | Orrin's forge | Forged by Orrin. It burns brighter in the dark. |
+| **Sunbearer** | ATK+100 MAG+28 | — | Chest, quest or boss | Lit from twelve roadside lamps. Arin's father's blade, reforged. |
 
 **Lyra**
 
@@ -699,6 +817,7 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | **Cinder Staff** | ATK+14 MAG+44 | 20000 | Lastlight shop | The tip never stops smouldering. |
 | **Celestia** | ATK+18 MAG+52 | — | Chest, quest or boss | Every star, in one staff. |
 | **Phoenix Staff** | ATK+20 MAG+66 | — | Orrin's forge | Forged by Orrin. Its flame relights itself. |
+| **Hearthstaff** | ATK+26 MAG+84 | — | Chest, quest or boss | Lyra's mother's staff. It is always warm. |
 
 **Oswin**
 
@@ -712,6 +831,7 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | **Ashen Mace** | ATK+42 MAG+30 | 20000 | Lastlight shop | Grey iron, blessed in Lastlight. |
 | **Astral Mace** | ATK+50 MAG+36 | — | Chest, quest or boss | Rings like a temple bell. |
 | **Tidecaller** | ATK+62 MAG+48 | — | Orrin's forge | Forged by Orrin. The sea answers it. |
+| **Abbot's Bell** | ATK+72 MAG+64 | — | Chest, quest or boss | The drowned priesthood's bell. It rings like the tide coming in. |
 
 **Kestrel**
 
@@ -724,6 +844,7 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | **Ash Kris** | ATK+54 SPD+8 | 21000 | Lastlight shop | Leaves a trail of sparks. |
 | **Comet Edge** | ATK+62 SPD+10 | — | Chest, quest or boss | Gone before you see it. |
 | **Gloamfang** | ATK+80 SPD+14 | — | Orrin's forge | Forged by Orrin. Cuts twice for every swing you see. |
+| **Pickpocket's Prize** | ATK+94 SPD+20 | — | Chest, quest or boss | Vane's own knife. Kestrel says she found it. |
 
 **Selene**
 
@@ -734,6 +855,7 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | **Nocturne** | ATK+16 MAG+46 | — | Chest, quest or boss | Plays the dark like an instrument. |
 | **Umbral Rod** | ATK+14 MAG+50 | 24000 | Lastlight shop | Shadow, held gently. |
 | **Evenstar** | ATK+22 MAG+66 | — | Orrin's forge | Forged by Orrin. The first star of evening. |
+| **Duskstar** | ATK+28 MAG+84 | — | Chest, quest or boss | The first star after sunset, held in Selene's hand. |
 
 ### Armour
 
@@ -789,6 +911,7 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **Orrin's Seal** | ATK +6, DEF +18. Prevents all ailments. | — | Quest, chest or prize |
 | **Eclipse Mantle** | DEF +24, MAG +24. Revives once per battle. Prevents silence. | — | Quest, chest or prize |
 | **Nightglass Locket** | All +18. Prevents sleep. A drop of gentle night. | — | Quest, chest or prize |
+| **Heartlight** | All +20. Revives once per battle. No ailments. Five lights, one lantern. | — | Quest, chest or prize |
 | **Crown of Dusk & Dawn** | All +25. Regen. No ailments. Both halves of the first crown, at peace. | — | Quest, chest or prize |
 
 ---
@@ -820,6 +943,10 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **Sun Seal** | The royal seal of Mirage. It opens the First King's tomb. |
 | **Star Chart** | Wren's chart. One constellation is circled: the Fifth Flame. |
 | **Lamp of Lastlight** | Lit from Lastlight's thousand-year fire. The Abyss's mist fears it. |
+| **Father's Ledger** | Arin's father's rounds: twelve roadside lamps on the four roads, all dark now. |
+| **Mother's Grimoire** | Lyra and Selene's mother's book of flames. The last page is a riddle. |
+| **The Last Letter** | From the drowned priesthood of the Sea Mother. It names a grotto on the east coast. |
+| **Vane's Marker** | Kestrel's old debt to the Undercity Guild, with interest. A lot of interest. |
 | **Old Fishing Rod** | Face water and press Enter to fish. Stand by the shore, a pond or a pier. |
 
 ---

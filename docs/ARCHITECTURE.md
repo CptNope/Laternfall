@@ -41,7 +41,7 @@ How the engine works, for anyone reading or changing the code. It covers how the
 ```mermaid
 flowchart LR
     subgraph src/
-      core[core.js] --> data[data.js] --> art[art.js] --> maps[maps.js] --> party[party.js] --> field[field.js] --> interior[interior.js] --> battle[battle.js] --> menu[menu.js] --> crafts[crafts.js] --> story[story.js]
+      core[core.js] --> data[data.js] --> art[art.js] --> maps[maps.js] --> party[party.js] --> field[field.js] --> interior[interior.js] --> battle[battle.js] --> menu[menu.js] --> crafts[crafts.js] --> hearts[hearts.js] --> story[story.js]
     end
     story --> B[build.py<br/>concatenate in order]
     B --> H[index.html<br/>HTML + CSS + touch pad + one inline script]
@@ -71,6 +71,7 @@ python3 build.py   # prints the byte size of the new index.html
 | `battle.js` | The battle scene and combat rules | `Battle` `startBattle` `applyItemEffect` `ngScale` |
 | `menu.js` | The field menu and its pages, shops, inns, quest log, bestiary, world map, config | `openMainMenu` `openShop` `innStay` `questMenu` `configMenu` |
 | `crafts.js` | The fishing mini-game and Orrin's forge | `FishingUI` `goFishing` `forgeMenu` |
+| `hearts.js` | The five hero quests, Limits unlocking, campfire talks, the Festival of Lanterns | `learnLimit` `worldQuestEntities` `interiorQuestEntities` `innDream` `campfireTalk` `heartsQuests` |
 | `story.js` | NPCs and dialogue, doors, cutscenes, bosses, quests, the title screen, the ending, **and the main loop** | `townNpcs` `bossEncounter` `questList` `mainObjective` `worldEvents` `titleMenu` `frame` |
 
 ```mermaid
@@ -79,6 +80,8 @@ flowchart TB
     story --> battle[battle.js]
     story --> menu[menu.js]
     story --> crafts[crafts.js]
+    story --> hearts[hearts.js]
+    hearts --> battle
     crafts --> menu
     field --> maps[maps.js]
     field --> interior[interior.js]
@@ -95,7 +98,7 @@ flowchart TB
     menu --> core
 ```
 
-Arrows mean "calls into". Calls are resolved at **run time**, so a function can call one defined later in the build order. But a top-level `const` that *reads* another file's value at load time must come after that file. (`data.js` changing `MONSTERS` at load is one example.)
+Arrows mean "calls into". Calls are resolved at **run time**, so a function can call one defined later in the build order. But a top-level `const` that *reads* another file's value at load time must come after that file. (`data.js` changing `MONSTERS` at load is one example.) `hearts.js` loads before `story.js`, so its campfire lines are built by a function (`campfires()`) rather than a top-level array: they use the speaker constants (`A`, `LY`, …) that `story.js` defines.
 
 ---
 
@@ -268,7 +271,7 @@ Generation is deterministic (seeded noise via `hash`), so the world never needs 
 | `z` | Desert | ✓ | `v` | Cactus | ✓ |
 | `m` | Mesa | No | `=` | Road | ✓ |
 | `x` | Broken bridge | No | `b` | Repaired bridge | ✓ |
-| `A`–`G` | Town entrance | ✓ | `1`–`7` | Dungeon entrance | ✓ |
+| `A`–`G` | Town entrance | ✓ | `1`–`9` | Dungeon entrance | ✓ |
 
 **Regions** (`map.region[y][x]`) decide encounters, battle backgrounds and music:
 
@@ -319,6 +322,9 @@ flowchart TD
 | `lantern` | The boss room | Examine; glows once `G.flags['lantern_<did>']` is set |
 | `boss` | The boss room, until `G.flags['boss_<did>']` | Starts `bossEncounter(did)` when you get within 2 tiles |
 | `glint`, `cat` | `questEntities(map)` at `extras.spot` | Quest pick-ups and memories |
+| `riddle` | `questEntities` in the Ember Caves | Lyra's riddle braziers |
+| `roadlamp` | `worldQuestEntities(map)` on the world | Arin's 12 roadside lamps; they block movement like posts |
+| `hatch` | `interiorQuestEntities(m)` in the Ironhold jail | The trapdoor to the Undercity |
 
 ---
 
@@ -387,6 +393,11 @@ classDiagram
 | `arena: true`, `canRun: false` | Arena rules; a loss returns to the arena instead of a game over |
 | `keepScene: true` | Don't fade back to the field; used between boss phases |
 | `noVictory: true` | Skip the rewards screen; used for the first phase of two-phase bosses |
+| `party: ['selene']` | Fight with only these heroes (Selene's dream duel). A loss returns `'lose'`; the caller decides whether that's a game over |
+
+### Limits
+
+Each hero's `m.limit` (0–100, saved with the party) rises by `damage ÷ max HP × 140` whenever they're hit, once `G.flags['limit_<id>']` is set. `limitReady(m)` adds a ★ command at the top of the battle menu, and `Battle.doLimit(i, cmd)` runs that hero's effect (defined in `LIMITS` in `data.js`, implemented in `battle.js`). *Repeat last turn* turns a spent Limit into an Attack.
 
 Enemy moves are picked with `weighted(def.acts)`. `ngScale(def)` applies New Game+ multipliers. The full formulas are in the [game guide](GAME_GUIDE.md#formulas).
 
@@ -503,6 +514,7 @@ flowchart LR
 | Side quests | `q_cat` `cat_found` `cat_done`, `q_locket` `locket_done`, `q_hammer` `hammer_done`, `q_stars`, `q_scholar` `scholar_done` | Quest steps |
 | Arena | `arenaMet`, `cup_<id>` | Cups won |
 | Chapter VI | `isle` `seenLast` `q_crown` `combo_lastlight` `mem1` `mem2` `boss_abyss` `lantern_abyss` `chapter6` `ioneThanks` | Chapter steps |
+| Hearts | `q_road` `lamp_0`…`lamp_11` `road_done`; `q_grimoire` `caveOpen` `riddle_0` `riddle_1` `grimoire_done`; `q_grotto` `grottoOpen` `grotto_done`; `q_debt` `seen_undercity` `debt_done`; `q_echo` `echo_done`; `limit_<hero>`; `camp_<n>` `heartsAll`; `festival` | The five hero quests, Limits, campfire talks, the festival |
 | Fishing | `q_fish` `fish_r1` `fish_r2`, `fish_<fishId>` (count caught) | Fishing |
 | Forge | `forgeMet` `forged` (count) `forge_done` | Forging |
 | First visits | `seenHalden` `seenFrost` `seenIron` `seenAerie` `seen_<dungeon>`, `visit_<locationChar>` | Arrival lines; world map labels |
@@ -523,3 +535,6 @@ flowchart LR
 | `battleSpeed` | 0 (1×), 1 (2×), 2 (4×) | `frameInner` while in battle |
 | `autosave` | boolean (default on) | `autoSave()` |
 | `noEnc` | boolean; only takes effect after the ending | `Field.encounterCheck` |
+| `bigText` | boolean | `Dialog` (21 px text, taller box) |
+| `contrast` | boolean | `drawWindow` (solid black, yellow border) |
+| `keys` | `{ code: action }` or `null` for the defaults | `applyKeymap()`; edited on the Controls page through `KeyCapture` |
