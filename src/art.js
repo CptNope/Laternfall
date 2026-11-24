@@ -204,7 +204,7 @@ function drawWorldTile(g, map, x, y, px, py, t) {
       line(g, px + 8, py + 20, px + 12, py + 17, WPAL.grassL, 1.5);
       break;
     }
-    case '=': case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case '1': case '2': case '3': case '4': case '5': case '6': case '7': {
+    case '=': case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': {
       if (ch === '=' || /^[A-G]$/.test(ch)) {
         const L = roadLinks(map, x, y);
         g.fillStyle = gk === 'snow' ? '#c8b89a' : gk === 'q' ? '#5a4a6a' : gk === 'ash' ? '#7a6e66' : WPAL.dirt;
@@ -289,6 +289,18 @@ function drawLocationIcon(g, ch, px, py, t) {
     ellipse(g, cx, by - 4, 7, 3, '#05020a');
     poly(g, [cx - 3, by - 6, cx - 1, by - 30, cx + 1, by - 22, cx + 4, by - 34, cx + 5, by - 6], '#e8c84a', OUT, 1.2);
     for (let i = 0; i < 3; i++) circle(g, cx - 8 + i * 8 + Math.sin(t + i) * 2, by - 18 - ((t * 10 + i * 7) % 14), 1.2, `rgba(255,140,60,${0.6 + 0.4 * Math.sin(t * 3 + i)})`);
+  } else if (ch === '8') {
+    // Ember Caves: a cave mouth in the hills, glowing from inside
+    ellipse(g, cx, by - 7, 15, 12, '#7a6a58', OUT, 1.2);
+    g.beginPath(); g.moveTo(cx - 8, by); g.quadraticCurveTo(cx, by - 18, cx + 8, by); g.fillStyle = '#1a0804'; g.fill();
+    g.save(); g.globalAlpha = 0.45 + 0.25 * Math.sin(t * 3); ellipse(g, cx, by - 3, 6, 4, '#ff7a2a'); g.restore();
+    for (let i = 0; i < 2; i++) circle(g, cx - 3 + i * 6, by - 18 - ((t * 9 + i * 6) % 12), 1.2, `rgba(255,150,60,${0.7})`);
+  } else if (ch === '9') {
+    // Sea Mother's Grotto: a shell-shaped arch over dark water
+    g.beginPath(); g.arc(cx, by - 2, 13, Math.PI, 0); g.fillStyle = '#d8e0e8'; g.fill(); g.strokeStyle = OUT; g.lineWidth = 1.2; g.stroke();
+    for (let i = 1; i < 5; i++) { g.beginPath(); g.moveTo(cx, by - 2); g.lineTo(cx + Math.cos(Math.PI + i * Math.PI / 5) * 13, by - 2 + Math.sin(Math.PI + i * Math.PI / 5) * 13); g.strokeStyle = '#8aa0b8'; g.lineWidth = 1; g.stroke(); }
+    g.beginPath(); g.arc(cx, by, 7, Math.PI, 0); g.fillStyle = '#0a2030'; g.fill();
+    circle(g, cx, by - 4, 1.8, `rgba(120,240,255,${0.6 + 0.4 * Math.sin(t * 3)})`);
   } else if (ch === '6') {
     poly(g, [cx, by - 26, cx - 17, by + 1, cx + 17, by + 1], '#e0b860', OUT, 1.3);
     poly(g, [cx, by - 26, cx + 17, by + 1, cx + 4, by + 1], '#b88a40');
@@ -535,6 +547,7 @@ const DTHEME = {
   tomb: { wall: '#a8844a', top: '#4a3418', floor: '#c8a868', floor2: '#bc9c5e', acc: '#ffc04a', light: 255, bg: 'tomb' },
   astral: { wall: '#2a3a6a', top: '#141e3c', floor: '#22305a', floor2: '#1e2a50', acc: '#a8d8ff', light: 280, bg: 'astral' },
   spire: { wall: '#3a2a4e', top: '#1c1228', floor: '#2e2440', floor2: '#281f38', acc: '#c070ff', light: 260, bg: 'spire' },
+  undercity: { wall: '#4a4a44', top: '#16160f', floor: '#3a3a32', floor2: '#35352e', acc: '#9adf5a', light: 230, bg: 'mine' },
   abyss: { wall: '#3a3238', top: '#120c10', floor: '#2e282c', floor2: '#2a2428', acc: '#ff8a4a', light: 235, bg: 'abyss' }
 };
 function drawDungeonTile(g, map, x, y, px, py, t) {
@@ -1424,6 +1437,29 @@ function drawCat(g, cx, by, t) {
   poly(g, [cx - 3, by - 18, cx - 1, by - 23, cx + 0, by - 16], '#f0a050', OUT, 1);
   circle(g, cx - 7, by - 13, 1.1, '#1a1020'); circle(g, cx - 3, by - 13, 1.1, '#1a1020');
   line(g, cx - 5, by - 10.5, cx - 5, by - 10, '#c05a5a', 1.5);
+}
+// Arin's roadside lamps on the world map
+function drawRoadLamp(g, cx, by, lit, t) {
+  ellipse(g, cx, by - 1, 6, 2, 'rgba(0,0,0,.3)');
+  line(g, cx, by, cx, by - 20, '#2a2a30', 2.5);
+  if (lit) { g.save(); g.globalAlpha = 0.3 + 0.1 * Math.sin(t * 5 + cx); circle(g, cx, by - 22, 12, '#ffd27a'); g.restore(); }
+  rrect(g, cx - 4, by - 27, 8, 8, 2, lit ? '#ffe9a0' : '#3a3a48', '#2a2a30', 1.5);
+  poly(g, [cx - 5, by - 27, cx, by - 31, cx + 5, by - 27], '#2a2a30');
+}
+// Riddle braziers in the Ember Caves
+function drawRiddleFire(g, cx, by, solved, t) {
+  ellipse(g, cx, by - 1, 11, 3, 'rgba(0,0,0,.3)');
+  poly(g, [cx - 10, by - 14, cx + 10, by - 14, cx + 6, by - 2, cx - 6, by - 2], '#5a4a48', OUT, 1.2);
+  const f = Math.sin(t * 9 + cx) * 2, col = solved ? '#7ad8ff' : '#ff7a2a';
+  g.save(); g.globalAlpha = 0.3; circle(g, cx, by - 22, 14, col); g.restore();
+  poly(g, [cx - 7, by - 14, cx + f * 0.5, by - 34 - f, cx + 7, by - 14], col);
+  poly(g, [cx - 3, by - 14, cx, by - 24, cx + 3, by - 14], '#fff4c0');
+}
+// The trapdoor in the Ironhold jail
+function drawHatch(g, cx, by) {
+  rrect(g, cx - 12, by - 22, 24, 20, 2, '#5a3a1f', OUT, 1.2);
+  for (let i = 1; i < 4; i++) line(g, cx - 12 + i * 6, by - 22, cx - 12 + i * 6, by - 2, '#3a2412', 1);
+  circle(g, cx + 6, by - 12, 2, '#c0a040');
 }
 function drawGlint(g, cx, by, t) {
   const p = 0.5 + 0.5 * Math.sin(t * 5);

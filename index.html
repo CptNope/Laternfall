@@ -88,15 +88,15 @@ function rgba(hex, a) {
   return `rgba(${parseInt(c.substr(0, 2), 16)},${parseInt(c.substr(2, 2), 16)},${parseInt(c.substr(4, 2), 16)},${a})`;
 }
 
-// world-map location tiles: towns A–G, dungeons 1–7
-const LOC_RE = /^[A-G1-7]$/;
+// world-map location tiles: towns A–G, dungeons 1–9
+const LOC_RE = /^[A-G1-9]$/;
 const isLoc = c => typeof c === 'string' && LOC_RE.test(c);
 
 // ---------- settings (persist separately from the save file) ----------
 const CFG_KEY = 'lanternfall_cfg_v1';
 const BATTLE_SPEEDS = [{ label: '1×', v: 1 }, { label: '2×', v: 2 }, { label: '4×', v: 4 }];
 const TEXT_SPEEDS = [{ label: 'Normal', v: 55 }, { label: 'Fast', v: 120 }, { label: 'Instant', v: 99999 }];
-const CFG = { dash: false, textSpeed: 0, muted: false, autosave: true, battleSpeed: 0, noEnc: false };
+const CFG = { dash: false, textSpeed: 0, muted: false, autosave: true, battleSpeed: 0, noEnc: false, bigText: false, contrast: false, keys: null };
 try { Object.assign(CFG, JSON.parse(localStorage.getItem(CFG_KEY)) || {}); } catch (e) { }
 function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(CFG)); } catch (e) { } }
 
@@ -107,6 +107,11 @@ const KEYMAP = {
   Escape: 'cancel', KeyX: 'cancel', Backspace: 'cancel', KeyQ: 'cancel', KeyC: 'cancel',
   KeyM: 'mute', ShiftLeft: 'run', ShiftRight: 'run'
 };
+const DEFAULT_KEYMAP = { ...KEYMAP };
+// CFG.keys holds the player's bindings as { code: action }; it replaces the defaults entirely
+function applyKeymap() { for (const k in KEYMAP) delete KEYMAP[k]; Object.assign(KEYMAP, CFG.keys || DEFAULT_KEYMAP); }
+applyKeymap();
+const KeyCapture = { cb: null };   // set while the Controls page waits for a key
 const ACTIONS = ['up', 'down', 'left', 'right', 'ok', 'cancel', 'mute', 'run'];
 const REPEAT = new Set(['up', 'down', 'left', 'right']);
 // Standard-mapping gamepads: D-pad or left stick, A ok, B cancel, X run, Y/Start menu, Select mute
@@ -143,6 +148,7 @@ const Input = {
   clear() { for (const a of ACTIONS) this.fired[a] = false; }
 };
 window.addEventListener('keydown', e => {
+  if (KeyCapture.cb) { e.preventDefault(); const cb = KeyCapture.cb; KeyCapture.cb = null; cb(e.code); return; }
   const a = KEYMAP[e.code];
   Audio_.unlock();
   if (a) {
@@ -232,10 +238,11 @@ function drawWindow(g, x, y, w, h, alpha = 0.94) {
   g.save();
   g.globalAlpha = alpha;
   const gr = g.createLinearGradient(0, y, 0, y + h);
-  gr.addColorStop(0, '#2b4bb8'); gr.addColorStop(1, '#0c1650');
+  if (CFG.contrast) { gr.addColorStop(0, '#000'); gr.addColorStop(1, '#000'); g.globalAlpha = 1; }
+  else { gr.addColorStop(0, '#2b4bb8'); gr.addColorStop(1, '#0c1650'); }
   roundRect(g, x, y, w, h, 7); g.fillStyle = gr; g.fill();
   g.globalAlpha = 1;
-  g.lineWidth = 3; g.strokeStyle = '#e9eefc'; g.stroke();
+  g.lineWidth = 3; g.strokeStyle = CFG.contrast ? '#ffe24a' : '#e9eefc'; g.stroke();
   roundRect(g, x + 3.5, y + 3.5, w - 7, h - 7, 5); g.lineWidth = 1; g.strokeStyle = 'rgba(120,150,255,.55)'; g.stroke();
   g.restore();
 }
@@ -278,7 +285,8 @@ function bar(g, x, y, w, h, v, col, back = 'rgba(0,0,0,.5)') {
 class Dialog {
   constructor(name, msg, opts = {}) {
     this.name = name; this.opts = opts;
-    this.f = font(17);
+    this.big = !!CFG.bigText;
+    this.f = font(this.big ? 21 : 17);
     this.pages = [];
     const lines = wrapText(ctx, msg, W - 80, this.f);
     for (let i = 0; i < lines.length; i += 3) this.pages.push(lines.slice(i, i + 3));
@@ -306,7 +314,7 @@ class Dialog {
     }
   }
   draw(g) {
-    const h = 104, y = this.top ? 12 : H - h - 12, x = 12, w = W - 24;
+    const h = this.big ? 122 : 104, y = this.top ? 12 : H - h - 12, x = 12, w = W - 24;
     drawWindow(g, x, y, w, h);
     if (this.name) {
       g.font = font(15, true);
@@ -315,7 +323,7 @@ class Dialog {
       text(g, this.name, x + 21, y - 15, { size: 15, bold: true, color: '#ffe9a8' });
     }
     const lines = this.pageText.slice(0, Math.floor(this.chars)).split('\n');
-    lines.forEach((l, i) => text(g, l, x + 22, y + 16 + i * 26, { font: this.f }));
+    lines.forEach((l, i) => text(g, l, x + 22, y + 16 + i * (this.big ? 32 : 26), { font: this.f }));
     const last = this.page === this.pages.length - 1;
     if (this.done() && !(this.choices && last)) {
       const t = performance.now() / 1000;
@@ -893,6 +901,10 @@ const ITEMS = {
   sun_seal: { name: 'Sun Seal', price: 0, kind: 'key', desc: 'The royal seal of Mirage. It opens the First King\'s tomb.' },
   star_chart: { name: 'Star Chart', price: 0, kind: 'key', desc: 'Wren\'s chart. One constellation is circled: the Fifth Flame.' },
   lastlight_lamp: { name: 'Lamp of Lastlight', price: 0, kind: 'key', desc: 'Lit from Lastlight\'s thousand-year fire. The Abyss\'s mist fears it.' },
+  fathers_ledger: { name: 'Father\'s Ledger', price: 0, kind: 'key', desc: 'Arin\'s father\'s rounds: twelve roadside lamps on the four roads, all dark now.' },
+  grimoire: { name: 'Mother\'s Grimoire', price: 0, kind: 'key', desc: 'Lyra and Selene\'s mother\'s book of flames. The last page is a riddle.' },
+  priest_letter: { name: 'The Last Letter', price: 0, kind: 'key', desc: 'From the drowned priesthood of the Sea Mother. It names a grotto on the east coast.' },
+  debt_note: { name: 'Vane\'s Marker', price: 0, kind: 'key', desc: 'Kestrel\'s old debt to the Undercity Guild, with interest. A lot of interest.' },
   fishing_rod: { name: 'Old Fishing Rod', price: 0, kind: 'key', desc: 'Face water and press Enter to fish. Stand by the shore, a pond or a pier.' },
   // accessories (anyone can wear)
   gale_sandals: { name: 'Gale Sandals', price: 0, kind: 'acc', spd: 12, desc: 'SPD +12. Arena prize.' },
@@ -921,6 +933,7 @@ const ITEMS = {
   orrin_seal: { name: 'Orrin\'s Seal', price: 0, kind: 'acc', atk: 6, def: 18, immune: ['poison', 'sleep', 'silence'], desc: 'ATK +6, DEF +18. Prevents all ailments.' },
   eclipse_mantle: { name: 'Eclipse Mantle', price: 0, kind: 'acc', def: 24, mag: 24, reraise: true, immune: ['silence'], desc: 'DEF +24, MAG +24. Revives once per battle. Prevents silence.' },
   nightglass: { name: 'Nightglass Locket', price: 0, kind: 'acc', all: 18, immune: ['sleep'], desc: 'All +18. Prevents sleep. A drop of gentle night.' },
+  heartlight: { name: 'Heartlight', price: 0, kind: 'acc', all: 20, reraise: true, immune: ['poison', 'sleep', 'silence'], desc: 'All +20. Revives once per battle. No ailments. Five lights, one lantern.' },
   twin_crown: { name: 'Crown of Dusk & Dawn', price: 0, kind: 'acc', all: 25, regen: true, immune: ['poison', 'sleep', 'silence'], desc: 'All +25. Regen. No ailments. Both halves of the first crown, at peace.' },
   // weapons
   bronze_sword: { name: 'Bronze Sword', price: 60, kind: 'weapon', who: ['arin'], atk: 5, desc: 'A village blade.' },
@@ -960,6 +973,11 @@ const ITEMS = {
   phoenix_staff: { name: 'Phoenix Staff', price: 0, kind: 'weapon', who: ['lyra'], atk: 20, mag: 66, desc: 'Forged by Orrin. Its flame relights itself.' },
   tidecaller: { name: 'Tidecaller', price: 0, kind: 'weapon', who: ['oswin'], atk: 62, mag: 48, desc: 'Forged by Orrin. The sea answers it.' },
   gloamfang: { name: 'Gloamfang', price: 0, kind: 'weapon', who: ['kestrel'], atk: 80, spd: 14, desc: 'Forged by Orrin. Cuts twice for every swing you see.' },
+  sunbearer: { name: 'Sunbearer', price: 0, kind: 'weapon', who: ['arin'], atk: 100, mag: 28, desc: 'Lit from twelve roadside lamps. Arin\'s father\'s blade, reforged.' },
+  hearthstaff: { name: 'Hearthstaff', price: 0, kind: 'weapon', who: ['lyra'], atk: 26, mag: 84, desc: 'Lyra\'s mother\'s staff. It is always warm.' },
+  abbots_bell: { name: 'Abbot\'s Bell', price: 0, kind: 'weapon', who: ['oswin'], atk: 72, mag: 64, desc: 'The drowned priesthood\'s bell. It rings like the tide coming in.' },
+  pickpocket: { name: 'Pickpocket\'s Prize', price: 0, kind: 'weapon', who: ['kestrel'], atk: 94, spd: 20, desc: 'Vane\'s own knife. Kestrel says she found it.' },
+  duskstar: { name: 'Duskstar', price: 0, kind: 'weapon', who: ['selene'], atk: 28, mag: 84, desc: 'The first star after sunset, held in Selene\'s hand.' },
   evenstar: { name: 'Evenstar', price: 0, kind: 'weapon', who: ['selene'], atk: 22, mag: 66, desc: 'Forged by Orrin. The first star of evening.' },
   // armor
   leather: { name: 'Leather Armor', price: 50, kind: 'armor', who: ['arin', 'kestrel', 'oswin'], def: 3, desc: 'Basic protection.' },
@@ -1047,6 +1065,19 @@ const MONSTERS = {
   gloamknight: { name: 'Gloam Knight', fam: 'knight', c: ['#2a2a3a', '#0a0a14', '#e8e8ff'], hp: 2800, atk: 240, def: 124, mag: 70, spd: 20, xp: 960, gold: 680, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }, { w: 1, a: 'e_shatter' }], drop: ['megalixir', 0.1], steal: 'megalixir', mat: ['abyss_ash', 0.25] },
   crown: { name: 'The Hollow Crown', fam: 'crown', boss: true, actions: 2, size: 1.1, c: ['#e8c84a', '#3a2a3a', '#ff5ac8'], hp: 8000, atk: 205, def: 92, mag: 192, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'e_crownfall' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_hushall' }, { w: 1, a: 'e_dreamfog' }, { w: 1, a: 'e_meteor' }], steal: 'megalixir' },
   orun: { name: 'Orun, the Night-Bearer', fam: 'king', pale: true, boss: true, actions: 2, size: 1.15, c: ['#3a3a5a', '#c8c8e8', '#8ad8ff'], hp: 9500, atk: 232, def: 98, mag: 204, spd: 34, xp: 45000, gold: 25000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_nightsong' }, { w: 1, a: 'e_starbreath' }], steal: 'megalixir' },
+  // ---- 1.5 Hearts of the Lamplighters: the five personal quests ----
+  kilnimp: { name: 'Kiln Imp', fam: 'imp', c: ['#ff9a4a', '#8a2a0a'], hp: 1600, atk: 150, def: 84, mag: 190, spd: 32, xp: 650, gold: 450, weak: ['ice'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_fire' }, { w: 1, a: 'e_blaze' }], steal: 'hiether', mat: ['ember_core', 0.25] },
+  cindersnake: { name: 'Cinder Serpent', fam: 'serpent', c: ['#c04a1a', '#3a0a05'], hp: 1900, atk: 205, def: 96, mag: 120, spd: 24, xp: 700, gold: 480, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_crush' }, { w: 1, a: 'e_blaze' }], steal: 'xpotion', mat: ['ember_core', 0.2] },
+  deepone: { name: 'Deep One', fam: 'serpent', size: 1.15, c: ['#1a3a5a', '#050f1a'], hp: 2000, atk: 200, def: 96, mag: 170, spd: 26, xp: 720, gold: 500, weak: ['bolt'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_whirl' }, { w: 1, a: 'e_drain' }], steal: 'hiether', mat: ['frost_crystal', 0.2] },
+  pearlguard: { name: 'Pearl Guard', fam: 'crab', size: 1.1, c: ['#e8e0f0', '#6a5a8a'], hp: 2300, atk: 215, def: 150, mag: 60, spd: 16, xp: 760, gold: 900, weak: ['bolt'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_shatter' }], steal: 'megalixir', mat: ['sun_gold', 0.2] },
+  cutpurse: { name: 'Guild Cutpurse', fam: 'goblin', c: ['#6a6a7a', '#2a2a3a'], hp: 1500, atk: 200, def: 84, mag: 60, spd: 44, xp: 640, gold: 1200, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_bite' }], drop: ['xpotion', 0.25], steal: 'elixir', mat: ['dusk_silk', 0.2] },
+  enforcer: { name: 'Guild Enforcer', fam: 'ogre', size: 1.1, c: ['#5a4a6a', '#2a2a3a'], hp: 2700, atk: 235, def: 110, mag: 40, spd: 16, xp: 820, gold: 900, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }, { w: 1, a: 'e_cleave' }], steal: 'megalixir', mat: ['sun_gold', 0.15] },
+  sewerooze: { name: 'Sewer Ooze', fam: 'slime', c: ['#7a9a3a', '#2a3a10'], hp: 1700, atk: 180, def: 90, mag: 170, spd: 18, xp: 640, gold: 420, weak: ['fire'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_spores' }, { w: 1, a: 'e_bite' }], steal: 'remedy', mat: ['dusk_silk', 0.2] },
+  lampeater: { name: 'The Lamp-Eater', fam: 'ghost', boss: true, size: 1.8, c: ['#4a4a6a', '#0a0a14'], hp: 12500, atk: 210, def: 90, mag: 218, spd: 30, actions: 2, xp: 16000, gold: 8000, weak: ['holy'], acts: [{ w: 2, a: 'e_drain' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_meteor' }, { w: 1, a: 'e_hush' }], steal: 'megalixir' },
+  hearthwarden: { name: 'Hearth Warden', fam: 'golem', boss: true, size: 1.5, c: ['#8a3a1a', '#3a1a0a', '#ffb04a'], hp: 9500, atk: 238, def: 120, mag: 196, spd: 20, actions: 2, xp: 16000, gold: 8000, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_blaze' }, { w: 1, a: 'e_ashstorm' }, { w: 1, a: 'e_slam' }], steal: 'megalixir' },
+  abbot: { name: 'The Drowned Abbot', fam: 'warden', boss: true, size: 1.55, c: ['#2a4a6a', '#d8d0c0', '#8af0ff'], hp: 9000, atk: 210, def: 98, mag: 222, spd: 24, actions: 2, xp: 16000, gold: 8000, weak: ['bolt'], acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_lullaby' }], steal: 'megalixir' },
+  vane: { name: 'Guildmaster Vane', fam: 'knight', boss: true, size: 1.25, c: ['#3a2a1a', '#1a1008', '#e8c84a'], hp: 8500, atk: 226, def: 104, mag: 80, spd: 42, actions: 2, xp: 16000, gold: 20000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_needles' }, { w: 1, a: 'e_bite' }, { w: 1, a: 'e_shatter' }], steal: 'megalixir' },
+  echo: { name: 'Vesper\'s Echo', fam: 'witch', boss: true, size: 1.4, c: ['#2a1a40', '#c04aa8', '#ffd0f0'], hp: 2600, atk: 218, def: 70, mag: 150, spd: 26, xp: 12000, gold: 0, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_shadow' }, { w: 1, a: 'e_drain' }], steal: 'elixir' },
   king2: { name: 'Hollow King, Unbound', fam: 'king2', boss: true, size: 1.3, c: ['#05020a', '#ff5ac8', '#5affe8'], hp: 5200, atk: 175, def: 78, mag: 148, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_blaze' }], steal: 'megalixir' }
 };
 
@@ -1064,6 +1095,9 @@ const ENCOUNTERS = {
   d5: [{ w: 3, g: ['starspawn', 'astralknight'] }, { w: 2, g: ['voiddrake'] }, { w: 2, g: ['nebulaslime', 'cometimp', 'nebulaslime'] }, { w: 2, g: ['astralknight', 'cometimp'] }, { w: 1, g: ['voiddrake', 'starspawn'] }],
   r6: [{ w: 3, g: ['ashhound', 'ashhound'] }, { w: 2, g: ['cinderwisp', 'cinderwisp', 'cinderwisp'] }, { w: 2, g: ['cinderknight'] }, { w: 2, g: ['ashgolem'] }, { w: 1, g: ['cinderknight', 'cinderwisp'] }, { w: 1, g: ['ashhound', 'ashgolem'] }],
   d7: [{ w: 3, g: ['crownshard', 'gloamknight'] }, { w: 2, g: ['nightmare'] }, { w: 2, g: ['abyssooze', 'abyssooze'] }, { w: 2, g: ['herald', 'crownshard'] }, { w: 1, g: ['gloamknight', 'herald'] }, { w: 1, g: ['nightmare', 'abyssooze'] }],
+  d8: [{ w: 3, g: ['kilnimp', 'kilnimp'] }, { w: 2, g: ['cindersnake'] }, { w: 2, g: ['cinderwisp', 'kilnimp', 'cinderwisp'] }, { w: 2, g: ['ashgolem'] }, { w: 1, g: ['cindersnake', 'kilnimp'] }],
+  d9: [{ w: 3, g: ['deepone'] }, { w: 2, g: ['pearlguard'] }, { w: 2, g: ['deepone', 'abyssooze'] }, { w: 1, g: ['pearlguard', 'deepone'] }, { w: 1, g: ['herald', 'deepone'] }],
+  d10: [{ w: 3, g: ['cutpurse', 'cutpurse'] }, { w: 2, g: ['enforcer'] }, { w: 2, g: ['sewerooze', 'sewerooze'] }, { w: 1, g: ['enforcer', 'cutpurse'] }, { w: 1, g: ['cutpurse', 'sewerooze', 'cutpurse'] }],
   d4: [{ w: 3, g: ['voidslime', 'wraith'] }, { w: 2, g: ['dreadknight'] }, { w: 2, g: ['nightgaze', 'nightgaze'] }, { w: 2, g: ['hollowknight', 'voidslime'] }, { w: 1, g: ['chimera', 'nightgaze'] }, { w: 1, g: ['dreadknight', 'wraith'] }]
 };
 
@@ -1141,6 +1175,18 @@ const COMBOS = [
   { id: 'twilight_psalm', name: 'Twilight Psalm', members: ['oswin', 'selene'], mp: [14, 14], type: 'dmg', elem: 'none', power: 95, heal: 0.25, target: 'enemies', fx: 'flare', desc: 'A prayer sung in light and dark. Heals the party.' },
   { id: 'last_light', name: 'Last Light', members: ['arin', 'lyra', 'selene'], mp: [20, 24, 24], type: 'dmg', elem: 'holy', power: 230, heal: 0.2, target: 'enemies', fx: 'holy', flag: 'combo_lastlight', desc: 'Lastlight\'s secret: three who carried the flame through the dark.' }
 ];
+// Limits: one per hero, unlocked by finishing that hero's personal quest (flag limit_<id>).
+// The gauge fills as the hero takes damage and carries over between battles.
+const LIMITS = {
+  arin: { name: 'First Light', target: 'enemy', desc: 'A blade of dawn on one foe. Revives and heals the whole party.' },
+  lyra: { name: 'Phoenix Rite', target: 'enemies', desc: 'Fire on every foe, then the party gains Regen.' },
+  oswin: { name: 'High Tide', target: 'enemies', desc: 'A wave on every foe. Fully heals the party, cures ailments and raises Barrier.' },
+  kestrel: { name: 'Grand Larceny', target: 'enemy', desc: 'Six lightning strikes, and steals from every foe.' },
+  selene: { name: 'Long Night', target: 'enemies', desc: 'Darkness on every foe; heals the party with what it takes. Puts ordinary foes to sleep.' }
+};
+const limitUnlocked = m => !!(LIMITS[m.id] && G.flags['limit_' + m.id]);
+const limitReady = m => limitUnlocked(m) && (m.limit || 0) >= 100;
+
 // Arena cups at Aerie
 const ARENA_CUPS = [
   { id: 'bronze', name: 'Bronze Cup', level: 24, rounds: [['hobgoblin', 'hobgoblin', 'hobgoblin'], ['ogre', 'ogre'], ['magmaslime', 'firebat', 'magmaslime']], prize: 'gale_sandals', gold: 2000 },
@@ -1357,7 +1403,7 @@ function drawWorldTile(g, map, x, y, px, py, t) {
       line(g, px + 8, py + 20, px + 12, py + 17, WPAL.grassL, 1.5);
       break;
     }
-    case '=': case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case '1': case '2': case '3': case '4': case '5': case '6': case '7': {
+    case '=': case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': {
       if (ch === '=' || /^[A-G]$/.test(ch)) {
         const L = roadLinks(map, x, y);
         g.fillStyle = gk === 'snow' ? '#c8b89a' : gk === 'q' ? '#5a4a6a' : gk === 'ash' ? '#7a6e66' : WPAL.dirt;
@@ -1442,6 +1488,18 @@ function drawLocationIcon(g, ch, px, py, t) {
     ellipse(g, cx, by - 4, 7, 3, '#05020a');
     poly(g, [cx - 3, by - 6, cx - 1, by - 30, cx + 1, by - 22, cx + 4, by - 34, cx + 5, by - 6], '#e8c84a', OUT, 1.2);
     for (let i = 0; i < 3; i++) circle(g, cx - 8 + i * 8 + Math.sin(t + i) * 2, by - 18 - ((t * 10 + i * 7) % 14), 1.2, `rgba(255,140,60,${0.6 + 0.4 * Math.sin(t * 3 + i)})`);
+  } else if (ch === '8') {
+    // Ember Caves: a cave mouth in the hills, glowing from inside
+    ellipse(g, cx, by - 7, 15, 12, '#7a6a58', OUT, 1.2);
+    g.beginPath(); g.moveTo(cx - 8, by); g.quadraticCurveTo(cx, by - 18, cx + 8, by); g.fillStyle = '#1a0804'; g.fill();
+    g.save(); g.globalAlpha = 0.45 + 0.25 * Math.sin(t * 3); ellipse(g, cx, by - 3, 6, 4, '#ff7a2a'); g.restore();
+    for (let i = 0; i < 2; i++) circle(g, cx - 3 + i * 6, by - 18 - ((t * 9 + i * 6) % 12), 1.2, `rgba(255,150,60,${0.7})`);
+  } else if (ch === '9') {
+    // Sea Mother's Grotto: a shell-shaped arch over dark water
+    g.beginPath(); g.arc(cx, by - 2, 13, Math.PI, 0); g.fillStyle = '#d8e0e8'; g.fill(); g.strokeStyle = OUT; g.lineWidth = 1.2; g.stroke();
+    for (let i = 1; i < 5; i++) { g.beginPath(); g.moveTo(cx, by - 2); g.lineTo(cx + Math.cos(Math.PI + i * Math.PI / 5) * 13, by - 2 + Math.sin(Math.PI + i * Math.PI / 5) * 13); g.strokeStyle = '#8aa0b8'; g.lineWidth = 1; g.stroke(); }
+    g.beginPath(); g.arc(cx, by, 7, Math.PI, 0); g.fillStyle = '#0a2030'; g.fill();
+    circle(g, cx, by - 4, 1.8, `rgba(120,240,255,${0.6 + 0.4 * Math.sin(t * 3)})`);
   } else if (ch === '6') {
     poly(g, [cx, by - 26, cx - 17, by + 1, cx + 17, by + 1], '#e0b860', OUT, 1.3);
     poly(g, [cx, by - 26, cx + 17, by + 1, cx + 4, by + 1], '#b88a40');
@@ -1688,6 +1746,7 @@ const DTHEME = {
   tomb: { wall: '#a8844a', top: '#4a3418', floor: '#c8a868', floor2: '#bc9c5e', acc: '#ffc04a', light: 255, bg: 'tomb' },
   astral: { wall: '#2a3a6a', top: '#141e3c', floor: '#22305a', floor2: '#1e2a50', acc: '#a8d8ff', light: 280, bg: 'astral' },
   spire: { wall: '#3a2a4e', top: '#1c1228', floor: '#2e2440', floor2: '#281f38', acc: '#c070ff', light: 260, bg: 'spire' },
+  undercity: { wall: '#4a4a44', top: '#16160f', floor: '#3a3a32', floor2: '#35352e', acc: '#9adf5a', light: 230, bg: 'mine' },
   abyss: { wall: '#3a3238', top: '#120c10', floor: '#2e282c', floor2: '#2a2428', acc: '#ff8a4a', light: 235, bg: 'abyss' }
 };
 function drawDungeonTile(g, map, x, y, px, py, t) {
@@ -2578,6 +2637,29 @@ function drawCat(g, cx, by, t) {
   circle(g, cx - 7, by - 13, 1.1, '#1a1020'); circle(g, cx - 3, by - 13, 1.1, '#1a1020');
   line(g, cx - 5, by - 10.5, cx - 5, by - 10, '#c05a5a', 1.5);
 }
+// Arin's roadside lamps on the world map
+function drawRoadLamp(g, cx, by, lit, t) {
+  ellipse(g, cx, by - 1, 6, 2, 'rgba(0,0,0,.3)');
+  line(g, cx, by, cx, by - 20, '#2a2a30', 2.5);
+  if (lit) { g.save(); g.globalAlpha = 0.3 + 0.1 * Math.sin(t * 5 + cx); circle(g, cx, by - 22, 12, '#ffd27a'); g.restore(); }
+  rrect(g, cx - 4, by - 27, 8, 8, 2, lit ? '#ffe9a0' : '#3a3a48', '#2a2a30', 1.5);
+  poly(g, [cx - 5, by - 27, cx, by - 31, cx + 5, by - 27], '#2a2a30');
+}
+// Riddle braziers in the Ember Caves
+function drawRiddleFire(g, cx, by, solved, t) {
+  ellipse(g, cx, by - 1, 11, 3, 'rgba(0,0,0,.3)');
+  poly(g, [cx - 10, by - 14, cx + 10, by - 14, cx + 6, by - 2, cx - 6, by - 2], '#5a4a48', OUT, 1.2);
+  const f = Math.sin(t * 9 + cx) * 2, col = solved ? '#7ad8ff' : '#ff7a2a';
+  g.save(); g.globalAlpha = 0.3; circle(g, cx, by - 22, 14, col); g.restore();
+  poly(g, [cx - 7, by - 14, cx + f * 0.5, by - 34 - f, cx + 7, by - 14], col);
+  poly(g, [cx - 3, by - 14, cx, by - 24, cx + 3, by - 14], '#fff4c0');
+}
+// The trapdoor in the Ironhold jail
+function drawHatch(g, cx, by) {
+  rrect(g, cx - 12, by - 22, 24, 20, 2, '#5a3a1f', OUT, 1.2);
+  for (let i = 1; i < 4; i++) line(g, cx - 12 + i * 6, by - 22, cx - 12 + i * 6, by - 2, '#3a2412', 1);
+  circle(g, cx + 6, by - 12, 2, '#c0a040');
+}
 function drawGlint(g, cx, by, t) {
   const p = 0.5 + 0.5 * Math.sin(t * 5);
   g.save(); g.globalAlpha = 0.35 + p * 0.3; circle(g, cx, by - 10, 12, '#fff6c0'); g.restore();
@@ -2666,8 +2748,13 @@ const WORLD_LOC = {
   6: { x: 85, y: 45, dungeon: 'tomb', name: 'Tomb of the First King' },
   // Chapter VI — the Ashen Isle (hidden under the sea until G.flags.isle)
   G: { x: 79, y: 9, town: 'lastlight', name: 'Lastlight' },
-  7: { x: 88, y: 7, dungeon: 'abyss', name: 'Crownfall Abyss' }
+  7: { x: 88, y: 7, dungeon: 'abyss', name: 'Crownfall Abyss' },
+  // 1.5 Hearts of the Lamplighters
+  8: { x: 20, y: 40, dungeon: 'embercave', name: 'Ember Caves' },
+  9: { x: 42, y: 40, dungeon: 'grotto', name: 'Sea Mother\'s Grotto' }
 };
+// Arin's quest: twelve roadside lamps, each beside a road
+const ROAD_LAMPS = [[13, 31], [15, 34], [17, 42], [26, 42], [33, 40], [37, 46], [46, 10], [43, 13], [33, 7], [79, 42], [56, 41], [83, 6]];
 const ISLE_LOCS = ['G', '7'];
 const SHIP_HOME = { x: 40, y: 38 };
 const BRIDGE_Y = 43;
@@ -2994,6 +3081,13 @@ const DUNGEONS = {
     loot: [['hiether', 'gold:5000', 'xpotion', 'desert_veil'], ['pharaoh_mace', 'sand_kris', 'elixir', 'megalixir'], ['nocturne', 'xpotion', 'hiether']], boss: 'firstking', lantern: 'sun', lanternCol: '#ffc04a' },
   observatory: { name: 'Starfall Observatory', theme: 'astral', floors: 3, w: 36, h: 28, seed: 505, enc: 'd5', bg: 'astral', loc: '5', deco2: 'k',
     loot: [['swift_boots', 'megalixir', 'gold:8000', 'xpotion'], ['ember_heart', 'celestia', 'astral_mace', 'elixir'], ['lightbringer', 'comet_edge', 'megalixir', 'hiether']], boss: 'wyrm', lantern: 'fifth', lanternCol: '#a8d8ff' },
+  embercave: { name: 'Ember Caves', theme: 'mine', floors: 2, w: 34, h: 26, seed: 808, enc: 'd8', bg: 'mine', loc: '8', deco: 'L', noLantern: true,
+    loot: [['xpotion', 'ember_core', 'gold:6000', 'hiether'], ['megalixir', 'ember_core', 'star_bomb']], boss: 'hearthwarden' },
+  grotto: { name: 'Sea Mother\'s Grotto', theme: 'shrine', floors: 2, w: 34, h: 26, seed: 909, enc: 'd9', bg: 'shrine', loc: '9', deco: '~', deco2: 'k', noLantern: true,
+    loot: [['xpotion', 'frost_crystal', 'gold:6000', 'hiether'], ['megalixir', 'sun_gold', 'elixir']], boss: 'abbot' },
+  undercity: { name: 'The Undercity', theme: 'undercity', floors: 2, w: 36, h: 26, seed: 1010, enc: 'd10', bg: 'mine', loc: 'C', deco: '~', deco2: 'o', noLantern: true,
+    exitTo: { map: 'in:ironhold:jail', x: 6, y: 6 },
+    loot: [['xpotion', 'dusk_silk', 'gold:9000', 'elixir'], ['megalixir', 'dusk_silk', 'gold:15000']], boss: 'vane' },
   abyss: { name: 'Crownfall Abyss', theme: 'abyss', floors: 4, w: 38, h: 30, seed: 707, enc: 'd7', bg: 'abyss', loc: '7', deco: 'L', deco2: 'k',
     loot: [['abyss_ash', 'xpotion', 'gold:12000', 'hiether'], ['ash_robe', 'megalixir', 'abyss_ash', 'star_bomb'], ['ash_mail', 'elixir', 'abyss_ash', 'megalixir'], ['nightglass', 'megalixir', 'gold:20000', 'abyss_ash']], boss: 'crown', lantern: 'night', lanternCol: '#b8a8ff' }
 };
@@ -3227,7 +3321,7 @@ function readSlot(slot) {
 function saveData() {
   return {
     version: SAVE_VERSION, savedAt: Date.now(),
-    party: G.party.map(m => ({ id: m.id, level: m.level, xp: m.xp, hp: m.hp, mp: m.mp, weapon: m.weapon, armor: m.armor, acc: m.acc || null })),
+    party: G.party.map(m => ({ id: m.id, level: m.level, xp: m.xp, hp: m.hp, mp: m.mp, weapon: m.weapon, armor: m.armor, acc: m.acc || null, limit: m.limit || 0 })),
     seen: G.seen, killed: G.killed,
     inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime,
     mapId: G.mapId, x: G.x, y: G.y, dir: G.dir, ship: G.ship, onShip: G.onShip, lastInn: G.lastInn, airship: G.airship, inAir: G.inAir, carry: G.carry
@@ -3296,9 +3390,10 @@ function getMap(id) {
 }
 function populate(map) {
   map.entities = [];
-  if (map.kind === 'world') applyWorldFlags(map);
+  if (map.kind === 'world') { applyWorldFlags(map); for (const q of worldQuestEntities(map)) map.entities.push(q); }
   if (map.kind === 'interior') {
     for (const n of interiorNpcs(map)) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
+    for (const q of interiorQuestEntities(map)) map.entities.push(q);
   }
   if (map.kind === 'town') {
     for (const n of townNpcs(map.id)) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
@@ -3308,7 +3403,7 @@ function populate(map) {
       const key = `chest:${map.id}:${c.x},${c.y}`;
       map.entities.push({ kind: 'chest', x: c.x, y: c.y, key, loot: c.loot, opened: !!G.flags[key] });
     }
-    if (map.extras.lantern) map.entities.push({ kind: 'lantern', x: map.extras.lantern.x, y: map.extras.lantern.y, did, lit: !!G.flags['lantern_' + did], col: def.lanternCol });
+    if (map.extras.lantern && !def.noLantern) map.entities.push({ kind: 'lantern', x: map.extras.lantern.x, y: map.extras.lantern.y, did, lit: !!G.flags['lantern_' + did], col: def.lanternCol });
     for (const q of questEntities(map)) map.entities.push(q);
     if (map.extras.boss && !G.flags['boss_' + did]) map.entities.push({ kind: 'boss', x: map.extras.boss.x, y: map.extras.boss.y, did, def: MONSTERS[def.boss] });
   }
@@ -3416,6 +3511,7 @@ const Field = {
         return this.startMove(nx, ny, true);
       }
       if (c === 'x') { runScript(() => narrate('The old bridge has collapsed into the river. There is no way across... yet.')); return this.bump(); }
+      if (this.entityAt(nx, ny)) return this.bump();
       if (!this.walkable(nx, ny)) return this.bump();
       return this.startMove(nx, ny);
     }
@@ -3609,6 +3705,9 @@ function drawEntity(g, e, sx, sy, t) {
   else if (e.kind === 'lantern') drawLantern(g, sx, sy + 2, e.lit, t, e.col);
   else if (e.kind === 'cat') drawCat(g, sx, sy, t);
   else if (e.kind === 'glint') drawGlint(g, sx, sy, t);
+  else if (e.kind === 'roadlamp') drawRoadLamp(g, sx, sy, e.lit, t);
+  else if (e.kind === 'riddle') drawRiddleFire(g, sx, sy, e.solved, t);
+  else if (e.kind === 'hatch') drawHatch(g, sx, sy);
   else if (e.kind === 'boss') {
     const s = 0.45;
     drawMonster(g, e.def, sx, sy + 2, { t, scale: s });
@@ -3658,6 +3757,7 @@ async function leaveTown() {
 async function stairs(d) {
   const m = Field.map, did = m.dungeon, f = m.floor + d;
   Audio_.sfx('stairs');
+  if (f < 0 && DUNGEONS[did].exitTo) { const e = DUNGEONS[did].exitTo; await changeMap(e.map, e.x, e.y, 'down'); return; }
   if (f < 0) {
     const loc = WORLD_LOC[DUNGEONS[did].loc];
     await changeMap('world', loc.x, loc.y, 'down');
@@ -3875,7 +3975,7 @@ let BATTLE_PARTY = null;
 function BP() { return BATTLE_PARTY || G.party; }
 class Battle {
   constructor(ids, opts) {
-    BATTLE_PARTY = G.party.slice(0, 4);
+    BATTLE_PARTY = opts.party ? G.party.filter(m => opts.party.includes(m.id)) : G.party.slice(0, 4);
     this.opts = opts; this.bg = opts.bg || 'plains'; this.t = 0;
     this.fx = []; this.nums = []; this.msg = null; this.active = -1; this.flash = null; this.shake = 0;
     const counts = {};
@@ -4004,6 +4104,7 @@ class Battle {
       const col = !alive(m) ? '#ff7a7a' : m.hp / maxHp(m) < 0.25 ? '#ffd27a' : '#fff';
       if (i === this.active) { g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(222, y - 2, 402, 27); }
       text(g, memberName(m), 230, y + 3, { size: 15, bold: true, color: col });
+      if (limitUnlocked(m)) { const full = (m.limit || 0) >= 100; bar(g, 230, y + 22, 62, 3, (m.limit || 0) / 100, full ? (Math.sin(this.t * 10) > 0 ? '#ffd23a' : '#fff4c0') : '#e8a84a'); }
       const tags = [m.status.poison && ['PSN', '#8aff7a'], m.status.sleep && ['SLP', '#c8b8ff'], m.status.silence && ['SIL', '#ffb0d0'], m.status.regen && ['RGN', '#9ad8ff']].filter(Boolean);
       tags.slice(0, 2).forEach(([tg, c], k) => text(g, tg, 302 + k * 24, y + 5, { size: 10, bold: true, color: c }));
       text(g, `${m.hp}`, 420, y + 3, { size: 15, color: col, align: 'right' });
@@ -4297,7 +4398,7 @@ class Battle {
       if (c === 'repeat') {
         // re-use last round's commands for everyone who can still act
         const P = BP();
-        return this.prevCmds.map((pc, j) => pc && alive(P[j]) && !P[j].status.sleep ? { ...pc } : null);
+        return this.prevCmds.map((pc, j) => pc && alive(P[j]) && !P[j].status.sleep ? (pc.type === 'limit' ? { type: 'attack', target: null } : { ...pc }) : null);
       }
       if (c === 'back') {
         let j = i - 1; while (j >= 0 && (!alive(BP()[j]) || BP()[j].status.sleep)) j--;
@@ -4322,7 +4423,9 @@ class Battle {
     while (true) {
       const spells = spellsOf(m);
       const usable = Object.keys(G.inv).filter(k => ITEMS[k].kind === 'use' && ITEMS[k].field !== 'world');
+      const lim = limitReady(m);
       const items = [
+        ...(lim ? [{ label: '★ ' + LIMITS[m.id].name, color: '#ffd23a' }] : []),
         { label: 'Attack' },
         { label: m.status.silence ? d.skill + ' (silenced)' : d.skill, disabled: !spells.length || !!m.status.silence },
         { label: 'Combo', disabled: !this.combosFor(m).length },
@@ -4331,10 +4434,17 @@ class Battle {
         { label: 'Run', disabled: !!this.opts.boss }
       ];
       const canRepeat = this.prevCmds && !this.prevCmds.some(c => c && c.type === 'run');
-      const k = await listMenu({ x: 8, y: 330, w: 200, rows: 6, rowH: 21, items, index: this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: 15, hotkeys: canRepeat ? { run: -10 } : null });
-      if (k === -10) return 'repeat';
-      this.lastCmd = this.lastCmd || {}; if (k >= 0) this.lastCmd[idx] = k;
-      if (k < 0) return 'back';
+      const k0 = await listMenu({ x: 8, y: lim ? 314 : 330, w: 200, rows: items.length, rowH: lim ? 19 : 21, items, index: lim ? 0 : this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: lim ? 14 : 15, hotkeys: canRepeat ? { run: -10 } : null,
+        help: i => lim && i === 0 ? LIMITS[m.id].desc : '' });
+      if (k0 === -10) return 'repeat';
+      if (k0 < 0) return 'back';
+      if (lim && k0 === 0) {
+        const tg = LIMITS[m.id].target === 'enemy' ? await this.pickTarget('enemy') : 'all';
+        if (tg !== null && tg !== undefined) return { type: 'limit', target: tg };
+        continue;
+      }
+      const k = lim ? k0 - 1 : k0;
+      this.lastCmd = this.lastCmd || {}; this.lastCmd[idx] = k;
       if (k === 0) { const tg = await this.pickTarget('enemy'); if (tg !== null && tg !== undefined) return { type: 'attack', target: tg }; continue; }
       if (k === 1) {
         const sp = await listMenu({
@@ -4454,6 +4564,7 @@ class Battle {
   kill(e) { e.hp = 0; e.alive = false; e.dying = 0; e.status = {}; G.killed[e.id] = (G.killed[e.id] || 0) + 1; Audio_.sfx('ko'); }
   damageMember(i, dmg) {
     const m = BP()[i];
+    if (limitUnlocked(m) && alive(m)) m.limit = Math.min(100, (m.limit || 0) + dmg / maxHp(m) * 140);
     m.hp = Math.max(0, m.hp - dmg);
     if (m.status.sleep && Math.random() < 0.6) m.status.sleep = 0;
     this.pa[i].flash = 0.4; this.pa[i].shake = 0.3;
@@ -4507,11 +4618,56 @@ class Battle {
     idx.forEach(j => { this.pa[j].pose = null; this.pa[j].dx = 0; });
     await wait(250); this.msg = null;
   }
+  async doLimit(i, c) {
+    const P = BP(), m = P[i], a = this.pa[i];
+    if (!limitReady(m)) return;
+    m.limit = 0;
+    this.msg = LIMITS[m.id].name;
+    a.pose = 'cast'; a.dx = -24;
+    this.screenFlash('#fff4c0', 0.6, 0.4); Audio_.sfx('levelup');
+    await wait(600);
+    const foes = () => this.liveEnemies();
+    const party = () => P.map((_, k) => k).filter(k => alive(P[k]));
+    const magHit = (e, power, elem) => Math.max(1, Math.round((power + stat(m, 'mag')) * rnd(0.95, 1.05) * this.weakMult(e.def, elem) - e.def.mag * 0.4));
+    if (m.id === 'arin') {
+      const tg = this.resolveTargets('enemy', c.target)[0];
+      if (tg) { await this.playFx('holy', [this.enemyCenter(tg)]); this.damageEnemy(tg, this.physDamage(this.memberAtk(i) * (1 + stat(m, 'mag') / 200), tg.def.def, 5 * this.weakMult(tg.def, 'holy')), '#ffd27a', true); }
+      await this.playFx('heal', P.map((_, k) => this.memberCenter(k)));
+      P.forEach((p, k) => { if (!alive(p)) { p.hp = Math.floor(maxHp(p) * 0.4); const q = this.memberCenter(k); this.num(q.x, q.y, 'Revived', '#7aff9a'); } else this.healMember(k, Math.round(maxHp(p) * 0.3)); });
+    } else if (m.id === 'lyra') {
+      const ts = foes(); await this.playFx('fire', ts.map(e => this.enemyCenter(e))); await this.playFx('flare', ts.map(e => this.enemyCenter(e)));
+      for (const e of ts) this.damageEnemy(e, magHit(e, 300, 'fire'), '#ffd27a', true);
+      for (const k of party()) { P[k].status.regen = 5; const q = this.memberCenter(k); this.num(q.x, q.y, 'Regen', '#9ad8ff'); }
+    } else if (m.id === 'oswin') {
+      const ts = foes(); await this.playFx('water', ts.map(e => this.enemyCenter(e)));
+      for (const e of ts) this.damageEnemy(e, magHit(e, 180, 'water'), '#ffd27a', true);
+      await this.playFx('heal', party().map(k => this.memberCenter(k)));
+      for (const k of party()) { this.healMember(k, maxHp(P[k])); P[k].status.poison = false; P[k].status.sleep = 0; P[k].status.silence = 0; }
+      this.buffs.barrier = 4;
+    } else if (m.id === 'kestrel') {
+      await this.stepForward(i, async () => {
+        for (let h = 0; h < 6 && foes().length; h++) {
+          const tg = c.target && c.target.alive ? c.target : pick(foes());
+          a.pose = 'attack'; await this.playFx('slash', [this.enemyCenter(tg)]);
+          this.damageEnemy(tg, this.physDamage(this.memberAtk(i), tg.def.def, 1.0), '#ffd27a', true); a.pose = null; await wait(60);
+        }
+      });
+      for (const e of this.enemies) if (!e.stolen && e.def.steal) { e.stolen = true; addItem(e.def.steal); const q = this.enemyCenter(e); this.num(q.x, q.y - 30, ITEMS[e.def.steal].name, '#ffe9a8'); }
+      Audio_.sfx('item');
+    } else if (m.id === 'selene') {
+      const ts = foes(); await this.playFx('dark', ts.map(e => this.enemyCenter(e)));
+      let total = 0;
+      for (const e of ts) { const d = magHit(e, 260, 'dark'); total += Math.min(d, e.hp); this.damageEnemy(e, d, '#ffd27a', true); if (e.alive && !e.def.boss) e.status.sleep = 3; }
+      const ks = party(); for (const k of ks) this.healMember(k, Math.round(total / Math.max(1, ks.length)));
+    }
+    a.pose = null; a.dx = 0; await wait(300); this.msg = null;
+  }
   async partyAct(i, c) {
     const m = BP()[i], a = this.pa[i];
     if (m.status.sleep) { const p = this.memberCenter(i); this.num(p.x, p.y, 'Asleep', '#c8b8ff'); await wait(300); return; }
     if (c.type === 'defend') return;
     if (c.type === 'combo') return this.doCombo(i, c);
+    if (c.type === 'limit') return this.doLimit(i, c);
     if (c.type === 'attack') {
       const tg = this.resolveTargets('enemy', c.target)[0];
       if (!tg) return;
@@ -4928,6 +5084,33 @@ async function promptSave() {
   if (c === 0 && saveGame(G.slot)) { Audio_.sfx('save'); await narrate(`Your journey has been recorded in slot ${G.slot}.`); }
   if (c === 1) await saveToSlot();
 }
+const ACTION_NAMES = { up: 'Up', down: 'Down', left: 'Left', right: 'Right', ok: 'Confirm', cancel: 'Menu / back', run: 'Run / repeat turn', mute: 'Sound on/off' };
+// 'KeyW' → 'W', 'ArrowUp' → '↑', 'ShiftLeft' → 'Shift L'
+const KEY_NAMES = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', Escape: 'Esc', Backspace: 'Bksp', NumpadEnter: 'Num Enter', ShiftLeft: 'Shift L', ShiftRight: 'Shift R' };
+const keyLabel = code => KEY_NAMES[code] || code.replace(/^Key|^Digit/, '');
+async function controlsMenu() {
+  let idx = 0;
+  while (true) {
+    const acts = ['up', 'down', 'left', 'right', 'ok', 'cancel', 'run', 'mute'];
+    const keysFor = a => Object.keys(KEYMAP).filter(c => KEYMAP[c] === a).map(keyLabel).join(', ') || '—';
+    const items = [...acts.map(a => ({ label: ACTION_NAMES[a], right: keysFor(a) })), { label: 'Reset to defaults' }, { label: 'Done' }];
+    const k = await listMenu({ x: 110, y: 60, w: 420, rows: items.length, title: 'Controls', items, index: idx, help: i => i < acts.length ? 'Press Enter, then the new key. It replaces every key for this action.' : '', helpY: H - 52 });
+    if (k < 0 || k === items.length - 1) return;
+    idx = k;
+    if (k === acts.length) { CFG.keys = null; saveCfg(); applyKeymap(); toast('Controls reset'); continue; }
+    const a = acts[k];
+    const code = await new Promise(res => {
+      KeyCapture.cb = res;
+      UI.push({ update() { if (!KeyCapture.cb) UI.close(this); }, draw(g) { drawWindow(g, 170, 200, 300, 60); text(g, `Press a key for: ${ACTION_NAMES[a]}`, 320, 220, { size: 16, align: 'center' }); } });
+    });
+    const map = { ...KEYMAP };
+    for (const c in map) if (map[c] === a || c === code) delete map[c];
+    map[code] = a;
+    // never lock the player out of confirming or going back
+    if (!Object.values(map).includes('ok') || !Object.values(map).includes('cancel')) { Audio_.sfx('buzz'); toast('Confirm and Back need a key'); continue; }
+    CFG.keys = map; saveCfg(); applyKeymap(); Audio_.sfx('ok');
+  }
+}
 async function configMenu() {
   let idx = 0;
   while (true) {
@@ -4939,6 +5122,9 @@ async function configMenu() {
       { label: 'Text speed', right: TEXT_SPEEDS[CFG.textSpeed || 0].label, act: d => cycle('textSpeed', TEXT_SPEEDS, d), help: 'How fast dialogue appears.' },
       { label: 'Battle speed', right: BATTLE_SPEEDS[CFG.battleSpeed || 0].label, act: d => cycle('battleSpeed', BATTLE_SPEEDS, d), help: 'Speeds up battle animations. Messages still wait for you.' },
       { label: 'Auto-save', right: CFG.autosave !== false ? 'On' : 'Off', act: () => { CFG.autosave = CFG.autosave === false; saveCfg(); }, help: 'Save to the Auto slot whenever you enter a town or dungeon.' },
+      { label: 'Large text', right: CFG.bigText ? 'On' : 'Off', act: () => toggle('bigText'), help: 'Bigger dialogue text.' },
+      { label: 'High contrast', right: CFG.contrast ? 'On' : 'Off', act: () => toggle('contrast'), help: 'Solid black windows with bright borders.' },
+      { label: 'Controls…', right: '', help: 'Change which keys do what.' },
       { label: 'Encounters', right: !G.flags.ending ? '—' : CFG.noEnc ? 'Off' : 'On', disabled: !G.flags.ending, act: () => toggle('noEnc'), help: G.flags.ending ? 'Turn random battles off for exploring. Bosses still fight.' : 'Unlocked after you finish the story.' },
       { label: 'Done', help: '' }
     ];
@@ -4949,7 +5135,8 @@ async function configMenu() {
     if (k === -1 || k === done) return;
     if (k <= -2) { idx = -2 - k; continue; }
     idx = k;
-    rows[k].act(1);
+    if (rows[k].label === 'Controls…') { await controlsMenu(); continue; }
+    if (rows[k].act && !rows[k].disabled) rows[k].act(1);
   }
 }
 async function itemsMenu() {
@@ -4968,6 +5155,7 @@ async function itemsMenu() {
       addItem(id, -1);
       await fadeTo(1, 400); Audio_.sfx('inn'); healAll(); await wait(1000); await fadeTo(0, 400);
       await narrate('The party rests under the stars. HP and MP restored.');
+      await campfireTalk();
       continue;
     }
     if (it.target === 'allies') { addItem(id, -1); G.party.forEach(m => applyItemEffect(id, m)); Audio_.sfx('heal'); continue; }
@@ -5212,6 +5400,7 @@ async function innStay(townId, price, keeper = 'Innkeeper') {
   Field.playMusic();
   Audio_.play(Audio_.curName, true);
   await fadeTo(0, 500);
+  await innDream();
   await say(keeper, 'Good morning! You look well rested.');
   await promptSave();
 }
@@ -5302,6 +5491,7 @@ async function worldMapView() {
         circle(g, x, y, 4.5, L.town ? '#fff4c8' : '#e88a6a', OUT, 1.5);
         if (known) { g.font = font(11, true); const tw = g.measureText(L.name).width; const right = x + 7 + tw > ox + ow - 4; text(g, L.name, right ? x - 7 : x + 7, y - 7, { size: 11, bold: true, align: right ? 'right' : 'left' }); }
       }
+      if (G.flags.q_road && !G.flags.road_done) ROAD_LAMPS.forEach(([lx, ly], i) => { if (m.at(lx, ly) === '~') return; const x = ox + lx * sc + 3, y = oy + ly * sc + 3; circle(g, x, y, 2.6, G.flags['lamp_' + i] ? '#ffd23a' : '#5a5a6a', '#fff', 1); });
       if (m.whirl && G.flags.bounty && !G.flags.leviathan) { const x = ox + m.whirl.x * sc + 3, y = oy + m.whirl.y * sc + 3; circle(g, x, y, 5 + Math.sin(t * 4), null, '#fff', 1.5); text(g, 'Leviathan', x + 8, y - 6, { size: 11, color: '#bfe8ff' }); }
       if (obj.loc && WORLD_LOC[obj.loc]) { const L = WORLD_LOC[obj.loc]; const x = ox + L.x * sc + 3.5, y = oy + L.y * sc - 8 + Math.sin(t * 4) * 2; poly(g, [x - 5, y - 6, x + 5, y - 6, x, y + 2], '#ffd23a', OUT, 1); }
       if (G.airship && G.flags.airship) { const x = ox + G.airship.x * sc + 3, y = oy + G.airship.y * sc + 3; ellipse(g, x, y - 2, 5, 3, '#c8443a', '#fff', 1); }
@@ -5485,6 +5675,307 @@ async function forgeMenu() {
 
 'use strict';
 // ============================================================
+//  HEARTS OF THE LAMPLIGHTERS (1.5) — one personal quest per hero,
+//  each ending in a Limit and an ultimate weapon. All unlock after the ending.
+// ============================================================
+const HEROES_DONE = () => ['road_done', 'grimoire_done', 'grotto_done', 'debt_done', 'echo_done'].filter(k => G.flags[k]).length;
+
+async function learnLimit(id) {
+  const first = !Object.keys(LIMITS).some(k => G.flags['limit_' + k]);
+  G.flags['limit_' + id] = true;
+  Audio_.sfx('levelup');
+  await narrate(`${HEROES[id].name} learned the Limit ${LIMITS[id].name}!`);
+  if (first) await narrate('Limits charge as a hero takes damage. When the gold bar under their name in battle is full, a ★ command appears at the top of their menu.');
+}
+
+// ---------- Arin: The Lamplighter's Road ----------
+async function roadQuestStart() {
+  const f = G.flags;
+  await sayAll([
+    ['Elder Maren', 'Arin. Before you rush off again — this belonged to your father. His ledger. He walked the same rounds every season for thirty years.'],
+    ['Elder Maren', 'Twelve roadside lamps, on all four roads. Little things. Nobody notices them until they\'re dark. They went dark the night he died, and nobody has lit them since.'],
+    [A, '...I didn\'t know there were twelve.'],
+    ['Elder Maren', 'He said a lamplighter who only lights the big flames has forgotten what the job is for. Go and finish his rounds.']
+  ]);
+  addItem('fathers_ledger'); f.q_road = true; Audio_.sfx('chest'); toast('New quest: The Lamplighter\'s Road');
+  await narrate('Received Father\'s Ledger. The twelve lamps are marked on your world map (Menu → Map).');
+  refreshEntities();
+}
+function lampsLit() { return ROAD_LAMPS.filter((_, i) => G.flags['lamp_' + i]).length; }
+function worldQuestEntities(map) {
+  const f = G.flags, out = [];
+  if (!f.q_road || f.road_done) return out;
+  ROAD_LAMPS.forEach(([x, y], i) => {
+    if (map.region[y][x] === null && map.at(x, y) === '~') return; // the Ashen Isle lamp waits for the isle
+    out.push({ kind: 'roadlamp', x, y, lit: !!f['lamp_' + i], talk: () => lightRoadLamp(i) });
+  });
+  return out;
+}
+async function lightRoadLamp(i) {
+  const f = G.flags;
+  if (f['lamp_' + i]) { await narrate('The roadside lamp burns small and steady.'); return; }
+  const last = lampsLit() === ROAD_LAMPS.length - 1;
+  if (last) {
+    await narrate('Arin raises his hand to the last lamp. The flame catches — and all along the four roads, every lamp gutters at once, as if something just breathed in.');
+    Audio_.sfx('dark');
+    await sayAll([['???', 'Mine. The little lights were MINE. I have eaten them for seven years.'], [LY, 'Something\'s been living off the lamps!'], [A, 'Then it\'s been eating my father\'s work. Not anymore.']]);
+    const r = await startBattle(['lampeater'], { boss: true, bg: 'dusk' });
+    if (r === 'lose') return gameOver();
+  }
+  f['lamp_' + i] = true; Audio_.sfx('lantern');
+  await narrate(last ? 'The last lamp blazes. Up and down the four roads, twelve small lights burn again.' : `Arin lights the roadside lamp. (${lampsLit()}/${ROAD_LAMPS.length})`);
+  if (last) await say(A, 'That\'s his rounds done. Let\'s tell Elder Maren.');
+  refreshEntities();
+}
+async function roadQuestFinish() {
+  const f = G.flags;
+  await sayAll([
+    ['Elder Maren', 'I saw them from the hall window. All twelve. Your father would stand right there and count them every night.'],
+    ['Elder Maren', 'He left this with me in case you ever finished his rounds. I think he knew you would.']
+  ]);
+  addItem('fathers_ledger', -1); addItem('sunbearer'); f.road_done = true; Audio_.sfx('chest');
+  await narrate('Received the Sunbearer! (Arin: ATK +100, MAG +28)');
+  await learnLimit('arin');
+}
+
+// ---------- Lyra: Mother's Grimoire ----------
+const RIDDLES = [
+  { q: 'I eat and I grow. Give me a drink and I die. What am I?', a: ['Fire', 'A seed', 'Hunger', 'The wind'], ok: 0 },
+  { q: 'The more of me you take, the more you leave behind. What am I?', a: ['Embers', 'Footsteps', 'Memories', 'Time'], ok: 1 },
+  { q: 'What burns without fuel, and outlasts the one who lit it?', a: ['A candle', 'The sun', 'A promise', 'A grudge'], ok: 2 }
+];
+async function grimoireQuestStart() {
+  await sayAll([
+    ['Mira', 'Lyra, love. Your mother left something with me, years ago. She made me promise to wait until the Lanterns were lit again.'],
+    [LY, 'Mother\'s grimoire... I thought it burned with the house.'],
+    ['Mira', 'She said it holds her last flame — in the Ember Caves, in the hills north of the road. And that only her daughters could open the way.']
+  ]);
+  addItem('grimoire'); G.flags.q_grimoire = true; Audio_.sfx('chest'); toast('New quest: Mother\'s Grimoire');
+  await narrate('Received Mother\'s Grimoire! The Ember Caves lie in the hills north of the Brightwater road.');
+}
+async function askRiddle(n) {
+  const R = RIDDLES[n];
+  await say('A voice in the flames', R.q);
+  const c = await choose(LY, 'The answer is...', R.a);
+  return c === R.ok;
+}
+async function riddleFire(n) {
+  const f = G.flags;
+  if (f['riddle_' + n]) { await narrate('The brazier burns blue and calm.'); return; }
+  await narrate('A brazier of old stone. As Lyra comes close, the fire speaks in her mother\'s voice.');
+  if (await askRiddle(n)) {
+    f['riddle_' + n] = true; Audio_.sfx('holy');
+    await narrate('The flame turns a soft blue. Somewhere deeper in the cave, a door of fire opens.');
+    await say(LY, n === 0 ? 'She used to ask me that one before bed. I always said "dragons".' : 'Footsteps... She walked me to school every day until I was twelve.');
+  } else {
+    Audio_.sfx('buzz');
+    await narrate('The fire roars, and imps tumble out of the coals!');
+    const r = await startBattle(['kilnimp', 'kilnimp'], { bg: 'mine' });
+    if (r === 'lose') return gameOver();
+    await say(LY, 'Wrong answer. Let me think again...');
+  }
+  refreshEntities();
+}
+async function grimoireBoss() {
+  const f = G.flags;
+  if (!f.riddle_0 || !f.riddle_1) { await narrate('A wall of fire blocks the inner chamber. Two braziers in the cave must burn blue before it will part.'); return false; }
+  await sayAll([
+    ['Hearth Warden', 'I KEPT HER LAST FLAME. I WILL GIVE IT ONLY TO ONE WHO KNOWS WHAT IT IS FOR.'],
+    [LY, 'Then ask me.']
+  ]);
+  if (await askRiddle(2)) {
+    Audio_.sfx('heal'); healAll();
+    await sayAll([['Hearth Warden', 'A PROMISE. YES. SHE MADE ONE TO YOU.'], ['', 'The Warden\'s fire washes over the party, warm as a hearth. HP and MP restored!'], ['Hearth Warden', 'BUT A FLAME MUST STILL BE TESTED.']]);
+  } else await say('Hearth Warden', 'NO. THEN SHOW ME WITH FIRE WHAT YOU CANNOT SAY.');
+  const r = await startBattle(['hearthwarden'], { boss: true, bg: 'mine' });
+  if (r === 'lose') return gameOver();
+  f.boss_embercave = true; refreshEntities();
+  await sayAll([
+    ['', 'The Warden crumbles into warm coals. In the ashes lies a staff, its tip still glowing.'],
+    [LY, '...Her staff. She told me she\'d teach me to use it when I was old enough.'],
+    withSelene([SE, 'You\'re old enough, Lyra. She\'d have said so.'], [A, 'Looks like she did teach you, in the end.'])
+  ]);
+  addItem('grimoire', -1); addItem('hearthstaff'); f.grimoire_done = true; Audio_.sfx('chest');
+  await narrate('Received the Hearthstaff! (Lyra: ATK +26, MAG +84)');
+  await learnLimit('lyra');
+  return true;
+}
+
+// ---------- Oswin: The Drowned Priesthood ----------
+async function grottoQuestStart() {
+  await sayAll([
+    ['Sister Wenna', 'Father Oswin. A fisherman brought this in. It was sealed in a bottle with our order\'s mark.'],
+    [OS, '...This is Abbot Tessaly\'s hand. My teacher. He stayed in the old grotto when the sea rose, fifty years ago. He wouldn\'t leave the Sea Mother\'s bell.'],
+    [OS, '"The tide has taken my mind, but not yet my heart. Come and ring the bell for me, little Oswin." ...Little Oswin. Nobody has called me that in half a century.']
+  ]);
+  addItem('priest_letter'); G.flags.q_grotto = true; Audio_.sfx('chest'); toast('New quest: The Drowned Priesthood');
+  await narrate('Received The Last Letter! The Sea Mother\'s Grotto lies on the coast east of Port Halden.');
+}
+async function grottoBoss() {
+  const f = G.flags;
+  await sayAll([
+    ['The Drowned Abbot', 'WHO... WALKS IN MY TIDE...'],
+    [OS, 'Your student, Abbot. Older than you were. Balder, too.'],
+    ['The Drowned Abbot', 'OSWIN... RING... THE BELL... BEFORE I FORGET YOUR NAME AGAIN...']
+  ]);
+  const r = await startBattle(['abbot'], { boss: true, bg: 'shrine' });
+  if (r === 'lose') return gameOver();
+  f.boss_grotto = true; refreshEntities();
+  await sayAll([
+    ['', 'The water drains from the Abbot\'s robes. For a moment, an old man stands there, smiling.'],
+    ['Abbot Tessaly', 'You came. You always were the slow one, Oswin. And the one who never gave up.'],
+    ['Abbot Tessaly', 'Take the bell. Ring it when the tide comes for your friends, and the Sea Mother will push it back.'],
+    [OS, 'Rest now, teacher. I\'ll ring it loud.']
+  ]);
+  addItem('priest_letter', -1); addItem('abbots_bell'); f.grotto_done = true; Audio_.sfx('chest');
+  await narrate('Received the Abbot\'s Bell! (Oswin: ATK +72, MAG +64)');
+  await learnLimit('oswin');
+}
+
+// ---------- Kestrel: Old Debts ----------
+async function debtQuestStart() {
+  await sayAll([
+    ['Guard', 'Kestrel. Someone slipped this under the jail door last night. Nobody saw who. Nobody ever sees who.'],
+    [KE, '...Vane\'s marker. My old guildmaster. He raised me — if you call teaching a seven-year-old to pick locks "raising".'],
+    [KE, 'It says I owe him for "seven years of room, board and education". With interest. He wants it paid in kids — new pickpockets for the Guild.'],
+    [A, 'Then we pay him a visit instead.'],
+    [KE, 'There\'s a hatch in this jail that leads to the Undercity. Don\'t ask how I know. ...I know because I dug it.']
+  ]);
+  addItem('debt_note'); G.flags.q_debt = true; Audio_.sfx('chest'); toast('New quest: Old Debts');
+  await narrate('Received Vane\'s Marker. A trapdoor in the Ironhold jail leads down to the Undercity.');
+}
+async function vaneBoss() {
+  const f = G.flags;
+  await sayAll([
+    ['Guildmaster Vane', 'My little Kestrel. Come home with friends. How sweet. Did you bring my payment?'],
+    [KE, 'I brought you a receipt. It\'s pointy.'],
+    ['Guildmaster Vane', 'I taught you everything you know.'],
+    [KE, 'Not everything. They taught me the rest.']
+  ]);
+  const r = await startBattle(['vane'], { boss: true, bg: 'mine' });
+  if (r === 'lose') return gameOver();
+  f.boss_undercity = true; refreshEntities();
+  await sayAll([
+    ['', 'Vane drops to one knee. His knife skitters across the stone and stops at Kestrel\'s boot.'],
+    [KE, 'The Guild\'s kids walk out of here today. All of them. And the marker\'s paid.'],
+    ['Guildmaster Vane', '...You were always my best.'],
+    [KE, 'I know. That was the problem.'],
+    [OS, 'Captain Dunmar will want a word with him. Several words.']
+  ]);
+  addItem('debt_note', -1); addItem('pickpocket'); f.debt_done = true; Audio_.sfx('chest');
+  await narrate('Received Pickpocket\'s Prize! (Kestrel: ATK +94, SPD +20)');
+  await learnLimit('kestrel');
+}
+function interiorQuestEntities(m) {
+  const f = G.flags, out = [];
+  if (m.town === 'ironhold' && m.ikind === 'jail' && f.q_debt && !f.debt_done)
+    out.push({ kind: 'hatch', x: 6, y: 7, talk: async () => {
+      if (!inParty('kestrel')) { await narrate('A heavy trapdoor, bolted from below. Kestrel would know how to open it.'); return; }
+      await say(KE, 'Down we go. Hold your nose — the Undercity smells like money and old soup.');
+      const d = getMap('undercity:0'); const [x, y] = freeNeighbor(d, d.up.x, d.up.y);
+      await changeMap(d.id, x, y, 'down');
+      if (!f.seen_undercity) { f.seen_undercity = true; await say(KE, 'Two levels down to the Guild hall. The guards here are mine. Well — they were.'); }
+    } });
+  return out;
+}
+
+// ---------- Selene: Echo of Vesper ----------
+async function echoQuestStart() {
+  await sayAll([
+    ['Mira', 'And Selene, dear — you haven\'t slept a full night since you came home. I can hear you pacing.'],
+    [SE, '...She\'s still there, Mira. Vesper. When I close my eyes, she talks to me in my own voice.'],
+    ['Mira', 'Then stop running from her. Rest at an inn, and when she comes, face her. Alone, I expect. That sort of thing usually is.']
+  ]);
+  G.flags.q_echo = true; toast('New quest: Echo of Vesper');
+  await narrate('Selene will face her dream the next time the party rests at an inn.');
+}
+async function innDream() {
+  const f = G.flags;
+  if (!f.q_echo || f.echo_done || !inParty('selene')) return;
+  await fadeTo(1, 400, '#1a0830');
+  await narrate('That night, Selene dreams. She stands alone at the top of the Hollow Spire, and someone is waiting for her in a black hood.');
+  await sayAll([['Vesper\'s Echo', 'There you are. Did you really think you could leave me behind in the dark?'], [SE, 'No. I came to take you with me.']]);
+  await fadeTo(0, 300, '#1a0830');
+  const sel = G.party.find(m => m.id === 'selene');
+  const keep = { hp: sel.hp, mp: sel.mp };
+  sel.hp = maxHp(sel); sel.mp = maxMp(sel);
+  const r = await startBattle(['echo'], { boss: true, bg: 'throne', party: ['selene'], noVictory: true });
+  Object.assign(sel, keep);
+  if (r !== 'win') {
+    // a lost dream is not a game over: return to the inn
+    G.scene = Field; Field.playMusic(); await fadeTo(0, 300);
+    await narrate('Selene wakes with a gasp. The dream will come again the next time you rest at an inn.'); return;
+  }
+  await sayAll([
+    ['Vesper\'s Echo', '...You\'re not afraid of me anymore.'],
+    [SE, 'I\'m still afraid. I\'m just not alone with it.'],
+    ['', 'The echo becomes a small, cold star, and settles into Selene\'s hand.']
+  ]);
+  addItem('duskstar'); f.echo_done = true; Audio_.sfx('chest');
+  await narrate('Received the Duskstar! (Selene: ATK +28, MAG +84)');
+  await learnLimit('selene');
+  await say(LY, 'You slept through the night. First time since you came home.');
+}
+
+// ---------- campfire talks (resting with a Tent on the world map) ----------
+// built on demand: the speaker names (A, LY, ...) are defined later in story.js
+const campfires = () => [
+  { need: ['arin', 'lyra'], lines: [[LY, 'When we were kids we used to count the stars from your roof. You always lost count at forty.'], [A, 'I lost count at forty because you kept changing which ones counted.'], [LY, 'The bright ones count double. Everybody knows that.']] },
+  { need: ['oswin'], lines: [[OS, 'I dreamed of fish again last night. A very large one. It asked me for directions.'], [KE, 'Did you give them?'], [OS, 'I sent it to Port Halden. Brann will be thrilled.']] },
+  { need: ['kestrel', 'arin'], lines: [[KE, 'You know this is the longest I\'ve ever had an honest job? Six months. It\'s exhausting.'], [A, 'You get used to it.'], [KE, 'That\'s what I\'m afraid of.']] },
+  { need: ['lyra', 'selene'], flag: 'lantern3', lines: [[SE, 'You still sleep with one foot out of the blanket.'], [LY, 'You remember that?'], [SE, 'I remember everything about you, Lyra. That was the hardest part of the dark.']] },
+  { need: ['lyra'], flag: 'airship', lines: [[LY, 'Arin. When this is all over, let\'s just fly. No Lanterns. No kings. Just pick a direction.'], [A, 'You\'d get bored in a day.'], [LY, 'Two days. Minimum.']] },
+  { need: ['arin', 'oswin'], flag: 'ending', lines: [[A, 'What do lamplighters do when every Lantern is lit?'], [OS, 'They check them again tomorrow. That is the whole secret, Arin. Tomorrow, and the day after.']] },
+  { need: ['selene'], flag: 'boss_abyss', lines: [[SE, 'Orun sang to the night so it would let children sleep. I think I\'d like to learn that song.'], [KE, 'You sing?'], [SE, 'Badly. Lyra got all the talent.'], [LY, 'I got the volume.']] },
+  { need: ['arin', 'lyra', 'oswin', 'kestrel'], flag: 'heartsAll', lines: [[A, 'Twelve lamps, a grimoire, a bell, a knife, and a bad dream.'], [KE, 'Sounds like the worst shopping list ever.'], [OS, 'Sounds like a family, to me.']] }
+];
+async function campfireTalk() {
+  const f = G.flags;
+  if (HEROES_DONE() === 5) f.heartsAll = true;
+  const CAMPFIRES = campfires();
+  const i = CAMPFIRES.findIndex((c, k) => !f['camp_' + k] && c.need.every(inParty) && (!c.flag || f[c.flag]));
+  if (i < 0) return;
+  f['camp_' + i] = true;
+  await narrate('The party sits around the campfire for a while.');
+  await sayAll(CAMPFIRES[i].lines);
+}
+
+// ---------- the Festival of Lanterns (all five quests done) ----------
+async function festival() {
+  const f = G.flags;
+  await sayAll([['Elder Maren', 'Five of you, five errands finished. The village wants to do something about it. They\'ve been planning for a week. I was not consulted.']]);
+  await fadeTo(1, 800);
+  Audio_.play('ending', true);
+  G.scene = BlackScene; BlackScene.lines = []; BlackScene.t = 0;
+  await fadeTo(0, 600);
+  for (const s of ['That night, Brightwater lit a lantern for every house.', 'Twelve on the roads. Five on the green.', 'And one more, small and stubborn, for the lamplighter who came before.']) { BlackScene.lines.push({ s, at: BlackScene.t }); await wait(2600); }
+  await wait(1200);
+  await fadeTo(1, 800); G.scene = Field; Field.playMusic(); await fadeTo(0, 600);
+  await sayAll([
+    [LY, 'Arin. Look. You can see all of them from here.'],
+    [A, 'Dad would\'ve counted them.'],
+    withSelene([SE, 'Then let\'s count them. The bright ones count double.'], [OS, 'Then let us count them. Slowly. My eyes are old.']),
+    ['Elder Maren', 'One more thing. The whole village chipped in. Pip insisted on adding a "brave part".']
+  ]);
+  addItem('heartlight'); f.festival = true; Audio_.sfx('chest');
+  await narrate('Received the Heartlight! (Accessory: all +20, revives once per battle, prevents all ailments)');
+  await narrate('— Hearts of the Lamplighters · Complete —');
+}
+
+// ---------- quest log ----------
+function heartsQuests() {
+  const f = G.flags, q = [];
+  if (f.q_road) q.push({ title: 'The Lamplighter\'s Road', giver: 'Elder Maren, Brightwater', done: !!f.road_done, reward: 'Sunbearer, Limit: First Light', desc: f.road_done ? 'Twelve small lights burn on the four roads again.' : lampsLit() >= ROAD_LAMPS.length ? 'Every lamp is lit. Tell Elder Maren.' : `Relight the twelve roadside lamps marked on your world map. (${lampsLit()}/${ROAD_LAMPS.length})` });
+  if (f.q_grimoire) q.push({ title: 'Mother\'s Grimoire', giver: 'Mira, Brightwater', done: !!f.grimoire_done, reward: 'Hearthstaff, Limit: Phoenix Rite', desc: f.grimoire_done ? 'Lyra carries her mother\'s staff.' : `Answer the riddle braziers in the Ember Caves (north of the Brightwater road) and face the Hearth Warden. Lyra must be in the party. (${['riddle_0', 'riddle_1'].filter(k => f[k]).length}/2 braziers)` });
+  if (f.q_grotto) q.push({ title: 'The Drowned Priesthood', giver: 'Sister Wenna, Port Halden', done: !!f.grotto_done, reward: 'Abbot\'s Bell, Limit: High Tide', desc: f.grotto_done ? 'Abbot Tessaly rests, and his bell rings for Oswin.' : 'Find Abbot Tessaly in the Sea Mother\'s Grotto, on the coast east of Port Halden. Oswin must be in the party.' });
+  if (f.q_debt) q.push({ title: 'Old Debts', giver: 'Guard, Ironhold jail', done: !!f.debt_done, reward: 'Pickpocket\'s Prize, Limit: Grand Larceny', desc: f.debt_done ? 'The marker is paid, and the Guild\'s children are free.' : 'Take the trapdoor in the Ironhold jail down to the Undercity and settle with Guildmaster Vane. Kestrel must be in the party.' });
+  if (f.q_echo) q.push({ title: 'Echo of Vesper', giver: 'Mira, Brightwater', done: !!f.echo_done, reward: 'Duskstar, Limit: Long Night', desc: f.echo_done ? 'Selene sleeps through the night now.' : 'Rest at any inn with Selene in the party, and face the echo in her dream. She fights alone.' });
+  if (HEROES_DONE() === 5) q.push({ title: 'The Festival of Lanterns', giver: 'Elder Maren, Brightwater', done: !!f.festival, reward: 'Heartlight', desc: f.festival ? 'Brightwater lit a lantern for every house.' : 'All five hearts are mended. Visit Elder Maren in Brightwater.' });
+  return q;
+}
+
+'use strict';
+// ============================================================
 //  STORY — NPCs, doors, cutscenes, bosses, title, ending
 // ============================================================
 const A = 'Arin', LY = 'Lyra', OS = 'Oswin', KE = 'Kestrel';
@@ -5506,8 +5997,8 @@ function N(x, y, seed, o, talk, extra = {}) { return { x, y, look: o.skin && o.h
 function townNpcs(id) {
   const f = G.flags;
   if (id === 'brightwater') return [
-    N(5, 8, 1, LOOKS.elder, talkElder, { mark: !f.q1 || (f.lantern1 && !f.bridge), name: 'Elder Maren' }),
-    N(12, 8, 2, LOOKS.mother, talkMother),
+    N(5, 8, 1, LOOKS.elder, talkElder, { mark: !f.q1 || (f.lantern1 && !f.bridge) || (f.ending && !f.q_road) || (f.q_road && !f.road_done && lampsLit() >= ROAD_LAMPS.length) || (HEROES_DONE() === 5 && !f.festival), name: 'Elder Maren' }),
+    N(12, 8, 2, LOOKS.mother, talkMother, { name: 'Mira', mark: f.ending && ((!f.q_grimoire && inParty('lyra')) || (!f.q_echo && inParty('selene'))) }),
     N(8, 11, 3, { style: 'spiky', body: '#c08a3a' }, talkPip, { wander: true, mark: !f.q_cat || (f.cat_found && !f.cat_done) }),
     N(13, 16, 4, LOOKS.guard, talkTobin),
     N(18, 8, 5, { body: '#3a7a4a', hat: 'cap', accent: '#a07a3a' }, talkHob, { wander: true }),
@@ -5608,6 +6099,10 @@ async function talkElder() {
   if (!f.lantern2) { await say('Elder Maren', 'Port Halden lies east, across the river bridge. Find Oswin.'); return; }
   if (!f.lantern3) { await say('Elder Maren', 'Two Lanterns burn again. I can feel it in the soil — the earth is less afraid. Ironhold and the Stone Lantern lie north, across the sea.'); return; }
   if (!f.ending) { await say('Elder Maren', 'Selene... alive. Bring her home, Arin. Bring them all home.'); return; }
+  if (!f.q_road) return roadQuestStart();
+  if (!f.road_done && lampsLit() >= ROAD_LAMPS.length) return roadQuestFinish();
+  if (HEROES_DONE() === 5 && !f.festival) return festival();
+  if (!f.road_done) { await say('Elder Maren', `Your father's lamps, Arin. ${lampsLit()} of twelve burning. The ledger has the rest.`); return; }
   if (f.isle && !f.boss_abyss) { await say('Elder Maren', 'An island, rising out of the sea? Go, then. A lamplighter\'s work is never quite finished. Your father used to say that, and then fall asleep in his chair.'); return; }
   await say('Elder Maren', 'Four Lanterns, burning. I never thought I would live to see a dawn like this one.');
 }
@@ -5615,7 +6110,10 @@ async function talkMother() {
   const f = G.flags;
   if (!f.lantern1) await say('Mira', 'Arin, you look after Lyra out there. ...And let her look after you. You never ask for help, just like your father.');
   else if (!f.lantern3) await say('Mira', 'The whole village is talking about you two! Come home safe, both of you. I\'ll keep the hearth warm.');
-  else await say('Mira', 'Your father would be so proud. I\'m proud. Now go finish it, and then come home and EAT something.');
+  else if (!f.ending) await say('Mira', 'Your father would be so proud. I\'m proud. Now go finish it, and then come home and EAT something.');
+  else if (!f.q_grimoire && inParty('lyra')) await grimoireQuestStart();
+  else if (!f.q_echo && inParty('selene')) await echoQuestStart();
+  else await say('Mira', f.festival ? 'Look at all those lanterns. Your father would have counted every one, Arin.' : 'Eat something before you go! Lyra, take two. Selene, take three, you\'re all bones.');
 }
 async function talkPip() {
   const f = G.flags;
@@ -5733,7 +6231,12 @@ async function talkDunmar() {
   await narrate('Kestrel joined the party!');
   refreshEntities();
 }
-async function talkJailGuard() { await say('Guard', G.flags.kestrel ? 'The cell\'s empty and it\'s very peaceful. I hate it.' : 'Careful with the prisoner. She\'s already stolen my lunch. Twice. Through the bars.'); }
+async function talkJailGuard() {
+  const f = G.flags;
+  if (f.ending && !f.q_debt && inParty('kestrel')) return debtQuestStart();
+  if (f.debt_done) { await say('Guard', 'Captain Dunmar\'s got Vane in the end cell. He keeps trying to pick the lock with a fish bone. Professional courtesy says I let him try.'); return; }
+  await say('Guard', f.kestrel ? 'The cell\'s empty and it\'s very peaceful. I hate it.' : 'Careful with the prisoner. She\'s already stolen my lunch. Twice. Through the bars.');
+}
 async function talkOrrin() {
   const f = G.flags;
   if (f.hammer_done) {
@@ -5879,6 +6382,16 @@ async function canEnterDungeon(did) {
       f.spireOpen = true;
     }
   }
+  if (did === 'embercave') {
+    if (!f.q_grimoire) { await narrate('A cave mouth in the hills, sealed by a curtain of fire. Words are carved above it in a careful hand: "Only my daughters\' flame may pass."'); return false; }
+    if (!inParty('lyra')) { await narrate('The fire won\'t part. It\'s waiting for Lyra.'); return false; }
+    if (!f.caveOpen) { Audio_.sfx('lantern'); await narrate('Lyra holds up the grimoire. The curtain of fire bows to her and parts.'); await say(LY, 'Hello, Mother.'); f.caveOpen = true; }
+  }
+  if (did === 'grotto') {
+    if (!f.q_grotto) { await narrate('A grotto shaped like a great shell, half drowned. Old prayers are carved into the arch. The water inside is very still.'); return false; }
+    if (!inParty('oswin')) { await narrate('The water at the entrance rises to meet you. Only a priest of the Sea Mother could calm it.'); return false; }
+    if (!f.grottoOpen) { Audio_.sfx('water'); await say(OS, 'Sea Mother, your oldest servant has come home. Let us in, and I will stop complaining about my knees. For a day.'); await narrate('The water parts with a long sigh.'); f.grottoOpen = true; }
+  }
   if (did === 'abyss') {
     if (!hasItem('lastlight_lamp')) { await narrate('Thick grey mist pours out of the crater and swallows your torchlight whole. You can\'t see your own hands.'); await say(LY, 'We\'ll get lost in there. That village to the west — maybe they know a way through.'); return false; }
     if (!f.abyssOpen) { Audio_.sfx('lantern'); await narrate('You raise the Lamp of Lastlight. The mist recoils from its flame like a living thing, and a path opens into the dark.'); f.abyssOpen = true; }
@@ -5895,6 +6408,8 @@ async function onEnterDungeon(did) {
   if (did === 'tomb') await sayAll([[KE, 'Gold on the walls. Gold on the floor. Nobody touch anything. ...Except me.'], [OS, 'This is a grave, Kestrel.'], [KE, 'Graves have the best stuff.']]);
   if (did === 'observatory') await sayAll([[LY, 'Look up. There\'s no ceiling. Just... stars.'], [OS, 'The first kings built this. Whatever they kept here, they wanted the sky to watch over it.']]);
   if (did === 'spire') await sayAll([[LY, 'I can feel him. Like cold water poured down my spine.'], [OS, 'Then we are close. Courage, children. Light is only ever a small thing, until it isn\'t.']]);
+  if (did === 'embercave') await sayAll([[LY, 'It\'s warm. Like her kitchen.'], [A, 'Careful, Lyra. Warm can still bite.']]);
+  if (did === 'grotto') await say(OS, 'I took my vows in this grotto. I was nineteen. The ceiling was taller then, or I was shorter.');
   if (did === 'abyss') await sayAll([[KE, 'Down we go. Into a hole. That a crown fell into. Put that on my grave, so people know I was brave.'], [OS, 'Keep the lamp high, children. Four floors down, the Warden said. My knees heard that and filed a complaint.']]);
 }
 async function examineLantern(e) {
@@ -6051,6 +6566,9 @@ async function bossEncounter(did) {
     return;
   }
   if (did === 'abyss') return abyssFinale();
+  if (did === 'embercave') return grimoireBoss();
+  if (did === 'grotto') return grottoBoss();
+  if (did === 'undercity') return vaneBoss();
   if (did === 'spire') {
     Audio_.stopMusic();
     await sayAll([
@@ -6366,10 +6884,10 @@ function interiorNpcs(m) {
   if (m.ikind === 'inn') out.push({ x: 9, y: 2, look: keeperLook(t.length * 7 + 3), talk: () => innStay(t, b.price) });
   if (m.ikind === 'arena') out.push({ x: K.x, y: K.y, look: { skin: '#c98e62', hair: '#1f1b2e', style: 'short', body: '#a03a2a', accent: '#e8c24a', beard: true }, talk: arenaMenu, name: 'Arena Master' });
   if (m.ikind === 'chapel' && t === 'lastlight') out.push({ x: 6, y: 3, look: { skin: '#e2b48c', hair: '#5a4a3a', style: 'short', body: '#5a4a5a', accent: '#ff8a4a', robe: true, beard: true }, talk: async () => { await say('Brother Cael', 'We pray to no god here. Only to the fire, and the fire never answers. Still — sit. You look like people who have walked a long way.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
-  else if (m.ikind === 'chapel') out.push({ x: 6, y: 3, look: { skin: '#f1c9a0', hair: '#c8b8a0', style: 'bun', body: '#e9ecf2', accent: '#3a8fd0', robe: true }, talk: async () => { await say('Sister Wenna', 'May the tide carry your burdens. Rest a moment in the Sea Mother\'s house.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
+  else if (m.ikind === 'chapel') out.push({ x: 6, y: 3, look: { skin: '#f1c9a0', hair: '#c8b8a0', style: 'bun', body: '#e9ecf2', accent: '#3a8fd0', robe: true }, mark: f.ending && !f.q_grotto && inParty('oswin'), talk: async () => { if (f.ending && !f.q_grotto && inParty('oswin')) return grottoQuestStart(); await say('Sister Wenna', 'May the tide carry your burdens. Rest a moment in the Sea Mother\'s house.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
   if (m.ikind === 'jail' && t === 'ironhold') {
     if (!f.kestrel) out.push({ x: 3, y: 3, look: LOOKS.kestrel, talk: talkKestrelJail, mark: !f.metKestrel });
-    out.push({ x: 8, y: 6, look: LOOKS.guard, talk: talkJailGuard });
+    out.push({ x: 8, y: 6, look: LOOKS.guard, talk: talkJailGuard, mark: f.ending && !f.q_debt && inParty('kestrel') });
   }
   if (m.ikind === 'hall') {
     if (t === 'mirage') { out.push({ x: 6, y: 2, look: { skin: '#a8724a', hair: '#1f1b2e', style: 'long', body: '#3a8a8a', accent: '#e8c24a', robe: true }, talk: talkImara, name: 'Sultana Imara', mark: !f.sunseal }); out.push({ x: 2, y: 5, look: { ...LOOKS.guard, skin: '#8d5a3a', hat: 'cap', accent: '#e8c24a' }, talk: async () => say('Palace Guard', 'Bow when you speak to the Sultana. Or don\'t. She says she finds bowing tedious.') }); }
@@ -6422,6 +6940,8 @@ function questEntities(map) {
   if (!sp) return out;
   if (map.id === 'hollow:0' && f.q_cat && !f.cat_found) out.push({ kind: 'cat', x: sp.x, y: sp.y, talk: async () => { await say('Mittens', 'Mrrp!'); await narrate('Mittens bites your thumb, then climbs into Lyra\'s hat as if she owns it. Found Mittens!'); f.cat_found = true; Audio_.sfx('item'); } });
   if (map.id === 'shrine:0' && f.q_locket && !hasItem('locket') && !f.locket_done) out.push({ kind: 'glint', x: sp.x, y: sp.y, talk: async () => { addItem('locket'); Audio_.sfx('chest'); await narrate('Something silver glints among the shells... Found Nell\'s Locket!'); } });
+  if (map.id === 'embercave:0' && !f.riddle_0) out.push({ kind: 'riddle', x: sp.x, y: sp.y, solved: false, talk: () => riddleFire(0) });
+  if (map.id === 'embercave:1' && !f.riddle_1) out.push({ kind: 'riddle', x: sp.x, y: sp.y, solved: false, talk: () => riddleFire(1) });
   if (map.id === 'abyss:1' && !f.mem1) out.push({ kind: 'glint', x: sp.x, y: sp.y, talk: () => abyssMemory(1) });
   if (map.id === 'abyss:2' && !f.mem2) out.push({ kind: 'glint', x: sp.x, y: sp.y, talk: () => abyssMemory(2) });
   if (map.id === 'mine:1' && f.q_hammer && !hasItem('stonebrand') && !f.hammer_done) out.push({ kind: 'glint', x: sp.x, y: sp.y, talk: async () => { addItem('stonebrand'); Audio_.sfx('chest'); await narrate('Half-buried in cinders lies a great runed hammer. Found the Stonebrand!'); } });
@@ -6437,6 +6957,7 @@ function questList() {
   if (f.sunseal) q.push({ title: 'The First King', giver: 'Sultana Imara, Mirage', done: !!f.boss_tomb, reward: 'The skyship Aurora', desc: f.boss_tomb ? 'Ozymar rests at last, and the Aurora is yours.' : 'Open the Tomb of the First King, south of Mirage, with the Sun Seal. Recommended level: 26+.' });
   if (f.q_fish) { const n = fishKinds(), tot = Object.keys(FISH).length; q.push({ title: 'The Ones That Got Away', giver: 'Ice Fisher, Frostmere', done: !!f.fish_r2, reward: 'Angler\'s Ring, Moonfin Charm', desc: f.fish_r2 ? 'Every kind of fish in the world, caught. The Ice Fisher needs to sit down.' : `Catch every kind of fish, then visit the Ice Fisher. Face water and press Enter to fish. (${n}/${tot} kinds)${f.fish_r1 ? '' : ' — 6 kinds earns the Angler\'s Ring.'}` }); }
   if (f.forgeMet) q.push({ title: 'Orrin\'s Forge', giver: 'Orrin, Ironhold', done: !!f.forge_done, reward: 'Orrin\'s Seal', desc: f.forge_done ? 'Orrin calls you family now. The forge is always hot for you.' : `Bring monster materials to Orrin and forge three pieces of gear. (${f.forged || 0}/3)` });
+  q.push(...heartsQuests());
   if (f.arenaMet) { const n = ARENA_CUPS.slice(0, 5).filter(c => f['cup_' + c.id]).length; q.push({ title: 'Arena Legend', giver: 'Arena Master, Aerie', done: !!f.cup_champion, reward: 'Lantern Crown', desc: f.cup_champion ? 'Grand Champions of the Aerie Arena!' : `Win all five cups at the Aerie Arena. (${n}/5 won)` }); }
   if (f.q_scholar) q.push({ title: 'Monster Scholar', giver: 'Sable, Frostmere', done: !!f.scholar_done, reward: 'Silk Ribbon', desc: f.scholar_done ? 'Your notes are in Sable\'s bestiary.' : `Record 30 different creatures in your bestiary, then visit Sable. (${seenCount()}/30)` });
   return q;
@@ -6455,6 +6976,8 @@ function mainObjective() {
   if (f.isle && !f.q_crown) return { text: 'Chapter VI: Sail or fly to the island that rose in the far northeast sea.', loc: 'G' };
   if (f.isle && !f.boss_abyss) return { text: 'Chapter VI: Descend the Crownfall Abyss, in the crater east of Lastlight. (Lv 42+)', loc: '7' };
   if (!f.isle) return { text: 'The Lanterns burn. Step out into the world and see the new dawn.', loc: null };
+  if (HEROES_DONE() < 5) return { text: `Hearts of the Lamplighters: help each friend finish what they left behind. (${HEROES_DONE()}/5 — see Side quests)`, loc: null };
+  if (!f.festival) return { text: 'All five hearts are mended. Visit Elder Maren in Brightwater.', loc: 'A' };
   return { text: 'Every Lantern burns, even the Night\'s. Legends still wait in the arena, the forge and the deep water.', loc: null };
 }
 

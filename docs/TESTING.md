@@ -68,6 +68,7 @@ The exit code is `0` when there were no errors and `1` otherwise, so it can gate
 | `systems` | Gets the fishing rod, fishes until a catch, forges at Orrin's, toggles Config, opens the quest log and the Lastlight shop | A fish in the inventory; the Forgeheart Ring forged; `CFG` saved | `13`–`19` |
 | `newgame` | Starts a fresh game, walks with auto-dash, checks the isle is still underwater, fights an early encounter and an isle encounter | Party is Arin and Lyra at Lv 1; isle tiles are `~` before the ending; isle encounters use the `ash` background | `20`–`21` |
 | `comfort` | Seeds a 1.x save and checks it migrates into slot 1; saves to slot 2; auto-save on entering a town; Config; a battle at 4× where round 2 is repeated with Shift; equipment optimisation; the Log; a fake gamepad walking the hero; the post-game encounter toggle; the title's Load Game menu | Save `version` 2, legacy key kept, Auto slot written, repeat deals damage, the hero moves on gamepad input | `22`–`27` |
+| `hearts` | All five hero quests from a post-Chapter-VI save: Elder Maren and the 12 lamps (the last wakes the Lamp-Eater), Mira and the Ember Caves riddles and Hearth Warden, Wenna and the Grotto, the jail trapdoor and Vane, an inn dream where Selene fights alone, every hero using a Limit in one battle, a campfire talk, the festival | Each quest's `*_done` and `limit_*` flags and weapon; the Undercity exits to the jail; Limit gauges empty after use; Heartlight received | `30`–`41` |
 | `readme` | Takes clean screenshots for the README | — | Lastlight, Ashen Isle, Abyss, Hollow Crown, fishing |
 
 ```mermaid
@@ -175,7 +176,9 @@ flowchart LR
     R --> T[(table)]
 ```
 
-**The AI** revives fallen heroes, heals when two or more are hurt, keeps Barrier and Rally up against bosses, cures a silenced healer with a Remedy, and otherwise uses each hero's strongest affordable attack. It never uses combos, so real players usually finish a little faster.
+The 1.5 scenarios add the five hero-quest bosses at Lv 44, plus Selene alone against Vesper's Echo (a scenario's `party` can be a single hero).
+
+**The AI** uses a Limit whenever one is ready, revives fallen heroes, heals when two or more are hurt, keeps Barrier and Rally up against bosses, cures a silenced healer with a Remedy, and otherwise uses each hero's strongest affordable attack. It never uses combos, so real players usually finish a little faster.
 
 **Loadouts:** `SHOP` (Lastlight shop gear), `MID` (loot from the Spire and the tomb, mid arena prizes) and `BEST` (forged weapons and top prizes). Add your own dictionaries for other points in the game.
 
@@ -219,14 +222,14 @@ tools/check_mermaid.sh README.md ROADMAP.md CHANGELOG.md docs/*.md
 
 1. builds the game and fails if `index.html` doesn't match `src/` (someone forgot to run `build.py`);
 2. regenerates the game guide and fails if `docs/GAME_GUIDE.md` is out of date;
-3. runs the `chapter`, `systems`, `newgame` and `comfort` scenarios, failing on any JavaScript error;
+3. runs the `chapter`, `systems`, `newgame`, `comfort` and `hearts` scenarios, failing on any JavaScript error;
 4. uploads the screenshots as a `playtest-screenshots` artifact.
 
 ```mermaid
 flowchart LR
     PR[Pull request] --> B[python3 build.py<br/>git diff index.html]
     B --> GG[gentables.py<br/>git diff GAME_GUIDE.md]
-    GG --> PT[playtest.py<br/>4 scenarios]
+    GG --> PT[playtest.py<br/>5 scenarios]
     PT --> A[(screenshots artifact)]
     PT -->|any JS error| X[❌ fail]
     PT -->|ERRORS: 0| OK[✅ pass]

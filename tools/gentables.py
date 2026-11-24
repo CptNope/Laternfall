@@ -33,7 +33,8 @@ out['combos'] = tbl(['Combo', 'Members', 'MP each', 'Target', 'Element', 'Effect
 # monsters by area
 AREAS = [('r1', 'Brightwater plains (west of the river)'), ('d1', 'Whisperwood Hollow'), ('r2', 'Eastern lowlands (Port Halden)'), ('d2', 'Sunken Shrine'), ('sea', 'Open sea'),
          ('r3', 'Northern continent (Ironhold, Frostmere)'), ('d3', 'Emberdeep Mines'), ('r5', 'Sunscar Desert and the Aerie valley'), ('d6', 'Tomb of the First King'),
-         ('r4', 'Isle of Dusk'), ('d4', 'Hollow Spire'), ('d5', 'Starfall Observatory'), ('r6', 'Ashen Isle'), ('d7', 'Crownfall Abyss')]
+         ('r4', 'Isle of Dusk'), ('d4', 'Hollow Spire'), ('d5', 'Starfall Observatory'), ('r6', 'Ashen Isle'), ('d7', 'Crownfall Abyss'),
+         ('d8', 'Ember Caves (Lyra\'s quest)'), ('d9', 'Sea Mother\'s Grotto (Oswin\'s quest)'), ('d10', 'The Undercity (Kestrel\'s quest)')]
 parts = []
 for code, title in AREAS:
     ids = []
@@ -48,9 +49,14 @@ for code, title in AREAS:
     parts.append(f"#### {title}\n\n" + tbl(['Monster', 'HP', 'ATK', 'MAG', 'Weak to', 'Steal', 'Drops', 'EXP', 'Gold'], rows))
 out['monsters'] = '\n'.join(parts)
 WHERE = {'gloomcap': 'Whisperwood Hollow 2F', 'warden': 'Sunken Shrine 2F', 'vesper': 'Emberdeep Mines 3F', 'leviathan': 'Whirlpool, open sea (bounty)', 'firstking': 'Tomb of the First King 3F',
-         'wyrm': 'Starfall Observatory 3F (optional)', 'king': 'Hollow Spire 3F (phase 1)', 'king2': 'Hollow Spire 3F (phase 2)', 'crown': 'Crownfall Abyss 4F (phase 1)', 'orun': 'Crownfall Abyss 4F (phase 2)'}
+         'wyrm': 'Starfall Observatory 3F (optional)', 'king': 'Hollow Spire 3F (phase 1)', 'king2': 'Hollow Spire 3F (phase 2)', 'crown': 'Crownfall Abyss 4F (phase 1)', 'orun': 'Crownfall Abyss 4F (phase 2)',
+         'lampeater': 'The last roadside lamp (Arin)', 'hearthwarden': 'Ember Caves 2F (Lyra)', 'abbot': "Sea Mother's Grotto 2F (Oswin)", 'vane': 'The Undercity 2F (Kestrel)', 'echo': "Selene's dream, solo (Selene)"}
 rows = [[f"**{M[b]['name']}**", w, M[b]['hp'], M[b]['atk'], M[b]['mag'], M[b]['spd'], M[b].get('actions', 1), ', '.join(map(cap, M[b].get('weak', []))) or '—', nm(M[b]['steal']), ', '.join(S[a['a']]['name'] for a in M[b].get('acts', []) if a['a'] != 'attack')] for b, w in WHERE.items()]
 out['bosses'] = tbl(['Boss', 'Where', 'HP', 'ATK', 'MAG', 'SPD', 'Turns', 'Weak to', 'Steal', 'Special attacks'], rows)
+# limits
+L = D['LIMITS']
+QUEST = {'arin': "The Lamplighter's Road", 'lyra': "Mother's Grimoire", 'oswin': 'The Drowned Priesthood', 'kestrel': 'Old Debts', 'selene': 'Echo of Vesper'}
+out['limits'] = tbl(['Hero', 'Limit', 'Target', 'Effect', 'Learned from'], [[f"**{H[k]['name']}**", f"★ {v['name']}", 'One foe' if v['target'] == 'enemy' else 'All foes', v['desc'], QUEST[k]] for k, v in L.items()])
 # equipment
 def eqrow(k, it):
     stats = ' '.join(filter(None, [it.get('atk') and f"ATK+{it['atk']}", it.get('def') and f"DEF+{it['def']}", it.get('mag') and f"MAG+{it['mag']}", it.get('spd') and f"SPD+{it['spd']}", it.get('all') and f"All+{it['all']}"]))
@@ -113,7 +119,7 @@ rows = []
 for k, d in DN.items():
     loot = sorted({x for fl in d['loot'] for x in fl if not x.startswith('gold:')}, key=lambda x: nm(x))
     gold = sum(int(x[5:]) for fl in d['loot'] for x in fl if x.startswith('gold:'))
-    rows.append([f"**{d['name']}**", d['floors'], M[d['boss']]['name'], cap(d['lantern']) + ' Lantern', ', '.join(nm(x) for x in loot) + (f", {gold} gold" if gold else '')])
+    rows.append([f"**{d['name']}**", d['floors'], M[d['boss']]['name'], cap(d['lantern']) + ' Lantern' if d.get('lantern') else '— (hero quest)', ', '.join(nm(x) for x in loot) + (f", {gold} gold" if gold else '')])
 out['dungeons'] = tbl(['Dungeon', 'Floors', 'Boss', 'Lantern', 'Treasure'], rows)
 # xp
 xp = D['xp']

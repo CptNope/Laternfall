@@ -32,6 +32,7 @@ flowchart TD
 - [Add an item, weapon, armour or accessory](#add-an-item-weapon-armour-or-accessory)
 - [Add a skill](#add-a-skill)
 - [Add a combo tech](#add-a-combo-tech)
+- [Add or change a Limit](#add-or-change-a-limit)
 - [Add an NPC and dialogue](#add-an-npc-and-dialogue)
 - [Add a side quest](#add-a-side-quest)
 - [Add a town](#add-a-town)
@@ -200,6 +201,21 @@ The `members` list holds 2 or 3 hero ids. A `phys` combo uses `power` as a multi
 
 ---
 
+## Add or change a Limit
+
+**Files:** `src/data.js` (name, target, description) and `src/battle.js` (`Battle.doLimit`, one branch per hero)
+
+```js
+// data.js
+LIMITS.arin = { name: 'First Light', target: 'enemy', desc: 'A blade of dawn on one foe. Revives and heals the whole party.' };
+// a story script unlocks it:
+await learnLimit('arin');     // sets G.flags.limit_arin and explains Limits the first time
+```
+
+In `doLimit`, each hero's branch can use the battle helpers: `playFx`, `damageEnemy`, `physDamage`, `healMember`, `this.buffs`, and statuses. Limits cost no MP and empty the gauge. The fill rate is set in `damageMember` (`dmg ÷ maxHp × 140`).
+
+---
+
 ## Add an NPC and dialogue
 
 **Files:** `src/story.js`
@@ -306,7 +322,7 @@ TOWN_DEFS.saltmarsh = {
 
 - **Themes:** `grass`, `stone`, `snow`, `sand`, `ash`. A theme sets the ground, path colour and interior palette.
 - **Building kinds** (and their interiors): `inn`, `shop`, `hall`, `house`, `chapel`, `jail`, `arena`. The door is always at the bottom-centre of the building.
-- **Location letters.** `A`–`G` are taken. To add `H`, widen `LOC_RE` in `core.js` to `/^[A-H1-7]$/`, then add `'H'` to the `case` list in `drawWorldTile` and to the road-pad check (`/^[A-G]$/`) in `art.js`.
+- **Location letters.** `A`–`G` and `1`–`9` are taken. To add `H`, widen `LOC_RE` in `core.js` to `/^[A-H1-9]$/`, then add `'H'` to the `case` list in `drawWorldTile` and to the road-pad check (`/^[A-G]$/`) in `art.js`.
 - Place it in `WORLD_LOC` (`H: { x, y, town: 'saltmarsh', name: 'Saltmarsh' }`) on reachable land, and optionally add a `road(...)` in `genWorld`.
 
 ---
@@ -325,13 +341,15 @@ DUNGEONS.reef = { name: 'Coral Labyrinth', theme: 'reef', floors: 3, w: 36, h: 2
 
 | Step | Where | What |
 | --- | --- | --- |
-| 1 | `maps.js` | Add the `DUNGEONS` entry and a `WORLD_LOC` digit (widen `LOC_RE` for `8`) |
+| 1 | `maps.js` | Add the `DUNGEONS` entry and a `WORLD_LOC` character (digits `1`–`9` are taken; widen `LOC_RE` for a new one) |
 | 2 | `art.js` | Add a `DTHEME.reef` palette (`wall`, `top`, `floor`, `floor2`, `acc`, `light`, `bg`) and optional details in `drawDungeonTile` |
 | 3 | `art.js` | Add a `drawLocationIcon` case for the digit; optionally a `drawBattleBG` case |
 | 4 | `data.js` | Add `ENCOUNTERS.d8` and the boss in `MONSTERS` |
 | 5 | `story.js` | Gate it in `canEnterDungeon` (return `false` with a message), add first-entry lines in `onEnterDungeon`, and the fight in `bossEncounter` |
 | 6 | `story.js` | Add the Lantern's name to `examineLantern`'s `names` map |
 | 7 | `field.js` | Choose the music in `Field.playMusic` (optional) |
+
+**Optional `DUNGEONS` fields:** `noLantern: true` leaves the boss room without a Lantern (the hero-quest dungeons). `exitTo: { map, x, y }` makes the first floor's up-stairs lead somewhere other than the world map; the Undercity returns to the Ironhold jail with `exitTo: { map: 'in:ironhold:jail', x: 6, y: 6 }`. A dungeon with no world location can be entered from a script with `changeMap('<id>:0', x, y)` (see the jail trapdoor in `hearts.js`).
 
 `seed` fixes the layout. Change it to reroll the floors; the generator guarantees every room stays reachable.
 

@@ -1,7 +1,7 @@
 # Lanternfall — A Tale of the Four Flames
 
 [![Play on itch.io](https://img.shields.io/badge/play-itch.io-fa5c5c?logo=itchdotio&logoColor=white)](https://cptnope.itch.io/lanternfall)
-[![Version](https://img.shields.io/badge/version-1.4.0-e8c24a)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.5.0-e8c24a)](CHANGELOG.md)
 [![Play-test](https://github.com/CptNope/Laternfall/actions/workflows/playtest.yml/badge.svg)](https://github.com/CptNope/Laternfall/actions/workflows/playtest.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3a8fd0)](LICENSE)
 ![No asset files](https://img.shields.io/badge/assets-0%20files-7b3fa8)
@@ -74,6 +74,8 @@ Beyond the main quest, the desert holds the tomb of the king who lit the first L
 
 **Chapter VI: The Crownless King** (post-game). After the credits, step back out into the world. An ash-covered island rises from the far northeast sea. On it is Lastlight, a village that waited a thousand years under the waves for the Hollow King's crown to fall. Descend the four floors of the Crownfall Abyss, piece together two brothers' memories, and face the crown that is looking for a new head. Recommended level: 42+.
 
+**Hearts of the Lamplighters** (post-game). Each hero has one thing left unfinished: Arin's father's roadside lamps, Lyra's mother's grimoire, Oswin's drowned teacher, Kestrel's debt to the thieves' guild, and the voice that still talks to Selene in her sleep. Each quest ends in a **Limit** and an ultimate weapon, and all five together end in the Festival of Lanterns.
+
 ```mermaid
 flowchart LR
     E((Ember)) --> T((Tide)) --> S((Stone)) --> D((Dawn)) --> N((Night))
@@ -108,14 +110,14 @@ flowchart LR
 
 | | Count | | Count |
 | --- | --- | --- | --- |
-| Playable heroes | **5** (4 fight at once) | Monsters | **63** in 21 drawn families |
-| Towns | **7** | Boss battles | **10** |
-| Dungeons | **7** (20 floors) | Skills and spells | **36**, plus **31** enemy abilities |
-| Side quests | **10** | Combo techs | **12** |
-| Arena cups | **6** | Weapons, armour, accessories | **38**, **17**, **27** |
+| Playable heroes | **5** (4 fight at once) | Monsters | **75** in 21 drawn families |
+| Towns | **7** | Boss battles | **15** |
+| Dungeons | **10** (26 floors) | Skills and spells | **36**, plus **31** enemy abilities |
+| Side quests | **16** | Combo techs and Limits | **12** and **5** |
+| Arena cups | **6** | Weapons, armour, accessories | **43**, **17**, **28** |
 | Fish | **13** | Forge recipes | **9** |
 | Music tracks | **18** | Image or audio files | **0** |
-| Level cap | **50** | Source lines | ~6,400 across 11 files |
+| Level cap | **50** | Source lines | ~7,100 across 12 files |
 
 ```mermaid
 mindmap
@@ -147,13 +149,13 @@ mindmap
 
 Four heroes fight at a time. The fifth waits in reserve and still earns half EXP.
 
-| Hero | Class | Plays like | Signature skills | Final skill |
-| --- | --- | --- | --- | --- |
-| **Arin** | Lamplighter | Sturdy fighter with holy strikes and support | Cure, Sunstrike, Rally, Lionheart | Dawnbreak (Lv 42) |
-| **Lyra** | Flamecaller | Elemental nuker | Fire, Ice, Bolt, Sleep, Flare, Starfall | Supernova (Lv 44) |
-| **Oswin** | Tide Priest | Healer and protector | Cura, Raise, Barrier, Renew, Holy, Curaga | Sanctuary (Lv 42) |
-| **Kestrel** | Rogue | Fastest hero; stealing and multi-hits | Steal, Twin Strike, Smoke Bomb, Shadowstep, Mug | Thousand Cuts (Lv 42) |
-| **Selene** | Duskmage | Dark magic; joins after her story chapter | Shade, Drain, Gravity, Nightfall, Requiem | Eventide (Lv 44) |
+| Hero | Class | Plays like | Signature skills | Final skill | Limit |
+| --- | --- | --- | --- | --- | --- |
+| **Arin** | Lamplighter | Sturdy fighter with holy strikes and support | Cure, Sunstrike, Rally, Lionheart | Dawnbreak (Lv 42) | ★ First Light |
+| **Lyra** | Flamecaller | Elemental nuker | Fire, Ice, Bolt, Sleep, Flare, Starfall | Supernova (Lv 44) | ★ Phoenix Rite |
+| **Oswin** | Tide Priest | Healer and protector | Cura, Raise, Barrier, Renew, Holy, Curaga | Sanctuary (Lv 42) | ★ High Tide |
+| **Kestrel** | Rogue | Fastest hero; stealing and multi-hits | Steal, Twin Strike, Smoke Bomb, Shadowstep, Mug | Thousand Cuts (Lv 42) | ★ Grand Larceny |
+| **Selene** | Duskmage | Dark magic; joins after her story chapter | Shade, Drain, Gravity, Nightfall, Requiem | Eventide (Lv 44) | ★ Long Night |
 
 Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE.md#the-party).
 
@@ -166,13 +168,14 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 - Travel on foot, by **ship** and by **airship**
 - **7 towns** (Brightwater, Port Halden, Ironhold, Frostmere, desert Mirage, sky-valley Aerie and ash-bound Lastlight), with more than 60 NPCs whose dialogue changes as the story moves on
 - **Walk inside every building**: inns, shops and smithies with keepers behind counters, homes, chapels, a jail, a palace, an observatory hut. Search barrels, pots and crates for hidden items.
-- **7 dungeons, 20 floors**: Whisperwood Hollow, Sunken Shrine, Emberdeep Mines, Hollow Spire, the Tomb of the First King, the Starfall Observatory and the Crownfall Abyss. They have torchlight, treasure, and a Lantern at the heart of each.
+- **10 dungeons, 26 floors**: Whisperwood Hollow, Sunken Shrine, Emberdeep Mines, Hollow Spire, the Tomb of the First King, the Starfall Observatory, the Crownfall Abyss, and the three hero-quest dungeons (the Ember Caves, the Sea Mother's Grotto and the Undercity). They have torchlight and treasure, and most have a Lantern at the heart.
 
 **Battle**
 - Classic turn-based, side-view combat: Attack, Skill, **Combo**, Item, Defend, Run
 - **12 combo techs**: dual and triple attacks such as Flame Edge, Crossfang, Twin Stars, Shadow Waltz, Lantern Light and Last Light (taught in Lastlight). They use every member's turn and MP.
 - Elemental weaknesses, critical hits, stealing, buffs, poison, sleep, silence, regen and auto-revive. The [formulas](docs/GAME_GUIDE.md#formulas) are all documented.
-- **63 monsters** in 21 drawn families, including **10 boss battles**: two two-phase finales, a sea monster, the First King and an optional superboss dragon
+- **Limits**: a gauge that fills as each hero takes damage, unlocking a once-per-charge super move
+- **75 monsters** in 21 drawn families, including **15 boss battles**: two two-phase finales, a sea monster, the First King, an optional superboss dragon, and five personal nemeses (one a solo duel)
 
 **Progression**
 - Levels up to **50**, learned skills, and weapon, armour and accessory slots, with **27 accessories**
@@ -180,14 +183,15 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 - **Orrin's Forge**: monsters drop materials (Ember Cores, Frost Crystals, Sun Gold, Star Shards, Dusk Silk, Abyss Ash). Orrin in Ironhold forges them into 9 pieces of gear, including each hero's best weapon. The bestiary shows who drops what.
 - **Fishing**: get a rod from the Ice Fisher in Frostmere, then fish any pond, river, harbour or sea. 13 kinds of fish, each with its own spots, and a timing mini-game that gets harder for rarer fish. One legend only rises once every Lantern burns.
 - **The Aerie Arena**: six cups of back-to-back battles with unique prizes, up to the Grand Champion gauntlet and the post-game Eclipse Cup
-- **10 side quests** in a quest log, with the main objective always shown
+- **16 side quests** in a quest log, including five personal hero quests and the Festival of Lanterns, with the main objective always shown
+- **Campfire talks** when you rest with a Tent
 - A **bestiary** with stats, weaknesses, steals and drops, and a **world map** with your next objective marked
 - **New Game+**: finish the story to replay with your levels and gear against stronger enemies
 
 **Comfort**
 - Three save slots and auto-save, with versioned saves that upgrade themselves
 - Battle speed up to 4×, *repeat last turn* with one button, and a dialogue **Log**
-- **Gamepad** support, a touch **R** button, auto-dash, and adjustable text speed
+- **Gamepad** support, a touch **R** button, auto-dash, **rebindable keys**, adjustable text speed, **large text** and **high-contrast** windows
 - **Equip → Optimise** puts on the best gear you own in one step
 
 **Sound**
@@ -208,6 +212,9 @@ flowchart LR
       IH[Ironhold] --- EM[Emberdeep Mines]
       IH --- FM[Frostmere]
     end
+    BW --- EC[Ember Caves]
+    PH --- GR[Sea Mother's Grotto]
+    IH --- UC[The Undercity<br/>under the jail]
     subgraph East[Sunscar Desert]
       MI[Mirage] --- TB[Tomb of the First King]
       AE[Aerie<br/>air only]
@@ -240,6 +247,12 @@ flowchart LR
 | Arena Legend | Arena Master, Aerie | Lantern Crown |
 | The Ones That Got Away | Ice Fisher, Frostmere | Angler's Ring (6 kinds), Moonfin Charm (all 13) |
 | Orrin's Forge | Orrin, Ironhold (after The Stonebrand) | Orrin's Seal (forge 3 items) |
+| The Lamplighter's Road | Elder Maren (after the ending) | Sunbearer, ★ First Light |
+| Mother's Grimoire | Mira (after the ending) | Hearthstaff, ★ Phoenix Rite |
+| The Drowned Priesthood | Sister Wenna (after the ending) | Abbot's Bell, ★ High Tide |
+| Old Debts | Ironhold jail guard (after the ending) | Pickpocket's Prize, ★ Grand Larceny |
+| Echo of Vesper | Mira (after the ending) | Duskstar, ★ Long Night |
+| The Festival of Lanterns | Elder Maren (all five done) | Heartlight |
 
 | Arena cup | Suggested level | Prize |
 | --- | --- | --- |
@@ -275,7 +288,7 @@ Every opponent, reward and requirement is in the [game guide](docs/GAME_GUIDE.md
 
 ## How it's made
 
-Lanternfall is plain JavaScript split across eleven source files. `build.py` joins them into one `index.html`.
+Lanternfall is plain JavaScript split across twelve source files. `build.py` joins them into one `index.html`.
 
 ```mermaid
 flowchart LR
@@ -311,6 +324,7 @@ flowchart LR
 | `src/battle.js` | Turn-based combat, targeting, combos, statuses, damage formulas, effects, rewards, New Game+ scaling |
 | `src/menu.js` | Field menu (items, magic, equip, status, formation, quests, bestiary, world map, save, config), shops, inns |
 | `src/crafts.js` | The fishing mini-game and Orrin's forge |
+| `src/hearts.js` | The five hero quests, Limits unlocking, campfire talks and the Festival of Lanterns |
 | `src/story.js` | NPC dialogue, cutscenes, story flags, quests, the arena, boss events, the title screen, the endings, the main loop |
 | `tools/` | The play-test harness, the boss balance simulator, the guide-table generator and the diagram checker |
 
@@ -338,8 +352,7 @@ flowchart LR
 timeline
     title Planned milestones
     Nov 2026 : 1.4 Comfort ✓ : save slots, battle speed, gamepad, CI, boss balance
-    Dec 2026 : 1.4.x : key rebinding, text size, shop compare
-    Mar 2027 : 1.5 Heroes : a personal quest and a Limit for each hero
+    Dec 2026 : 1.5 Heroes ✓ : five hero quests, Limits, campfire talks
     May 2027 : 1.6 Depth : Lantern Board, cooking, smarter enemies
     Jul 2027 : 1.7 World : the Drowned Kingdom under the sea
     Later : 2.0 Lantern Engine : data-driven content, editor, mods

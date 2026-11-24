@@ -32,8 +32,13 @@ const WORLD_LOC = {
   6: { x: 85, y: 45, dungeon: 'tomb', name: 'Tomb of the First King' },
   // Chapter VI — the Ashen Isle (hidden under the sea until G.flags.isle)
   G: { x: 79, y: 9, town: 'lastlight', name: 'Lastlight' },
-  7: { x: 88, y: 7, dungeon: 'abyss', name: 'Crownfall Abyss' }
+  7: { x: 88, y: 7, dungeon: 'abyss', name: 'Crownfall Abyss' },
+  // 1.5 Hearts of the Lamplighters
+  8: { x: 20, y: 40, dungeon: 'embercave', name: 'Ember Caves' },
+  9: { x: 42, y: 40, dungeon: 'grotto', name: 'Sea Mother\'s Grotto' }
 };
+// Arin's quest: twelve roadside lamps, each beside a road
+const ROAD_LAMPS = [[13, 31], [15, 34], [17, 42], [26, 42], [33, 40], [37, 46], [46, 10], [43, 13], [33, 7], [79, 42], [56, 41], [83, 6]];
 const ISLE_LOCS = ['G', '7'];
 const SHIP_HOME = { x: 40, y: 38 };
 const BRIDGE_Y = 43;
@@ -360,6 +365,13 @@ const DUNGEONS = {
     loot: [['hiether', 'gold:5000', 'xpotion', 'desert_veil'], ['pharaoh_mace', 'sand_kris', 'elixir', 'megalixir'], ['nocturne', 'xpotion', 'hiether']], boss: 'firstking', lantern: 'sun', lanternCol: '#ffc04a' },
   observatory: { name: 'Starfall Observatory', theme: 'astral', floors: 3, w: 36, h: 28, seed: 505, enc: 'd5', bg: 'astral', loc: '5', deco2: 'k',
     loot: [['swift_boots', 'megalixir', 'gold:8000', 'xpotion'], ['ember_heart', 'celestia', 'astral_mace', 'elixir'], ['lightbringer', 'comet_edge', 'megalixir', 'hiether']], boss: 'wyrm', lantern: 'fifth', lanternCol: '#a8d8ff' },
+  embercave: { name: 'Ember Caves', theme: 'mine', floors: 2, w: 34, h: 26, seed: 808, enc: 'd8', bg: 'mine', loc: '8', deco: 'L', noLantern: true,
+    loot: [['xpotion', 'ember_core', 'gold:6000', 'hiether'], ['megalixir', 'ember_core', 'star_bomb']], boss: 'hearthwarden' },
+  grotto: { name: 'Sea Mother\'s Grotto', theme: 'shrine', floors: 2, w: 34, h: 26, seed: 909, enc: 'd9', bg: 'shrine', loc: '9', deco: '~', deco2: 'k', noLantern: true,
+    loot: [['xpotion', 'frost_crystal', 'gold:6000', 'hiether'], ['megalixir', 'sun_gold', 'elixir']], boss: 'abbot' },
+  undercity: { name: 'The Undercity', theme: 'undercity', floors: 2, w: 36, h: 26, seed: 1010, enc: 'd10', bg: 'mine', loc: 'C', deco: '~', deco2: 'o', noLantern: true,
+    exitTo: { map: 'in:ironhold:jail', x: 6, y: 6 },
+    loot: [['xpotion', 'dusk_silk', 'gold:9000', 'elixir'], ['megalixir', 'dusk_silk', 'gold:15000']], boss: 'vane' },
   abyss: { name: 'Crownfall Abyss', theme: 'abyss', floors: 4, w: 38, h: 30, seed: 707, enc: 'd7', bg: 'abyss', loc: '7', deco: 'L', deco2: 'k',
     loot: [['abyss_ash', 'xpotion', 'gold:12000', 'hiether'], ['ash_robe', 'megalixir', 'abyss_ash', 'star_bomb'], ['ash_mail', 'elixir', 'abyss_ash', 'megalixir'], ['nightglass', 'megalixir', 'gold:20000', 'abyss_ash']], boss: 'crown', lantern: 'night', lanternCol: '#b8a8ff' }
 };

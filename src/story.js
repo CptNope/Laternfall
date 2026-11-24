@@ -21,8 +21,8 @@ function N(x, y, seed, o, talk, extra = {}) { return { x, y, look: o.skin && o.h
 function townNpcs(id) {
   const f = G.flags;
   if (id === 'brightwater') return [
-    N(5, 8, 1, LOOKS.elder, talkElder, { mark: !f.q1 || (f.lantern1 && !f.bridge), name: 'Elder Maren' }),
-    N(12, 8, 2, LOOKS.mother, talkMother),
+    N(5, 8, 1, LOOKS.elder, talkElder, { mark: !f.q1 || (f.lantern1 && !f.bridge) || (f.ending && !f.q_road) || (f.q_road && !f.road_done && lampsLit() >= ROAD_LAMPS.length) || (HEROES_DONE() === 5 && !f.festival), name: 'Elder Maren' }),
+    N(12, 8, 2, LOOKS.mother, talkMother, { name: 'Mira', mark: f.ending && ((!f.q_grimoire && inParty('lyra')) || (!f.q_echo && inParty('selene'))) }),
     N(8, 11, 3, { style: 'spiky', body: '#c08a3a' }, talkPip, { wander: true, mark: !f.q_cat || (f.cat_found && !f.cat_done) }),
     N(13, 16, 4, LOOKS.guard, talkTobin),
     N(18, 8, 5, { body: '#3a7a4a', hat: 'cap', accent: '#a07a3a' }, talkHob, { wander: true }),
@@ -123,6 +123,10 @@ async function talkElder() {
   if (!f.lantern2) { await say('Elder Maren', 'Port Halden lies east, across the river bridge. Find Oswin.'); return; }
   if (!f.lantern3) { await say('Elder Maren', 'Two Lanterns burn again. I can feel it in the soil — the earth is less afraid. Ironhold and the Stone Lantern lie north, across the sea.'); return; }
   if (!f.ending) { await say('Elder Maren', 'Selene... alive. Bring her home, Arin. Bring them all home.'); return; }
+  if (!f.q_road) return roadQuestStart();
+  if (!f.road_done && lampsLit() >= ROAD_LAMPS.length) return roadQuestFinish();
+  if (HEROES_DONE() === 5 && !f.festival) return festival();
+  if (!f.road_done) { await say('Elder Maren', `Your father's lamps, Arin. ${lampsLit()} of twelve burning. The ledger has the rest.`); return; }
   if (f.isle && !f.boss_abyss) { await say('Elder Maren', 'An island, rising out of the sea? Go, then. A lamplighter\'s work is never quite finished. Your father used to say that, and then fall asleep in his chair.'); return; }
   await say('Elder Maren', 'Four Lanterns, burning. I never thought I would live to see a dawn like this one.');
 }
@@ -130,7 +134,10 @@ async function talkMother() {
   const f = G.flags;
   if (!f.lantern1) await say('Mira', 'Arin, you look after Lyra out there. ...And let her look after you. You never ask for help, just like your father.');
   else if (!f.lantern3) await say('Mira', 'The whole village is talking about you two! Come home safe, both of you. I\'ll keep the hearth warm.');
-  else await say('Mira', 'Your father would be so proud. I\'m proud. Now go finish it, and then come home and EAT something.');
+  else if (!f.ending) await say('Mira', 'Your father would be so proud. I\'m proud. Now go finish it, and then come home and EAT something.');
+  else if (!f.q_grimoire && inParty('lyra')) await grimoireQuestStart();
+  else if (!f.q_echo && inParty('selene')) await echoQuestStart();
+  else await say('Mira', f.festival ? 'Look at all those lanterns. Your father would have counted every one, Arin.' : 'Eat something before you go! Lyra, take two. Selene, take three, you\'re all bones.');
 }
 async function talkPip() {
   const f = G.flags;
@@ -248,7 +255,12 @@ async function talkDunmar() {
   await narrate('Kestrel joined the party!');
   refreshEntities();
 }
-async function talkJailGuard() { await say('Guard', G.flags.kestrel ? 'The cell\'s empty and it\'s very peaceful. I hate it.' : 'Careful with the prisoner. She\'s already stolen my lunch. Twice. Through the bars.'); }
+async function talkJailGuard() {
+  const f = G.flags;
+  if (f.ending && !f.q_debt && inParty('kestrel')) return debtQuestStart();
+  if (f.debt_done) { await say('Guard', 'Captain Dunmar\'s got Vane in the end cell. He keeps trying to pick the lock with a fish bone. Professional courtesy says I let him try.'); return; }
+  await say('Guard', f.kestrel ? 'The cell\'s empty and it\'s very peaceful. I hate it.' : 'Careful with the prisoner. She\'s already stolen my lunch. Twice. Through the bars.');
+}
 async function talkOrrin() {
   const f = G.flags;
   if (f.hammer_done) {
@@ -394,6 +406,16 @@ async function canEnterDungeon(did) {
       f.spireOpen = true;
     }
   }
+  if (did === 'embercave') {
+    if (!f.q_grimoire) { await narrate('A cave mouth in the hills, sealed by a curtain of fire. Words are carved above it in a careful hand: "Only my daughters\' flame may pass."'); return false; }
+    if (!inParty('lyra')) { await narrate('The fire won\'t part. It\'s waiting for Lyra.'); return false; }
+    if (!f.caveOpen) { Audio_.sfx('lantern'); await narrate('Lyra holds up the grimoire. The curtain of fire bows to her and parts.'); await say(LY, 'Hello, Mother.'); f.caveOpen = true; }
+  }
+  if (did === 'grotto') {
+    if (!f.q_grotto) { await narrate('A grotto shaped like a great shell, half drowned. Old prayers are carved into the arch. The water inside is very still.'); return false; }
+    if (!inParty('oswin')) { await narrate('The water at the entrance rises to meet you. Only a priest of the Sea Mother could calm it.'); return false; }
+    if (!f.grottoOpen) { Audio_.sfx('water'); await say(OS, 'Sea Mother, your oldest servant has come home. Let us in, and I will stop complaining about my knees. For a day.'); await narrate('The water parts with a long sigh.'); f.grottoOpen = true; }
+  }
   if (did === 'abyss') {
     if (!hasItem('lastlight_lamp')) { await narrate('Thick grey mist pours out of the crater and swallows your torchlight whole. You can\'t see your own hands.'); await say(LY, 'We\'ll get lost in there. That village to the west — maybe they know a way through.'); return false; }
     if (!f.abyssOpen) { Audio_.sfx('lantern'); await narrate('You raise the Lamp of Lastlight. The mist recoils from its flame like a living thing, and a path opens into the dark.'); f.abyssOpen = true; }
@@ -410,6 +432,8 @@ async function onEnterDungeon(did) {
   if (did === 'tomb') await sayAll([[KE, 'Gold on the walls. Gold on the floor. Nobody touch anything. ...Except me.'], [OS, 'This is a grave, Kestrel.'], [KE, 'Graves have the best stuff.']]);
   if (did === 'observatory') await sayAll([[LY, 'Look up. There\'s no ceiling. Just... stars.'], [OS, 'The first kings built this. Whatever they kept here, they wanted the sky to watch over it.']]);
   if (did === 'spire') await sayAll([[LY, 'I can feel him. Like cold water poured down my spine.'], [OS, 'Then we are close. Courage, children. Light is only ever a small thing, until it isn\'t.']]);
+  if (did === 'embercave') await sayAll([[LY, 'It\'s warm. Like her kitchen.'], [A, 'Careful, Lyra. Warm can still bite.']]);
+  if (did === 'grotto') await say(OS, 'I took my vows in this grotto. I was nineteen. The ceiling was taller then, or I was shorter.');
   if (did === 'abyss') await sayAll([[KE, 'Down we go. Into a hole. That a crown fell into. Put that on my grave, so people know I was brave.'], [OS, 'Keep the lamp high, children. Four floors down, the Warden said. My knees heard that and filed a complaint.']]);
 }
 async function examineLantern(e) {
@@ -566,6 +590,9 @@ async function bossEncounter(did) {
     return;
   }
   if (did === 'abyss') return abyssFinale();
+  if (did === 'embercave') return grimoireBoss();
+  if (did === 'grotto') return grottoBoss();
+  if (did === 'undercity') return vaneBoss();
   if (did === 'spire') {
     Audio_.stopMusic();
     await sayAll([
@@ -881,10 +908,10 @@ function interiorNpcs(m) {
   if (m.ikind === 'inn') out.push({ x: 9, y: 2, look: keeperLook(t.length * 7 + 3), talk: () => innStay(t, b.price) });
   if (m.ikind === 'arena') out.push({ x: K.x, y: K.y, look: { skin: '#c98e62', hair: '#1f1b2e', style: 'short', body: '#a03a2a', accent: '#e8c24a', beard: true }, talk: arenaMenu, name: 'Arena Master' });
   if (m.ikind === 'chapel' && t === 'lastlight') out.push({ x: 6, y: 3, look: { skin: '#e2b48c', hair: '#5a4a3a', style: 'short', body: '#5a4a5a', accent: '#ff8a4a', robe: true, beard: true }, talk: async () => { await say('Brother Cael', 'We pray to no god here. Only to the fire, and the fire never answers. Still — sit. You look like people who have walked a long way.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
-  else if (m.ikind === 'chapel') out.push({ x: 6, y: 3, look: { skin: '#f1c9a0', hair: '#c8b8a0', style: 'bun', body: '#e9ecf2', accent: '#3a8fd0', robe: true }, talk: async () => { await say('Sister Wenna', 'May the tide carry your burdens. Rest a moment in the Sea Mother\'s house.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
+  else if (m.ikind === 'chapel') out.push({ x: 6, y: 3, look: { skin: '#f1c9a0', hair: '#c8b8a0', style: 'bun', body: '#e9ecf2', accent: '#3a8fd0', robe: true }, mark: f.ending && !f.q_grotto && inParty('oswin'), talk: async () => { if (f.ending && !f.q_grotto && inParty('oswin')) return grottoQuestStart(); await say('Sister Wenna', 'May the tide carry your burdens. Rest a moment in the Sea Mother\'s house.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
   if (m.ikind === 'jail' && t === 'ironhold') {
     if (!f.kestrel) out.push({ x: 3, y: 3, look: LOOKS.kestrel, talk: talkKestrelJail, mark: !f.metKestrel });
-    out.push({ x: 8, y: 6, look: LOOKS.guard, talk: talkJailGuard });
+    out.push({ x: 8, y: 6, look: LOOKS.guard, talk: talkJailGuard, mark: f.ending && !f.q_debt && inParty('kestrel') });
   }
   if (m.ikind === 'hall') {
     if (t === 'mirage') { out.push({ x: 6, y: 2, look: { skin: '#a8724a', hair: '#1f1b2e', style: 'long', body: '#3a8a8a', accent: '#e8c24a', robe: true }, talk: talkImara, name: 'Sultana Imara', mark: !f.sunseal }); out.push({ x: 2, y: 5, look: { ...LOOKS.guard, skin: '#8d5a3a', hat: 'cap', accent: '#e8c24a' }, talk: async () => say('Palace Guard', 'Bow when you speak to the Sultana. Or don\'t. She says she finds bowing tedious.') }); }
@@ -937,6 +964,8 @@ function questEntities(map) {
   if (!sp) return out;
   if (map.id === 'hollow:0' && f.q_cat && !f.cat_found) out.push({ kind: 'cat', x: sp.x, y: sp.y, talk: async () => { await say('Mittens', 'Mrrp!'); await narrate('Mittens bites your thumb, then climbs into Lyra\'s hat as if she owns it. Found Mittens!'); f.cat_found = true; Audio_.sfx('item'); } });
   if (map.id === 'shrine:0' && f.q_locket && !hasItem('locket') && !f.locket_done) out.push({ kind: 'glint', x: sp.x, y: sp.y, talk: async () => { addItem('locket'); Audio_.sfx('chest'); await narrate('Something silver glints among the shells... Found Nell\'s Locket!'); } });
+  if (map.id === 'embercave:0' && !f.riddle_0) out.push({ kind: 'riddle', x: sp.x, y: sp.y, solved: false, talk: () => riddleFire(0) });
+  if (map.id === 'embercave:1' && !f.riddle_1) out.push({ kind: 'riddle', x: sp.x, y: sp.y, solved: false, talk: () => riddleFire(1) });
   if (map.id === 'abyss:1' && !f.mem1) out.push({ kind: 'glint', x: sp.x, y: sp.y, talk: () => abyssMemory(1) });
   if (map.id === 'abyss:2' && !f.mem2) out.push({ kind: 'glint', x: sp.x, y: sp.y, talk: () => abyssMemory(2) });
   if (map.id === 'mine:1' && f.q_hammer && !hasItem('stonebrand') && !f.hammer_done) out.push({ kind: 'glint', x: sp.x, y: sp.y, talk: async () => { addItem('stonebrand'); Audio_.sfx('chest'); await narrate('Half-buried in cinders lies a great runed hammer. Found the Stonebrand!'); } });
@@ -952,6 +981,7 @@ function questList() {
   if (f.sunseal) q.push({ title: 'The First King', giver: 'Sultana Imara, Mirage', done: !!f.boss_tomb, reward: 'The skyship Aurora', desc: f.boss_tomb ? 'Ozymar rests at last, and the Aurora is yours.' : 'Open the Tomb of the First King, south of Mirage, with the Sun Seal. Recommended level: 26+.' });
   if (f.q_fish) { const n = fishKinds(), tot = Object.keys(FISH).length; q.push({ title: 'The Ones That Got Away', giver: 'Ice Fisher, Frostmere', done: !!f.fish_r2, reward: 'Angler\'s Ring, Moonfin Charm', desc: f.fish_r2 ? 'Every kind of fish in the world, caught. The Ice Fisher needs to sit down.' : `Catch every kind of fish, then visit the Ice Fisher. Face water and press Enter to fish. (${n}/${tot} kinds)${f.fish_r1 ? '' : ' — 6 kinds earns the Angler\'s Ring.'}` }); }
   if (f.forgeMet) q.push({ title: 'Orrin\'s Forge', giver: 'Orrin, Ironhold', done: !!f.forge_done, reward: 'Orrin\'s Seal', desc: f.forge_done ? 'Orrin calls you family now. The forge is always hot for you.' : `Bring monster materials to Orrin and forge three pieces of gear. (${f.forged || 0}/3)` });
+  q.push(...heartsQuests());
   if (f.arenaMet) { const n = ARENA_CUPS.slice(0, 5).filter(c => f['cup_' + c.id]).length; q.push({ title: 'Arena Legend', giver: 'Arena Master, Aerie', done: !!f.cup_champion, reward: 'Lantern Crown', desc: f.cup_champion ? 'Grand Champions of the Aerie Arena!' : `Win all five cups at the Aerie Arena. (${n}/5 won)` }); }
   if (f.q_scholar) q.push({ title: 'Monster Scholar', giver: 'Sable, Frostmere', done: !!f.scholar_done, reward: 'Silk Ribbon', desc: f.scholar_done ? 'Your notes are in Sable\'s bestiary.' : `Record 30 different creatures in your bestiary, then visit Sable. (${seenCount()}/30)` });
   return q;
@@ -970,6 +1000,8 @@ function mainObjective() {
   if (f.isle && !f.q_crown) return { text: 'Chapter VI: Sail or fly to the island that rose in the far northeast sea.', loc: 'G' };
   if (f.isle && !f.boss_abyss) return { text: 'Chapter VI: Descend the Crownfall Abyss, in the crater east of Lastlight. (Lv 42+)', loc: '7' };
   if (!f.isle) return { text: 'The Lanterns burn. Step out into the world and see the new dawn.', loc: null };
+  if (HEROES_DONE() < 5) return { text: `Hearts of the Lamplighters: help each friend finish what they left behind. (${HEROES_DONE()}/5 — see Side quests)`, loc: null };
+  if (!f.festival) return { text: 'All five hearts are mended. Visit Elder Maren in Brightwater.', loc: 'A' };
   return { text: 'Every Lantern burns, even the Night\'s. Legends still wait in the arena, the forge and the deep water.', loc: null };
 }
 

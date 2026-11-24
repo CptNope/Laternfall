@@ -140,6 +140,33 @@ async function promptSave() {
   if (c === 0 && saveGame(G.slot)) { Audio_.sfx('save'); await narrate(`Your journey has been recorded in slot ${G.slot}.`); }
   if (c === 1) await saveToSlot();
 }
+const ACTION_NAMES = { up: 'Up', down: 'Down', left: 'Left', right: 'Right', ok: 'Confirm', cancel: 'Menu / back', run: 'Run / repeat turn', mute: 'Sound on/off' };
+// 'KeyW' → 'W', 'ArrowUp' → '↑', 'ShiftLeft' → 'Shift L'
+const KEY_NAMES = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', Escape: 'Esc', Backspace: 'Bksp', NumpadEnter: 'Num Enter', ShiftLeft: 'Shift L', ShiftRight: 'Shift R' };
+const keyLabel = code => KEY_NAMES[code] || code.replace(/^Key|^Digit/, '');
+async function controlsMenu() {
+  let idx = 0;
+  while (true) {
+    const acts = ['up', 'down', 'left', 'right', 'ok', 'cancel', 'run', 'mute'];
+    const keysFor = a => Object.keys(KEYMAP).filter(c => KEYMAP[c] === a).map(keyLabel).join(', ') || '—';
+    const items = [...acts.map(a => ({ label: ACTION_NAMES[a], right: keysFor(a) })), { label: 'Reset to defaults' }, { label: 'Done' }];
+    const k = await listMenu({ x: 110, y: 60, w: 420, rows: items.length, title: 'Controls', items, index: idx, help: i => i < acts.length ? 'Press Enter, then the new key. It replaces every key for this action.' : '', helpY: H - 52 });
+    if (k < 0 || k === items.length - 1) return;
+    idx = k;
+    if (k === acts.length) { CFG.keys = null; saveCfg(); applyKeymap(); toast('Controls reset'); continue; }
+    const a = acts[k];
+    const code = await new Promise(res => {
+      KeyCapture.cb = res;
+      UI.push({ update() { if (!KeyCapture.cb) UI.close(this); }, draw(g) { drawWindow(g, 170, 200, 300, 60); text(g, `Press a key for: ${ACTION_NAMES[a]}`, 320, 220, { size: 16, align: 'center' }); } });
+    });
+    const map = { ...KEYMAP };
+    for (const c in map) if (map[c] === a || c === code) delete map[c];
+    map[code] = a;
+    // never lock the player out of confirming or going back
+    if (!Object.values(map).includes('ok') || !Object.values(map).includes('cancel')) { Audio_.sfx('buzz'); toast('Confirm and Back need a key'); continue; }
+    CFG.keys = map; saveCfg(); applyKeymap(); Audio_.sfx('ok');
+  }
+}
 async function configMenu() {
   let idx = 0;
   while (true) {
@@ -151,6 +178,9 @@ async function configMenu() {
       { label: 'Text speed', right: TEXT_SPEEDS[CFG.textSpeed || 0].label, act: d => cycle('textSpeed', TEXT_SPEEDS, d), help: 'How fast dialogue appears.' },
       { label: 'Battle speed', right: BATTLE_SPEEDS[CFG.battleSpeed || 0].label, act: d => cycle('battleSpeed', BATTLE_SPEEDS, d), help: 'Speeds up battle animations. Messages still wait for you.' },
       { label: 'Auto-save', right: CFG.autosave !== false ? 'On' : 'Off', act: () => { CFG.autosave = CFG.autosave === false; saveCfg(); }, help: 'Save to the Auto slot whenever you enter a town or dungeon.' },
+      { label: 'Large text', right: CFG.bigText ? 'On' : 'Off', act: () => toggle('bigText'), help: 'Bigger dialogue text.' },
+      { label: 'High contrast', right: CFG.contrast ? 'On' : 'Off', act: () => toggle('contrast'), help: 'Solid black windows with bright borders.' },
+      { label: 'Controls…', right: '', help: 'Change which keys do what.' },
       { label: 'Encounters', right: !G.flags.ending ? '—' : CFG.noEnc ? 'Off' : 'On', disabled: !G.flags.ending, act: () => toggle('noEnc'), help: G.flags.ending ? 'Turn random battles off for exploring. Bosses still fight.' : 'Unlocked after you finish the story.' },
       { label: 'Done', help: '' }
     ];
@@ -161,7 +191,8 @@ async function configMenu() {
     if (k === -1 || k === done) return;
     if (k <= -2) { idx = -2 - k; continue; }
     idx = k;
-    rows[k].act(1);
+    if (rows[k].label === 'Controls…') { await controlsMenu(); continue; }
+    if (rows[k].act && !rows[k].disabled) rows[k].act(1);
   }
 }
 async function itemsMenu() {
@@ -180,6 +211,7 @@ async function itemsMenu() {
       addItem(id, -1);
       await fadeTo(1, 400); Audio_.sfx('inn'); healAll(); await wait(1000); await fadeTo(0, 400);
       await narrate('The party rests under the stars. HP and MP restored.');
+      await campfireTalk();
       continue;
     }
     if (it.target === 'allies') { addItem(id, -1); G.party.forEach(m => applyItemEffect(id, m)); Audio_.sfx('heal'); continue; }
@@ -424,6 +456,7 @@ async function innStay(townId, price, keeper = 'Innkeeper') {
   Field.playMusic();
   Audio_.play(Audio_.curName, true);
   await fadeTo(0, 500);
+  await innDream();
   await say(keeper, 'Good morning! You look well rested.');
   await promptSave();
 }
@@ -514,6 +547,7 @@ async function worldMapView() {
         circle(g, x, y, 4.5, L.town ? '#fff4c8' : '#e88a6a', OUT, 1.5);
         if (known) { g.font = font(11, true); const tw = g.measureText(L.name).width; const right = x + 7 + tw > ox + ow - 4; text(g, L.name, right ? x - 7 : x + 7, y - 7, { size: 11, bold: true, align: right ? 'right' : 'left' }); }
       }
+      if (G.flags.q_road && !G.flags.road_done) ROAD_LAMPS.forEach(([lx, ly], i) => { if (m.at(lx, ly) === '~') return; const x = ox + lx * sc + 3, y = oy + ly * sc + 3; circle(g, x, y, 2.6, G.flags['lamp_' + i] ? '#ffd23a' : '#5a5a6a', '#fff', 1); });
       if (m.whirl && G.flags.bounty && !G.flags.leviathan) { const x = ox + m.whirl.x * sc + 3, y = oy + m.whirl.y * sc + 3; circle(g, x, y, 5 + Math.sin(t * 4), null, '#fff', 1.5); text(g, 'Leviathan', x + 8, y - 6, { size: 11, color: '#bfe8ff' }); }
       if (obj.loc && WORLD_LOC[obj.loc]) { const L = WORLD_LOC[obj.loc]; const x = ox + L.x * sc + 3.5, y = oy + L.y * sc - 8 + Math.sin(t * 4) * 2; poly(g, [x - 5, y - 6, x + 5, y - 6, x, y + 2], '#ffd23a', OUT, 1); }
       if (G.airship && G.flags.airship) { const x = ox + G.airship.x * sc + 3, y = oy + G.airship.y * sc + 3; ellipse(g, x, y - 2, 5, 3, '#c8443a', '#fff', 1); }

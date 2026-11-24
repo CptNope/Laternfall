@@ -18,9 +18,10 @@ function getMap(id) {
 }
 function populate(map) {
   map.entities = [];
-  if (map.kind === 'world') applyWorldFlags(map);
+  if (map.kind === 'world') { applyWorldFlags(map); for (const q of worldQuestEntities(map)) map.entities.push(q); }
   if (map.kind === 'interior') {
     for (const n of interiorNpcs(map)) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
+    for (const q of interiorQuestEntities(map)) map.entities.push(q);
   }
   if (map.kind === 'town') {
     for (const n of townNpcs(map.id)) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
@@ -30,7 +31,7 @@ function populate(map) {
       const key = `chest:${map.id}:${c.x},${c.y}`;
       map.entities.push({ kind: 'chest', x: c.x, y: c.y, key, loot: c.loot, opened: !!G.flags[key] });
     }
-    if (map.extras.lantern) map.entities.push({ kind: 'lantern', x: map.extras.lantern.x, y: map.extras.lantern.y, did, lit: !!G.flags['lantern_' + did], col: def.lanternCol });
+    if (map.extras.lantern && !def.noLantern) map.entities.push({ kind: 'lantern', x: map.extras.lantern.x, y: map.extras.lantern.y, did, lit: !!G.flags['lantern_' + did], col: def.lanternCol });
     for (const q of questEntities(map)) map.entities.push(q);
     if (map.extras.boss && !G.flags['boss_' + did]) map.entities.push({ kind: 'boss', x: map.extras.boss.x, y: map.extras.boss.y, did, def: MONSTERS[def.boss] });
   }
@@ -138,6 +139,7 @@ const Field = {
         return this.startMove(nx, ny, true);
       }
       if (c === 'x') { runScript(() => narrate('The old bridge has collapsed into the river. There is no way across... yet.')); return this.bump(); }
+      if (this.entityAt(nx, ny)) return this.bump();
       if (!this.walkable(nx, ny)) return this.bump();
       return this.startMove(nx, ny);
     }
@@ -331,6 +333,9 @@ function drawEntity(g, e, sx, sy, t) {
   else if (e.kind === 'lantern') drawLantern(g, sx, sy + 2, e.lit, t, e.col);
   else if (e.kind === 'cat') drawCat(g, sx, sy, t);
   else if (e.kind === 'glint') drawGlint(g, sx, sy, t);
+  else if (e.kind === 'roadlamp') drawRoadLamp(g, sx, sy, e.lit, t);
+  else if (e.kind === 'riddle') drawRiddleFire(g, sx, sy, e.solved, t);
+  else if (e.kind === 'hatch') drawHatch(g, sx, sy);
   else if (e.kind === 'boss') {
     const s = 0.45;
     drawMonster(g, e.def, sx, sy + 2, { t, scale: s });
@@ -380,6 +385,7 @@ async function leaveTown() {
 async function stairs(d) {
   const m = Field.map, did = m.dungeon, f = m.floor + d;
   Audio_.sfx('stairs');
+  if (f < 0 && DUNGEONS[did].exitTo) { const e = DUNGEONS[did].exitTo; await changeMap(e.map, e.x, e.y, 'down'); return; }
   if (f < 0) {
     const loc = WORLD_LOC[DUNGEONS[did].loc];
     await changeMap('world', loc.x, loc.y, 'down');

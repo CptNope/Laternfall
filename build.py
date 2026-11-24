@@ -1,6 +1,6 @@
 import pathlib
 root=pathlib.Path(__file__).parent
-order=['core','data','art','maps','party','field','interior','battle','menu','crafts','story']
+order=['core','data','art','maps','party','field','interior','battle','menu','crafts','hearts','story']
 js='\n'.join((root/'src'/f'{n}.js').read_text() for n in order)
 html=f'''<!DOCTYPE html>
 <html lang="en">
