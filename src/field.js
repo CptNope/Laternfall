@@ -273,19 +273,11 @@ const Field = {
   },
   draw(g) {
     const m = this.map, t = this.t;
-    const { cx, cy, px, py } = this.camera();
-    g.fillStyle = m.kind === 'deep' ? '#04101c' : m.kind === 'dungeon' || m.kind === 'interior' ? '#000' : m.kind === 'town' ? (m.theme === 'stone' ? '#5f574f' : '#2f6a2a') : WPAL.water;
-    g.fillRect(0, 0, W, H);
-    const x0 = Math.floor(cx / TS) - 1, y0 = Math.floor(cy / TS) - 1, x1 = x0 + VW + 3, y1 = y0 + VH + 3;
-    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-      const sx = x * TS - cx, sy = y * TS - cy;
-      if (m.kind === 'world') drawWorldTile(g, m, x, y, sx, sy, t);
-      else if (m.kind === 'deep') drawDeepTile(g, m, x, y, sx, sy, t);
-      else if (m.kind === 'heist') drawHeistTile(g, m, x, y, sx, sy, t);
-      else if (m.kind === 'town') { if (m.at(x, y) !== undefined) drawTownTile(g, m, x, y, sx, sy, t); }
-      else if (m.kind === 'interior') { if (m.at(x, y) !== undefined) drawInteriorTile(g, m, x, y, sx, sy, t); }
-      else drawDungeonTile(g, m, x, y, sx, sy, t);
-    }
+    let { cx, cy, px, py } = this.camera();
+    // snap the camera to whole device pixels, so cached tile chunks line up exactly
+    const k = g.getTransform().a || 1;
+    cx = Math.round(cx * k) / k; cy = Math.round(cy * k) / k;
+    if (!TileCache.draw(g, m, cx, cy, t)) drawTilesDirect(g, m, cx, cy, t);
     // sortable drawables
     const list = [];
     for (const b of m.buildings || []) list.push({ y: (b.y + b.h) * TS - 1, draw: () => drawBuilding(g, b, cx, cy, t, m.theme) });
@@ -383,6 +375,20 @@ function drawEntity(g, e, sx, sy, t) {
 }
 
 // ---------- transitions ----------
+// The tiles drawn one by one: the way the cache draws them too, and the fallback without it.
+function drawTilesDirect(g, m, cx, cy, t) {
+  g.fillStyle = TileCache.bg(m); g.fillRect(0, 0, W, H);
+  const fn = TileCache.tileFn(m), skip = TileCache.skips(m);
+  // include the tiles off screen that reach onto it (TileCache.M: the diving bell's line reaches 7 squares up)
+  const M = TileCache.M, x0 = Math.floor(cx / TS) - M.r, y0 = Math.floor(cy / TS) - M.d, x1 = Math.floor(cx / TS) + VW + M.l, y1 = Math.floor(cy / TS) + VH + M.u;
+  // tiles are drawn at their map position under a translation, exactly as the cache draws them
+  g.save(); g.translate(-cx, -cy);
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    if (skip && m.at(x, y) === undefined) continue;
+    fn(g, m, x, y, x * TS, y * TS, t);
+  }
+  g.restore();
+}
 async function changeMap(mapId, x, y, dir) {
   Audio_.sfx('door');
   await fadeTo(1, 220);

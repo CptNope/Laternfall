@@ -1,7 +1,16 @@
 import pathlib, hashlib, json
 root=pathlib.Path(__file__).parent
-order=['core','data','art','deep_art','maps','party','field','interior','battle','menu','crafts','hearts','deep','platform','living','cards','heist','story']
-js='\n'.join((root/'src'/f'{n}.js').read_text() for n in order)
+import subprocess, shutil, sys
+# Source files in load order. They share one global scope, so a file may only use, at load time,
+# names declared in files before it (tools/load_check.js checks this). 'folder/*' takes every
+# .js file in that folder, sorted: each one registers itself (a monster family, a battle background).
+order=['core','data','art','monsters/*','backgrounds/*','deep_art','maps','party','field','tilecache','interior','battle','menu','crafts','hearts','deep','platform','living','cards','heist','story']
+def sources():
+    out=[]
+    for n in order:
+        out += sorted((root/'src').glob(n+'.js')) if n.endswith('*') else [root/'src'/f'{n}.js']
+    return out
+js='\n'.join(p.read_text() for p in sources())
 html=f'''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,6 +55,13 @@ canvas{{display:block;image-rendering:auto;box-shadow:0 0 60px rgba(120,90,200,.
 </html>
 '''
 (root/'index.html').write_text(html)
+
+# ---- load-order check: run the joined script once in node, as a browser would on page load ----
+if shutil.which('node'):
+    r=subprocess.run(['node',str(root/'tools'/'load_check.js'),*map(str,sources())],cwd=root)
+    if r.returncode: sys.exit('build.py: index.html was written, but it fails to load (see above)')
+else:
+    print('build.py: node not found, skipping the load-order check', file=sys.stderr)
 
 # ---- installable app (PWA): a manifest and an offline service worker beside index.html ----
 # index.html stays a single self-contained file; these only matter when it's served over http(s).

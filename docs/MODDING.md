@@ -45,6 +45,7 @@ flowchart TD
 - [Add a place on the sea floor](#add-a-place-on-the-sea-floor)
 - [Change the Lantern Board](#change-the-lantern-board)
 - [Add a trophy](#add-a-trophy)
+- [Draw a new tile](#draw-a-new-tile)
 - [Add a card or a card player](#add-a-card-or-a-card-player)
 - [Add a night NPC or night monsters](#add-a-night-npc-or-night-monsters)
 - [Change the weather](#change-the-weather)
@@ -112,9 +113,9 @@ Use a monster from the same area as a baseline. Final-area enemies sit at roughl
 
 ## Add a new monster art family
 
-**Files:** your own file (for example `src/deep_art.js`), or `src/art.js`
+**Files:** a new file in `src/monsters/`, for example `src/monsters/lantern.js`
 
-Since 1.7, new families register themselves instead of growing the big `switch` in `art.js`. Put the drawing in a file that loads after `art.js` (add it to `order` in `build.py`), and register it:
+Since 1.10 every family has its own file there, and `build.py` picks up every file in the folder, so there's nothing to register in the build. Copy a similar family (`slime.js`, `golem.js`) and change it:
 
 ```js
 // origin (0, 0) is the monster's feet; it faces right; t is time in seconds
@@ -129,7 +130,9 @@ MONSTER_ART.lantern = (g, def, t, { shadow, eyes }) => {
 MONSTER_SIZE.lantern = [40, 80];   // unscaled [width, height]: drives battle layout and target arrows
 ```
 
-Battle backgrounds work the same way: `BATTLE_BGS.reef = (g, t, { sky, ground, hills, stars }) => { ... }`, then use `bg: 'reef'` in a `startBattle` call or a dungeon definition. A dungeon theme is one more entry in `DTHEME` (`wall`, `top`, `floor`, `floor2`, `acc`, `light`, `bg`). The older families are still `case`s in `drawMonster`, and `monsterHeight` / `monsterWidth` hold their sizes.
+Battle backgrounds work the same way, one file each in `src/backgrounds/`: `BATTLE_BGS.reef = (g, t, { sky, ground, hills, stars }) => { ... }`, then use `bg: 'reef'` in a `startBattle` call or a dungeon definition. The helpers draw a sky gradient, the ground, rolling hills and twinkling stars; the background covers the whole 640×480 scene. A dungeon theme is one more entry in `DTHEME` (`wall`, `top`, `floor`, `floor2`, `acc`, `light`, `bg`).
+
+A family file runs at load time, so it can only use what's declared before it in the build (`art.js` helpers, `data.js`); `build.py` fails with the line if it reads something later. Families and backgrounds added in `deep_art.js` (1.7) stay there.
 
 **Drawing helpers** (from `art.js`): `circle`, `ellipse`, `poly`, `line`, `rrect`, `shade(hex, ±amount)`, `rgba(hex, alpha)` and the outline colour `OUT`.
 
@@ -357,7 +360,7 @@ DUNGEONS.reef = { name: 'Coral Labyrinth', theme: 'reef', floors: 3, w: 36, h: 2
 | --- | --- | --- |
 | 1 | `maps.js` | Add the `DUNGEONS` entry and a `WORLD_LOC` character (digits `1`–`9` are taken; widen `LOC_RE` for a new one) |
 | 2 | `art.js` | Add a `DTHEME.reef` palette (`wall`, `top`, `floor`, `floor2`, `acc`, `light`, `bg`) and optional details in `drawDungeonTile` |
-| 3 | `art.js` | Add a `drawLocationIcon` case for the digit; optionally a `drawBattleBG` case |
+| 3 | `art.js` | Add a `drawLocationIcon` case for the digit; optionally a background file in `src/backgrounds/` |
 | 4 | `data.js` | Add `ENCOUNTERS.d8` and the boss in `MONSTERS` |
 | 5 | `story.js` | Gate it in `canEnterDungeon` (return `false` with a message), add first-entry lines in `onEnterDungeon`, and the fight in `bossEncounter` |
 | 6 | `story.js` | Add the Lantern's name to `examineLantern`'s `names` map |
@@ -507,6 +510,20 @@ Keep `id` stable: it's the key in the player's stored trophies. Keep each entry 
 
 ---
 
+## Draw a new tile
+
+**Files:** `src/art.js` (`drawWorldTile`, `drawTownTile`, `drawDungeonTile`), `src/deep_art.js`, `src/interior.js`
+
+The field's tiles are cached (`src/tilecache.js`), so a tile must follow three rules or it will show stale or cut off:
+
+1. **Paint your own 32×32 square fully opaque** first (a ground fill), then draw on top.
+2. **Move only through `t`**, the argument every tile function gets. Don't read `performance.now()`, `Date.now()` or `Math.random()` in a tile: the cache finds moving tiles by watching which ones read `t`, and pass `t` on to helpers (see `drawPalm`).
+3. **Stay within 2 squares sideways or down and 8 up** of your square. A tile that reaches further turns the cache off for its whole map (the game still works, just slower).
+
+Then run `tools/playtest.py index.html /tmp/x tiles`, which compares cached and uncached drawing on 18 maps. Add the map you changed to its `MAPS` list if it isn't there.
+
+---
+
 ## Add a card or a card player
 
 **Files:** `src/cards.js`
@@ -557,7 +574,7 @@ To add a table, write a function in `gentables.py` that stores markdown in `out[
 
 ## Pull request checklist
 
-- [ ] Edited `src/` and ran `python3 build.py`
+- [ ] Edited `src/` and ran `python3 build.py` (it fails if the game would crash on load)
 - [ ] New progress is stored in **new** flags; old saves still load
 - [ ] Works with the touch D-pad and A/B buttons, and a gamepad
 - [ ] New or changed bosses checked with `tools/balance_sim.py`

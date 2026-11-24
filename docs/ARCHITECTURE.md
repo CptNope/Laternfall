@@ -41,10 +41,11 @@ How the engine works, for anyone reading or changing the code. It covers how the
 ```mermaid
 flowchart LR
     subgraph src/
-      core[core.js] --> data[data.js] --> art[art.js] --> dart[deep_art.js] --> maps[maps.js] --> party[party.js] --> field[field.js] --> interior[interior.js] --> battle[battle.js] --> menu[menu.js] --> crafts[crafts.js] --> hearts[hearts.js] --> deep[deep.js] --> plat[platform.js] --> liv[living.js] --> cards[cards.js] --> heist[heist.js] --> story[story.js]
+      core[core.js] --> data[data.js] --> art[art.js] --> mons[monsters/*.js] --> bgs[backgrounds/*.js] --> dart[deep_art.js] --> maps[maps.js] --> party[party.js] --> field[field.js] --> tc[tilecache.js] --> interior[interior.js] --> battle[battle.js] --> menu[menu.js] --> crafts[crafts.js] --> hearts[hearts.js] --> deep[deep.js] --> plat[platform.js] --> liv[living.js] --> cards[cards.js] --> heist[heist.js] --> story[story.js]
     end
     story --> B[build.py<br/>concatenate in order]
     B --> H[index.html<br/>HTML + CSS + touch pad + one inline script]
+    H --> LC[tools/load_check.js<br/>run once in node: fails on a load error]
     B --> MF[manifest.webmanifest<br/>sw.js]
     IC[tools/make_icons.py] --> ICO[icons/*.png]
     H --> P[Play: open in a browser]
@@ -53,7 +54,9 @@ flowchart LR
     H & ICO --> T[src-tauri: desktop builds in CI]
 ```
 
-`build.py` joins the files in the order listed in its `order=[...]` and writes `index.html` with the page shell (canvas, touch D-pad, A/B buttons and CSS). Since 1.8 it also writes `manifest.webmanifest` and `sw.js`, the service worker that caches the game for offline play. Its cache name is a hash of the build, so every new `index.html` replaces the old cache. The page is fetched network-first (updates arrive when online), everything else cache-first. The service worker only registers over http(s); opened as a file, the game runs exactly as before. The icons in `icons/` come from `tools/make_icons.py`, which draws them in Chrome with the game's own drawing helpers; rerun it only when the icon changes. **Always edit `src/` and rebuild.** Edits made directly to `index.html` are overwritten by the next build.
+`build.py` joins the files in the order listed in its `order=[...]` (an entry like `monsters/*` takes every file in that folder, sorted) and writes `index.html` with the page shell (canvas, touch D-pad, A/B buttons and CSS). Since 1.8 it also writes `manifest.webmanifest` and `sw.js`, the service worker that caches the game for offline play. Its cache name is a hash of the build, so every new `index.html` replaces the old cache. The page is fetched network-first (updates arrive when online), everything else cache-first. The service worker only registers over http(s); opened as a file, the game runs exactly as before. The icons in `icons/` come from `tools/make_icons.py`, which draws them in Chrome with the game's own drawing helpers; rerun it only when the icon changes. **Always edit `src/` and rebuild.** Edits made directly to `index.html` are overwritten by the next build.
+
+**Load order.** Every file shares one global scope, in build order. Functions can call anything (they run later), but a top-level value can only read names declared above it: `const A = { look: LOOKS.sailor }` in `cards.js` throws *Cannot access 'LOOKS' before initialization*, because `LOOKS` is in `story.js`. Since 1.10, `build.py` runs `tools/load_check.js`, which executes the joined script once in Node with stand-ins for browser objects, and fails the build with the file and line of the error and where the name is declared. It also catches a name declared twice. If `node` isn't installed the check is skipped with a warning; CI always runs it.
 
 ```bash
 python3 build.py   # prints the byte size of the new index.html
@@ -76,6 +79,9 @@ python3 build.py   # prints the byte size of the new index.html
 | `menu.js` | The field menu and its pages, shops, inns, quest log, bestiary, world map, config | `openMainMenu` `openShop` `innStay` `questMenu` `configMenu` |
 | `crafts.js` | The fishing mini-game, Orrin's forge, the Lantern Board screen and cooking | `FishingUI` `goFishing` `forgeMenu` `lanternBoard` `cookMenu` |
 | `hearts.js` | The five hero quests, Limits unlocking, campfire talks, the Festival of Lanterns | `learnLimit` `worldQuestEntities` `interiorQuestEntities` `innDream` `campfireTalk` `heartsQuests` |
+| `monsters/*.js` | One file per monster family (1.10): `MONSTER_SIZE.slime = [w, h]` and `MONSTER_ART.slime = (g, def, t, { shadow, eyes }) => …` | `MONSTER_ART` `MONSTER_SIZE` entries |
+| `backgrounds/*.js` | One file per battle background (1.10): `BATTLE_BGS.plains = (g, t, { sky, ground, hills, stars }, kind) => …`; a background shared by two kinds (plains and beach) reads `kind` | `BATTLE_BGS` entries |
+| `tilecache.js` | 1.10: draws the field's tiles into 8×8-tile chunk canvases and redraws only moving squares; `drawTilesDirect` in `field.js` is the uncached path. See [Rendering](#rendering) | `TileCache` `BoxCtx` |
 | `deep_art.js` | 1.7 drawing: sea-floor tiles and light, town moods, the dive spot, bell and moth, three monster families and three battle backgrounds. Registers itself with `art.js` | `drawDeepTile` `drawDeepLight` `drawTownMood` `drawBell` `drawMoth` `drawDeepMap` |
 | `platform.js` | 1.8: install prompt and service-worker registration, save export and import, trophies, speedrun splits, the battery saver. `platformTick(dt)` runs every frame from the main loop | `installApp` `exportSaves` `importSaves` `Trophies` `TROPHIES` `trophyRoom` `checkSplits` `drawSpeedrun` `frameSkip` |
 | `living.js` | 1.9: the clock (`G.clock`, minutes since day 1), night and dusk, the sky tint and light glows, weather per region and its battle multipliers, night NPCs. `advanceClock(dt)` runs from the field's tick | `clockNow` `isNight` `dayPhase` `sleepUntil` `drawSky` `WEATHER` `currentWeather` `weatherMult` `weatherMiss` `drawWeather` `nightNpcs` |
@@ -357,11 +363,11 @@ flowchart TD
 
 ## Rendering
 
-- **Tiles** are drawn every frame for the visible window (20×15 tiles plus a margin).
+- **Tiles** go through the tile cache (`tilecache.js`, 1.10). Each map is drawn once into 8×8-tile chunks, canvases at the screen's real pixel scale; the camera snaps to whole device pixels so a chunk lands on the screen pixel for pixel. Each frame only the squares that move are redrawn, clipped to themselves. That works because of two rules every tile follows: it paints its own 32×32 square fully opaque (so a square shows only its own tile and later tiles that overhang it), and it moves only through its `t` argument. Before caching, each tile is dry-run on `BoxCtx`, a stand-in canvas that paints nothing but records how far the tile reaches and whether it read `t`. A tile may reach 2 squares sideways or down and 8 up (the diving bell's line); one that reaches further turns the cache off for that map. A changed tile (`GameMap.set`) bumps `map.rev`, which throws the chunks away. `?nocache` turns it off; `drawTilesDirect` draws tiles one by one, the way it always did.
 - **Sprites** are collected into a list (buildings, entities, ship, airship, player), sorted by their bottom edge, then drawn. This gives correct overlap.
 - **Dungeon light** is a radial gradient around the player, plus additive torch and Lantern glows.
 - **Characters** are drawn by `drawChar(g, look, x, y, dir, step, scale, pose)` from a `look` object (`skin`, `hair`, `style`, `body`, `accent`, and optional `hat`, `robe`, `beard`, `cape`, `hood`, `weapon`). `npcLook(seed, overrides)` makes random villagers.
-- **Monsters** are drawn by `drawMonster(g, def, x, y, {t, scale})`, dispatching on `def.fam`. Colours come from `def.c`, so one family covers many monsters (the Gloam Knight is a recoloured `knight`). `monsterHeight` and `monsterWidth` feed battle layout and targeting.
+- **Monsters** are drawn by `drawMonster(g, def, x, y, {t, scale})`, which calls the family's function in `MONSTER_ART[def.fam]` (one file per family in `src/monsters/`). Colours come from `def.c`, so one family covers many monsters (the Gloam Knight is a recoloured `knight`). `monsterHeight` and `monsterWidth` feed battle layout and targeting.
 
 ```mermaid
 pie showData

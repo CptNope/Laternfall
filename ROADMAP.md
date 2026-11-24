@@ -2,8 +2,8 @@
 
 Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
 
-- **Current release:** 1.6.0 *Deeper systems*. **Merged, not yet tagged:** 1.7.0 *The Drowned Kingdom* and 1.8.0 *Install anywhere*. **In review:** 1.9.0 *Living world* (DS-4, DS-8 to DS-11). See [CHANGELOG.md](CHANGELOG.md#unreleased).
-- **Next up:** 2.0 *Lantern Engine* work can start (EN-5 is already under way). With 1.9 the 1.6 list is finished. ST-2 (a real phone test) still needs a person with a phone.
+- **Current release:** 1.6.0 *Deeper systems*. **Merged, not yet tagged:** 1.7.0 *The Drowned Kingdom* and 1.8.0 *Install anywhere*. **Merged, not yet tagged:** 1.9.0 *Living world*. **In review:** 1.10.0 *Foundations* (EN-5, TD-4, TD-7, and a load-order check). See [CHANGELOG.md](CHANGELOG.md#unreleased).
+- **Next up:** 2.0 *Lantern Engine*, starting with EN-1 (game data as JSON). ST-2 (a real phone test) still needs a person with a phone, and matters more now that TD-4 is meant for phones.
 - ✅ marks items that are done.
 
 ## Contents
@@ -114,7 +114,9 @@ gantt
     section Platform
     1.8 Install anywhere             :done, m18, 2026-11-24, 1d
     section Living world
-    1.9 Living world                 :active, m19, 2026-11-24, 2w
+    1.9 Living world                 :done, m19, 2026-11-24, 1d
+    section Foundations
+    1.10 Foundations                 :active, m110, 2026-11-24, 2w
     section Engine
     2.0 Lantern Engine               :m20, after m17, 12w
 ```
@@ -127,6 +129,7 @@ gantt
 | **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | Nov 2026 | ✅ Done (1.6.0: DS-1 to DS-7; 1.9.0: DS-4's last part and DS-8 to DS-11) |
 | **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ✅ Done (1.7.0, merged in #13) |
 | **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ✅ Done (1.8.0, merged in #14; PL-5 not started) |
+| **1.10** | Foundations | Per-family art files, a tile cache for phones, a load-order check | Nov 2026 | 🟡 In review (1.10.0: EN-5, TD-4, TD-7) |
 | **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 💭 Exploring |
 
 ```mermaid
@@ -326,7 +329,7 @@ flowchart TB
 | ✅ EN-2 | **Save versioning** (done early, in 1.4): `version` in the save, plus an ordered list of migrations | M |
 | EN-3 | **In-browser map editor** for towns and fixed dungeon floors | L |
 | EN-4 | **Mod loader**: content folders merged at build time | M |
-| EN-5 | Split `art.js` into per-family files with a registry (`registerMonsterArt('crown', fn)`). **Started in 1.7:** `MONSTER_ART`, `MONSTER_SIZE` and `BATTLE_BGS` exist and the 1.7 families use them; the older families still live in `art.js` | M |
+| ✅ EN-5 | Split `art.js` into per-family files with a registry (`registerMonsterArt('crown', fn)`). **Done in 1.10:** one file per monster family in `src/monsters/` and per battle background in `src/backgrounds/`, registering in `MONSTER_ART`, `MONSTER_SIZE` and `BATTLE_BGS`; checked pixel for pixel | M |
 | EN-6 | **Localisation**: move every dialogue line into a string table keyed by ID | L |
 | EN-7 | *Lanternfall II* design document (the Sixth Flame?) | M |
 
@@ -404,12 +407,13 @@ Things in the code today that will slow future work down.
 | ✅ TD-1 | **No save version.** `lanternfall_save_v1` has no schema version | `party.js` | A future change to the save shape breaks old saves silently | Add `version`, plus a migration list | 1.4 |
 | TD-2 | **Global state everywhere** (`G`, `Field`, `UI`) | all | Hard to test parts in isolation | Keep for 1.x; namespace in 2.0 | 2.0 |
 | ✅ TD-3 | **`index.html` is generated but committed**, so pull requests show a huge diff | `build.py` | Merge conflicts; reviewers skim | CI checks that `index.html` matches `build.py` output | 1.3.x |
-| TD-4 | **The world redraws every tile every frame** | `field.js`, `art.js` | Battery drain on phones | Cache static tiles on an offscreen canvas per screen. **Partly done in 1.8:** a Battery saver setting caps drawing at 30 fps; tile caching is still open | 1.8 |
+| ✅ TD-4 | **The world redraws every tile every frame** | `field.js`, `art.js` | Battery drain on phones | Cache static tiles on an offscreen canvas per screen. **Done:** the Battery saver (1.8) caps drawing at 30 fps, and `tilecache.js` (1.10) draws chunks once and redraws only moving squares | 1.10 |
 | ✅ TD-5 | **The music scheduler uses `setInterval`**, which background tabs throttle | `core.js` | Stutter when switching tabs | Pause on `visibilitychange`; schedule further ahead | 1.4 |
 | ✅ TD-6 | **Balance is checked by ad hoc simulation** | none | Regressions when stats change | Commit a battle simulator under `tools/` | 1.3.x |
-| TD-7 | **`art.js` is about 1,480 lines** | `art.js` | Hard to navigate | Split by family (EN-5) | 2.0 |
+| ✅ TD-7 | **`art.js` is about 1,480 lines** | `art.js` | Hard to navigate | Split by family (EN-5). **Done in 1.10:** about 960 lines, mostly tiles and characters | 1.10 |
 | TD-8 | **Strings are inline in code** | `story.js` and others | Blocks localisation | String table (EN-6) | 2.0 |
 | ✅ TD-9 | **Bosses fight with fixed weighted moves** | `battle.js` | Late bosses feel flat | Phase scripts (DS-3): `phases` on each boss | 1.6 |
+| ✅ TD-10 | **Load-order bugs** | all of `src/` | A top-level value reading a name from a later file crashes the game on load (1.9's `LOOKS`) | `tools/load_check.js`, run by `build.py` and CI. **Done in 1.10** | 1.10 |
 
 ---
 
