@@ -2,8 +2,9 @@
 
 Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
 
-- **Current release:** 1.3.0, *Chapter VI: The Crownless King*. See [CHANGELOG.md](CHANGELOG.md#130--2026-11-23--chapter-vi-the-crownless-king).
-- **Next up:** 1.3.x *Stabilise*, then 1.4 *Comfort*.
+- **Current release:** 1.3.1. **In review:** 1.4.0 *Comfort*, which finishes most of 1.3.x and 1.4. See [CHANGELOG.md](CHANGELOG.md#unreleased).
+- **Next up:** the rest of 1.4 (key rebinding, text size, shop compare), then 1.5 *Hearts of the Lamplighters*.
+- ✅ marks items that are done.
 
 ## Contents
 
@@ -95,9 +96,9 @@ gantt
     dateFormat YYYY-MM-DD
     axisFormat %b %Y
     section Stabilise
-    1.3.x Stabilise                  :active, m13, 2026-11-24, 3w
+    1.3.x Stabilise                  :done, m13, 2026-11-23, 1d
     section Comfort
-    1.4 Comfort and accessibility    :m14, after m13, 6w
+    1.4 Comfort and accessibility    :active, m14, 2026-11-23, 4w
     section Heroes
     1.5 Hearts of the Lamplighters   :m15, after m14, 8w
     section Depth
@@ -112,8 +113,8 @@ gantt
 
 | Milestone | Theme | Headline | Target | Status |
 | --- | --- | --- | --- | --- |
-| **1.3.x** | Stabilise | Real-HP balance pass, mobile check, CI, tagged releases | Dec 2026 | 🟡 In progress |
-| **1.4** | Comfort | Save slots, auto-save, battle speed, gamepad, accessibility | Jan 2027 | ⚪ Planned |
+| **1.3.x** | Stabilise | Real-HP balance pass, mobile check, CI, tagged releases | Nov 2026 | ✅ Done in 1.4.0 except ST-2 and ST-4 |
+| **1.4** | Comfort | Save slots, auto-save, battle speed, gamepad, accessibility | Dec 2026 | 🟡 8 of 12 in 1.4.0 |
 | **1.5** | Heroes | A personal quest for each of the five heroes, with an ultimate weapon and a Limit | Mar 2027 | ⚪ Planned |
 | **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | May 2027 | ⚪ Planned |
 | **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ⚪ Planned |
@@ -132,7 +133,9 @@ flowchart LR
     C -. save slots and versioning .-> E
     D -. Lantern Board data format .-> E
     classDef now fill:#ffe9a8,stroke:#c0902a,color:#222
-    class S now
+    classDef done fill:#9adf9a,stroke:#2f6b4a,color:#122
+    class S done
+    class C now
 ```
 
 ---
@@ -145,16 +148,20 @@ Make 1.3.0 solid before building on it.
 
 | ID | Item | Why | Size |
 | --- | --- | --- | --- |
-| ST-1 | **Balance pass at real HP**: play Chapter VI's finale at Lv 42, 45 and 50 without debug changes | The 1.3.0 tests shrank boss HP to finish quickly | M |
+| ✅ ST-1 | **Balance pass at real HP**: play Chapter VI's finale at Lv 42, 45 and 50 without debug changes | The 1.3.0 tests shrank boss HP to finish quickly | M |
 | ST-2 | **Touch-device pass**: fishing, forge and Config on a phone in landscape | The fishing timing window was only tested with a keyboard | S |
-| ST-3 | **CI**: run `tools/playtest.py` on every pull request with GitHub Actions and attach screenshots | Catches broken saves and JS errors automatically | M |
+| ✅ ST-3 | **CI**: run `tools/playtest.py` on every pull request with GitHub Actions and attach screenshots | Catches broken saves and JS errors automatically | M |
 | ST-4 | **Tag releases** `v1.0.0`–`v1.3.0` and publish GitHub Releases | The changelog and itch builds can then link to real tags | S |
-| ST-5 | **itch.io update**: Chapter VI devlog, new screenshots, updated feature list | `docs/itch/itch-page.md` still describes 1.2 | S |
-| ST-6 | **Lastlight barrels** may hand out Abyss Ash early; decide whether that's intended | Forge balance | XS |
-| ST-7 | **Eclipse Cup EXP**: Orun gives 45,000 EXP on every rematch | Possible EXP farm; harmless at the level cap, but worth a decision | XS |
-| ST-8 | **Map labels** for Lastlight and the Abyss before visiting | The world map hides names until visited, so the new isle reads as blank | XS |
+| ✅ ST-5 | **itch.io update**: Chapter VI devlog, new screenshots, updated feature list | `docs/itch/itch-page.md` still describes 1.2 | S |
+| ✅ ST-6 | **Lastlight barrels** may hand out Abyss Ash early; decide whether that's intended | Forge balance | XS |
+| ✅ ST-7 | **Eclipse Cup EXP**: Orun gives 45,000 EXP on every rematch | Possible EXP farm; harmless at the level cap, but worth a decision | XS |
+| ✅ ST-8 | **Map labels** for Lastlight and the Abyss before visiting | The world map hides names until visited, so the new isle reads as blank | XS |
 
 **Done when:** a level-45 party can clear the finale in 12–20 rounds with no debug changes, the harness runs in CI, and `v1.3.1` is tagged.
+
+**Result (1.4.0).** The simulator showed the finale was long (25–28 rounds) but harmless. Both bosses now act twice per round with less HP: Lv 42 wins 68–82% in about 22 rounds, Lv 45 wins every time in 19, and Lv 50 finishes in 13. ST-6 and ST-7 were kept as they are (see the changelog). **Still open:** ST-2 (try fishing and the new R button on a real phone) and ST-4 (push the tags; the table under [Release process](#release-process) lists the commits).
+
+> **Observation:** at the levels the simulator assumed, the Hollow King (Lv 32) and the Astral Wyrm (Lv 36) were never lost, with almost no healing items used. They were left alone because nobody has measured what level players actually reach them at. A good follow-up is to add play-time level checkpoints to the harness and re-run the simulator at those levels.
 
 ### 1.4 · Comfort and accessibility
 
@@ -181,18 +188,18 @@ flowchart TB
 
 | ID | Item | Notes | Size |
 | --- | --- | --- | --- |
-| QL-1 | **Three save slots** plus an auto-save slot | `SAVE_KEY` becomes `lanternfall_save_v2_<slot>`, and v1 saves migrate into slot 1 | M |
-| QL-2 | **Auto-save** when entering a town or dungeon | A Config toggle, on by default | S |
-| QL-3 | **Battle speed** (1×, 2×, 4×) | Scale the `wait()` timers inside battles | S |
-| QL-4 | **Repeat last turn** (R / L button) | `lastCmd` already stores each hero's last menu choice | S |
-| QL-5 | **Gamepad support** through the Gamepad API | Map to the existing `Input` actions | M |
+| ✅ QL-1 | **Three save slots** plus an auto-save slot | `SAVE_KEY` becomes `lanternfall_save_v2_<slot>`, and v1 saves migrate into slot 1 | M |
+| ✅ QL-2 | **Auto-save** when entering a town or dungeon | A Config toggle, on by default | S |
+| ✅ QL-3 | **Battle speed** (1×, 2×, 4×) | Scale the `wait()` timers inside battles | S |
+| ✅ QL-4 | **Repeat last turn** (R / L button) | `lastCmd` already stores each hero's last menu choice | S |
+| ✅ QL-5 | **Gamepad support** through the Gamepad API | Map to the existing `Input` actions | M |
 | QL-6 | **Key rebinding** in Config | Edits `KEYMAP` and persists in `CFG` | S |
 | QL-7 | **Text size and high-contrast windows** | `drawWindow` and `font()` are already central, so this is cheap | S |
 | QL-8 | **Status icons** that don't rely on colour (PSN, SLP, SIL glyphs) | Accessibility | S |
-| QL-9 | **Dialogue backlog**: press a key to reread the last 20 lines | Story-heavy game | S |
-| QL-10 | **Optimise equipment** button in Equip | Picks the best stat total per slot | S |
+| ✅ QL-9 | **Dialogue backlog**: press a key to reread the last 20 lines | Story-heavy game | S |
+| ✅ QL-10 | **Optimise equipment** button in Equip | Picks the best stat total per slot | S |
 | QL-11 | **Shop: compare** every party member at once for armour and accessories | Extends `drawShopDetail` | S |
-| QL-12 | **Encounter toggle** in Config, unlocked after the ending | Today it's only the `?noenc` debug flag | XS |
+| ✅ QL-12 | **Encounter toggle** in Config, unlocked after the ending | Today it's only the `?noenc` debug flag | XS |
 
 ### 1.5 · Hearts of the Lamplighters
 
@@ -305,7 +312,7 @@ flowchart TB
 | ID | Item | Size |
 | --- | --- | --- |
 | EN-1 | Move monsters, items, shops and encounters to JSON with a schema and a validator | L |
-| EN-2 | **Save versioning**: `version` in the save, plus an ordered list of migrations | M |
+| ✅ EN-2 | **Save versioning** (done early, in 1.4): `version` in the save, plus an ordered list of migrations | M |
 | EN-3 | **In-browser map editor** for towns and fixed dungeon floors | L |
 | EN-4 | **Mod loader**: content folders merged at build time | M |
 | EN-5 | Split `art.js` into per-family files with a registry (`registerMonsterArt('crown', fn)`) | M |
@@ -347,21 +354,21 @@ quadrantChart
 
 | Rank | ID | Item | Milestone | Impact | Effort |
 | --- | --- | --- | --- | --- | --- |
-| 1 | ST-1 | Real-HP balance pass for Chapter VI | 1.3.x | High | Medium |
-| 2 | ST-3 | CI with the play-test harness | 1.3.x | High | Medium |
-| 3 | QL-3 | Battle speed | 1.4 | High | Low |
-| 4 | QL-1 | Save slots and migration | 1.4 | High | Medium |
+| 1 | ST-1 | Real-HP balance pass for Chapter VI ✅ | 1.3.x | High | Medium |
+| 2 | ST-3 | CI with the play-test harness ✅ | 1.3.x | High | Medium |
+| 3 | QL-3 | Battle speed ✅ | 1.4 | High | Low |
+| 4 | QL-1 | Save slots and migration ✅ | 1.4 | High | Medium |
 | 5 | ST-2 | Touch-device pass | 1.3.x | High | Low |
-| 6 | QL-4 | Repeat last turn | 1.4 | Medium | Low |
+| 6 | QL-4 | Repeat last turn ✅ | 1.4 | Medium | Low |
 | 7 | PL-1 | PWA offline install | 1.8 | Medium | Low |
-| 8 | QL-5 | Gamepad | 1.4 | Medium | Medium |
+| 8 | QL-5 | Gamepad ✅ | 1.4 | Medium | Medium |
 | 9 | HR-1 | Limit gauge | 1.5 | High | Medium |
 | 10 | HR-2–6 | Hero quests | 1.5 | High | High |
 | 11 | DS-2 | Cooking | 1.6 | Medium | Medium |
 | 12 | DS-3 | Enemy AI | 1.6 | Medium | Medium |
 | 13 | DS-1 | Lantern Board | 1.6 | Medium | High |
 | 14 | WD-1–2 | Drowned Kingdom | 1.7 | High | High |
-| 15 | EN-2 | Save versioning | 2.0 (could move earlier) | High | Medium |
+| 15 | EN-2 | Save versioning ✅ (moved up into 1.4 as TD-1) | 1.4 | High | Medium |
 
 ```mermaid
 pie showData
@@ -383,12 +390,12 @@ Things in the code today that will slow future work down.
 
 | ID | Debt | Where | Risk | Suggested fix | When |
 | --- | --- | --- | --- | --- | --- |
-| TD-1 | **No save version.** `lanternfall_save_v1` has no schema version | `party.js` | A future change to the save shape breaks old saves silently | Add `version`, plus a migration list | 1.4 |
+| ✅ TD-1 | **No save version.** `lanternfall_save_v1` has no schema version | `party.js` | A future change to the save shape breaks old saves silently | Add `version`, plus a migration list | 1.4 |
 | TD-2 | **Global state everywhere** (`G`, `Field`, `UI`) | all | Hard to test parts in isolation | Keep for 1.x; namespace in 2.0 | 2.0 |
-| TD-3 | **`index.html` is generated but committed**, so pull requests show a huge diff | `build.py` | Merge conflicts; reviewers skim | CI checks that `index.html` matches `build.py` output | 1.3.x |
+| ✅ TD-3 | **`index.html` is generated but committed**, so pull requests show a huge diff | `build.py` | Merge conflicts; reviewers skim | CI checks that `index.html` matches `build.py` output | 1.3.x |
 | TD-4 | **The world redraws every tile every frame** | `field.js`, `art.js` | Battery drain on phones | Cache static tiles on an offscreen canvas per screen | 1.8 |
-| TD-5 | **The music scheduler uses `setInterval`**, which background tabs throttle | `core.js` | Stutter when switching tabs | Pause on `visibilitychange`; schedule further ahead | 1.4 |
-| TD-6 | **Balance is checked by ad hoc simulation** | none | Regressions when stats change | Commit a battle simulator under `tools/` | 1.3.x |
+| ✅ TD-5 | **The music scheduler uses `setInterval`**, which background tabs throttle | `core.js` | Stutter when switching tabs | Pause on `visibilitychange`; schedule further ahead | 1.4 |
+| ✅ TD-6 | **Balance is checked by ad hoc simulation** | none | Regressions when stats change | Commit a battle simulator under `tools/` | 1.3.x |
 | TD-7 | **`art.js` is about 1,480 lines** | `art.js` | Hard to navigate | Split by family (EN-5) | 2.0 |
 | TD-8 | **Strings are inline in code** | `story.js` and others | Blocks localisation | String table (EN-6) | 2.0 |
 | TD-9 | **Bosses fight with fixed weighted moves** | `battle.js` | Late bosses feel flat | Phase scripts (DS-3) | 1.6 |
@@ -427,7 +434,7 @@ flowchart LR
 ```
 
 1. Work on a branch. Rebuild with `python3 build.py`, because `index.html` is generated.
-2. Run the play-test harness ([docs/TESTING.md](docs/TESTING.md)). It should report `ERRORS: 0`.
+2. Run the play-test harness ([docs/TESTING.md](docs/TESTING.md)). It should report `ERRORS: 0`. CI runs it on every pull request too.
 3. Add your changes to the `[Unreleased]` section of [CHANGELOG.md](CHANGELOG.md).
 4. After merging, choose the version:
    - a save-breaking change bumps the **major** number;

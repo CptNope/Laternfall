@@ -17,6 +17,7 @@ canvas{{display:block;image-rendering:auto;box-shadow:0 0 60px rgba(120,90,200,.
 #touch .b.on{{background:rgba(255,255,255,.35)}}
 #touch .d{{width:54px;height:54px}}
 #touch .r{{width:66px;height:66px;border-radius:50%}}
+#touch .s{{width:46px;height:46px;border-radius:50%;font-size:15px}}
 </style>
 </head>
 <body>
@@ -28,6 +29,7 @@ canvas{{display:block;image-rendering:auto;box-shadow:0 0 60px rgba(120,90,200,.
   <div class="b d" data-a="down" style="left:70px;bottom:24px">▼</div>
   <div class="b r" data-a="ok" style="right:20px;bottom:90px">A</div>
   <div class="b r" data-a="cancel" style="right:96px;bottom:40px">B</div>
+  <div class="b s" data-a="run" style="right:30px;bottom:170px" title="Run / repeat last turn">R</div>
 </div>
 <script>
 {js}

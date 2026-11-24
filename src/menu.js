@@ -53,9 +53,9 @@ async function openMainMenu() {
   const panel = openPanel(g => { drawPartyPanel(g); drawInfoPanel(g); });
   let idx = 0;
   while (true) {
-    const items = [{ label: 'Items' }, { label: 'Magic' }, { label: 'Equip' }, { label: 'Status' }, { label: 'Formation', disabled: G.party.length < 2 }, { label: 'Quests' }, { label: 'Bestiary' }, { label: 'Map' }, { label: 'Save' }, { label: 'Config' }, { label: 'Close' }];
-    const k = await listMenu({ x: 472, y: 16, w: 152, rows: 11, rowH: 24, items, index: idx });
-    if (k < 0 || k === 10) break;
+    const items = [{ label: 'Items' }, { label: 'Magic' }, { label: 'Equip' }, { label: 'Status' }, { label: 'Formation', disabled: G.party.length < 2 }, { label: 'Quests' }, { label: 'Bestiary' }, { label: 'Map' }, { label: 'Log', disabled: !DialogLog.length }, { label: 'Save' }, { label: 'Config' }, { label: 'Close' }];
+    const k = await listMenu({ x: 472, y: 16, w: 152, rows: 12, rowH: 24, items, index: idx });
+    if (k < 0 || k === 11) break;
     idx = k;
     if (k === 0) await itemsMenu();
     if (k === 1) await magicMenu();
@@ -65,28 +65,100 @@ async function openMainMenu() {
     if (k === 5) await questMenu();
     if (k === 6) await bestiaryMenu();
     if (k === 7) await worldMapView();
-    if (k === 8) {
-      const c = await choose(null, 'Record your journey? This will overwrite your previous save.', ['Save', 'Cancel'], 1);
-      if (c === 0) { if (saveGame()) { Audio_.sfx('save'); await narrate('Your journey has been recorded.'); } else await narrate('Saving failed — your browser blocked storage.'); }
-    }
-    if (k === 9) await configMenu();
+    if (k === 8) await dialogueLog();
+    if (k === 9) await saveToSlot();
+    if (k === 10) await configMenu();
   }
   closePanel(panel);
+}
+// ---------- dialogue log ----------
+async function dialogueLog() {
+  const lines = [];
+  for (const e of DialogLog) {
+    const ws = wrapText(ctx, e.msg, 520, font(14));
+    lines.push({ name: e.name, s: ws[0], spoken: !!e.name });
+    for (const w of ws.slice(1)) lines.push({ name: null, s: w, cont: true, spoken: !!e.name });
+  }
+  const view = 15;
+  let top = Math.max(0, lines.length - view);
+  await UI.push({
+    update() {
+      if (Input.p('up')) top = Math.max(0, top - 1);
+      if (Input.p('down')) top = Math.min(Math.max(0, lines.length - view), top + 1);
+      if (Input.p('ok') || Input.p('cancel')) { Audio_.sfx('cancel'); UI.close(this); }
+    },
+    draw(g) {
+      drawWindow(g, 16, 16, 608, 448);
+      text(g, 'Log', 32, 26, { size: 15, bold: true, color: '#ffe9a8' });
+      text(g, '↑↓ scroll · Enter close', 608, 28, { size: 12, align: 'right', color: '#b8c4ee' });
+      lines.slice(top, top + view).forEach((l, i) => {
+        const y = 56 + i * 26;
+        if (l.name && !l.cont) text(g, l.name, 32, y, { size: 13, bold: true, color: '#ffe9a8' });
+        text(g, l.s, 96, y, { size: 14, color: l.spoken ? '#fff' : '#c8d0f0' });
+      });
+    }
+  });
+}
+// ---------- save slots ----------
+function drawSlotPanel(g, slot) {
+  drawWindow(g, 300, 60, 324, 260);
+  const s = slotSummary(slot);
+  text(g, slot === 'auto' ? 'Auto-save' : `Slot ${slot}`, 316, 72, { size: 16, bold: true, color: '#ffe9a8' });
+  if (!s) { text(g, 'Empty', 462, 180, { size: 18, align: 'center', color: '#8792b8' }); return; }
+  text(g, s.when, 608, 74, { size: 12, align: 'right', color: '#b8c4ee' });
+  text(g, s.place, 316, 100, { size: 16 });
+  text(g, s.chapter + (s.ng ? `  ·  NG+${s.ng}` : ''), 316, 124, { size: 13, color: '#9ad8ff' });
+  s.d.party.slice(0, 5).forEach((m, i) => { drawChar(g, HEROES[m.id].look, 340 + i * 56, 210, 'down', 0, 1.3); text(g, `Lv${m.level}`, 340 + i * 56, 216, { size: 12, align: 'center', color: '#ffe9a8' }); });
+  text(g, 'Time', 316, 248, { size: 13, color: '#b8c4ee' }); text(g, s.time, 420, 248, { size: 14, align: 'right' });
+  text(g, 'Gold', 440, 248, { size: 13, color: '#b8c4ee' }); text(g, String(s.d.gold || 0), 608, 248, { size: 14, align: 'right', color: '#ffe9a8' });
+  const lit = [1, 2, 3, 4].map(n => s.d.flags['lantern' + n]);
+  lit.forEach((l, i) => circle(g, 324 + i * 22, 290, 7, l ? ['#ff9a3a', '#5af0d0', '#ff6a2a', '#ffe08a'][i] : 'rgba(255,255,255,.12)', '#fff', 1));
+  if (s.d.flags.lantern5) circle(g, 324 + 4 * 22, 290, 7, '#a8d8ff', '#fff', 1);
+  if (s.d.flags.lantern_abyss) circle(g, 324 + 5 * 22, 290, 7, '#b8a8ff', '#fff', 1);
+}
+// mode 'save' lists slots 1–3; 'load' adds the auto-save. Returns a slot id or null.
+async function pickSlot(mode, title, filter) {
+  const slots = mode === 'load' ? ALL_SLOTS : SAVE_SLOTS;
+  const label = sl => { const s = slotSummary(sl); return (sl === 'auto' ? 'Auto' : 'Slot ' + sl) + (s ? '' : '  —'); };
+  const sel = { v: Math.max(0, slots.indexOf(mode === 'load' ? latestSlot() : G.slot)) };
+  const panel = openPanel(g => drawSlotPanel(g, slots[sel.v]));
+  const k = await listMenu({ x: 16, y: 60, w: 270, rows: 4, title: title || (mode === 'save' ? 'Save to…' : 'Load…'), index: sel.v, onChange: i => sel.v = i,
+    items: slots.map(sl => { const s = slotSummary(sl); return { label: label(sl), right: s ? s.place.slice(0, 16) : '', disabled: mode === 'load' && (!s || (filter && !filter(s.d))), color: s && (!filter || filter(s.d)) ? '#fff' : '#8792b8' }; }) });
+  closePanel(panel);
+  return k < 0 ? null : slots[k];
+}
+async function saveToSlot() {
+  const slot = await pickSlot('save');
+  if (!slot) return false;
+  if (hasSave(slot) && slot !== G.slot) { const c = await choose(null, `Overwrite the journey in slot ${slot}?`, ['Overwrite', 'Cancel'], 1); if (c !== 0) return false; }
+  if (saveGame(slot)) { Audio_.sfx('save'); await narrate(`Your journey has been recorded in slot ${slot}.`); return true; }
+  await narrate('Saving failed — your browser blocked storage.'); return false;
+}
+// After an inn or a story milestone: one press saves to the current slot
+async function promptSave() {
+  const c = await choose(null, 'Record your journey?', [`Save to slot ${G.slot}`, 'Choose a slot', 'Not now'], 2);
+  if (c === 0 && saveGame(G.slot)) { Audio_.sfx('save'); await narrate(`Your journey has been recorded in slot ${G.slot}.`); }
+  if (c === 1) await saveToSlot();
 }
 async function configMenu() {
   let idx = 0;
   while (true) {
+    const cycle = (key, list, d) => { CFG[key] = ((CFG[key] || 0) + (d || 1) + list.length) % list.length; saveCfg(); };
+    const toggle = key => { CFG[key] = !CFG[key]; saveCfg(); };
     const rows = [
-      { label: 'Sound', right: Audio_.muted ? 'Off' : 'On', act: d => Audio_.toggleMute() },
-      { label: 'Auto-dash', right: CFG.dash ? 'On' : 'Off', act: d => { CFG.dash = !CFG.dash; saveCfg(); } },
-      { label: 'Text speed', right: TEXT_SPEEDS[CFG.textSpeed].label, act: d => { CFG.textSpeed = (CFG.textSpeed + (d || 1) + TEXT_SPEEDS.length) % TEXT_SPEEDS.length; saveCfg(); } },
-      { label: 'Done' }
+      { label: 'Sound', right: Audio_.muted ? 'Off' : 'On', act: () => Audio_.toggleMute(), help: 'Music and sound effects (or press M).' },
+      { label: 'Auto-dash', right: CFG.dash ? 'On' : 'Off', act: () => toggle('dash'), help: 'Run everywhere. Hold Shift (or R) to walk instead.' },
+      { label: 'Text speed', right: TEXT_SPEEDS[CFG.textSpeed || 0].label, act: d => cycle('textSpeed', TEXT_SPEEDS, d), help: 'How fast dialogue appears.' },
+      { label: 'Battle speed', right: BATTLE_SPEEDS[CFG.battleSpeed || 0].label, act: d => cycle('battleSpeed', BATTLE_SPEEDS, d), help: 'Speeds up battle animations. Messages still wait for you.' },
+      { label: 'Auto-save', right: CFG.autosave !== false ? 'On' : 'Off', act: () => { CFG.autosave = CFG.autosave === false; saveCfg(); }, help: 'Save to the Auto slot whenever you enter a town or dungeon.' },
+      { label: 'Encounters', right: !G.flags.ending ? '—' : CFG.noEnc ? 'Off' : 'On', disabled: !G.flags.ending, act: () => toggle('noEnc'), help: G.flags.ending ? 'Turn random battles off for exploring. Bosses still fight.' : 'Unlocked after you finish the story.' },
+      { label: 'Done', help: '' }
     ];
-    const helps = ['Toggle music and sound effects (or press M).', 'Run everywhere without holding Shift. Hold Shift to walk.', 'How fast dialogue appears.', ''];
+    const done = rows.length - 1;
     // Enter or Left/Right changes a setting; the menu re-opens to show the new value
-    const k = await listMenu({ x: 180, y: 120, w: 280, rows: 4, title: 'Config', items: rows, index: idx, help: i => helps[i], helpY: H - 52,
-      lr(i, d) { if (rows[i].act) { rows[i].act(d); Audio_.sfx('cursor'); UI.close(this, -2 - i); } } });
-    if (k === -1 || k === 3) return;
+    const k = await listMenu({ x: 170, y: 100, w: 300, rows: rows.length, title: 'Config', items: rows, index: idx, help: i => rows[i].help, helpY: H - 52,
+      lr(i, d) { if (rows[i].act && !rows[i].disabled) { rows[i].act(d); Audio_.sfx('cursor'); UI.close(this, -2 - i); } } });
+    if (k === -1 || k === done) return;
     if (k <= -2) { idx = -2 - k; continue; }
     idx = k;
     rows[k].act(1);
@@ -169,10 +241,12 @@ async function equipMenu() {
     const panel = openPanel(g => drawEquipPanel(g, m, preview.v));
     const preview = { v: null };
     const slot = await listMenu({
-      x: 360, y: 16, w: 264, rows: 2, title: memberName(m),
-      items: [{ label: 'Weapon', right: ITEMS[m.weapon] ? ITEMS[m.weapon].name : '—' }, { label: 'Armor', right: ITEMS[m.armor] ? ITEMS[m.armor].name : '—' }, { label: 'Accessory', right: ITEMS[m.acc] ? ITEMS[m.acc].name : '—' }], size: 14
+      x: 360, y: 16, w: 264, rows: 4, title: memberName(m),
+      items: [{ label: 'Weapon', right: ITEMS[m.weapon] ? ITEMS[m.weapon].name : '—' }, { label: 'Armor', right: ITEMS[m.armor] ? ITEMS[m.armor].name : '—' }, { label: 'Accessory', right: ITEMS[m.acc] ? ITEMS[m.acc].name : '—' }, { label: 'Optimise', right: 'weapon + armour', rcolor: '#9ad8ff' }], size: 14,
+      help: i => i === 3 ? 'Equip the best weapon and armour you own. Accessories are left alone.' : '', helpY: H - 52
     });
     if (slot < 0) { closePanel(panel); return; }
+    if (slot === 3) { closePanel(panel); const n = optimiseGear(m); Audio_.sfx(n ? 'item' : 'buzz'); toast(n ? `${memberName(m)}: equipped ${n} better item${n > 1 ? 's' : ''}` : 'Already the best you have'); continue; }
     const key = ['weapon', 'armor', 'acc'][slot];
     const kind = key;
     const opts = Object.keys(G.inv).filter(k => ITEMS[k].kind === kind && canEquip(ITEMS[k], m.id));
@@ -194,6 +268,23 @@ async function equipMenu() {
       m.hp = Math.min(m.hp, maxHp(m)); m.mp = Math.min(m.mp, maxMp(m));
     }
   }
+}
+// What each hero values in gear: fighters want ATK, casters MAG, Kestrel likes speed too
+const GEAR_WEIGHTS = { arin: { atk: 1, mag: 0.35 }, lyra: { mag: 1, atk: 0.15 }, oswin: { atk: 0.6, mag: 0.7 }, kestrel: { atk: 1, spd: 0.6 }, selene: { mag: 1, atk: 0.15 } };
+function gearScore(m, id) {
+  const it = ITEMS[id]; if (!it) return -1;
+  const w = GEAR_WEIGHTS[m.id] || { atk: 1 };
+  if (it.kind === 'armor') return (it.def || 0) + (it.mag || 0) * (w.mag || 0) * 0.6 + (it.spd || 0) * (w.spd || 0.3);
+  return (it.atk || 0) * (w.atk || 0) + (it.mag || 0) * (w.mag || 0) + (it.spd || 0) * (w.spd || 0);
+}
+function optimiseGear(m) {
+  let changed = 0;
+  for (const key of ['weapon', 'armor']) {
+    const best = Object.keys(G.inv).filter(k => ITEMS[k].kind === key && canEquip(ITEMS[k], m.id)).sort((a, b) => gearScore(m, b) - gearScore(m, a))[0];
+    if (best && gearScore(m, best) > gearScore(m, m[key])) { if (m[key]) addItem(m[key], 1); m[key] = best; addItem(best, -1); changed++; }
+  }
+  m.hp = Math.min(m.hp, maxHp(m)); m.mp = Math.min(m.mp, maxMp(m));
+  return changed;
 }
 function drawEquipPanel(g, m, prev) {
   drawWindow(g, 16, 16, 330, 304);
@@ -334,8 +425,7 @@ async function innStay(townId, price, keeper = 'Innkeeper') {
   Audio_.play(Audio_.curName, true);
   await fadeTo(0, 500);
   await say(keeper, 'Good morning! You look well rested.');
-  const s = await choose(null, 'Record your journey?', ['Save', 'Not now'], 1);
-  if (s === 0 && saveGame()) { Audio_.sfx('save'); await narrate('Your journey has been recorded.'); }
+  await promptSave();
 }
 
 // ---------- quest log ----------
@@ -418,7 +508,7 @@ async function worldMapView() {
       }
       for (const k in WORLD_LOC) {
         const L = WORLD_LOC[k], x = ox + L.x * sc + sc / 2, y = oy + L.y * sc + sc / 2;
-        const known = G.flags['visit_' + k];
+        const known = G.flags['visit_' + k] || (ISLE_LOCS.includes(k) && G.flags.isle);
         if (k === 'F' && !known && !G.flags.airship) continue;
         if (ISLE_LOCS.includes(k) && !G.flags.isle) continue;
         circle(g, x, y, 4.5, L.town ? '#fff4c8' : '#e88a6a', OUT, 1.5);

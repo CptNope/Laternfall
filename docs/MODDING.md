@@ -63,7 +63,8 @@ emberfox: {
   acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_blaze' }],  // weighted moves; 'attack' or an e_* skill
   drop: ['hipotion', 0.2],                      // item and chance after the battle
   mat: ['ember_core', 0.2],                     // forge material and chance (optional)
-  steal: 'ether'                                // what Kestrel can steal
+  steal: 'ether',                               // what Kestrel can steal
+  actions: 1                                    // optional: turns per round (late bosses use 2)
 },
 ```
 
@@ -85,6 +86,9 @@ Use a monster from the same area as a baseline. Final-area enemies sit at roughl
 | `def` | Halved and subtracted from hero physical damage |
 | `mag` | Added to skill power, **and** reduces hero spell damage by `mag × 0.4` |
 | `spd` | Turn order, run chance, steal chance, and how often heroes dodge |
+| `actions` | Turns per round. Doubles a boss's pressure; lower its HP to match |
+
+**Test a boss with the simulator.** Add a scenario to `SCENARIOS` in `tools/balance_sim.py` and run `python3 tools/balance_sim.py`. It fights the real battle code dozens of times and reports win rate, rounds and knockouts (see [TESTING.md](TESTING.md#balance-simulator)). Aim for about 70–85% wins at the recommended level with fair gear, and 12–22 rounds.
 
 ---
 
@@ -440,7 +444,9 @@ To add a table, write a function in `gentables.py` that stores markdown in `out[
 
 - [ ] Edited `src/` and ran `python3 build.py`
 - [ ] New progress is stored in **new** flags; old saves still load
-- [ ] Works with the touch D-pad and A/B buttons
+- [ ] Works with the touch D-pad and A/B buttons, and a gamepad
+- [ ] New or changed bosses checked with `tools/balance_sim.py`
+- [ ] Save shape changed? Bump `SAVE_VERSION` and add a migration ([ARCHITECTURE.md](ARCHITECTURE.md#versioning-and-migrations))
 - [ ] `python3 tools/playtest.py` reports `ERRORS: 0` (add a scenario for big features; see [TESTING.md](TESTING.md))
 - [ ] `python3 tools/gentables.py` re-run if `data.js` changed
 - [ ] `tools/check_mermaid.sh` passes if you touched diagrams

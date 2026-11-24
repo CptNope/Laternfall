@@ -1,7 +1,8 @@
 # Lanternfall — A Tale of the Four Flames
 
 [![Play on itch.io](https://img.shields.io/badge/play-itch.io-fa5c5c?logo=itchdotio&logoColor=white)](https://cptnope.itch.io/lanternfall)
-[![Version](https://img.shields.io/badge/version-1.3.0-e8c24a)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.4.0-e8c24a)](CHANGELOG.md)
+[![Play-test](https://github.com/CptNope/Laternfall/actions/workflows/playtest.yml/badge.svg)](https://github.com/CptNope/Laternfall/actions/workflows/playtest.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3a8fd0)](LICENSE)
 ![No asset files](https://img.shields.io/badge/assets-0%20files-7b3fa8)
 ![Runs offline](https://img.shields.io/badge/runs-from%20one%20HTML%20file-2f6b4a)
@@ -46,19 +47,20 @@ A classic 16-bit-style JRPG where **every pixel and every note is generated in c
 
 ### Controls
 
-| Action | Keyboard | Touch |
-| --- | --- | --- |
-| Move | Arrow keys / WASD | D-pad |
-| Confirm, talk, search, open | Enter, Space, Z, E | A |
-| Menu, back | Esc, X, Backspace, Q | B |
-| Walk faster | Hold Shift (or turn on auto-dash) | Auto-dash |
-| Land the airship | Enter while flying | A |
-| Fish (with a rod) | Enter while facing water | A |
-| Sound on/off | M | Menu → Config |
+| Action | Keyboard | Touch | Gamepad |
+| --- | --- | --- | --- |
+| Move | Arrow keys / WASD | D-pad | D-pad / left stick |
+| Confirm, talk, search, open | Enter, Space, Z, E | A | A |
+| Menu, back | Esc, X, Backspace, Q | B | B, Y or Start |
+| Walk faster | Hold Shift (or turn on auto-dash) | Hold R | Hold X |
+| Repeat last battle turn | Shift | R | X |
+| Land the airship | Enter while flying | A | A |
+| Fish (with a rod) | Enter while facing water | A | A |
+| Sound on/off | M | Menu → Config | Select |
 
-**Config** (Menu → Config) has sound, **auto-dash** (run everywhere without holding Shift, which helps on touch screens) and **text speed** (Normal, Fast or Instant). Settings are remembered between sessions.
+**Config** (Menu → Config) has sound, **auto-dash**, **text speed** (Normal, Fast, Instant), **battle speed** (1×, 2×, 4×), **auto-save**, and (after the ending) **encounters on/off**. Settings are remembered between sessions.
 
-Your progress saves to your browser's local storage. Save from the menu anywhere, or when you rest at an inn.
+**Saving:** three save slots plus an auto-save that writes whenever you enter a town or dungeon. Save from the menu anywhere, or with one press when you rest at an inn. On the title screen, *Continue* picks up your newest save and *Load Game* opens any slot. Saves from older versions move into slot 1 automatically.
 
 ---
 
@@ -182,6 +184,12 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 - A **bestiary** with stats, weaknesses, steals and drops, and a **world map** with your next objective marked
 - **New Game+**: finish the story to replay with your levels and gear against stronger enemies
 
+**Comfort**
+- Three save slots and auto-save, with versioned saves that upgrade themselves
+- Battle speed up to 4×, *repeat last turn* with one button, and a dialogue **Log**
+- **Gamepad** support, a touch **R** button, auto-dash, and adjustable text speed
+- **Equip → Optimise** puts on the best gear you own in one step
+
 **Sound**
 - An original chiptune soundtrack of 18 tracks (title, overworld, sea, sky, desert, towns, dungeons, the Spire, the Ashen Isle, the Abyss, battle, boss, two final battles, victory, ending, game over), sequenced live in Web Audio
 
@@ -304,7 +312,7 @@ flowchart LR
 | `src/menu.js` | Field menu (items, magic, equip, status, formation, quests, bestiary, world map, save, config), shops, inns |
 | `src/crafts.js` | The fishing mini-game and Orrin's forge |
 | `src/story.js` | NPC dialogue, cutscenes, story flags, quests, the arena, boss events, the title screen, the endings, the main loop |
-| `tools/` | The play-test harness, the guide-table generator and the diagram checker |
+| `tools/` | The play-test harness, the boss balance simulator, the guide-table generator and the diagram checker |
 
 **Debug:** add `?noenc` to the URL to turn off random encounters. There are more tricks in [TESTING.md](docs/TESTING.md#debugging-tricks).
 
@@ -317,7 +325,7 @@ flowchart LR
 | [Game guide](docs/GAME_GUIDE.md) | Players | Walkthrough, world, towns and shops, dungeons, every skill, combo, monster, boss, item, fish and recipe, battle formulas |
 | [Architecture](docs/ARCHITECTURE.md) | Developers | Build pipeline, modules, main loop, scenes, the script runner, maps and generation, rendering, battles, audio, save format, story flags |
 | [Modding guide](docs/MODDING.md) | Contributors | Step-by-step recipes for monsters, art, items, skills, combos, NPCs, quests, towns, dungeons, bosses, music, fish, recipes and cups |
-| [Testing guide](docs/TESTING.md) | Contributors | The headless play-test harness, its scenarios, debugging tricks, the planned CI |
+| [Testing guide](docs/TESTING.md) | Contributors | The headless play-test harness and its scenarios, the boss balance simulator, CI, debugging tricks |
 | [Roadmap](ROADMAP.md) | Everyone | Milestones 1.3.x to 2.0, the backlog, technical debt, the release process |
 | [Changelog](CHANGELOG.md) | Everyone | Every version since 1.0.0 |
 | [itch.io page copy](docs/itch/itch-page.md) | Store | Store text and assets |
@@ -329,8 +337,8 @@ flowchart LR
 ```mermaid
 timeline
     title Planned milestones
-    Dec 2026 : 1.3.x Stabilise : balance pass, CI, tagged releases
-    Jan 2027 : 1.4 Comfort : save slots, battle speed, gamepad, accessibility
+    Nov 2026 : 1.4 Comfort ✓ : save slots, battle speed, gamepad, CI, boss balance
+    Dec 2026 : 1.4.x : key rebinding, text size, shop compare
     Mar 2027 : 1.5 Heroes : a personal quest and a Limit for each hero
     May 2027 : 1.6 Depth : Lantern Board, cooking, smarter enemies
     Jul 2027 : 1.7 World : the Drowned Kingdom under the sea
@@ -345,7 +353,7 @@ The full plan, with priorities and technical debt, is in [ROADMAP.md](ROADMAP.md
 
 1. Read the [modding guide](docs/MODDING.md) to find where your change goes.
 2. Edit `src/`, then run `python3 build.py`.
-3. Run `python3 tools/playtest.py`; it should end with `ERRORS: 0`.
+3. Run `python3 tools/playtest.py`; it should end with `ERRORS: 0`. CI runs it on your pull request as well. If you touched a boss, run `python3 tools/balance_sim.py`.
 4. Add a line to [CHANGELOG.md](CHANGELOG.md) under `[Unreleased]`, and open a pull request.
 
 Ideas and bug reports are welcome as issues. [How to propose something](ROADMAP.md#how-to-propose-something) explains what helps.

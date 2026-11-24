@@ -9,6 +9,7 @@ Lanternfall has no unit tests. It's tested by **playing it**: either by hand in 
 - [Scenarios](#scenarios)
 - [How the harness works](#how-the-harness-works)
 - [Writing a new scenario](#writing-a-new-scenario)
+- [Balance simulator](#balance-simulator)
 - [Debugging tricks](#debugging-tricks)
 - [Docs checks](#docs-checks)
 - [Continuous integration](#continuous-integration)
@@ -66,6 +67,7 @@ The exit code is `0` when there were no errors and `1` otherwise, so it can gate
 | `orun` | Real battles against Orun, Ashen Isle monsters and Abyss monsters on their own backgrounds | Battles finish; materials drop | `10`–`12` |
 | `systems` | Gets the fishing rod, fishes until a catch, forges at Orrin's, toggles Config, opens the quest log and the Lastlight shop | A fish in the inventory; the Forgeheart Ring forged; `CFG` saved | `13`–`19` |
 | `newgame` | Starts a fresh game, walks with auto-dash, checks the isle is still underwater, fights an early encounter and an isle encounter | Party is Arin and Lyra at Lv 1; isle tiles are `~` before the ending; isle encounters use the `ash` background | `20`–`21` |
+| `comfort` | Seeds a 1.x save and checks it migrates into slot 1; saves to slot 2; auto-save on entering a town; Config; a battle at 4× where round 2 is repeated with Shift; equipment optimisation; the Log; a fake gamepad walking the hero; the post-game encounter toggle; the title's Load Game menu | Save `version` 2, legacy key kept, Auto slot written, repeat deals damage, the hero moves on gamepad input | `22`–`27` |
 | `readme` | Takes clean screenshots for the README | — | Lastlight, Ashen Isle, Abyss, Hollow Crown, fishing |
 
 ```mermaid
@@ -107,7 +109,7 @@ sequenceDiagram
 
 | Helper | Purpose |
 | --- | --- |
-| `boot(save)` | Writes a save to `localStorage`, reloads, and presses Enter to Continue |
+| `boot(save)` | Clears storage, writes a **1.x-format** save (so every scenario also exercises the migration), reloads, and presses Enter to Continue |
 | `run(js)` | Starts a game script, such as `await talkIone()` or `await enterLocation('G')`. It uses `void runScript(...)` so `evaluate` doesn't wait on the game's promise |
 | `until_idle()` | Presses Enter until no script is running and no UI is open (it skips through dialogue) |
 | `ev(js)` | Reads game state: `G.flags.isle`, `hasItem('forge_ring')`, `fishKinds()` |
@@ -147,6 +149,36 @@ Run it with `python3 tools/playtest.py index.html /tmp/shots myquest`.
 
 ---
 
+## Balance simulator
+
+`tools/balance_sim.py` answers "is this boss fair?" with numbers. It loads the game, injects `tools/balance_sim.js`, which makes the **real** battle code run instantly and lets a simple AI play the party, and then fights each scenario many times.
+
+```bash
+python3 tools/balance_sim.py        # 40 runs per scenario
+python3 tools/balance_sim.py 100    # more runs, steadier numbers
+```
+
+```text
+scenario                                 win  rounds (min-max)   KOs  items used per fight
+Chapter VI finale Lv42 shop              68%     22 (5-27)      2.4   hiether:3.5 remedy:3.5 plume:0.9 ...
+Chapter VI finale Lv42 mid               82%     22 (9-28)      1.4   hiether:4.0 xpotion:0.3 plume:0.5
+Chapter VI finale Lv50 best             100%     13 (11-16)      0.0   hiether:1.9 remedy:1.4
+```
+
+```mermaid
+flowchart LR
+    SC[Scenario<br/>party, level, gear, items, bosses] --> SET[setup: build the party<br/>with makeMember + gear]
+    SET --> B[new Battle with the real rules<br/>wait and fade made instant]
+    B --> AI[AI commandPhase<br/>revive, heal, Barrier, Remedy,<br/>then the strongest attack]
+    AI --> B
+    B --> R[win or lose, rounds, KOs, items]
+    R --> T[(table)]
+```
+
+**The AI** revives fallen heroes, heals when two or more are hurt, keeps Barrier and Rally up against bosses, cures a silenced healer with a Remedy, and otherwise uses each hero's strongest affordable attack. It never uses combos, so real players usually finish a little faster.
+
+**Loadouts:** `SHOP` (Lastlight shop gear), `MID` (loot from the Spire and the tomb, mid arena prizes) and `BEST` (forged weapons and top prizes). Add your own dictionaries for other points in the game.
+
 ## Debugging tricks
 
 Paste these into the browser console while playing.
@@ -163,7 +195,10 @@ Paste these into the browser console while playing.
 | Start a battle | `runScript(() => startBattle(['crown'], { boss: true, bg: 'crownfall' }))` |
 | Print the world | `console.log(getMap('world').tiles.map(r => r.join('')).join('\n'))` |
 | Current objective | `mainObjective()` |
-| Wipe the save | `localStorage.removeItem('lanternfall_save_v1')` |
+| List saves | `ALL_SLOTS.map(s => slotSummary(s))` |
+| Save to a slot | `saveGame('2')` |
+| Wipe every save | `localStorage.clear()` |
+| Fake a gamepad | `navigator.getGamepads = () => [{ buttons: Array.from({length: 16}, (_, i) => ({ pressed: i === 13 })), axes: [0, 0] }]` (holds D-pad down) |
 
 ---
 
@@ -180,24 +215,19 @@ tools/check_mermaid.sh README.md ROADMAP.md CHANGELOG.md docs/*.md
 
 ## Continuous integration
 
-Planned as [ROADMAP ST-3](../ROADMAP.md#13x--stabilise). A workflow like this would run the harness on every pull request:
+`.github/workflows/playtest.yml` runs on every pull request and on pushes to `main`. It:
 
-```yaml
-# .github/workflows/playtest.yml
-name: Play-test
-on: [pull_request]
-jobs:
-  playtest:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
-      - run: pip install playwright && playwright install --with-deps chromium
-      - name: Build and check that index.html is up to date
-        run: python3 build.py && git diff --exit-code index.html
-      - run: python3 tools/playtest.py index.html shots chapter systems newgame
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with: { name: screenshots, path: shots }
+1. builds the game and fails if `index.html` doesn't match `src/` (someone forgot to run `build.py`);
+2. regenerates the game guide and fails if `docs/GAME_GUIDE.md` is out of date;
+3. runs the `chapter`, `systems`, `newgame` and `comfort` scenarios, failing on any JavaScript error;
+4. uploads the screenshots as a `playtest-screenshots` artifact.
+
+```mermaid
+flowchart LR
+    PR[Pull request] --> B[python3 build.py<br/>git diff index.html]
+    B --> GG[gentables.py<br/>git diff GAME_GUIDE.md]
+    GG --> PT[playtest.py<br/>4 scenarios]
+    PT --> A[(screenshots artifact)]
+    PT -->|any JS error| X[❌ fail]
+    PT -->|ERRORS: 0| OK[✅ pass]
 ```

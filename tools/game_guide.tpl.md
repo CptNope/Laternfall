@@ -150,6 +150,12 @@ flowchart LR
 | 6 | Tomb of the First King | Dungeon, 3F | South of Mirage | Tomb |
 | 7 | Crownfall Abyss | Dungeon, 4F | The crater east of Lastlight | Crownfall Abyss |
 
+### Saving
+
+- **Three save slots** plus an **Auto** slot. Save from **Menu → Save** anywhere, or when you rest at an inn ("Save to slot N" is one press).
+- **Auto-save** writes to the Auto slot every time you enter a town or dungeon. You can turn it off in Config.
+- On the title screen, **Continue** loads your most recent save and **Load Game** lets you pick any slot. Saves from before 1.4 move into slot 1 automatically.
+
 ### Getting around
 
 | Mode | Unlocked by | Notes |
@@ -158,7 +164,7 @@ flowchart LR
 | Ship *Dawnrunner* | Brann, after the Tide Lantern | Walk onto it to sail and onto land to go ashore. Sea encounters. |
 | Airship *Aurora* | Beating Ozymar | Fly anywhere with no encounters. Press **Enter** to land on open ground (not forest). |
 
-**Encounters** come every 14–30 steps. The Sailor's Compass and the Moonfin Charm halve the rate.
+**Encounters** come every 14–30 steps. The Sailor's Compass and the Moonfin Charm halve the rate. After the ending, **Config → Encounters** can turn them off entirely.
 
 ---
 
@@ -251,6 +257,10 @@ sequenceDiagram
     end
 ```
 
+**Repeat last turn:** press **Shift**, **R** (touch) or **X** (gamepad) at the first hero's command menu to give everyone the same commands as last round. **Config → Battle speed** runs battles at 2× or 4×.
+
+Some late bosses **act twice per round**.
+
 ### Formulas
 
 | Thing | Formula |
@@ -294,7 +304,7 @@ xychart-beta
     title "Boss HP across the game"
     x-axis ["Gloomcap", "Warden", "Leviathan", "Vesper", "Ozymar", "King", "Unbound", "Wyrm", "Crown", "Orun"]
     y-axis "HP" 0 --> 13000
-    bar [520, 1900, 3500, 5000, 6200, 6500, 5200, 12000, 11000, 12500]
+    bar [520, 1900, 3500, 5000, 6200, 6500, 5200, 12000, 8000, 9500]
 ```
 
 **Tips**
@@ -305,7 +315,16 @@ xychart-beta
 - **Ozymar**: no weakness. Remedies for Hush; Barrier for Sandstorm.
 - **The Hollow King**: two phases back to back. The light of the three Lanterns fully heals the party between them.
 - **Astral Wyrm**: Dream Fog sends the whole party to sleep, so equip sleep immunity on at least two heroes.
-- **The Hollow Crown and Orun**: Crownfall hits everyone hard, so keep **Barrier** up. The Lamp of Lastlight heals you between the phases. **Last Light** (Arin + Lyra + Selene) is the strongest combo in the game.
+- **The Hollow Crown and Orun**: both **act twice per round** (the *Turns* column). Crownfall hits everyone hard, so keep **Barrier** up, and carry **Remedies**: Hollow Hush can silence Oswin. The Lamp of Lastlight heals you between the phases. **Last Light** (Arin + Lyra + Selene) is the strongest combo in the game.
+
+**How hard is the finale?** `tools/balance_sim.py` fights it 40 times per setup with the real battle code and a simple AI (no combos):
+
+| Party | Win rate | Median rounds | Knockouts per fight |
+| --- | --- | --- | --- |
+| Lv 42, Lastlight shop gear | 68% | 22 | 2.4 |
+| Lv 42, gear from the Spire and tomb | 82% | 22 | 1.4 |
+| Lv 45, gear from the Spire and tomb | 100% | 19 | 0.2 |
+| Lv 50, forged weapons, arena prizes | 100% | 13 | 0 |
 
 ---
 

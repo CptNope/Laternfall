@@ -13,8 +13,8 @@ timeline
     title Lanternfall releases
     2026-11-19 : 1.0.0 First playable : 1.1.0 Frostmere and side quests
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
-    2026-11-23 : 1.3.0 Chapter VI, fishing, forging
-    Unreleased : Docs, roadmap, changelog, test harness
+    2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness
+    Next : 1.4.0 Comfort, save slots, balance
 ```
 
 ```mermaid
@@ -34,10 +34,48 @@ xychart-beta
 | 1.2.0 | 2026-11-21 | 6 | 6 (16) | 52 (8) | 8 | 5 | [#2](https://github.com/CptNope/Laternfall/pull/2) |
 | 1.2.1 | 2026-11-21 | 6 | 6 (16) | 52 (8) | 8 | 5 | [#3](https://github.com/CptNope/Laternfall/pull/3) |
 | 1.3.0 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#4](https://github.com/CptNope/Laternfall/pull/4) |
+| 1.3.1 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#5](https://github.com/CptNope/Laternfall/pull/5) |
+| 1.4.0 | next | 7 | 7 (20) | 63 (10) | 10 | 5 | this release |
 
 ---
 
 ## [Unreleased]
+
+Planned as **1.4.0 · *Comfort***. It covers the 1.3.x *Stabilise* milestone and most of 1.4 *Comfort* from the [roadmap](ROADMAP.md).
+
+### Added
+- **Three save slots plus an auto-save slot.** Menu → Save opens a slot picker that shows the place, chapter, party levels, play time, gold, Lanterns lit and when it was saved. Inns offer a one-press "Save to slot N".
+- **Auto-save** to the Auto slot whenever you enter a town or dungeon (Config → Auto-save).
+- **Title screen:** *Continue* loads the newest save, the new *Load Game* picks a slot, and *New Game+* lets you choose which finished save to carry over.
+- **Save versioning.** Saves now carry a `version`, and `MIGRATIONS` upgrade older formats step by step when a slot is read.
+- **Battle speed** (1×, 2×, 4×) in Config. Battle animations and pauses speed up; messages still wait for you.
+- **Repeat last turn.** Press Shift, R or the gamepad's X at the first command menu to reuse last round's commands.
+- **Gamepad support** (standard mapping): D-pad or stick, A, B, X to run or repeat, Y or Start for the menu, Select to mute.
+- **A touch R button**: hold it to run (or to walk, with auto-dash on), and tap it in battle to repeat the last turn.
+- **Equip → Optimise** puts on the best weapon and armour you own for that hero.
+- **Menu → Log** shows the last 40 lines of dialogue.
+- **Config → Encounters** turns random battles off after the ending.
+- **`tools/balance_sim.py`**: a boss balance simulator that runs the real battle code instantly with an AI party and reports win rate, rounds, knockouts and items used.
+- **Continuous integration** (`.github/workflows/playtest.yml`): every pull request is built, `index.html` and the game guide are checked for staleness, and four play-test scenarios run headlessly.
+- A `comfort` play-test scenario covering saves, migration, battle speed, repeat, optimise, the Log, gamepad input and the encounter toggle.
+- Monsters can act more than once per round (`actions` in `MONSTERS`).
+
+### Changed
+- **The Chapter VI finale was rebalanced** using the simulator. The Hollow Crown (HP 11,000 → 8,000) and Orun (12,500 → 9,500) now **act twice per round**. Before, the fight took 25–28 rounds with no real danger. Now it's roughly a 70–80% win at the recommended Lv 42 and about 20 rounds, while a Lv 50 party finishes in about 13.
+- The world map labels Lastlight and the Crownfall Abyss as soon as the isle rises.
+- The field menu gained *Log*. Config gained *Battle speed*, *Auto-save* and *Encounters*.
+- Sound pauses while the browser tab is hidden.
+
+### Decided
+- *Eclipse Cup rematch EXP* (roadmap ST-7): kept. Rematches only matter once you're near the level cap.
+- *Abyss Ash in Lastlight's barrels* (roadmap ST-6): kept. It's a one-time find that gives the forge a head start.
+
+### Compatibility
+- Saves from 1.0–1.3 are copied into **slot 1** the first time 1.4 runs. The original save key is left untouched as a backup.
+
+---
+
+## [1.3.1] — 2026-11-23 · *Documentation*
 
 ### Added
 - `ROADMAP.md`, with planned milestones, themes, a prioritised backlog and the release process.
@@ -156,6 +194,7 @@ Shipped together with 1.0.0 in pull request #1.
 - The full main story, with an ending.
 
 [Unreleased]: https://github.com/CptNope/Laternfall/compare/main...HEAD
+[1.3.1]: https://github.com/CptNope/Laternfall/pull/5
 [1.3.0]: https://github.com/CptNope/Laternfall/pull/4
 [1.2.1]: https://github.com/CptNope/Laternfall/pull/3
 [1.2.0]: https://github.com/CptNope/Laternfall/pull/2

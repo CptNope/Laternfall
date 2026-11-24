@@ -64,8 +64,9 @@ const isLoc = c => typeof c === 'string' && LOC_RE.test(c);
 
 // ---------- settings (persist separately from the save file) ----------
 const CFG_KEY = 'lanternfall_cfg_v1';
+const BATTLE_SPEEDS = [{ label: '1×', v: 1 }, { label: '2×', v: 2 }, { label: '4×', v: 4 }];
 const TEXT_SPEEDS = [{ label: 'Normal', v: 55 }, { label: 'Fast', v: 120 }, { label: 'Instant', v: 99999 }];
-const CFG = { dash: false, textSpeed: 0, muted: false };
+const CFG = { dash: false, textSpeed: 0, muted: false, autosave: true, battleSpeed: 0, noEnc: false };
 try { Object.assign(CFG, JSON.parse(localStorage.getItem(CFG_KEY)) || {}); } catch (e) { }
 function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(CFG)); } catch (e) { } }
 
@@ -78,11 +79,26 @@ const KEYMAP = {
 };
 const ACTIONS = ['up', 'down', 'left', 'right', 'ok', 'cancel', 'mute', 'run'];
 const REPEAT = new Set(['up', 'down', 'left', 'right']);
+// Standard-mapping gamepads: D-pad or left stick, A ok, B cancel, X run, Y/Start menu, Select mute
+const PAD_BUTTONS = { 12: 'up', 13: 'down', 14: 'left', 15: 'right', 0: 'ok', 1: 'cancel', 3: 'cancel', 9: 'cancel', 2: 'run', 8: 'mute' };
 const Input = {
-  down: {}, vdown: {}, tapped: {}, hold: {}, fired: {}, anyKey: false,
+  down: {}, vdown: {}, tapped: {}, hold: {}, fired: {}, pad: {}, anyKey: false,
+  pollPad() {
+    this.pad = {};
+    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (const gp of pads) {
+      if (!gp) continue;
+      gp.buttons.forEach((b, i) => { if (b.pressed && PAD_BUTTONS[i]) this.pad[PAD_BUTTONS[i]] = true; });
+      const [ax, ay] = gp.axes;
+      if (ax < -0.5) this.pad.left = true; if (ax > 0.5) this.pad.right = true;
+      if (ay < -0.5) this.pad.up = true; if (ay > 0.5) this.pad.down = true;
+    }
+    if (Object.keys(this.pad).length) Audio_.unlock();
+  },
   update(dt) {
+    this.pollPad();
     for (const a of ACTIONS) {
-      const d = this.down[a] || this.vdown[a] || this.tapped[a];
+      const d = this.down[a] || this.vdown[a] || this.tapped[a] || this.pad[a];
       if (d) {
         const h = this.hold[a] || 0, nh = h + dt;
         const R0 = 0.3, RI = 0.08;
@@ -93,7 +109,7 @@ const Input = {
     }
   },
   p(a) { return !!this.fired[a]; },
-  h(a) { return !!(this.down[a] || this.vdown[a]); },
+  h(a) { return !!(this.down[a] || this.vdown[a] || this.pad[a]); },
   clear() { for (const a of ACTIONS) this.fired[a] = false; }
 };
 window.addEventListener('keydown', e => {
@@ -288,9 +304,12 @@ class Dialog {
     }
   }
 }
-function say(name, msg, opts) { return UI.push(new Dialog(name, msg, opts)); }
-function narrate(msg, opts = {}) { return UI.push(new Dialog(null, msg, opts)); }
-function choose(name, msg, choices, cancel) { return UI.push(new Dialog(name, msg, { choices, cancel })); }
+// the last 40 lines of dialogue, for the Log page of the field menu
+const DialogLog = [];
+function logLine(name, msg) { DialogLog.push({ name, msg }); if (DialogLog.length > 40) DialogLog.shift(); }
+function say(name, msg, opts) { logLine(name, msg); return UI.push(new Dialog(name, msg, opts)); }
+function narrate(msg, opts = {}) { logLine(null, msg); return UI.push(new Dialog(null, msg, opts)); }
+function choose(name, msg, choices, cancel) { logLine(name, msg); return UI.push(new Dialog(name, msg, { choices, cancel })); }
 async function sayAll(lines) { for (const [n, m] of lines) await say(n, m); }
 
 // Generic list menu
@@ -313,6 +332,7 @@ class ListMenu {
       if (Input.p('left')) { this.lr(this.index, -1); }
       if (Input.p('right')) { this.lr(this.index, 1); }
     }
+    if (this.hotkeys) for (const a in this.hotkeys) if (Input.p(a)) { UI.close(this, this.hotkeys[a]); return; }
     if (Input.p('ok') && n) {
       const it = this.items[this.index];
       if (it.disabled) { Audio_.sfx('buzz'); return; }
@@ -671,3 +691,8 @@ const Audio_ = {
   }
 };
 Audio_.muted = !!CFG.muted;
+// Pause all sound while the tab is hidden; background tabs throttle the music scheduler anyway
+document.addEventListener('visibilitychange', () => {
+  if (!Audio_.ac) return;
+  if (document.hidden) Audio_.ac.suspend(); else Audio_.ac.resume();
+});

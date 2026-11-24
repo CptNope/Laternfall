@@ -13,6 +13,7 @@ canvas{display:block;image-rendering:auto;box-shadow:0 0 60px rgba(120,90,200,.2
 #touch .b.on{background:rgba(255,255,255,.35)}
 #touch .d{width:54px;height:54px}
 #touch .r{width:66px;height:66px;border-radius:50%}
+#touch .s{width:46px;height:46px;border-radius:50%;font-size:15px}
 </style>
 </head>
 <body>
@@ -24,6 +25,7 @@ canvas{display:block;image-rendering:auto;box-shadow:0 0 60px rgba(120,90,200,.2
   <div class="b d" data-a="down" style="left:70px;bottom:24px">▼</div>
   <div class="b r" data-a="ok" style="right:20px;bottom:90px">A</div>
   <div class="b r" data-a="cancel" style="right:96px;bottom:40px">B</div>
+  <div class="b s" data-a="run" style="right:30px;bottom:170px" title="Run / repeat last turn">R</div>
 </div>
 <script>
 'use strict';
@@ -92,8 +94,9 @@ const isLoc = c => typeof c === 'string' && LOC_RE.test(c);
 
 // ---------- settings (persist separately from the save file) ----------
 const CFG_KEY = 'lanternfall_cfg_v1';
+const BATTLE_SPEEDS = [{ label: '1×', v: 1 }, { label: '2×', v: 2 }, { label: '4×', v: 4 }];
 const TEXT_SPEEDS = [{ label: 'Normal', v: 55 }, { label: 'Fast', v: 120 }, { label: 'Instant', v: 99999 }];
-const CFG = { dash: false, textSpeed: 0, muted: false };
+const CFG = { dash: false, textSpeed: 0, muted: false, autosave: true, battleSpeed: 0, noEnc: false };
 try { Object.assign(CFG, JSON.parse(localStorage.getItem(CFG_KEY)) || {}); } catch (e) { }
 function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(CFG)); } catch (e) { } }
 
@@ -106,11 +109,26 @@ const KEYMAP = {
 };
 const ACTIONS = ['up', 'down', 'left', 'right', 'ok', 'cancel', 'mute', 'run'];
 const REPEAT = new Set(['up', 'down', 'left', 'right']);
+// Standard-mapping gamepads: D-pad or left stick, A ok, B cancel, X run, Y/Start menu, Select mute
+const PAD_BUTTONS = { 12: 'up', 13: 'down', 14: 'left', 15: 'right', 0: 'ok', 1: 'cancel', 3: 'cancel', 9: 'cancel', 2: 'run', 8: 'mute' };
 const Input = {
-  down: {}, vdown: {}, tapped: {}, hold: {}, fired: {}, anyKey: false,
+  down: {}, vdown: {}, tapped: {}, hold: {}, fired: {}, pad: {}, anyKey: false,
+  pollPad() {
+    this.pad = {};
+    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (const gp of pads) {
+      if (!gp) continue;
+      gp.buttons.forEach((b, i) => { if (b.pressed && PAD_BUTTONS[i]) this.pad[PAD_BUTTONS[i]] = true; });
+      const [ax, ay] = gp.axes;
+      if (ax < -0.5) this.pad.left = true; if (ax > 0.5) this.pad.right = true;
+      if (ay < -0.5) this.pad.up = true; if (ay > 0.5) this.pad.down = true;
+    }
+    if (Object.keys(this.pad).length) Audio_.unlock();
+  },
   update(dt) {
+    this.pollPad();
     for (const a of ACTIONS) {
-      const d = this.down[a] || this.vdown[a] || this.tapped[a];
+      const d = this.down[a] || this.vdown[a] || this.tapped[a] || this.pad[a];
       if (d) {
         const h = this.hold[a] || 0, nh = h + dt;
         const R0 = 0.3, RI = 0.08;
@@ -121,7 +139,7 @@ const Input = {
     }
   },
   p(a) { return !!this.fired[a]; },
-  h(a) { return !!(this.down[a] || this.vdown[a]); },
+  h(a) { return !!(this.down[a] || this.vdown[a] || this.pad[a]); },
   clear() { for (const a of ACTIONS) this.fired[a] = false; }
 };
 window.addEventListener('keydown', e => {
@@ -316,9 +334,12 @@ class Dialog {
     }
   }
 }
-function say(name, msg, opts) { return UI.push(new Dialog(name, msg, opts)); }
-function narrate(msg, opts = {}) { return UI.push(new Dialog(null, msg, opts)); }
-function choose(name, msg, choices, cancel) { return UI.push(new Dialog(name, msg, { choices, cancel })); }
+// the last 40 lines of dialogue, for the Log page of the field menu
+const DialogLog = [];
+function logLine(name, msg) { DialogLog.push({ name, msg }); if (DialogLog.length > 40) DialogLog.shift(); }
+function say(name, msg, opts) { logLine(name, msg); return UI.push(new Dialog(name, msg, opts)); }
+function narrate(msg, opts = {}) { logLine(null, msg); return UI.push(new Dialog(null, msg, opts)); }
+function choose(name, msg, choices, cancel) { logLine(name, msg); return UI.push(new Dialog(name, msg, { choices, cancel })); }
 async function sayAll(lines) { for (const [n, m] of lines) await say(n, m); }
 
 // Generic list menu
@@ -341,6 +362,7 @@ class ListMenu {
       if (Input.p('left')) { this.lr(this.index, -1); }
       if (Input.p('right')) { this.lr(this.index, 1); }
     }
+    if (this.hotkeys) for (const a in this.hotkeys) if (Input.p(a)) { UI.close(this, this.hotkeys[a]); return; }
     if (Input.p('ok') && n) {
       const it = this.items[this.index];
       if (it.disabled) { Audio_.sfx('buzz'); return; }
@@ -699,6 +721,11 @@ const Audio_ = {
   }
 };
 Audio_.muted = !!CFG.muted;
+// Pause all sound while the tab is hidden; background tabs throttle the music scheduler anyway
+document.addEventListener('visibilitychange', () => {
+  if (!Audio_.ac) return;
+  if (document.hidden) Audio_.ac.suspend(); else Audio_.ac.resume();
+});
 
 'use strict';
 // ============================================================
@@ -1018,8 +1045,8 @@ const MONSTERS = {
   abyssooze: { name: 'Abyss Ooze', fam: 'slime', c: ['#4a1a4a', '#100410'], hp: 2000, atk: 196, def: 96, mag: 188, spd: 18, xp: 760, gold: 520, weak: ['holy'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_eclipse' }, { w: 1, a: 'e_hush' }], steal: 'hiether', mat: ['abyss_ash', 0.2] },
   herald: { name: 'Hollow Herald', fam: 'witch', c: ['#0a0a1a', '#e8c84a', '#a8a8ff'], hp: 2100, atk: 140, def: 88, mag: 206, spd: 24, xp: 820, gold: 560, weak: ['holy'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_heal' }, { w: 1, a: 'e_nightsong' }], steal: 'elixir', mat: ['dusk_silk', 0.2] },
   gloamknight: { name: 'Gloam Knight', fam: 'knight', c: ['#2a2a3a', '#0a0a14', '#e8e8ff'], hp: 2800, atk: 240, def: 124, mag: 70, spd: 20, xp: 960, gold: 680, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }, { w: 1, a: 'e_shatter' }], drop: ['megalixir', 0.1], steal: 'megalixir', mat: ['abyss_ash', 0.25] },
-  crown: { name: 'The Hollow Crown', fam: 'crown', boss: true, size: 1.1, c: ['#e8c84a', '#3a2a3a', '#ff5ac8'], hp: 11000, atk: 205, def: 92, mag: 192, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'e_crownfall' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_hushall' }, { w: 1, a: 'e_dreamfog' }, { w: 1, a: 'e_meteor' }], steal: 'megalixir' },
-  orun: { name: 'Orun, the Night-Bearer', fam: 'king', pale: true, boss: true, size: 1.15, c: ['#3a3a5a', '#c8c8e8', '#8ad8ff'], hp: 12500, atk: 232, def: 98, mag: 204, spd: 34, xp: 45000, gold: 25000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_nightsong' }, { w: 1, a: 'e_starbreath' }], steal: 'megalixir' },
+  crown: { name: 'The Hollow Crown', fam: 'crown', boss: true, actions: 2, size: 1.1, c: ['#e8c84a', '#3a2a3a', '#ff5ac8'], hp: 8000, atk: 205, def: 92, mag: 192, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'e_crownfall' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_hushall' }, { w: 1, a: 'e_dreamfog' }, { w: 1, a: 'e_meteor' }], steal: 'megalixir' },
+  orun: { name: 'Orun, the Night-Bearer', fam: 'king', pale: true, boss: true, actions: 2, size: 1.15, c: ['#3a3a5a', '#c8c8e8', '#8ad8ff'], hp: 9500, atk: 232, def: 98, mag: 204, spd: 34, xp: 45000, gold: 25000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_nightsong' }, { w: 1, a: 'e_starbreath' }], steal: 'megalixir' },
   king2: { name: 'Hollow King, Unbound', fam: 'king2', boss: true, size: 1.3, c: ['#05020a', '#ff5ac8', '#5affe8'], hp: 5200, atk: 175, def: 78, mag: 148, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_blaze' }], steal: 'megalixir' }
 };
 
@@ -3113,7 +3140,7 @@ const G = {
   party: [], inv: {}, gold: 0, flags: {}, playTime: 0,
   mapId: 'world', x: 0, y: 0, dir: 'down',
   ship: null, onShip: false, airship: null, inAir: false, carry: null, encSteps: 20, lastInn: null, seen: {}, killed: {},
-  scene: null, maps: {}
+  scene: null, maps: {}, slot: '1'
 };
 function makeMember(id, level = 1) {
   const d = HEROES[id];
@@ -3168,27 +3195,84 @@ function hasItem(id) { return (G.inv[id] || 0) > 0; }
 function healAll() { for (const m of G.party) { m.hp = maxHp(m); m.mp = maxMp(m); m.status = {}; } }
 
 // ---------- save / load ----------
-const SAVE_KEY = 'lanternfall_save_v1';
-function saveGame() {
-  const data = {
+// Three manual slots plus an auto-save slot. Every save carries a `version`; older saves are
+// upgraded by MIGRATIONS in order when they are read, so the save shape can change safely.
+const SAVE_VERSION = 2;
+const SAVE_PREFIX = 'lanternfall_save_v2_';
+const LEGACY_SAVE_KEY = 'lanternfall_save_v1';          // 1.0–1.3: a single slot, no version
+const SAVE_SLOTS = ['1', '2', '3'];
+const ALL_SLOTS = [...SAVE_SLOTS, 'auto'];
+const MIGRATIONS = {
+  // v1 → v2: saves gained a version and a timestamp; nothing else changed shape
+  1: d => ({ ...d, version: 2, savedAt: d.savedAt || 0 })
+};
+function migrateSave(d) {
+  if (!d) return null;
+  let v = d.version || 1;
+  while (v < SAVE_VERSION) { if (!MIGRATIONS[v]) return null; d = MIGRATIONS[v](d); v = d.version; }
+  return d;
+}
+function readSlot(slot) {
+  try { return migrateSave(JSON.parse(localStorage.getItem(SAVE_PREFIX + slot))); } catch (e) { return null; }
+}
+// One-time upgrade: copy a 1.x save into slot 1 (the old key is left alone as a backup)
+(function migrateLegacySave() {
+  try {
+    const old = localStorage.getItem(LEGACY_SAVE_KEY);
+    if (!old || localStorage.getItem(SAVE_PREFIX + '1')) return;
+    const d = migrateSave(JSON.parse(old));
+    if (d) localStorage.setItem(SAVE_PREFIX + '1', JSON.stringify(d));
+  } catch (e) { }
+})();
+function saveData() {
+  return {
+    version: SAVE_VERSION, savedAt: Date.now(),
     party: G.party.map(m => ({ id: m.id, level: m.level, xp: m.xp, hp: m.hp, mp: m.mp, weapon: m.weapon, armor: m.armor, acc: m.acc || null })),
     seen: G.seen, killed: G.killed,
     inv: G.inv, gold: G.gold, flags: G.flags, playTime: G.playTime,
     mapId: G.mapId, x: G.x, y: G.y, dir: G.dir, ship: G.ship, onShip: G.onShip, lastInn: G.lastInn, airship: G.airship, inAir: G.inAir, carry: G.carry
   };
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); return true; } catch (e) { return false; }
 }
-function hasSave() { try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; } }
-function loadGame() {
-  let d;
-  try { d = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) { return false; }
+function saveGame(slot = G.slot || '1') {
+  try {
+    localStorage.setItem(SAVE_PREFIX + slot, JSON.stringify(saveData()));
+    if (slot !== 'auto') G.slot = slot;
+    return true;
+  } catch (e) { return false; }
+}
+function autoSave() { if (CFG.autosave !== false && G.party.length) { if (saveGame('auto')) toast('Auto-saved'); } }
+function hasSave(slot) { return slot ? !!readSlot(slot) : ALL_SLOTS.some(s => readSlot(s)); }
+function latestSlot() {
+  let best = null, t = -1;
+  for (const s of ALL_SLOTS) { const d = readSlot(s); if (d && d.savedAt > t) { t = d.savedAt; best = s; } }
+  return best;
+}
+function loadGame(slot = latestSlot()) {
+  const d = slot && readSlot(slot);
   if (!d) return false;
   G.party = d.party.map(p => { const m = { acc: null, ...p, status: {} }; m.hp = clamp(m.hp, 0, maxHp(m)); m.mp = clamp(m.mp, 0, maxMp(m)); return m; });
   G.seen = d.seen || {}; G.killed = d.killed || {};
   G.inv = d.inv || {}; G.gold = d.gold || 0; G.flags = d.flags || {}; G.playTime = d.playTime || 0;
   G.mapId = d.mapId; G.x = d.x; G.y = d.y; G.dir = d.dir || 'down';
   G.ship = d.ship || null; G.onShip = !!d.onShip; G.lastInn = d.lastInn || null; G.airship = d.airship || null; G.inAir = !!d.inAir; G.carry = d.carry || null;
+  G.slot = slot === 'auto' ? (G.slot || '1') : slot;
   return true;
+}
+// A short description of a save, for the slot menus
+function placeName(mapId) {
+  if (!mapId || mapId === 'world') return 'World map';
+  if (TOWN_DEFS[mapId]) return TOWN_DEFS[mapId].name;
+  if (mapId.startsWith('in:')) { const t = mapId.split(':')[1]; return TOWN_DEFS[t] ? TOWN_DEFS[t].name : 'Indoors'; }
+  const [did, f] = mapId.split(':'), D = DUNGEONS[did];
+  return D ? `${D.name}${D.floors > 1 ? ' ' + (+f + 1) + 'F' : ''}` : mapId;
+}
+function slotSummary(slot) {
+  const d = readSlot(slot);
+  if (!d) return null;
+  const f = d.flags || {};
+  const chapter = f.chapter6 ? 'Chapter VI done' : f.isle ? 'Chapter VI' : f.ending ? 'Post-game' : f.lantern3 ? 'Act IV' : f.lantern2 ? 'Act III' : f.lantern1 ? 'Act II' : 'Act I';
+  return { d, place: placeName(d.mapId), time: fmtTime(d.playTime || 0), lv: Math.max(...d.party.map(m => m.level)), chapter, ng: f.ngplus || 0,
+    when: d.savedAt ? new Date(d.savedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Before 1.4' };
 }
 function fmtTime(s) { s = Math.floor(s); const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60; return `${h}:${String(m).padStart(2, '0')}`; }
 
@@ -3411,7 +3495,7 @@ const Field = {
     }
   },
   encounterCheck(w) {
-    if (NO_ENC || G.flags.noEnc) return;
+    if (NO_ENC || G.flags.noEnc || (CFG.noEnc && G.flags.ending)) return;
     G.encSteps -= partyHasAcc('fewer') ? w * 0.5 : w;
     if (G.encSteps > 0) return;
     G.encSteps = irnd(14, 30);
@@ -3556,6 +3640,7 @@ async function enterLocation(ch) {
     if (ey === d.h - 1) { sy = ey - 1; dir = 'up'; } else if (ex === 0) { sx = 1; dir = 'right'; }
     await changeMap(L.town, sx, sy, dir);
     await onEnterTown(L.town);
+    autoSave();
   } else {
     const ok = await canEnterDungeon(L.dungeon);
     if (!ok) return;
@@ -3563,6 +3648,7 @@ async function enterLocation(ch) {
     const [x, y] = freeNeighbor(m, m.up.x, m.up.y);
     await changeMap(m.id, x, y, 'down');
     await onEnterDungeon(L.dungeon);
+    autoSave();
   }
 }
 async function leaveTown() {
@@ -3928,6 +4014,7 @@ class Battle {
       bar(g, 506, y + 20, 34, 3, m.mp / Math.max(1, maxMp(m)), '#6aa8ff');
       text(g, `Lv${m.level}`, 618, y + 5, { size: 12, color: '#ffe9a8', align: 'right' });
     });
+    if (this.active >= 0 && this.prevCmds && !this.prevCmds.some(c => c && c.type === 'run')) text(g, 'Shift / R / X: repeat last turn', 12, 312, { size: 12, color: 'rgba(220,228,255,.85)' });
     if (this.msg) {
       g.font = font(17, true);
       const w = Math.max(220, g.measureText(this.msg).width + 50);
@@ -4150,7 +4237,8 @@ class Battle {
       // build order
       const order = [];
       party.forEach((c, i) => { if (c && c.type !== 'partner') order.push({ side: 'p', i, c, spd: stat(BP()[i], 'spd') * rnd(0.8, 1.2) + (c.type === 'defend' ? 999 : 0) }); });
-      if (!this.preempt) this.enemies.forEach((e, i) => { if (e.alive) order.push({ side: 'e', i, spd: e.def.spd * rnd(0.8, 1.2) }); });
+      // late bosses may act more than once per round (def.actions)
+      if (!this.preempt) this.enemies.forEach((e, i) => { if (e.alive) for (let a = 0; a < (e.def.actions || 1); a++) order.push({ side: 'e', i, spd: e.def.spd * rnd(0.8, 1.2) - a * 6 }); });
       this.preempt = false;
       order.sort((a, b) => b.spd - a.spd);
       this.pa.forEach(p => p.defend = false);
@@ -4206,6 +4294,11 @@ class Battle {
       this.pa[i].dx = -14;
       const c = await this.chooseCommand(m, i);
       this.pa[i].dx = 0;
+      if (c === 'repeat') {
+        // re-use last round's commands for everyone who can still act
+        const P = BP();
+        return this.prevCmds.map((pc, j) => pc && alive(P[j]) && !P[j].status.sleep ? { ...pc } : null);
+      }
       if (c === 'back') {
         let j = i - 1; while (j >= 0 && (!alive(BP()[j]) || BP()[j].status.sleep)) j--;
         if (j >= 0 && cmds[j] && cmds[j].type === 'partner') j = cmds[j].from;
@@ -4221,6 +4314,7 @@ class Battle {
       }
       i++;
     }
+    this.prevCmds = cmds.slice();
     return cmds;
   }
   async chooseCommand(m, idx) {
@@ -4236,7 +4330,9 @@ class Battle {
         { label: 'Defend' },
         { label: 'Run', disabled: !!this.opts.boss }
       ];
-      const k = await listMenu({ x: 8, y: 330, w: 200, rows: 6, rowH: 21, items, index: this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: 15 });
+      const canRepeat = this.prevCmds && !this.prevCmds.some(c => c && c.type === 'run');
+      const k = await listMenu({ x: 8, y: 330, w: 200, rows: 6, rowH: 21, items, index: this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: 15, hotkeys: canRepeat ? { run: -10 } : null });
+      if (k === -10) return 'repeat';
       this.lastCmd = this.lastCmd || {}; if (k >= 0) this.lastCmd[idx] = k;
       if (k < 0) return 'back';
       if (k === 0) { const tg = await this.pickTarget('enemy'); if (tg !== null && tg !== undefined) return { type: 'attack', target: tg }; continue; }
@@ -4745,9 +4841,9 @@ async function openMainMenu() {
   const panel = openPanel(g => { drawPartyPanel(g); drawInfoPanel(g); });
   let idx = 0;
   while (true) {
-    const items = [{ label: 'Items' }, { label: 'Magic' }, { label: 'Equip' }, { label: 'Status' }, { label: 'Formation', disabled: G.party.length < 2 }, { label: 'Quests' }, { label: 'Bestiary' }, { label: 'Map' }, { label: 'Save' }, { label: 'Config' }, { label: 'Close' }];
-    const k = await listMenu({ x: 472, y: 16, w: 152, rows: 11, rowH: 24, items, index: idx });
-    if (k < 0 || k === 10) break;
+    const items = [{ label: 'Items' }, { label: 'Magic' }, { label: 'Equip' }, { label: 'Status' }, { label: 'Formation', disabled: G.party.length < 2 }, { label: 'Quests' }, { label: 'Bestiary' }, { label: 'Map' }, { label: 'Log', disabled: !DialogLog.length }, { label: 'Save' }, { label: 'Config' }, { label: 'Close' }];
+    const k = await listMenu({ x: 472, y: 16, w: 152, rows: 12, rowH: 24, items, index: idx });
+    if (k < 0 || k === 11) break;
     idx = k;
     if (k === 0) await itemsMenu();
     if (k === 1) await magicMenu();
@@ -4757,28 +4853,100 @@ async function openMainMenu() {
     if (k === 5) await questMenu();
     if (k === 6) await bestiaryMenu();
     if (k === 7) await worldMapView();
-    if (k === 8) {
-      const c = await choose(null, 'Record your journey? This will overwrite your previous save.', ['Save', 'Cancel'], 1);
-      if (c === 0) { if (saveGame()) { Audio_.sfx('save'); await narrate('Your journey has been recorded.'); } else await narrate('Saving failed — your browser blocked storage.'); }
-    }
-    if (k === 9) await configMenu();
+    if (k === 8) await dialogueLog();
+    if (k === 9) await saveToSlot();
+    if (k === 10) await configMenu();
   }
   closePanel(panel);
+}
+// ---------- dialogue log ----------
+async function dialogueLog() {
+  const lines = [];
+  for (const e of DialogLog) {
+    const ws = wrapText(ctx, e.msg, 520, font(14));
+    lines.push({ name: e.name, s: ws[0], spoken: !!e.name });
+    for (const w of ws.slice(1)) lines.push({ name: null, s: w, cont: true, spoken: !!e.name });
+  }
+  const view = 15;
+  let top = Math.max(0, lines.length - view);
+  await UI.push({
+    update() {
+      if (Input.p('up')) top = Math.max(0, top - 1);
+      if (Input.p('down')) top = Math.min(Math.max(0, lines.length - view), top + 1);
+      if (Input.p('ok') || Input.p('cancel')) { Audio_.sfx('cancel'); UI.close(this); }
+    },
+    draw(g) {
+      drawWindow(g, 16, 16, 608, 448);
+      text(g, 'Log', 32, 26, { size: 15, bold: true, color: '#ffe9a8' });
+      text(g, '↑↓ scroll · Enter close', 608, 28, { size: 12, align: 'right', color: '#b8c4ee' });
+      lines.slice(top, top + view).forEach((l, i) => {
+        const y = 56 + i * 26;
+        if (l.name && !l.cont) text(g, l.name, 32, y, { size: 13, bold: true, color: '#ffe9a8' });
+        text(g, l.s, 96, y, { size: 14, color: l.spoken ? '#fff' : '#c8d0f0' });
+      });
+    }
+  });
+}
+// ---------- save slots ----------
+function drawSlotPanel(g, slot) {
+  drawWindow(g, 300, 60, 324, 260);
+  const s = slotSummary(slot);
+  text(g, slot === 'auto' ? 'Auto-save' : `Slot ${slot}`, 316, 72, { size: 16, bold: true, color: '#ffe9a8' });
+  if (!s) { text(g, 'Empty', 462, 180, { size: 18, align: 'center', color: '#8792b8' }); return; }
+  text(g, s.when, 608, 74, { size: 12, align: 'right', color: '#b8c4ee' });
+  text(g, s.place, 316, 100, { size: 16 });
+  text(g, s.chapter + (s.ng ? `  ·  NG+${s.ng}` : ''), 316, 124, { size: 13, color: '#9ad8ff' });
+  s.d.party.slice(0, 5).forEach((m, i) => { drawChar(g, HEROES[m.id].look, 340 + i * 56, 210, 'down', 0, 1.3); text(g, `Lv${m.level}`, 340 + i * 56, 216, { size: 12, align: 'center', color: '#ffe9a8' }); });
+  text(g, 'Time', 316, 248, { size: 13, color: '#b8c4ee' }); text(g, s.time, 420, 248, { size: 14, align: 'right' });
+  text(g, 'Gold', 440, 248, { size: 13, color: '#b8c4ee' }); text(g, String(s.d.gold || 0), 608, 248, { size: 14, align: 'right', color: '#ffe9a8' });
+  const lit = [1, 2, 3, 4].map(n => s.d.flags['lantern' + n]);
+  lit.forEach((l, i) => circle(g, 324 + i * 22, 290, 7, l ? ['#ff9a3a', '#5af0d0', '#ff6a2a', '#ffe08a'][i] : 'rgba(255,255,255,.12)', '#fff', 1));
+  if (s.d.flags.lantern5) circle(g, 324 + 4 * 22, 290, 7, '#a8d8ff', '#fff', 1);
+  if (s.d.flags.lantern_abyss) circle(g, 324 + 5 * 22, 290, 7, '#b8a8ff', '#fff', 1);
+}
+// mode 'save' lists slots 1–3; 'load' adds the auto-save. Returns a slot id or null.
+async function pickSlot(mode, title, filter) {
+  const slots = mode === 'load' ? ALL_SLOTS : SAVE_SLOTS;
+  const label = sl => { const s = slotSummary(sl); return (sl === 'auto' ? 'Auto' : 'Slot ' + sl) + (s ? '' : '  —'); };
+  const sel = { v: Math.max(0, slots.indexOf(mode === 'load' ? latestSlot() : G.slot)) };
+  const panel = openPanel(g => drawSlotPanel(g, slots[sel.v]));
+  const k = await listMenu({ x: 16, y: 60, w: 270, rows: 4, title: title || (mode === 'save' ? 'Save to…' : 'Load…'), index: sel.v, onChange: i => sel.v = i,
+    items: slots.map(sl => { const s = slotSummary(sl); return { label: label(sl), right: s ? s.place.slice(0, 16) : '', disabled: mode === 'load' && (!s || (filter && !filter(s.d))), color: s && (!filter || filter(s.d)) ? '#fff' : '#8792b8' }; }) });
+  closePanel(panel);
+  return k < 0 ? null : slots[k];
+}
+async function saveToSlot() {
+  const slot = await pickSlot('save');
+  if (!slot) return false;
+  if (hasSave(slot) && slot !== G.slot) { const c = await choose(null, `Overwrite the journey in slot ${slot}?`, ['Overwrite', 'Cancel'], 1); if (c !== 0) return false; }
+  if (saveGame(slot)) { Audio_.sfx('save'); await narrate(`Your journey has been recorded in slot ${slot}.`); return true; }
+  await narrate('Saving failed — your browser blocked storage.'); return false;
+}
+// After an inn or a story milestone: one press saves to the current slot
+async function promptSave() {
+  const c = await choose(null, 'Record your journey?', [`Save to slot ${G.slot}`, 'Choose a slot', 'Not now'], 2);
+  if (c === 0 && saveGame(G.slot)) { Audio_.sfx('save'); await narrate(`Your journey has been recorded in slot ${G.slot}.`); }
+  if (c === 1) await saveToSlot();
 }
 async function configMenu() {
   let idx = 0;
   while (true) {
+    const cycle = (key, list, d) => { CFG[key] = ((CFG[key] || 0) + (d || 1) + list.length) % list.length; saveCfg(); };
+    const toggle = key => { CFG[key] = !CFG[key]; saveCfg(); };
     const rows = [
-      { label: 'Sound', right: Audio_.muted ? 'Off' : 'On', act: d => Audio_.toggleMute() },
-      { label: 'Auto-dash', right: CFG.dash ? 'On' : 'Off', act: d => { CFG.dash = !CFG.dash; saveCfg(); } },
-      { label: 'Text speed', right: TEXT_SPEEDS[CFG.textSpeed].label, act: d => { CFG.textSpeed = (CFG.textSpeed + (d || 1) + TEXT_SPEEDS.length) % TEXT_SPEEDS.length; saveCfg(); } },
-      { label: 'Done' }
+      { label: 'Sound', right: Audio_.muted ? 'Off' : 'On', act: () => Audio_.toggleMute(), help: 'Music and sound effects (or press M).' },
+      { label: 'Auto-dash', right: CFG.dash ? 'On' : 'Off', act: () => toggle('dash'), help: 'Run everywhere. Hold Shift (or R) to walk instead.' },
+      { label: 'Text speed', right: TEXT_SPEEDS[CFG.textSpeed || 0].label, act: d => cycle('textSpeed', TEXT_SPEEDS, d), help: 'How fast dialogue appears.' },
+      { label: 'Battle speed', right: BATTLE_SPEEDS[CFG.battleSpeed || 0].label, act: d => cycle('battleSpeed', BATTLE_SPEEDS, d), help: 'Speeds up battle animations. Messages still wait for you.' },
+      { label: 'Auto-save', right: CFG.autosave !== false ? 'On' : 'Off', act: () => { CFG.autosave = CFG.autosave === false; saveCfg(); }, help: 'Save to the Auto slot whenever you enter a town or dungeon.' },
+      { label: 'Encounters', right: !G.flags.ending ? '—' : CFG.noEnc ? 'Off' : 'On', disabled: !G.flags.ending, act: () => toggle('noEnc'), help: G.flags.ending ? 'Turn random battles off for exploring. Bosses still fight.' : 'Unlocked after you finish the story.' },
+      { label: 'Done', help: '' }
     ];
-    const helps = ['Toggle music and sound effects (or press M).', 'Run everywhere without holding Shift. Hold Shift to walk.', 'How fast dialogue appears.', ''];
+    const done = rows.length - 1;
     // Enter or Left/Right changes a setting; the menu re-opens to show the new value
-    const k = await listMenu({ x: 180, y: 120, w: 280, rows: 4, title: 'Config', items: rows, index: idx, help: i => helps[i], helpY: H - 52,
-      lr(i, d) { if (rows[i].act) { rows[i].act(d); Audio_.sfx('cursor'); UI.close(this, -2 - i); } } });
-    if (k === -1 || k === 3) return;
+    const k = await listMenu({ x: 170, y: 100, w: 300, rows: rows.length, title: 'Config', items: rows, index: idx, help: i => rows[i].help, helpY: H - 52,
+      lr(i, d) { if (rows[i].act && !rows[i].disabled) { rows[i].act(d); Audio_.sfx('cursor'); UI.close(this, -2 - i); } } });
+    if (k === -1 || k === done) return;
     if (k <= -2) { idx = -2 - k; continue; }
     idx = k;
     rows[k].act(1);
@@ -4861,10 +5029,12 @@ async function equipMenu() {
     const panel = openPanel(g => drawEquipPanel(g, m, preview.v));
     const preview = { v: null };
     const slot = await listMenu({
-      x: 360, y: 16, w: 264, rows: 2, title: memberName(m),
-      items: [{ label: 'Weapon', right: ITEMS[m.weapon] ? ITEMS[m.weapon].name : '—' }, { label: 'Armor', right: ITEMS[m.armor] ? ITEMS[m.armor].name : '—' }, { label: 'Accessory', right: ITEMS[m.acc] ? ITEMS[m.acc].name : '—' }], size: 14
+      x: 360, y: 16, w: 264, rows: 4, title: memberName(m),
+      items: [{ label: 'Weapon', right: ITEMS[m.weapon] ? ITEMS[m.weapon].name : '—' }, { label: 'Armor', right: ITEMS[m.armor] ? ITEMS[m.armor].name : '—' }, { label: 'Accessory', right: ITEMS[m.acc] ? ITEMS[m.acc].name : '—' }, { label: 'Optimise', right: 'weapon + armour', rcolor: '#9ad8ff' }], size: 14,
+      help: i => i === 3 ? 'Equip the best weapon and armour you own. Accessories are left alone.' : '', helpY: H - 52
     });
     if (slot < 0) { closePanel(panel); return; }
+    if (slot === 3) { closePanel(panel); const n = optimiseGear(m); Audio_.sfx(n ? 'item' : 'buzz'); toast(n ? `${memberName(m)}: equipped ${n} better item${n > 1 ? 's' : ''}` : 'Already the best you have'); continue; }
     const key = ['weapon', 'armor', 'acc'][slot];
     const kind = key;
     const opts = Object.keys(G.inv).filter(k => ITEMS[k].kind === kind && canEquip(ITEMS[k], m.id));
@@ -4886,6 +5056,23 @@ async function equipMenu() {
       m.hp = Math.min(m.hp, maxHp(m)); m.mp = Math.min(m.mp, maxMp(m));
     }
   }
+}
+// What each hero values in gear: fighters want ATK, casters MAG, Kestrel likes speed too
+const GEAR_WEIGHTS = { arin: { atk: 1, mag: 0.35 }, lyra: { mag: 1, atk: 0.15 }, oswin: { atk: 0.6, mag: 0.7 }, kestrel: { atk: 1, spd: 0.6 }, selene: { mag: 1, atk: 0.15 } };
+function gearScore(m, id) {
+  const it = ITEMS[id]; if (!it) return -1;
+  const w = GEAR_WEIGHTS[m.id] || { atk: 1 };
+  if (it.kind === 'armor') return (it.def || 0) + (it.mag || 0) * (w.mag || 0) * 0.6 + (it.spd || 0) * (w.spd || 0.3);
+  return (it.atk || 0) * (w.atk || 0) + (it.mag || 0) * (w.mag || 0) + (it.spd || 0) * (w.spd || 0);
+}
+function optimiseGear(m) {
+  let changed = 0;
+  for (const key of ['weapon', 'armor']) {
+    const best = Object.keys(G.inv).filter(k => ITEMS[k].kind === key && canEquip(ITEMS[k], m.id)).sort((a, b) => gearScore(m, b) - gearScore(m, a))[0];
+    if (best && gearScore(m, best) > gearScore(m, m[key])) { if (m[key]) addItem(m[key], 1); m[key] = best; addItem(best, -1); changed++; }
+  }
+  m.hp = Math.min(m.hp, maxHp(m)); m.mp = Math.min(m.mp, maxMp(m));
+  return changed;
 }
 function drawEquipPanel(g, m, prev) {
   drawWindow(g, 16, 16, 330, 304);
@@ -5026,8 +5213,7 @@ async function innStay(townId, price, keeper = 'Innkeeper') {
   Audio_.play(Audio_.curName, true);
   await fadeTo(0, 500);
   await say(keeper, 'Good morning! You look well rested.');
-  const s = await choose(null, 'Record your journey?', ['Save', 'Not now'], 1);
-  if (s === 0 && saveGame()) { Audio_.sfx('save'); await narrate('Your journey has been recorded.'); }
+  await promptSave();
 }
 
 // ---------- quest log ----------
@@ -5110,7 +5296,7 @@ async function worldMapView() {
       }
       for (const k in WORLD_LOC) {
         const L = WORLD_LOC[k], x = ox + L.x * sc + sc / 2, y = oy + L.y * sc + sc / 2;
-        const known = G.flags['visit_' + k];
+        const known = G.flags['visit_' + k] || (ISLE_LOCS.includes(k) && G.flags.isle);
         if (k === 'F' && !known && !G.flags.airship) continue;
         if (ISLE_LOCS.includes(k) && !G.flags.isle) continue;
         circle(g, x, y, 4.5, L.town ? '#fff4c8' : '#e88a6a', OUT, 1.5);
@@ -6033,8 +6219,7 @@ async function runChapterEnding() {
   G.scene = Field; Field.playMusic();
   await fadeTo(0, 800);
   await narrate('The Eclipse Cup is now open at the Aerie Arena.');
-  const c = await choose(null, 'Record your journey?', ['Save', 'Not now'], 0);
-  if (c === 0 && saveGame()) { Audio_.sfx('save'); await narrate('Your journey has been recorded.'); }
+  await promptSave();
 }
 
 // ------------- Frostmere -------------
@@ -6295,30 +6480,33 @@ async function titleMenu() {
   G.scene = TitleScene; TitleScene.t = 0;
   Audio_.play('title');
   await fadeTo(0, 600);
+  let idx = hasSave() ? 1 : 0;
   while (true) {
-    const ngp = saveFlag('ending');
-    const items = [{ label: 'New Game' }, { label: 'Continue', disabled: !hasSave() }, { label: ngp ? `New Game+ (${(saveFlag('ngplus') || 0) + 1})` : 'New Game+', disabled: !ngp }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }];
-    const k0 = await listMenu({ x: W / 2 - 100, y: 190, w: 200, rows: 4, items, cancel: false, index: hasSave() ? 1 : 0, help: i => i === 2 ? (ngp ? 'Keep your levels, gear and items. Enemies grow stronger.' : 'Finish the story to unlock New Game+.') : '' , helpY: H - 60 });
-    const k = k0 === 3 ? 2 : k0 === 2 ? 3 : k0;
-    if (k === 3) { await newGamePlus(); return; }
+    const ngSlots = ALL_SLOTS.filter(s => { const d = readSlot(s); return d && d.flags && d.flags.ending; });
+    const latest = latestSlot(), ls = latest && slotSummary(latest);
+    const items = [{ label: 'New Game' }, { label: 'Continue', disabled: !latest }, { label: 'Load Game', disabled: !latest }, { label: 'New Game+', disabled: !ngSlots.length }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }];
+    const helps = ['Begin a new journey.', ls ? `${ls.place} · ${ls.chapter} · ${ls.time}` : 'No saved journey yet.', 'Choose a save slot.', ngSlots.length ? 'Keep your levels, gear and items. Enemies grow stronger.' : 'Finish the story to unlock New Game+.', 'Toggle music and sound (or press M).'];
+    const k = await listMenu({ x: W / 2 - 100, y: 186, w: 200, rows: 5, items, cancel: false, index: idx, help: i => helps[i], helpY: H - 60 });
+    idx = k;
     if (k === 0) { await newGame(); return; }
-    if (k === 1) {
-      if (loadGame()) {
-        await fadeTo(1, 500);
-        G.maps = {};
-        Field.enter(G.mapId, G.x, G.y, G.dir);
-        await fadeTo(0, 500);
-        if (G.mapId === 'world') await worldEvents();
-        return;
-      }
-    }
-    if (k === 2) Audio_.toggleMute();
+    if (k === 1 && await resumeFrom(latest)) return;
+    if (k === 2) { const s = await pickSlot('load'); if (s && await resumeFrom(s)) return; }
+    if (k === 3) { const s = ngSlots.length === 1 ? ngSlots[0] : await pickSlot('load', 'New Game+ from…', d => d.flags && d.flags.ending); if (s && readSlot(s).flags.ending) { await newGamePlus(s); return; } }
+    if (k === 4) Audio_.toggleMute();
   }
 }
+async function resumeFrom(slot) {
+  if (!loadGame(slot)) return false;
+  await fadeTo(1, 500);
+  G.maps = {};
+  Field.enter(G.mapId, G.x, G.y, G.dir);
+  await fadeTo(0, 500);
+  if (G.mapId === 'world') await worldEvents();
+  return true;
+}
 const BlackScene = { lines: [], t: 0, tick(dt) { this.t += dt; }, update() { }, draw(g) { g.fillStyle = '#05040c'; g.fillRect(0, 0, W, H); this.lines.forEach((l, i) => { g.save(); g.globalAlpha = clamp((this.t - l.at) / 1.2, 0, 1); text(g, l.s, W / 2, 130 + i * 44, { size: 20, fam: SERIF, align: 'center', color: '#e8dcc8' }); g.restore(); }); } };
-function saveFlag(k) { try { const d = JSON.parse(localStorage.getItem(SAVE_KEY)); return d && d.flags ? d.flags[k] : null; } catch (e) { return null; } }
-async function newGamePlus() {
-  if (!loadGame()) return newGame();
+async function newGamePlus(slot) {
+  if (!loadGame(slot)) return newGame();
   const carry = {}; G.party.forEach(m => carry[m.id] = { ...m, status: {} });
   const inv = {}; for (const k in G.inv) if (ITEMS[k] && ITEMS[k].kind !== 'key') inv[k] = G.inv[k];
   for (const m of G.party) for (const sl of ['weapon', 'armor', 'acc']) if (m[sl]) { /* equipped gear stays on the carried member */ }
@@ -6334,6 +6522,7 @@ async function newGame(plus) {
   G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
   G.seen = plus ? plus.seen : {}; G.killed = plus ? plus.killed : {};
   if (plus) G.flags.ngplus = plus.ng;
+  if (!plus) G.slot = SAVE_SLOTS.find(s => !hasSave(s)) || '1';
   G.scene = BlackScene; BlackScene.lines = []; BlackScene.t = 0;
   await fadeTo(0, 400);
   const story = ['Long ago, the Hollow Night swallowed the world.', 'Four Lanterns were lit to chain it beneath the earth —', 'Ember, Tide, Stone, and Dawn.', 'For a thousand years, their flames held.', '...Until tonight.'];
@@ -6426,10 +6615,12 @@ function frameInner(now) {
   const dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
   Input.update(dt);
   if (Input.p('mute')) Audio_.toggleMute();
-  updateTimers(dt); updateFade(dt);
+  // battle speed: battles run their timers and animations faster; dialogue boxes do not
+  const bs = G.scene instanceof Battle ? BATTLE_SPEEDS[CFG.battleSpeed || 0].v : 1;
+  updateTimers(dt * bs); updateFade(dt);
   const uiBusy = UI.update(dt);
   if (!uiBusy && !Script.running && G.scene && G.scene.update) G.scene.update(dt);
-  if (G.scene && G.scene.tick) G.scene.tick(dt);
+  if (G.scene && G.scene.tick) G.scene.tick(dt * bs);
   ctx.setTransform(SCALE * DPR, 0, 0, SCALE * DPR, 0, 0);
   ctx.clearRect(0, 0, W, H);
   if (G.scene) G.scene.draw(ctx);
