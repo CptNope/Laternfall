@@ -1,0 +1,23 @@
+{
+  "$schema": "./schema/shops.schema.json",
+  "shops": {
+    "brightwater_items": ["potion", "antidote", "plume", "tent"],
+    "brightwater_arms": ["bronze_sword", "oak_staff", "leather", "cloth_robe"],
+    "halden_items": ["potion", "hipotion", "ether", "antidote", "remedy", "plume", "tent", "bomb"],
+    "halden_arms": ["iron_sword", "mage_staff", "iron_mace", "chain_mail", "silk_robe", "power_ring", "guard_ring"],
+    "ironhold_items": ["rage_tonic", "hipotion", "xpotion", "ether", "hiether", "remedy", "plume", "tent", "bomb"],
+    "ironhold_arms": ["steel_sword", "rune_staff", "steel_mace", "steel_dagger", "plate", "sage_robe", "thief_vest", "mage_ring", "wake_charm"],
+    "mirage_items": ["hipotion", "xpotion", "hiether", "remedy", "plume", "tent", "bomb"],
+    "mirage_arms": ["sunsteel_blade", "sky_staff", "desert_veil", "swift_boots", "mage_ring", "wake_charm", "eye_charm"],
+    "aerie_items": ["xpotion", "hiether", "remedy", "plume", "tent", "bomb"],
+    "aerie_arms": ["moon_scepter", "sunsteel_blade", "sky_staff", "scholar_lens", "echo_bell", "desert_veil", "hourglass", "calm_charm", "clock_charm"],
+    "frostmere_items": ["hipotion", "xpotion", "hiether", "remedy", "plume", "tent", "bomb"],
+    "frostmere_arms": ["swift_boots", "echo_bell", "wake_charm", "scholar_lens", "guard_ring", "power_ring", "eye_charm", "hourglass", "clock_charm"],
+    "nerith_items": ["xpotion", "hiether", "remedy", "plume", "tent", "star_bomb"],
+    "nerith_arms": ["coral_blade", "pearl_staff", "reef_mace", "eel_fang", "abyss_orb", "nacre_mail", "kelp_robe", "shark_garb", "pressure_ring"],
+    "// the Undermarket: Ironhold's black market (prices are not negotiable)": "",
+    "blackmarket": ["megalixir", "elixir", "star_bomb", "ember_core", "frost_crystal", "sun_gold", "star_shard", "dusk_silk", "abyss_ash", "deep_pearl", "thief_gloves"],
+    "lastlight_items": ["xpotion", "hiether", "remedy", "plume", "tent", "bomb", "star_bomb"],
+    "lastlight_arms": ["ashsteel_blade", "cinder_staff", "ash_mace", "ash_kris", "umbral_rod", "ash_mail", "ash_robe", "ash_garb"]
+  }
+}

@@ -4,10 +4,36 @@ import subprocess, shutil, sys
 # Source files in load order. They share one global scope, so a file may only use, at load time,
 # names declared in files before it (tools/load_check.js checks this). 'folder/*' takes every
 # .js file in that folder, sorted: each one registers itself (a monster family, a battle background).
-order=['core','data','art','monsters/*','backgrounds/*','deep_art','maps','party','field','tilecache','interior','battle','menu','crafts','hearts','deep','platform','living','cards','heist','story']
+order=['core','content','data','art','monsters/*','backgrounds/*','deep_art','maps','party','field','tilecache','interior','battle','menu','crafts','hearts','deep','platform','living','cards','heist','story']
+
+# ---- content/*.json (2.0, EN-1): checked by tools/content.js, then written into the game as JS ----
+def check_content():
+    if not shutil.which('node'):
+        print('build.py: node not found, skipping the content check', file=sys.stderr); return
+    r=subprocess.run(['node',str(root/'tools'/'content.js')],cwd=root)
+    if r.returncode: sys.exit('build.py: fix the content problems above; nothing was built')
+def content_js():
+    load=lambda f: json.loads((root/'content'/f).read_text())
+    strip=lambda o: {k: v for k, v in o.items() if not k.startswith('//')}   # '// …' keys are comments
+    enc=load('encounters.json')
+    tables={'ITEMS': strip(load('items.json')['items']), 'MONSTERS': strip(load('monsters.json')['monsters']),
+            'NIGHT_ENC': strip(enc['night']), 'ENCOUNTERS': strip(enc['day']), 'SHOPS': strip(load('shops.json')['shops'])}
+    out=['// ============================================================',
+         '//  CONTENT: written by build.py from content/*.json. Edit those files, not this.',
+         '// ============================================================']
+    for name, t in tables.items():
+        body=json.dumps(t, ensure_ascii=False, separators=(',', ':'))
+        body=body.replace('</', '<\\/').replace('\u2028', '\\u2028').replace('\u2029', '\\u2029')   # safe inside <script>
+        out.append(f'const {name} = {body};')
+    return '\n'.join(out)+'\n'
+check_content()
+import tempfile
+CONTENT=pathlib.Path(tempfile.gettempdir())/'lanternfall_content.js'
+CONTENT.write_text(content_js())
 def sources():
     out=[]
     for n in order:
+        if n=='content': out.append(CONTENT); continue
         out += sorted((root/'src').glob(n+'.js')) if n.endswith('*') else [root/'src'/f'{n}.js']
     return out
 js='\n'.join(p.read_text() for p in sources())

@@ -341,7 +341,7 @@ flowchart LR
 | File | What it does |
 | --- | --- |
 | `src/core.js` | Canvas scaling (sharp at any resolution), input and touch, UI windows, dialogue and menus, the async script runner, settings, and the chiptune sequencer and sound effects |
-| `src/data.js` | Heroes, skills, combo techs, items, equipment, monsters, encounter tables, shops, arena cups, forge recipes, fish, the EXP curve |
+| `src/data.js` | Heroes, skills, combo techs, arena cups, forge recipes, fish, meals, the Lantern Board, the EXP curve |
 | `src/art.js` | Vector art: world, town and dungeon tiles, buildings, characters, vehicles, the title screen; `drawMonster` and `drawBattleBG`, and the `MONSTER_ART` / `MONSTER_SIZE` / `BATTLE_BGS` registries |
 | `src/monsters/*.js` | One file per monster family (21), each registering its drawing and size (1.10) |
 | `src/backgrounds/*.js` | One file per battle background (15) (1.10) |
@@ -363,7 +363,8 @@ flowchart LR
 | `src/story.js` | NPC dialogue, cutscenes, story flags, quests, the arena, boss events, the title screen, the endings, the main loop |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Generated: the installable-app files (`build.py`, `tools/make_icons.py`) |
 | `src-tauri/` | The desktop app (Tauri): a native window around `index.html`, built by CI |
-| `tools/` | The play-test harness, the load-order check, the boss balance simulator, the guide-table generator, the icon renderer and the diagram checker |
+| `content/` | 2.0: items, monsters, shops and encounter tables as JSON, with a schema for each ([content/README.md](content/README.md)) |
+| `tools/` | The play-test harness, the content checker, the load-order check, the boss balance simulator, the guide-table generator, the icon renderer and the diagram checker |
 
 **Debug:** add `?noenc` to the URL to turn off random encounters. There are more tricks in [TESTING.md](docs/TESTING.md#debugging-tricks).
 

@@ -1,0 +1,34 @@
+{
+  "$schema": "./schema/encounters.schema.json",
+  "day": {
+    "r1": [{"w": 3, "g": ["slime", "slime"]}, {"w": 2, "g": ["bat", "bat", "bat"]}, {"w": 3, "g": ["goblin"]}, {"w": 2, "g": ["goblin", "slime"]}, {"w": 2, "g": ["wolf"]}, {"w": 1, "g": ["wolf", "wolf"]}, {"w": 1, "g": ["slime", "slime", "slime"]}],
+    "d1": [{"w": 3, "g": ["sporecap", "shadebat"]}, {"w": 2, "g": ["shadebat", "shadebat"]}, {"w": 2, "g": ["rootcrawler"]}, {"w": 2, "g": ["sporecap", "sporecap"]}, {"w": 1, "g": ["rootcrawler", "shadebat"]}, {"w": 1, "g": ["goblin", "goblin", "sporecap"]}],
+    "r2": [{"w": 3, "g": ["blueslime", "blueslime"]}, {"w": 2, "g": ["hobgoblin"]}, {"w": 2, "g": ["harpy", "harpy"]}, {"w": 2, "g": ["sandcrab"]}, {"w": 2, "g": ["hobgoblin", "blueslime"]}, {"w": 1, "g": ["harpy", "sandcrab", "harpy"]}],
+    "d2": [{"w": 3, "g": ["drowned", "drowned"]}, {"w": 2, "g": ["tideserpent"]}, {"w": 2, "g": ["wisp", "wisp"]}, {"w": 2, "g": ["drowned", "wisp"]}, {"w": 1, "g": ["tideserpent", "wisp"]}, {"w": 1, "g": ["drowned", "drowned", "drowned"]}],
+    "sea": [{"w": 3, "g": ["seaserpent"]}, {"w": 2, "g": ["kingcrab"]}, {"w": 2, "g": ["seaserpent", "harpy"]}, {"w": 1, "g": ["kingcrab", "kingcrab"]}],
+    "r3": [{"w": 3, "g": ["frostwolf", "frostwolf"]}, {"w": 2, "g": ["icegolem"]}, {"w": 2, "g": ["snowimp", "snowimp"]}, {"w": 2, "g": ["ogre"]}, {"w": 1, "g": ["ogre", "snowimp"]}, {"w": 1, "g": ["frostwolf", "snowimp", "frostwolf"]}],
+    "d3": [{"w": 3, "g": ["magmaslime", "firebat"]}, {"w": 2, "g": ["revenant"]}, {"w": 2, "g": ["firebat", "firebat"]}, {"w": 2, "g": ["embergolem"]}, {"w": 1, "g": ["revenant", "magmaslime"]}, {"w": 1, "g": ["revenant", "revenant"]}],
+    "r4": [{"w": 3, "g": ["hollowknight"]}, {"w": 2, "g": ["nightgaze", "wraith"]}, {"w": 2, "g": ["wraith", "wraith"]}, {"w": 2, "g": ["chimera"]}, {"w": 1, "g": ["hollowknight", "nightgaze"]}],
+    "r5": [{"w": 3, "g": ["sandworm"]}, {"w": 2, "g": ["scorpion", "scorpion"]}, {"w": 2, "g": ["bandit", "bandit"]}, {"w": 2, "g": ["cactoid", "cactoid", "cactoid"]}, {"w": 1, "g": ["bandit", "scorpion", "cactoid"]}],
+    "d6": [{"w": 3, "g": ["mummy", "mummy"]}, {"w": 2, "g": ["scarab", "scarab"]}, {"w": 2, "g": ["sphinx"]}, {"w": 2, "g": ["tombpriest", "mummy"]}, {"w": 1, "g": ["gildedgolem"]}, {"w": 1, "g": ["gildedgolem", "tombpriest"]}],
+    "d5": [{"w": 3, "g": ["starspawn", "astralknight"]}, {"w": 2, "g": ["voiddrake"]}, {"w": 2, "g": ["nebulaslime", "cometimp", "nebulaslime"]}, {"w": 2, "g": ["astralknight", "cometimp"]}, {"w": 1, "g": ["voiddrake", "starspawn"]}],
+    "r6": [{"w": 3, "g": ["ashhound", "ashhound"]}, {"w": 2, "g": ["cinderwisp", "cinderwisp", "cinderwisp"]}, {"w": 2, "g": ["cinderknight"]}, {"w": 2, "g": ["ashgolem"]}, {"w": 1, "g": ["cinderknight", "cinderwisp"]}, {"w": 1, "g": ["ashhound", "ashgolem"]}],
+    "d7": [{"w": 3, "g": ["crownshard", "gloamknight"]}, {"w": 2, "g": ["nightmare"]}, {"w": 2, "g": ["abyssooze", "abyssooze"]}, {"w": 2, "g": ["herald", "crownshard"]}, {"w": 1, "g": ["gloamknight", "herald"]}, {"w": 1, "g": ["nightmare", "abyssooze"]}],
+    "d8": [{"w": 3, "g": ["kilnimp", "kilnimp"]}, {"w": 2, "g": ["cindersnake"]}, {"w": 2, "g": ["cinderwisp", "kilnimp", "cinderwisp"]}, {"w": 2, "g": ["ashgolem"]}, {"w": 1, "g": ["cindersnake", "kilnimp"]}],
+    "d9": [{"w": 3, "g": ["deepone"]}, {"w": 2, "g": ["pearlguard"]}, {"w": 2, "g": ["deepone", "abyssooze"]}, {"w": 1, "g": ["pearlguard", "deepone"]}, {"w": 1, "g": ["herald", "deepone"]}],
+    "u1": [{"w": 3, "g": ["lanternjelly", "lanternjelly"]}, {"w": 3, "g": ["angler"]}, {"w": 2, "g": ["kelphorror", "lanternjelly"]}, {"w": 2, "g": ["trenchcrab"]}, {"w": 2, "g": ["sentinel"]}, {"w": 1, "g": ["angler", "lanternjelly"]}, {"w": 1, "g": ["kelphorror", "kelphorror"]}],
+    "d11": [{"w": 3, "g": ["courtier", "courtier"]}, {"w": 2, "g": ["siren", "courtier"]}, {"w": 2, "g": ["coralgolem"]}, {"w": 2, "g": ["tidewraith", "tidewraith"]}, {"w": 2, "g": ["deepgazer", "sentinel"]}, {"w": 1, "g": ["siren", "coralgolem"]}],
+    "d12": [{"w": 3, "g": ["voidjelly", "voidjelly"]}, {"w": 3, "g": ["hadalangler"]}, {"w": 2, "g": ["deepgazer", "voidjelly"]}, {"w": 2, "g": ["sentinel", "sentinel"]}, {"w": 1, "g": ["hadalangler", "voidjelly"]}],
+    "d10": [{"w": 3, "g": ["cutpurse", "cutpurse"]}, {"w": 2, "g": ["enforcer"]}, {"w": 2, "g": ["sewerooze", "sewerooze"]}, {"w": 1, "g": ["enforcer", "cutpurse"]}, {"w": 1, "g": ["cutpurse", "sewerooze", "cutpurse"]}],
+    "d4": [{"w": 3, "g": ["voidslime", "wraith"]}, {"w": 2, "g": ["dreadknight"]}, {"w": 2, "g": ["nightgaze", "nightgaze"]}, {"w": 2, "g": ["hollowknight", "voidslime"]}, {"w": 1, "g": ["chimera", "nightgaze"]}, {"w": 1, "g": ["dreadknight", "wraith"]}]
+  },
+  "night": {
+    "r1": [{"w": 3, "g": ["moonmoth", "moonmoth"]}, {"w": 2, "g": ["shadebat", "moonmoth"]}, {"w": 1, "g": ["moonmoth", "moonmoth", "moonmoth"]}],
+    "r2": [{"w": 3, "g": ["gravewight", "gravewight"]}, {"w": 2, "g": ["wisp", "shadebat"]}, {"w": 1, "g": ["gravewight", "wisp"]}],
+    "sea": [{"w": 3, "g": ["ghostlight"]}, {"w": 2, "g": ["ghostlight", "harpy"]}, {"w": 1, "g": ["ghostlight", "ghostlight"]}],
+    "r3": [{"w": 3, "g": ["frostwraith"]}, {"w": 2, "g": ["revenant", "frostwraith"]}, {"w": 1, "g": ["frostwraith", "snowimp"]}],
+    "r4": [{"w": 3, "g": ["wraith", "wraith"]}, {"w": 2, "g": ["hollowknight", "wraith"]}, {"w": 1, "g": ["nightgaze", "wraith"]}],
+    "r5": [{"w": 3, "g": ["nightjackal", "nightjackal"]}, {"w": 2, "g": ["mummy", "nightjackal"]}, {"w": 1, "g": ["nightjackal", "scorpion"]}],
+    "r6": [{"w": 3, "g": ["cinderwisp", "cinderwisp", "cinderwisp"]}, {"w": 2, "g": ["nightmare"]}, {"w": 1, "g": ["ashhound", "cinderwisp"]}]
+  }
+}

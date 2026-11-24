@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "monsters.schema.json",
+  "title": "Lanternfall monsters",
+  "description": "Every monster and boss. The order here is the bestiary's order.",
+  "type": "object",
+  "required": ["monsters"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "monsters": {
+      "type": "object",
+      "patternProperties": { "^//": { "$ref": "common.schema.json#/$defs/comment" }, "^[a-z][a-z0-9_]*$": { "$ref": "#/$defs/monster" } },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "act": {
+      "type": "object", "required": ["w", "a"], "additionalProperties": false,
+      "properties": {
+        "w": { "type": "integer", "minimum": 1, "description": "Weight: how often, relative to the other moves." },
+        "a": { "type": "string", "description": "\"attack\", or a move in SPELLS (data.js), usually an e_ move." }
+      }
+    },
+    "acts": { "type": "array", "items": { "$ref": "#/$defs/act" }, "minItems": 1 },
+    "elements": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/element" }, "uniqueItems": true },
+    "monster": {
+      "type": "object",
+      "required": ["name", "fam", "c", "hp", "atk", "def", "mag", "spd", "xp", "gold", "steal"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "fam": { "$ref": "common.schema.json#/$defs/id", "description": "Which drawing to use: a file in src/monsters/, or a family registered in deep_art.js." },
+        "c": { "type": "array", "items": { "type": "string", "pattern": "^#[0-9a-f]{6}$" }, "minItems": 2, "maxItems": 3, "description": "Palette: main colour, second colour, optional accent. Lower-case #rrggbb." },
+        "size": { "type": "number", "exclusiveMinimum": 0, "maximum": 3, "description": "Drawing scale; 1 if left out." },
+        "pale": { "const": true, "description": "Drawn half see-through (ghostly echoes)." },
+        "hp": { "type": "integer", "minimum": 1 },
+        "atk": { "type": "integer", "minimum": 0 },
+        "def": { "type": "integer", "minimum": 0 },
+        "mag": { "type": "integer", "minimum": 0 },
+        "spd": { "type": "integer", "minimum": 1 },
+        "xp": { "type": "integer", "minimum": 0 },
+        "gold": { "type": "integer", "minimum": 0 },
+        "weak": { "$ref": "#/$defs/elements", "description": "Takes ×1.6 damage from these." },
+        "resist": { "$ref": "#/$defs/elements", "description": "Takes ×0.5 damage from these." },
+        "absorb": { "$ref": "#/$defs/elements", "description": "Hits of these heal it instead." },
+        "drop": { "$ref": "common.schema.json#/$defs/chance", "description": "An item it may drop after the battle, and the chance." },
+        "mat": { "$ref": "common.schema.json#/$defs/chance", "description": "A forging material it may drop, and the chance." },
+        "rare": { "$ref": "common.schema.json#/$defs/chance", "description": "A rare steal (shown ★): tried first, with this chance, before `steal`." },
+        "steal": { "$ref": "common.schema.json#/$defs/id", "description": "What Kestrel can steal." },
+        "tmap": { "const": true, "description": "Can drop a treasure map." },
+        "boss": { "const": true, "description": "A boss: can't be fled, stopped or instantly killed." },
+        "ai": { "enum": ["weakest", "magehunter", "healer"], "description": "weakest: goes for the hero lowest on HP. magehunter: goes for casters. healer: heals hurt allies." },
+        "acts": { "$ref": "#/$defs/acts", "description": "Its moves; plain attacks if left out." },
+        "actions": { "type": "integer", "minimum": 1, "maximum": 4, "description": "Moves per turn; 1 if left out." },
+        "phases": {
+          "type": "array", "description": "A boss's phases: when its HP falls to a fraction, it says something and switches moves.",
+          "items": {
+            "type": "object", "required": ["hp", "msg"], "additionalProperties": false,
+            "properties": {
+              "hp": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1, "description": "The fraction of HP left when this phase starts." },
+              "msg": { "type": "string", "minLength": 1 },
+              "acts": { "$ref": "#/$defs/acts" },
+              "actions": { "type": "integer", "minimum": 1, "maximum": 4 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

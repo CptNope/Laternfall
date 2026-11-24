@@ -227,14 +227,15 @@ tools/check_mermaid.sh README.md ROADMAP.md CHANGELOG.md docs/*.md
 
 `.github/workflows/playtest.yml` runs on every pull request and on pushes to `main`. It:
 
-1. builds the game, which also runs the load-order check (`tools/load_check.js`: the joined script must load in Node without an error), and fails if `index.html` doesn't match `src/` (someone forgot to run `build.py`);
+1. runs `node tools/content.js --selftest`, which plants 15 typical content mistakes and fails unless the content checker catches each one;
+1. builds the game, which first checks `content/` (schemas and references, `tools/content.js`) and then runs the load-order check (`tools/load_check.js`: the joined script must load in Node without an error), and fails if `index.html` doesn't match `src/` (someone forgot to run `build.py`);
 2. regenerates the game guide and fails if `docs/GAME_GUIDE.md` is out of date;
 3. also checks `manifest.webmanifest` and `sw.js` match the build, then runs the `chapter`, `systems`, `newgame`, `comfort`, `hearts`, `depth`, `drowned`, `platform`, `living` and `tiles` scenarios, failing on any JavaScript error or failed check;
 4. uploads the screenshots as a `playtest-screenshots` artifact.
 
 ```mermaid
 flowchart LR
-    PR[Pull request] --> B[python3 build.py<br/>git diff index.html]
+    PR[Pull request] --> CS[content.js --selftest] --> B[python3 build.py<br/>checks content/<br/>git diff index.html]
     B --> GG[gentables.py<br/>git diff GAME_GUIDE.md]
     GG --> PT[playtest.py<br/>10 scenarios]
     PT --> A[(screenshots artifact)]

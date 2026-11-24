@@ -14,8 +14,8 @@ timeline
     2026-11-19 : 1.0.0 First playable : 1.1.0 Frostmere and side quests
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
     2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance : 1.5.0 Hearts of the Lamplighters : 1.6.0 Deeper systems
-    2026-11-24 : 1.7.0 The Drowned Kingdom : 1.8.0 Install anywhere : 1.9.0 Living world
-    Next : 1.10.0 Foundations
+    2026-11-24 : 1.7.0 The Drowned Kingdom : 1.8.0 Install anywhere : 1.9.0 Living world : 1.10.0 Foundations
+    Next : 2.0.0 Lantern Engine
 ```
 
 ```mermaid
@@ -42,13 +42,29 @@ xychart-beta
 | 1.7.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 89 (17) | 21 | 5 | [#13](https://github.com/CptNope/Laternfall/pull/13) |
 | 1.8.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 89 (17) | 21 | 5 | [#14](https://github.com/CptNope/Laternfall/pull/14) |
 | 1.9.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 94 (17) | 23 | 5 | [#15](https://github.com/CptNope/Laternfall/pull/15) |
-| 1.10.0 | next | 9 | 12 (32) | 94 (17) | 23 | 5 | this release |
+| 1.10.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 94 (17) | 23 | 5 | [#16](https://github.com/CptNope/Laternfall/pull/16) |
+| 2.0.0 | next | 9 | 12 (32) | 94 (17) | 23 | 5 | in progress |
 
 ---
 
 ## [Unreleased]
 
-Planned as **1.10.0 · *Foundations***: groundwork for 2.0 and for phones. It finishes EN-5 and TD-4 from the [roadmap](ROADMAP.md#20--lantern-engine), and TD-7. The game plays the same; it draws faster.
+Planned as **2.0.0 · *Lantern Engine***: separating the engine from Lanternfall's content (see the [roadmap](ROADMAP.md#20--lantern-engine)). It arrives in parts; this is the first, EN-1. The game plays exactly the same.
+
+### Added
+- **Content as data files.** Items, monsters, shops and random-battle tables moved out of `src/data.js` into `content/items.json`, `monsters.json`, `shops.json` and `encounters.json`, one entry per line. `build.py` writes them back into `index.html`, so the game is still one file. The tables the game sees are byte-for-byte the same as before, and the generated game guide is unchanged.
+- **A schema for each file** in `content/schema/`, describing every field. Editors that understand JSON Schema (VS Code and most others) underline mistakes and show what a field means as you type.
+- **A content checker** (`tools/content.js`, no packages needed). `build.py` runs it first and builds nothing if it finds a problem. It checks each file against its schema, then every reference: drops and shop stock are real items, encounter groups are real monsters, moves exist, every monster family has a drawing, every night table has a day table. It also checks what the code names: a town's shop, a dungeon's encounter table, the monsters in `startBattle([...])`, items in `addItem` / `hasItem`, recipes, treasure maps, meals, the arena and the black market. `--selftest` plants 15 typical mistakes and fails unless each is caught; CI runs both.
+- `content/README.md`: the format, comments (keys starting with `//`), and how checking works.
+
+### Changed
+- `docs/MODDING.md`: adding a monster, item, shop, dungeon, boss phase or fish now edits `content/`, with JSON examples. The accessory table now lists all seven statuses an accessory can block.
+
+---
+
+## [1.10.0] — 2026-11-24, merged (#16) but not yet tagged · *Foundations*
+
+Groundwork for 2.0 and for phones. It finishes EN-5 and TD-4 from the [roadmap](ROADMAP.md#20--lantern-engine), and TD-7. The game plays the same; it draws faster.
 
 ### Added
 - **Tile cache** (`src/tilecache.js`). The field used to redraw every tile on screen every frame. Now each map is drawn once into 8×8-tile chunks, and each frame only the squares that move (water, lamps, braziers, kelp, palms) are redrawn. With the CPU slowed 4× to stand in for a phone, a frame on the world map takes about 4 ms instead of 17, a town 6.5 instead of 14, and a dungeon half as long. The sea floor, which is mostly moving kelp, gains little. Add `?nocache` to the URL to turn it off.
@@ -342,6 +358,7 @@ Shipped together with 1.0.0 in pull request #1.
 - The full main story, with an ending.
 
 [Unreleased]: https://github.com/CptNope/Laternfall/compare/v1.6.0...HEAD
+[1.10.0]: https://github.com/CptNope/Laternfall/pull/16
 [1.9.0]: https://github.com/CptNope/Laternfall/pull/15
 [1.8.0]: https://github.com/CptNope/Laternfall/pull/14
 [1.7.0]: https://github.com/CptNope/Laternfall/pull/13
