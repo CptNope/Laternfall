@@ -2,8 +2,8 @@
 
 Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
 
-- **Current release:** 1.6.0 *Deeper systems*. **In review:** 1.7.0 *The Drowned Kingdom* (WD-1 to WD-6). See [CHANGELOG.md](CHANGELOG.md#unreleased).
-- **Next up:** 1.8 *Install anywhere* (PWA, achievements, speedrun mode). The rest of 1.6 (Berserk and Stop, day and night, weather, the card game, stealth) is optional and can ship as 1.6.x.
+- **Current release:** 1.6.0 *Deeper systems*. **Merged, not yet tagged:** 1.7.0 *The Drowned Kingdom*. **In review:** 1.8.0 *Install anywhere* (PL-1 to PL-4). See [CHANGELOG.md](CHANGELOG.md#unreleased).
+- **Next up:** 2.0 *Lantern Engine* work can start (EN-5 is already under way), or the optional 1.6.x items (Berserk and Stop, day and night, weather, the card game, stealth). ST-2 (a real phone test) still needs a person with a phone.
 - ✅ marks items that are done.
 
 ## Contents
@@ -110,9 +110,9 @@ gantt
     section Depth
     1.6 Deeper systems               :done, m16, 2026-11-23, 1d
     section World
-    1.7 The Drowned Kingdom          :active, m17, 2026-11-24, 2w
+    1.7 The Drowned Kingdom          :done, m17, 2026-11-24, 1d
     section Platform
-    1.8 Install anywhere             :m18, after m14, 6w
+    1.8 Install anywhere             :active, m18, 2026-11-24, 2w
     section Engine
     2.0 Lantern Engine               :m20, after m17, 12w
 ```
@@ -123,8 +123,8 @@ gantt
 | **1.4** | Comfort | Save slots, auto-save, battle speed, gamepad, accessibility | Nov 2026 | ✅ Done (1.4.0, finished in 1.5.0) |
 | **1.5** | Heroes | A personal quest for each of the five heroes, with an ultimate weapon and a Limit | Dec 2026 | ✅ Done (1.5.0) |
 | **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | Nov 2026 | ✅ Done (1.6.0: DS-1 to DS-7) |
-| **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | 🟡 In review (1.7.0: WD-1 to WD-6) |
-| **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ⚪ Planned |
+| **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ✅ Done (1.7.0, merged in #13) |
+| **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | 🟡 In review (1.8.0: PL-1 to PL-4) |
 | **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 💭 Exploring |
 
 ```mermaid
@@ -288,13 +288,13 @@ A new region and a sixth way to travel.
 
 Can run alongside 1.5 to 1.7.
 
-| ID | Item | Notes | Size |
-| --- | --- | --- | --- |
-| PL-1 | **PWA**: manifest and a service worker, so the game installs and runs offline | Generated in `build.py`. The single-file rule still holds for `index.html` | S |
-| PL-2 | **Desktop builds** (Tauri) for Windows, macOS and Linux | Ship on itch.io alongside the web version | M |
-| PL-3 | **Achievements**, in-game first (a trophy room in Brightwater) and later on Steam | Hooks on existing flags | M |
-| PL-4 | **Speedrun mode** with an on-screen timer and split markers at each Lantern | `G.playTime` already exists | S |
-| PL-5 | **Mobile wrappers** (Capacitor) for Android and iOS | Only if there's demand | L |
+| ID | Item | Notes | Outcome | Size |
+| --- | --- | --- | --- | --- |
+| ✅ PL-1 | **PWA**: manifest and a service worker, so the game installs and runs offline | Generated in `build.py`. The single-file rule still holds for `index.html` | Shipped. Installs from GitHub Pages; the itch.io frame can't install. Plus **Transfer saves** to move saves between browsers, the app and the desktop build | S |
+| ✅ PL-2 | **Desktop builds** (Tauri) for Windows, macOS and Linux | Ship on itch.io alongside the web version | Shipped as a CI workflow: every version tag attaches unsigned installers to its GitHub Release. Uploading them to itch.io is still manual. **Code signing is open** | M |
+| ✅ PL-3 | **Achievements**, in-game first (a trophy room in Brightwater) and later on Steam | Hooks on existing flags | Shipped: 30 trophies, kept across saves; on the title screen and with Scribe Tam in Brightwater. Steam is still open | M |
+| ✅ PL-4 | **Speedrun mode** with an on-screen timer and split markers at each Lantern | `G.playTime` already exists | Shipped. Play time now counts in battle too | S |
+| PL-5 | **Mobile wrappers** (Capacitor) for Android and iOS | Only if there's demand | Not started: the installable app covers phones for now | L |
 
 ### 2.0 · Lantern Engine
 
@@ -369,7 +369,7 @@ quadrantChart
 | 4 | QL-1 | Save slots and migration ✅ | 1.4 | High | Medium |
 | 5 | ST-2 | Touch-device pass | 1.3.x | High | Low |
 | 6 | QL-4 | Repeat last turn ✅ | 1.4 | Medium | Low |
-| 7 | PL-1 | PWA offline install | 1.8 | Medium | Low |
+| 7 | PL-1 | PWA offline install ✅ | 1.8 | Medium | Low |
 | 8 | QL-5 | Gamepad ✅ | 1.4 | Medium | Medium |
 | 9 | HR-1 | Limit gauge ✅ | 1.5 | High | Medium |
 | 10 | HR-2–6 | Hero quests ✅ | 1.5 | High | High |
@@ -402,7 +402,7 @@ Things in the code today that will slow future work down.
 | ✅ TD-1 | **No save version.** `lanternfall_save_v1` has no schema version | `party.js` | A future change to the save shape breaks old saves silently | Add `version`, plus a migration list | 1.4 |
 | TD-2 | **Global state everywhere** (`G`, `Field`, `UI`) | all | Hard to test parts in isolation | Keep for 1.x; namespace in 2.0 | 2.0 |
 | ✅ TD-3 | **`index.html` is generated but committed**, so pull requests show a huge diff | `build.py` | Merge conflicts; reviewers skim | CI checks that `index.html` matches `build.py` output | 1.3.x |
-| TD-4 | **The world redraws every tile every frame** | `field.js`, `art.js` | Battery drain on phones | Cache static tiles on an offscreen canvas per screen | 1.8 |
+| TD-4 | **The world redraws every tile every frame** | `field.js`, `art.js` | Battery drain on phones | Cache static tiles on an offscreen canvas per screen. **Partly done in 1.8:** a Battery saver setting caps drawing at 30 fps; tile caching is still open | 1.8 |
 | ✅ TD-5 | **The music scheduler uses `setInterval`**, which background tabs throttle | `core.js` | Stutter when switching tabs | Pause on `visibilitychange`; schedule further ahead | 1.4 |
 | ✅ TD-6 | **Balance is checked by ad hoc simulation** | none | Regressions when stats change | Commit a battle simulator under `tools/` | 1.3.x |
 | TD-7 | **`art.js` is about 1,480 lines** | `art.js` | Hard to navigate | Split by family (EN-5) | 2.0 |
@@ -438,7 +438,8 @@ flowchart LR
     D --> E{Review and merge}
     E --> F[Move Unreleased to a version<br/>and date in CHANGELOG]
     F --> G[git tag vX.Y.Z<br/>GitHub Release]
-    G --> H[Zip index.html<br/>upload to itch.io]
+    G --> DB[CI: desktop builds<br/>attached to the Release]
+    G --> H[Zip the web files<br/>upload to itch.io]
     H --> I[Devlog post<br/>+ update itch-page.md]
 ```
 
@@ -454,7 +455,8 @@ flowchart LR
    git tag -a v1.3.1 -m "Lanternfall 1.3.1"
    git push origin v1.3.1
    ```
-6. Zip `index.html` as `lanternfall-web.zip`, upload it to itch.io (tick "played in the browser") and post a devlog.
+6. Pushing the tag starts the **Desktop builds** workflow, which attaches Windows, macOS and Linux installers to the tag's GitHub Release (create the release first, or let the workflow create it). Bump `version` in `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml` before tagging.
+7. Zip `index.html`, `manifest.webmanifest`, `sw.js` and `icons/` as `lanternfall-web.zip`, upload it to itch.io (tick "played in the browser"), optionally upload the desktop installers too, and post a devlog. GitHub Pages serves `main` directly, so the installable version updates on merge.
 
 **Backfilled tags (ST-4, done).** Each tag below has a [GitHub Release](https://github.com/CptNope/Laternfall/releases) with that version's `index.html` attached:
 

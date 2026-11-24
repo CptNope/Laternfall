@@ -30,6 +30,8 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 - [Items](#items)
 - [Levels and EXP](#levels-and-exp)
 - [New Game+](#new-game)
+- [Trophies](#trophies)
+- [Speedrun mode](#speedrun-mode)
 
 ---
 
@@ -1227,3 +1229,58 @@ After the ending, the title screen offers **New Game+**. You keep your levels, e
 | ATK and MAG | +22% |
 | DEF | +12% |
 | EXP and gold | +50% |
+
+---
+
+## Trophies
+
+Trophies (added in 1.8) belong to you, not to a save: earn one once and it stays, whichever slot you play and through New Game+. A toast appears when you earn one. See them from **Trophies** on the title screen, or ask **Scribe Tam** in Elder Maren's hall in Brightwater.
+
+| Trophy | How to earn it |
+| --- | --- |
+| 🏆 **First Light** | Relight the Ember Lantern. |
+| 🏆 **High Water** | Relight the Tide Lantern. |
+| 🏆 **Heart of Stone** | Relight the Stone Lantern. |
+| 🏆 **Lanternfall** | Finish the story. |
+| 🏆 **The Crown Falls** | Finish Chapter VI in the Crownfall Abyss. |
+| 🏆 **Sky-Bound** | Win the skyship Aurora from the First King. |
+| 🏆 **The Fifth Flame** | Find the Fifth Flame in the Starfall Observatory. |
+| 🏆 **Calm Waters** | Defeat the Leviathan. |
+| 🏆 **Starslayer** | Defeat the Astral Wyrm. |
+| 🏆 **His Father's Rounds** | Light all twelve roadside lamps. |
+| 🏆 **Five Hearts** | Finish every hero's personal quest. |
+| 🏆 **Let Go** | Free Nerith from its drowned king. |
+| 🏆 **Unforgettable** | Defeat the Tide That Remembers. *(hidden in the game until earned)* |
+| 🏆 **Grand Champion** | Win the first five cups at the Aerie Arena. |
+| 🏆 **Eclipse** | Win the Eclipse Cup. |
+| 🏆 **The One That Didn't Get Away** | Catch every kind of fish. |
+| 🏆 **Family of the Forge** | Forge three pieces of gear with Orrin. |
+| 🏆 **Natural Historian** | Record every creature in the bestiary. |
+| 🏆 **X Marks Every Spot** | Dig up all five treasure maps. |
+| 🏆 **Light Fingers** | Steal a rare (★) item. |
+| 🏆 **Second Helpings** | Eat a meal cooked at an inn. |
+| 🏆 **Moth to a Flame** | Ride a lanternmoth. |
+| 🏆 **Into the Deep** | Dive to the sea floor. |
+| 🏆 **Lamplighter's Fortune** | Carry 500,000 gold. |
+| 🏆 **Past the Limit** | Use a Limit in battle. |
+| 🏆 **Together** | Use a combo tech in battle. |
+| 🏆 **Fifty** | Raise a hero to level 50. |
+| 🏆 **Every Lamp Lit** | Light a hero's whole Lantern Board. |
+| 🏆 **Once More, With Feeling** | Start New Game+. |
+| 🏆 **Lamplighter's Dash** | Finish the story in under 5 hours of play time. |
+
+---
+
+## Speedrun mode
+
+Turn on **Config → Speedrun timer** to show your play time in the top-right corner. Play time counts on the field and, since 1.8, in battle too (real time, so a faster battle speed saves time). Each main Lantern is a split:
+
+| Split | When it's taken |
+| --- | --- |
+| Ember Lantern | Relighting the Ember Lantern in Whisperwood Hollow |
+| Tide Lantern | Relighting the Tide Lantern in the Sunken Shrine |
+| Stone Lantern | Relighting the Stone Lantern in Emberdeep Mines |
+| Dawn Lantern | The ending |
+
+When a split is taken, a panel shows its time and the difference from your best run (green ahead, red behind). Your best run is saved when you finish faster than before. Runs on New Game+, and Lanterns lit before a save existed (saves from before 1.8), don't count.
+

@@ -357,7 +357,7 @@ class Battle {
   takeSteal(tg, p) {
     const got = this.rollSteal(tg);
     if (!got) return null;
-    tg.stolen = true; addItem(got.id); Audio_.sfx(got.rare ? 'chest' : 'item');
+    tg.stolen = true; addItem(got.id); Audio_.sfx(got.rare ? 'chest' : 'item'); if (got.rare) G.flags.stole_rare = true;
     if (p) this.num(p.x, p.y - 30, (got.rare ? '★ ' : '') + ITEMS[got.id].name, got.rare ? '#ffd23a' : '#ffe9a8');
     return got;
   }
@@ -671,6 +671,7 @@ class Battle {
     }));
   }
   async doCombo(i, c) {
+    G.flags.used_combo = true;
     const cb = COMBOS.find(x => x.id === c.combo), P = BP();
     const idx = cb.members.map(id => P.findIndex(p => p.id === id));
     if (idx.some(j => j < 0 || !alive(P[j]) || P[j].status.sleep || P[j].status.silence || P[j].mp < cb.mp[cb.members.indexOf(P[j].id)])) {
@@ -700,6 +701,7 @@ class Battle {
     await wait(250); this.msg = null;
   }
   async doLimit(i, c) {
+    G.flags.used_limit = true;
     const P = BP(), m = P[i], a = this.pa[i];
     if (!limitReady(m)) return;
     m.limit = 0;

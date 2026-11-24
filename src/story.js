@@ -938,7 +938,7 @@ function interiorNpcs(m) {
     if (t === 'mirage') { out.push({ x: 6, y: 2, look: { skin: '#a8724a', hair: '#1f1b2e', style: 'long', body: '#3a8a8a', accent: '#e8c24a', robe: true }, talk: talkImara, name: 'Sultana Imara', mark: !f.sunseal }); out.push({ x: 2, y: 5, look: { ...LOOKS.guard, skin: '#8d5a3a', hat: 'cap', accent: '#e8c24a' }, talk: async () => say('Palace Guard', 'Bow when you speak to the Sultana. Or don\'t. She says she finds bowing tedious.') }); }
     else if (t === 'lastlight') out.push({ x: 6, y: 2, look: npcLook(78, { style: 'bun', robe: true, body: '#5a3a3a' }), talk: async () => sayAll([['Archivist Bren', 'The Order\'s records. A thousand years of the same entry: "The crown has not fallen. The fire still burns. Nobody caught any fish."'], ['Archivist Bren', G.flags.boss_abyss ? 'I\'ve started a new page. It says: "It\'s over." I keep reading it.' : 'There are older pages, from before the sea. Orun\'s handwriting. Lullabies, mostly. He was a terrible speller.']]) });
     else if (t === 'ironhold') out.push({ x: 6, y: 2, look: LOOKS.guard, talk: async () => say('Lieutenant Varga', G.flags.lantern3 ? 'The mines are quiet. The Captain\'s actually smiling. It\'s unsettling.' : 'The Captain\'s out in the square. He doesn\'t like being cooped up in here with the paperwork.'), wander: true });
-    else out.push({ x: 6, y: 2, look: npcLook(77, { style: 'bald', beard: true, robe: true }), talk: async () => say('Scribe Tam', 'The Elder\'s records go back three hundred years. Every Lamplighter of Brightwater is written here. Your father\'s name is on the last page, Arin. Yours will be next.') });
+    else out.push({ x: 6, y: 2, look: npcLook(77, { style: 'bald', beard: true, robe: true }), name: 'Scribe Tam', talk: async () => { await say('Scribe Tam', Trophies.count() ? `The Hall of Lamplighters. Every deed is written here. You have ${Trophies.count()} of ${TROPHIES.length} so far. Have a look.` : 'The Elder\'s records go back three hundred years. Every Lamplighter of Brightwater is written here. Your father\'s name is on the last page, Arin. Yours will be next.'); await trophyRoom(); } });
   }
   if (m.ikind === 'study') out.push({ x: 3, y: 6, look: { style: 'spiky', body: '#3a3a6a', accent: '#e8d070' }, talk: async () => say('Apprentice Pell', 'Wren lets me polish the lenses. It\'s the most important job in Frostmere. Probably.') });
   if (m.ikind === 'house') {
@@ -1056,15 +1056,20 @@ async function titleMenu() {
   while (true) {
     const ngSlots = ALL_SLOTS.filter(s => { const d = readSlot(s); return d && d.flags && d.flags.ending; });
     const latest = latestSlot(), ls = latest && slotSummary(latest);
-    const items = [{ label: 'New Game' }, { label: 'Continue', disabled: !latest }, { label: 'Load Game', disabled: !latest }, { label: 'New Game+', disabled: !ngSlots.length }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }];
-    const helps = ['Begin a new journey.', ls ? `${ls.place} · ${ls.chapter} · ${ls.time}` : 'No saved journey yet.', 'Choose a save slot.', ngSlots.length ? 'Keep your levels, gear and items. Enemies grow stronger.' : 'Finish the story to unlock New Game+.', 'Toggle music and sound (or press M).'];
-    const k = await listMenu({ x: W / 2 - 100, y: 186, w: 200, rows: 5, items, cancel: false, index: idx, help: i => helps[i], helpY: H - 60 });
+    const items = [{ label: 'New Game' }, { label: 'Continue', disabled: !latest }, { label: 'Load Game', disabled: !latest }, { label: 'New Game+', disabled: !ngSlots.length }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' },
+      { label: `Trophies  ${Trophies.count()}/${TROPHIES.length}` }, { label: 'Transfer saves' }, { label: 'Install', disabled: isInstalled() }];
+    const helps = ['Begin a new journey.', ls ? `${ls.place} · ${ls.chapter} · ${ls.time}` : 'No saved journey yet.', 'Choose a save slot.', ngSlots.length ? 'Keep your levels, gear and items. Enemies grow stronger.' : 'Finish the story to unlock New Game+.', 'Toggle music and sound (or press M).',
+      'Achievements, shared by every save.', 'Move your saves to another browser or device.', isInstalled() ? 'Already running as an app.' : 'Install Lanternfall as an app that plays offline.'];
+    const k = await listMenu({ x: W / 2 - 100, y: 176, w: 200, rows: 8, items, cancel: false, index: idx, help: i => helps[i], helpY: H - 44 });
     idx = k;
     if (k === 0) { await newGame(); return; }
     if (k === 1 && await resumeFrom(latest)) return;
     if (k === 2) { const s = await pickSlot('load'); if (s && await resumeFrom(s)) return; }
     if (k === 3) { const s = ngSlots.length === 1 ? ngSlots[0] : await pickSlot('load', 'New Game+ from…', d => d.flags && d.flags.ending); if (s && readSlot(s).flags.ending) { await newGamePlus(s); return; } }
     if (k === 4) Audio_.toggleMute();
+    if (k === 5) await trophyRoom();
+    if (k === 6) await transferMenu();
+    if (k === 7) await installApp();
   }
 }
 async function resumeFrom(slot) {
@@ -1091,7 +1096,7 @@ async function newGame(plus) {
   G.party = [];
   if (plus) { G.party.push({ ...G.carry.arin, status: {} }, { ...G.carry.lyra, status: {} }); healAll(); }
   else G.party = [makeMember('arin', 1), makeMember('lyra', 1)];
-  G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
+  G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.splits = {}; G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
   G.seen = plus ? plus.seen : {}; G.killed = plus ? plus.killed : {};
   if (plus) G.flags.ngplus = plus.ng;
   if (!plus) G.slot = SAVE_SLOTS.find(s => !hasSave(s)) || '1';
@@ -1180,6 +1185,7 @@ async function runEnding() {
 // ------------- main loop -------------
 let lastT = performance.now();
 function frame(now) {
+  if (frameSkip(now)) { requestAnimationFrame(frame); return; }
   try { frameInner(now); } catch (e) { if (!frame.seen) frame.seen = new Set(); if (!frame.seen.has(String(e))) { frame.seen.add(String(e)); console.error(e); } }
   requestAnimationFrame(frame);
 }
@@ -1193,11 +1199,13 @@ function frameInner(now) {
   const uiBusy = UI.update(dt);
   if (!uiBusy && !Script.running && G.scene && G.scene.update) G.scene.update(dt);
   if (G.scene && G.scene.tick) G.scene.tick(dt * bs);
+  platformTick(dt);
   ctx.setTransform(SCALE * DPR, 0, 0, SCALE * DPR, 0, 0);
   ctx.clearRect(0, 0, W, H);
   if (G.scene) G.scene.draw(ctx);
   UI.draw(ctx);
   drawToasts(ctx, dt);
+  drawSpeedrun(ctx, dt);
   if (Fade.v > 0) { ctx.save(); ctx.globalAlpha = Fade.v; ctx.fillStyle = Fade.color; ctx.fillRect(0, 0, W, H); ctx.restore(); }
 }
 Fade.v = 1;

@@ -30,6 +30,8 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 - [Items](#items)
 - [Levels and EXP](#levels-and-exp)
 - [New Game+](#new-game)
+- [Trophies](#trophies)
+- [Speedrun mode](#speedrun-mode)
 
 ---
 
@@ -685,3 +687,27 @@ After the ending, the title screen offers **New Game+**. You keep your levels, e
 | ATK and MAG | +22% |
 | DEF | +12% |
 | EXP and gold | +50% |
+
+---
+
+## Trophies
+
+Trophies (added in 1.8) belong to you, not to a save: earn one once and it stays, whichever slot you play and through New Game+. A toast appears when you earn one. See them from **Trophies** on the title screen, or ask **Scribe Tam** in Elder Maren's hall in Brightwater.
+
+{{trophies}}
+
+---
+
+## Speedrun mode
+
+Turn on **Config → Speedrun timer** to show your play time in the top-right corner. Play time counts on the field and, since 1.8, in battle too (real time, so a faster battle speed saves time). Each main Lantern is a split:
+
+| Split | When it's taken |
+| --- | --- |
+| Ember Lantern | Relighting the Ember Lantern in Whisperwood Hollow |
+| Tide Lantern | Relighting the Tide Lantern in the Sunken Shrine |
+| Stone Lantern | Relighting the Stone Lantern in Emberdeep Mines |
+| Dawn Lantern | The ending |
+
+When a split is taken, a panel shows its time and the difference from your best run (green ahead, red behind). Your best run is saved when you finish faster than before. Runs on New Game+, and Lanterns lit before a save existed (saves from before 1.8), don't count.
+
