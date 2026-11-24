@@ -390,14 +390,14 @@ async function openShop(listId, keeper) {
         const sel = { v: idx };
         const r = await listMenu({
           x: 16, y: 70, w: 300, rows: 9, title: 'Buy', index: idx, onChange: i => sel.v = i,
-          items: stock.map(id => ({ label: ITEMS[id].name, right: ITEMS[id].price + ' G', disabled: G.gold < ITEMS[id].price })),
+          items: stock.map(id => ({ label: ITEMS[id].name, right: shopPrice(listId, id) + ' G', disabled: G.gold < shopPrice(listId, id) })),
           help: i => ITEMS[stock[i]].desc
         });
         closePanel(det);
         if (r < 0) break;
         idx = r;
         const it = ITEMS[stock[r]];
-        G.gold -= it.price; addItem(stock[r]); Audio_.sfx('item');
+        G.gold -= shopPrice(listId, stock[r]); addItem(stock[r]); Audio_.sfx('item');
         toast(`Bought ${it.name}`);
       }
     } else {
@@ -532,16 +532,18 @@ const MAP_COL = { '~': '#2c6fc4', r: '#3a80d0', '.': '#6dbb4f', T: '#2f7a35', '^
 async function worldMapView() {
   const m = getMap('world');
   const sc = Math.min(600 / m.w, 384 / m.h), ow = m.w * sc, oh = m.h * sc, ox = (W - ow) / 2, oy = (H - oh) / 2 + 12;
-  // where is the party?
-  let px = G.x, py = G.y;
-  if (Field.map && Field.map.kind !== 'world') {
-    const loc = Field.map.kind === 'town' ? WORLD_LOC[Field.map.loc] : WORLD_LOC[DUNGEONS[Field.map.dungeon].loc];
-    px = loc.x; py = loc.y;
-  }
+  // where is the party? (on the sea floor, the marker shows the spot above you)
+  const { x: px, y: py } = worldPos();
   const obj = mainObjective();
+  const canDeep = !!G.flags.seen_deep;
+  let deep = canDeep && onSeaFloor();
   await UI.push({
-    update() { if (Input.p('ok') || Input.p('cancel')) { Audio_.sfx('cancel'); UI.close(this); } },
+    update() {
+      if (canDeep && Input.p('run')) { deep = !deep; Audio_.sfx('cursor'); }
+      else if (Input.p('ok') || Input.p('cancel')) { Audio_.sfx('cancel'); UI.close(this); }
+    },
     draw(g) {
+      if (deep) { drawDeepMap(g, ox, oy, ow, oh, sc); return; }
       const t = performance.now() / 1000;
       g.fillStyle = 'rgba(4,6,20,.92)'; g.fillRect(0, 0, W, H);
       drawWindow(g, ox - 10, oy - 34, ow + 20, oh + 58);
@@ -567,8 +569,10 @@ async function worldMapView() {
       if (obj.loc && WORLD_LOC[obj.loc]) { const L = WORLD_LOC[obj.loc]; const x = ox + L.x * sc + 3.5, y = oy + L.y * sc - 8 + Math.sin(t * 4) * 2; poly(g, [x - 5, y - 6, x + 5, y - 6, x, y + 2], '#ffd23a', OUT, 1); }
       if (G.airship && G.flags.airship) { const x = ox + G.airship.x * sc + 3, y = oy + G.airship.y * sc + 3; ellipse(g, x, y - 2, 5, 3, '#c8443a', '#fff', 1); }
       if (G.ship && G.flags.ship && !G.onShip) { const x = ox + G.ship.x * sc + 3, y = oy + G.ship.y * sc + 3; poly(g, [x - 4, y + 2, x + 4, y + 2, x + 2, y + 4, x - 2, y + 4], '#7a4a22'); poly(g, [x, y - 5, x + 4, y + 1, x, y + 1], '#fff'); }
+      if (G.flags.q_drowned) for (const d of DIVE_SPOTS) { const x = ox + d.x * sc + 3, y = oy + d.y * sc + 3; circle(g, x, y, 4 + Math.sin(t * 3) * 0.8, '#06182a', '#5af0d0', 1.5); }
+      for (const k in m.digs || {}) if (m.digs[k] && hasItem('tmap' + k) && !G.flags['dug_' + k]) { const x = ox + m.digs[k].x * sc + 3, y = oy + m.digs[k].y * sc + 3; line(g, x - 3.5, y - 3.5, x + 3.5, y + 3.5, '#ff3a6a', 2.5); line(g, x - 3.5, y + 3.5, x + 3.5, y - 3.5, '#ff3a6a', 2.5); }
       if (Math.sin(t * 8) > -0.3) { circle(g, ox + px * sc + 3.5, oy + py * sc + 3.5, 4, '#ff3a3a', '#fff', 1.5); }
-      text(g, 'Red: you   ▼ objective   Enter/Esc to close', W / 2, oy + oh + 5, { size: 11, align: 'center', color: '#b8c4ee' });
+      text(g, `Red: you   ▼ objective${G.flags.q_drowned ? '   ◎ black water' : ''}${mapsFound() ? '   ✕ dig' : ''}${canDeep ? '   Shift: sea floor' : ''}   Enter/Esc to close`, W / 2, oy + oh + 5, { size: 11, align: 'center', color: '#b8c4ee' });
     }
   });
 }

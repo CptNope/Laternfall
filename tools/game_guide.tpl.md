@@ -10,6 +10,7 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 
 - [Walkthrough](#walkthrough)
 - [Hearts of the Lamplighters](#hearts-of-the-lamplighters)
+- [The Drowned Kingdom](#the-drowned-kingdom)
 - [The world](#the-world)
 - [Towns, inns and shops](#towns-inns-and-shops)
 - [Dungeons](#dungeons)
@@ -139,6 +140,48 @@ flowchart LR
 
 ---
 
+## The Drowned Kingdom
+
+Added in 1.7. It starts once **Oswin's quest is done** (The Drowned Priesthood): Sister Wenna in the Port Halden chapel has found a chart hidden in the Abbot's bell. Oswin must be in the party when you talk to her.
+
+```mermaid
+flowchart LR
+    W[Sister Wenna<br/>Tessaly's Chart] --> B[Brann fits a diving bell<br/>2 Frost Crystals + 1 Sun Gold]
+    B --> D[Sail onto black water ◎<br/>press Enter to dive]
+    D --> F[The sea floor] --> N[Nerith<br/>Mother Ysolde] --> P[The Drowned Palace, 4F<br/>Nereus, the Drowned King]
+    P --> C[Crown of Nerith] --> Y[Back to Ysolde] --> R[The Hadal Rift opens, 2F<br/>The Tide That Remembers]
+    R --> T[Tidesong]
+```
+
+**The sea floor.** There are four patches of black water, marked ◎ on the world map once you have the chart. Diving from one puts you on the sea floor directly below it, which is drawn at half the world's scale. Walk onto a **bell line** (↑) to surface from any of the four. The bell's lamp only lights a few steps around you; the glows are vents, the bell lines and the city. Kelp beds raise the encounter rate by 50%. The **Map** screen has a Sea Floor view (press **Shift** to switch).
+
+| Place | Where | What's there |
+| --- | --- | --- |
+| **Nerith** | The centre of the sea floor, below where the Leviathan's whirlpool was | Inn (500 G), temple (Mother Ysolde: free full heal), item shop, armory with the best shop gear in the game, an archive |
+| **The Drowned Palace** | East of Nerith. Opens after you meet Mother Ysolde | 4 floors; boss **Nereus, the Drowned King** (acts twice, absorbs water). Recommended level 46+ |
+| **The Hadal Rift** | The far southeast. Opens after Nereus, and Ysolde tells you about it | 2 floors; the secret superboss **The Tide That Remembers** (acts twice, two phases, absorbs water, resists dark and ice). Recommended: level 50, a full Lantern Board, the hero weapons and a meal |
+| Three wrecks | Scattered on the sea floor | A chest beside each, one with the fifth treasure map |
+
+### Treasure maps
+
+Five maps, each pointing to a spot on the world map. Carried maps are marked ✕ on the world map. Stand on the spot and press **Enter** to dig. Dig up all five and Whisper pays 50,000 gold.
+
+{{treasures}}
+
+Sand Bandits, Cutpurses and Abyssal Anglers have a 20% chance per battle to drop the next map you're missing (2, then 3, then 4).
+
+### The Undermarket
+
+After Kestrel's quest, the trapdoor in the Ironhold jail also leads to **the Undermarket**, the Thieves' Guild's market. It has a cheap inn (40 G), Mags in the guild hall, Whisper the map-seller, and a black market that sells forge materials and rare goods at three times their price:
+
+{{blackmarket}}
+
+### Lanternmoths
+
+Once all twelve roadside lamps are lit (Arin's quest), talk to **Old Ivy** in Brightwater for the **Moth Whistle**. After that, talk to any lit roadside lamp to ride a lanternmoth: it moves twice as fast as walking, crosses forests, and **meets no monsters**. Moths can't cross water or mountains. Press **Enter** to land; walking into a town or dungeon lands you too.
+
+---
+
 ## The world
 
 ```mermaid
@@ -218,6 +261,8 @@ flowchart LR
 | On foot | Start | Hold **Shift** (or turn on **auto-dash**) to run. Forests, hills and dead woods raise the encounter rate by 50%. |
 | Ship *Dawnrunner* | Brann, after the Tide Lantern | Walk onto it to sail and onto land to go ashore. Sea encounters. |
 | Airship *Aurora* | Beating Ozymar | Fly anywhere with no encounters. Press **Enter** to land on open ground (not forest). |
+| Diving bell | Brann, during The Drowned Kingdom | Sail onto black water and press **Enter** to dive to the sea floor; walk onto a bell line to surface. |
+| Lanternmoth | Old Ivy's whistle, after Arin's quest | Talk to a lit roadside lamp. Fast, no encounters, land only. **Enter** to land. |
 
 **Encounters** come every 14–30 steps. The Sailor's Compass and the Moonfin Charm halve the rate. After the ending, **Config → Encounters** can turn them off entirely.
 
@@ -234,6 +279,8 @@ flowchart LR
 | Mirage | 150 G | Sultana Imara, Scholar Hesper, Dalen | Palace |
 | Aerie | 200 G | Elder Skye, the Arena Master | **The Arena** |
 | Lastlight | 300 G | Warden Ione, Calla, Fennick, Moss | Chapel; endgame armory |
+| Nerith (sea floor) | 500 G | Mother Ysolde, Captain Oriel, Archivist Thule | Temple (full heal); the best shop gear |
+| The Undermarket (under Ironhold) | 40 G | Mags, Whisper, Stallkeeper Nim | Black market; treasure maps |
 
 Every building can be entered. Search **barrels, pots and crates** (face one and press Enter) for hidden items; each container is searched once. Resting at an inn also offers to save.
 
@@ -512,6 +559,11 @@ flowchart LR
 | **Old Debts** | Ironhold jail guard (after the ending) | Guildmaster Vane in the Undercity | Pickpocket's Prize, ★ Grand Larceny |
 | **Echo of Vesper** | Mira (after the ending) | Selene's solo dream duel | Duskstar, ★ Long Night |
 | **The Festival of Lanterns** | Elder Maren | Finish all five hero quests | Heartlight |
+| **The Complete Bestiary** | Sable, Frostmere (after Monster Scholar) | Record 45 creatures, then every one | Scholar's Monocle, Bestiary Seal |
+| **The Drowned Kingdom** | Sister Wenna (after The Drowned Priesthood) | Dive to Nerith and face Nereus in the Drowned Palace | Crown of Nerith |
+| **The Tide That Remembers** | Mother Ysolde, Nerith | The superboss in the Hadal Rift | Tidesong |
+| **Lanternmoths** | Old Ivy, Brightwater (after The Lamplighter's Road) | Talk to her | Moth Whistle |
+| **Buried Treasure** | Whisper, the Undermarket | Dig up all five treasure maps | 50,000 G |
 
 ---
 

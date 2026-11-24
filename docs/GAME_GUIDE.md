@@ -10,6 +10,7 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 
 - [Walkthrough](#walkthrough)
 - [Hearts of the Lamplighters](#hearts-of-the-lamplighters)
+- [The Drowned Kingdom](#the-drowned-kingdom)
 - [The world](#the-world)
 - [Towns, inns and shops](#towns-inns-and-shops)
 - [Dungeons](#dungeons)
@@ -139,6 +140,66 @@ flowchart LR
 
 ---
 
+## The Drowned Kingdom
+
+Added in 1.7. It starts once **Oswin's quest is done** (The Drowned Priesthood): Sister Wenna in the Port Halden chapel has found a chart hidden in the Abbot's bell. Oswin must be in the party when you talk to her.
+
+```mermaid
+flowchart LR
+    W[Sister Wenna<br/>Tessaly's Chart] --> B[Brann fits a diving bell<br/>2 Frost Crystals + 1 Sun Gold]
+    B --> D[Sail onto black water ◎<br/>press Enter to dive]
+    D --> F[The sea floor] --> N[Nerith<br/>Mother Ysolde] --> P[The Drowned Palace, 4F<br/>Nereus, the Drowned King]
+    P --> C[Crown of Nerith] --> Y[Back to Ysolde] --> R[The Hadal Rift opens, 2F<br/>The Tide That Remembers]
+    R --> T[Tidesong]
+```
+
+**The sea floor.** There are four patches of black water, marked ◎ on the world map once you have the chart. Diving from one puts you on the sea floor directly below it, which is drawn at half the world's scale. Walk onto a **bell line** (↑) to surface from any of the four. The bell's lamp only lights a few steps around you; the glows are vents, the bell lines and the city. Kelp beds raise the encounter rate by 50%. The **Map** screen has a Sea Floor view (press **Shift** to switch).
+
+| Place | Where | What's there |
+| --- | --- | --- |
+| **Nerith** | The centre of the sea floor, below where the Leviathan's whirlpool was | Inn (500 G), temple (Mother Ysolde: free full heal), item shop, armory with the best shop gear in the game, an archive |
+| **The Drowned Palace** | East of Nerith. Opens after you meet Mother Ysolde | 4 floors; boss **Nereus, the Drowned King** (acts twice, absorbs water). Recommended level 46+ |
+| **The Hadal Rift** | The far southeast. Opens after Nereus, and Ysolde tells you about it | 2 floors; the secret superboss **The Tide That Remembers** (acts twice, two phases, absorbs water, resists dark and ice). Recommended: level 50, a full Lantern Board, the hero weapons and a meal |
+| Three wrecks | Scattered on the sea floor | A chest beside each, one with the fifth treasure map |
+
+### Treasure maps
+
+Five maps, each pointing to a spot on the world map. Carried maps are marked ✕ on the world map. Stand on the spot and press **Enter** to dig. Dig up all five and Whisper pays 50,000 gold.
+
+| Map | Where it points | Where to get it | Treasure |
+| --- | --- | --- | --- |
+| **Map: Smuggler's Cove** | X marks a beach south of Port Halden, where the causeway runs out to the Sunken Shrine. "Dig at the third palm." There are no palms. | Whisper sells it in the Undermarket | 25,000 gold, Megalixir, X-Potion |
+| **Map: The Cold Cairn** | A cairn in the snowfields between Frostmere and Ironhold. Someone has drawn a very cold-looking face. | Dropped by Sand Bandits, Cutpurses and Abyssal Anglers | Frost Crystal, Frost Crystal, Frost Crystal, Megalixir |
+| **Map: Dune Sea** | Deep in the Sunscar, south of Mirage and west of the Tomb. "Where the sand sings at noon." | Dropped by Sand Bandits, Cutpurses and Abyssal Anglers | Sun Gold, Sun Gold, Sun Gold, 30,000 gold |
+| **Map: Hollow Root** | At the edge of the Whisperwood, north of Brightwater. The ink smells of moss. | Dropped by Sand Bandits, Cutpurses and Abyssal Anglers | Lucky Doubloon, Elixir, Elixir |
+| **Map: Ash and Gold** | The Ashen Isle, south of Lastlight. Charred at the edges. Somebody wanted this burned. | A wreck on the sea floor | Admiral's Hat, Deep Pearl, Deep Pearl, Deep Pearl |
+
+Sand Bandits, Cutpurses and Abyssal Anglers have a 20% chance per battle to drop the next map you're missing (2, then 3, then 4).
+
+### The Undermarket
+
+After Kestrel's quest, the trapdoor in the Ironhold jail also leads to **the Undermarket**, the Thieves' Guild's market. It has a cheap inn (40 G), Mags in the guild hall, Whisper the map-seller, and a black market that sells forge materials and rare goods at three times their price:
+
+| Item | Black-market price | Normal price |
+| --- | --- | --- |
+| Megalixir | 20000 | — |
+| Elixir | 6000 | — |
+| Star Bomb | 2700 | 900 |
+| Ember Core | 1200 | 400 |
+| Frost Crystal | 1200 | 400 |
+| Sun Gold | 1800 | 600 |
+| Star Shard | 2400 | 800 |
+| Dusk Silk | 2100 | 700 |
+| Abyss Ash | 3600 | 1200 |
+| Deep Pearl | 4500 | 1500 |
+| Thief's Gloves | 60000 | — |
+
+### Lanternmoths
+
+Once all twelve roadside lamps are lit (Arin's quest), talk to **Old Ivy** in Brightwater for the **Moth Whistle**. After that, talk to any lit roadside lamp to ride a lanternmoth: it moves twice as fast as walking, crosses forests, and **meets no monsters**. Moths can't cross water or mountains. Press **Enter** to land; walking into a town or dungeon lands you too.
+
+---
+
 ## The world
 
 ```mermaid
@@ -218,6 +279,8 @@ flowchart LR
 | On foot | Start | Hold **Shift** (or turn on **auto-dash**) to run. Forests, hills and dead woods raise the encounter rate by 50%. |
 | Ship *Dawnrunner* | Brann, after the Tide Lantern | Walk onto it to sail and onto land to go ashore. Sea encounters. |
 | Airship *Aurora* | Beating Ozymar | Fly anywhere with no encounters. Press **Enter** to land on open ground (not forest). |
+| Diving bell | Brann, during The Drowned Kingdom | Sail onto black water and press **Enter** to dive to the sea floor; walk onto a bell line to surface. |
+| Lanternmoth | Old Ivy's whistle, after Arin's quest | Talk to a lit roadside lamp. Fast, no encounters, land only. **Enter** to land. |
 
 **Encounters** come every 14–30 steps. The Sailor's Compass and the Moonfin Charm halve the rate. After the ending, **Config → Encounters** can turn them off entirely.
 
@@ -234,6 +297,8 @@ flowchart LR
 | Mirage | 150 G | Sultana Imara, Scholar Hesper, Dalen | Palace |
 | Aerie | 200 G | Elder Skye, the Arena Master | **The Arena** |
 | Lastlight | 300 G | Warden Ione, Calla, Fennick, Moss | Chapel; endgame armory |
+| Nerith (sea floor) | 500 G | Mother Ysolde, Captain Oriel, Archivist Thule | Temple (full heal); the best shop gear |
+| The Undermarket (under Ironhold) | 40 G | Mags, Whisper, Stallkeeper Nim | Black market; treasure maps |
 
 Every building can be entered. Search **barrels, pots and crates** (face one and press Enter) for hidden items; each container is searched once. Resting at an inn also offers to save.
 
@@ -246,6 +311,7 @@ Every building can be entered. Search **barrels, pots and crates** (face one and
 | **Aerie** | X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Moon Scepter, Sunsteel Blade, Sky Staff, Scholar's Lens, Echo Bell, Desert Veil, Hourglass Pin |
 | **Frostmere** | Hi-Potion, X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Swift Boots, Echo Bell, Wake Charm, Scholar's Lens, Guard Ring, Power Ring, Eye Charm, Hourglass Pin |
 | **Lastlight** | X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb, Star Bomb | Ashsteel Blade, Cinder Staff, Ashen Mace, Ash Kris, Umbral Rod, Ash Mail, Ash Robe, Ash Garb |
+| **Nerith** | X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Star Bomb | Coral Blade, Pearl Staff, Reef Mace, Eel Fang, Abyss Orb, Nacre Mail, Kelp Robe, Sharkskin Garb, Pressure Ring |
 
 ---
 
@@ -264,6 +330,8 @@ Each dungeon's floors are generated from a fixed seed, so every player gets the 
 | **Ember Caves** | 2 | Hearth Warden | — (hero quest) | Ember Core, Hi-Ether, Megalixir, Star Bomb, X-Potion, 6000 gold |
 | **Sea Mother's Grotto** | 2 | The Drowned Abbot | — (hero quest) | Elixir, Frost Crystal, Hi-Ether, Megalixir, Sun Gold, X-Potion, 6000 gold |
 | **The Undercity** | 2 | Guildmaster Vane | — (hero quest) | Dusk Silk, Elixir, Megalixir, X-Potion, 24000 gold |
+| **The Drowned Palace** | 4 | Nereus, the Drowned King | — (hero quest) | Deep Pearl, Elixir, Hi-Ether, Kelp Robe, Megalixir, Pressure Ring, Star Bomb, X-Potion, 39000 gold |
+| **The Hadal Rift** | 2 | The Tide That Remembers | — (hero quest) | Deep Pearl, Elixir, Megalixir, 30000 gold |
 | **Crownfall Abyss** | 4 | The Hollow Crown | Night Lantern | Abyss Ash, Ash Mail, Ash Robe, Elixir, Hi-Ether, Megalixir, Nightglass Locket, Star Bomb, X-Potion, 32000 gold |
 
 ---
@@ -547,6 +615,8 @@ What the passives and the Great Flame do depends on the hero:
 | **The Drowned Abbot** | Sea Mother's Grotto 2F (Oswin) | 9000 | 210 | 222 | 24 | 2 | Bolt | — | Megalixir | Maelstrom, Drain, Lullaby | Below 50% HP: adds Heavy Night |
 | **Guildmaster Vane** | The Undercity 2F (Kestrel) | 8500 | 226 | 80 | 42 | 2 | — | — | Megalixir · ★ Thief's Gloves (30%) | Needle Storm, Venom Bite, Shatter | Below 50% HP: adds Blinding Sand |
 | **Vesper's Echo** | Selene's dream, solo (Selene) | 2600 | 218 | 150 | 26 | 1 | Holy | — | Elixir | Shadow Bolt, Drain | Below 50% HP: adds Time Warp |
+| **Nereus, the Drowned King** | The Drowned Palace 4F (sea floor) | 13000 | 225 | 210 | 28 | 2 | Bolt | absorbs water | Megalixir · ★ Siren Scale (30%) | Maelstrom, Drain, Heavy Night, Crown of Ash | Below 50% HP: adds Maelstrom |
+| **The Tide That Remembers** | The Hadal Rift 2F (secret superboss) | 22000 | 238 | 240 | 34 | 2 | — | Dark, Ice, absorbs water | Megalixir · ★ Megalixir (100%) | Maelstrom, Undertow, Forget, Crushing Depths | Below 60% HP: adds Meteor Rain, Siren Song; Below 25% HP: adds Remember, Heavy Night |
 
 ```mermaid
 xychart-beta
@@ -746,6 +816,36 @@ Ordered roughly as you meet them.
 | Guild Enforcer | 2700 | 235 | 40 | — | — | Megalixir | Sun Gold (15%) | 820 | 900 |
 | Sewer Ooze | 1700 | 180 | 170 | Fire | — | Remedy | Dusk Silk (20%) | 640 | 420 |
 
+#### The sea floor (1.7)
+
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Lantern Jelly | 2400 | 190 | 210 | Bolt | absorbs water | Hi-Ether | Deep Pearl (15%) | 900 | 600 |
+| Abyssal Angler *(Hunts the wounded)* | 3000 | 240 | 80 | Bolt | Water | X-Potion | Deep Pearl (20%) | 1000 | 700 |
+| Kelp Horror | 2800 | 210 | 150 | Fire | Water | X-Potion | — | 950 | 600 |
+| Trench Crab | 3200 | 230 | 40 | Bolt | — | Hi-Ether · ★ Megalixir (10%) | Deep Pearl (25%) | 1000 | 900 |
+| Drowned Sentinel *(Hunts casters)* | 3600 | 245 | 60 | Bolt | Water | Elixir | Sun Gold (15%) | 1100 | 800 |
+
+#### The Drowned Palace
+
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Drowned Courtier | 3000 | 235 | 120 | Holy | Water | X-Potion | — | 1100 | 900 |
+| Siren of Nerith *(Heals allies)* | 2600 | 150 | 230 | Bolt | absorbs water | Hi-Ether · ★ Siren Scale (15%) | — | 1150 | 950 |
+| Coral Golem | 4200 | 250 | 40 | Bolt | Water, Fire | X-Potion | Deep Pearl (30%) | 1300 | 1000 |
+| Tide Wraith | 2200 | 160 | 240 | Holy | absorbs water | Hi-Ether | — | 1050 | 800 |
+| Deep Gazer | 2400 | 140 | 220 | Holy | — | Remedy | — | 1000 | 750 |
+| Drowned Sentinel *(Hunts casters)* | 3600 | 245 | 60 | Bolt | Water | Elixir | Sun Gold (15%) | 1100 | 800 |
+
+#### The Hadal Rift
+
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Void Jelly | 3200 | 200 | 255 | Holy | absorbs dark, absorbs water | Megalixir | Deep Pearl (30%) | 1400 | 1000 |
+| Hadal Angler *(Hunts the wounded)* | 4000 | 265 | 90 | Bolt | Water | Elixir · ★ Megalixir (15%) | Deep Pearl (35%) | 1500 | 1100 |
+| Deep Gazer | 2400 | 140 | 220 | Holy | — | Remedy | — | 1000 | 750 |
+| Drowned Sentinel *(Hunts casters)* | 3600 | 245 | 60 | Bolt | Water | Elixir | Sun Gold (15%) | 1100 | 800 |
+
 ---
 
 ## Side quests
@@ -788,6 +888,11 @@ flowchart LR
 | **Old Debts** | Ironhold jail guard (after the ending) | Guildmaster Vane in the Undercity | Pickpocket's Prize, ★ Grand Larceny |
 | **Echo of Vesper** | Mira (after the ending) | Selene's solo dream duel | Duskstar, ★ Long Night |
 | **The Festival of Lanterns** | Elder Maren | Finish all five hero quests | Heartlight |
+| **The Complete Bestiary** | Sable, Frostmere (after Monster Scholar) | Record 45 creatures, then every one | Scholar's Monocle, Bestiary Seal |
+| **The Drowned Kingdom** | Sister Wenna (after The Drowned Priesthood) | Dive to Nerith and face Nereus in the Drowned Palace | Crown of Nerith |
+| **The Tide That Remembers** | Mother Ysolde, Nerith | The superboss in the Hadal Rift | Tidesong |
+| **Lanternmoths** | Old Ivy, Brightwater (after The Lamplighter's Road) | Talk to her | Moth Whistle |
+| **Buried Treasure** | Whisper, the Undermarket | Dig up all five treasure maps | 50,000 G |
 
 ---
 
@@ -872,10 +977,11 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | --- | --- | --- |
 | **Ember Core** | 400 | Magma Slime, Fire Bat, Ember Golem, Cinder Wisp, Ash Colossus, Kiln Imp, Cinder Serpent |
 | **Frost Crystal** | 400 | Frost Wolf, Ice Golem, Snow Imp, Deep One |
-| **Sun Gold** | 600 | Mummy, Gilded Scarab, Sphinx, Gilded Golem, Pearl Guard, Guild Enforcer |
+| **Sun Gold** | 600 | Mummy, Gilded Scarab, Sphinx, Gilded Golem, Pearl Guard, Guild Enforcer, Drowned Sentinel |
 | **Star Shard** | 800 | Starspawn, Astral Knight, Nebula Slime, Void Drake, Comet Imp |
 | **Dusk Silk** | 700 | Hollow Knight, Night Gaze, Shade Wraith, Chimera, Void Slime, Dread Knight, Nightmare, Hollow Herald, Guild Cutpurse, Sewer Ooze |
 | **Abyss Ash** | 1200 | Ash Hound, Cinder Knight, Crown Shard, Abyss Ooze, Gloam Knight |
+| **Deep Pearl** | 1500 | Lantern Jelly, Abyssal Angler, Trench Crab, Coral Golem, Void Jelly, Hadal Angler |
 
 | Forges | Type | Materials | Gold | Stats |
 | --- | --- | --- | --- | --- |
@@ -888,6 +994,9 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | **Tidecaller** | weapon | Frost Crystal ×3, Sun Gold ×2, Abyss Ash ×2 | 18000 G | ATK+62 MAG+48 |
 | **Gloamfang** | weapon | Dusk Silk ×4, Abyss Ash ×3 | 18000 G | ATK+80 SPD+14 |
 | **Evenstar** | weapon | Dusk Silk ×3, Star Shard ×3, Abyss Ash ×2 | 18000 G | ATK+22 MAG+66 |
+| **Abyssal Plate** | armor | Deep Pearl ×4, Abyss Ash ×2, Sun Gold ×2 | 24000 G | DEF+56 |
+| **Pearl Veil** | armor | Deep Pearl ×4, Dusk Silk ×3 | 22000 G | DEF+42 MAG+30 |
+| **Marlin Garb** | armor | Deep Pearl ×3, Dusk Silk ×2, Star Shard ×2 | 22000 G | DEF+44 SPD+16 |
 
 ---
 
@@ -906,6 +1015,7 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | **Sunsteel Blade** | ATK+46 | 9000 | Mirage shop, Aerie shop | Forged in desert heat. |
 | **Dawnblade** | ATK+54 MAG+8 | — | Chest, quest or boss | Forged from the first light. |
 | **Ashsteel Blade** | ATK+62 | 22000 | Lastlight shop | Quenched in the Ashen Isle's cinders. |
+| **Coral Blade** | ATK+74 MAG+10 | 30000 | Nerith shop | Red coral over steel. It never rusts. |
 | **Lightbringer** | ATK+70 MAG+14 | — | Chest, quest or boss | Starlight given an edge. |
 | **Lamplighter's Oath** | ATK+88 MAG+20 | — | Orrin's forge | Forged by Orrin. It burns brighter in the dark. |
 | **Sunbearer** | ATK+100 MAG+28 | — | Chest, quest or boss | Lit from twelve roadside lamps. Arin's father's blade, reforged. |
@@ -922,6 +1032,7 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | **Ember Scepter** | ATK+14 MAG+38 | — | Chest, quest or boss | The first flame, tamed. |
 | **Cinder Staff** | ATK+14 MAG+44 | 20000 | Lastlight shop | The tip never stops smouldering. |
 | **Celestia** | ATK+18 MAG+52 | — | Chest, quest or boss | Every star, in one staff. |
+| **Pearl Staff** | ATK+18 MAG+56 | 28000 | Nerith shop | A black pearl that holds a flame underwater. |
 | **Phoenix Staff** | ATK+20 MAG+66 | — | Orrin's forge | Forged by Orrin. Its flame relights itself. |
 | **Hearthstaff** | ATK+26 MAG+84 | — | Chest, quest or boss | Lyra's mother's staff. It is always warm. |
 
@@ -936,6 +1047,7 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | **Seraph Mace** | ATK+38 MAG+26 | — | Chest, quest or boss | Shines in the dark. |
 | **Ashen Mace** | ATK+42 MAG+30 | 20000 | Lastlight shop | Grey iron, blessed in Lastlight. |
 | **Astral Mace** | ATK+50 MAG+36 | — | Chest, quest or boss | Rings like a temple bell. |
+| **Reef Mace** | ATK+50 MAG+40 | 28000 | Nerith shop | Struck from Nerith's old temple bell. |
 | **Tidecaller** | ATK+62 MAG+48 | — | Orrin's forge | Forged by Orrin. The sea answers it. |
 | **Abbot's Bell** | ATK+72 MAG+64 | — | Chest, quest or boss | The drowned priesthood's bell. It rings like the tide coming in. |
 
@@ -949,6 +1061,7 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | **Shadow Fang** | ATK+46 SPD+6 | — | Chest, quest or boss | Cuts the space between moments. |
 | **Ash Kris** | ATK+54 SPD+8 | 21000 | Lastlight shop | Leaves a trail of sparks. |
 | **Comet Edge** | ATK+62 SPD+10 | — | Chest, quest or boss | Gone before you see it. |
+| **Eel Fang** | ATK+66 SPD+10 | 29000 | Nerith shop | A knife that bends like an eel. It always finds the gap. |
 | **Gloamfang** | ATK+80 SPD+14 | — | Orrin's forge | Forged by Orrin. Cuts twice for every swing you see. |
 | **Pickpocket's Prize** | ATK+94 SPD+20 | — | Chest, quest or boss | Vane's own knife. Kestrel says she found it. |
 
@@ -960,6 +1073,7 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | **Moon Scepter** | ATK+12 MAG+32 | 6000 | Aerie shop | Silver and patient. |
 | **Nocturne** | ATK+16 MAG+46 | — | Chest, quest or boss | Plays the dark like an instrument. |
 | **Umbral Rod** | ATK+14 MAG+50 | 24000 | Lastlight shop | Shadow, held gently. |
+| **Abyss Orb** | ATK+16 MAG+60 | 30000 | Nerith shop | Black water, held in a glass ball. Something swims in it. |
 | **Evenstar** | ATK+22 MAG+66 | — | Orrin's forge | Forged by Orrin. The first star of evening. |
 | **Duskstar** | ATK+28 MAG+84 | — | Chest, quest or boss | The first star after sunset, held in Selene's hand. |
 
@@ -979,11 +1093,17 @@ After *The Stonebrand*, talk to Orrin in Ironhold and choose **Forge**. Material
 | **Ash Robe** | Lyra, Oswin, Selene | DEF+24 MAG+16 | 16000 | Lastlight shop |
 | **Mythril Mail** | Arin, Oswin | DEF+25 | — | Chest, quest or boss |
 | **Ash Garb** | Kestrel | DEF+26 SPD+8 | 17000 | Lastlight shop |
+| **Kelp Robe** | Lyra, Oswin, Selene | DEF+30 MAG+20 | 24000 | Nerith shop |
+| **Sharkskin Garb** | Kestrel | DEF+32 SPD+10 | 25000 | Nerith shop |
 | **Ash Mail** | Arin, Oswin | DEF+32 | 18000 | Lastlight shop |
 | **Night Weave** | Lyra, Oswin, Selene | DEF+34 MAG+24 | — | Orrin's forge |
 | **Dawn Plate** | Arin, Oswin | DEF+35 | — | Chest, quest or boss |
 | **Gloam Leathers** | Kestrel | DEF+36 SPD+12 | — | Orrin's forge |
+| **Nacre Mail** | Arin, Oswin | DEF+40 | 26000 | Nerith shop |
+| **Pearl Veil** | Lyra, Oswin, Selene | DEF+42 MAG+30 | — | Orrin's forge |
+| **Marlin Garb** | Kestrel | DEF+44 SPD+16 | — | Orrin's forge |
 | **Emberforged Plate** | Arin, Oswin | DEF+48 | — | Orrin's forge |
+| **Abyssal Plate** | Arin, Oswin | DEF+56 | — | Orrin's forge |
 
 ### Accessories
 
@@ -1017,7 +1137,7 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **Orrin's Seal** | ATK +6, DEF +18. Prevents all ailments. | — | Quest, chest or prize |
 | **Eclipse Mantle** | DEF +24, MAG +24. Revives once per battle. Prevents silence. | — | Quest, chest or prize |
 | **Nightglass Locket** | All +18. Prevents sleep. A drop of gentle night. | — | Quest, chest or prize |
-| **Thief's Gloves** | SPD +10. Rare steals are twice as likely. Rare steal: Guildmaster Vane. | — | Quest, chest or prize |
+| **Thief's Gloves** | SPD +10. Rare steals are twice as likely. Rare steal: Guildmaster Vane. | — | Blackmarket shop |
 | **Starlit Cloak** | DEF +20, MAG +20. Prevents sleep and slow. Rare steal: Astral Wyrm. | — | Quest, chest or prize |
 | **King's Signet** | ATK +18, MAG +18. Rare steal: the Hollow King. | — | Quest, chest or prize |
 | **Sun Circlet** | MAG +16. Prevents blind and silence. Rare steal: Ozymar. | — | Quest, chest or prize |
@@ -1025,6 +1145,12 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **Hourglass Pin** | SPD +4. Prevents slow. | 2600 | Aerie shop, Frostmere shop |
 | **Scholar's Monocle** | MAG +14. +25% EXP. Prevents blind. Sable's reward. | — | Quest, chest or prize |
 | **Bestiary Seal** | All +14. Rare steals twice as likely. Sable's reward for every creature. | — | Quest, chest or prize |
+| **Siren Scale** | MAG +18. Prevents sleep and silence. Rare steal: Sirens of Nerith. | — | Quest, chest or prize |
+| **Pressure Ring** | DEF +14, HP +300. Made to survive the deep. | 9000 | Nerith shop |
+| **Lucky Doubloon** | All +6. +50% gold from battles. Buried treasure. | — | Quest, chest or prize |
+| **Admiral's Hat** | SPD +10, DEF +8. Halves random encounters. Buried treasure. | — | Quest, chest or prize |
+| **Crown of Nerith** | All +16. Prevents slow and sleep. The last king's crown, freely given. | — | Quest, chest or prize |
+| **Tidesong** | All +26. Regen. No ailments. The sea remembers you now. | — | Quest, chest or prize |
 | **Heartlight** | All +20. Revives once per battle. No ailments. Five lights, one lantern. | — | Quest, chest or prize |
 | **Crown of Dusk & Dawn** | All +25. Regen. No ailments. Both halves of the first crown, at peace. | — | Quest, chest or prize |
 
@@ -1062,6 +1188,13 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **The Last Letter** | From the drowned priesthood of the Sea Mother. It names a grotto on the east coast. |
 | **Vane's Marker** | Kestrel's old debt to the Undercity Guild, with interest. A lot of interest. |
 | **Old Fishing Rod** | Face water and press Enter to fish. Stand by the shore, a pond or a pier. |
+| **Tessaly's Chart** | An old sea chart in the Abbot's hand. Four patches of black water are circled. |
+| **Moth Whistle** | Old Ivy's bone whistle. Blow it at a lit roadside lamp and a lanternmoth comes down to carry you. |
+| **Map: Smuggler's Cove** | X marks a beach south of Port Halden, where the causeway runs out to the Sunken Shrine. "Dig at the third palm." There are no palms. |
+| **Map: The Cold Cairn** | A cairn in the snowfields between Frostmere and Ironhold. Someone has drawn a very cold-looking face. |
+| **Map: Dune Sea** | Deep in the Sunscar, south of Mirage and west of the Tomb. "Where the sand sings at noon." |
+| **Map: Hollow Root** | At the edge of the Whisperwood, north of Brightwater. The ink smells of moss. |
+| **Map: Ash and Gold** | The Ashen Isle, south of Lastlight. Charred at the edges. Somebody wanted this burned. |
 
 ---
 

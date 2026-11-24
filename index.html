@@ -89,7 +89,7 @@ function rgba(hex, a) {
 }
 
 // world-map location tiles: towns A–G, dungeons 1–9
-const LOC_RE = /^[A-G1-9]$/;
+const LOC_RE = /^[A-I0-9]$/;   // A–G towns and 1–9 dungeons on the world; H, I and 0 on the sea floor (1.7)
 const isLoc = c => typeof c === 'string' && LOC_RE.test(c);
 
 // ---------- settings (persist separately from the save file) ----------
@@ -542,6 +542,28 @@ const TRACKS = {
       { w: 'drum', g: 0.04, s: 'k:4 h:4 s:4 h:2 h:2 '.repeat(8) }
     ]
   },
+  // 1.7: the sea floor (slow, D dorian, a bell-like arpeggio), Nerith (a gentle waltz) and the Undermarket (sly swing)
+  deep: {
+    bpm: 60, voices: [
+      { w: 'triangle', g: 0.05, s: 'D4:2 A4:2 D5:2 E5:2 F5:4 E5:4 | C4:2 G4:2 C5:2 D5:2 E5:4 D5:4 | A3:2 E4:2 A4:2 C5:2 D5:4 B4:4 | D4:2 A4:2 D5:2 F5:2 A5:8' },
+      { w: 'triangle', g: 0.15, s: 'D2:16 | C2:16 | A1:16 | D2:16' },
+      { w: 'square', g: 0.018, s: 'r:8 A5:8 | r:8 G5:8 | r:8 E5:8 | r:8 F5:4 E5:4' }
+    ]
+  },
+  nerith: {
+    bpm: 96, voices: [
+      { w: 'triangle', g: 0.05, s: 'F5:4 E5:2 D5:2 A4:4 | Bb4:4 C5:4 D5:4 | C5:4 Bb4:2 A4:2 G4:4 | A4:12 | D5:4 E5:2 F5:2 G5:4 | F5:4 E5:4 D5:4 | C#5:4 D5:2 E5:2 C#5:4 | D5:12' },
+      { w: 'triangle', g: 0.12, s: 'D2:4 A2:4 A2:4 | Bb1:4 F2:4 F2:4 | C2:4 G2:4 G2:4 | F2:4 C3:4 C3:4 | Bb1:4 F2:4 F2:4 | G1:4 D2:4 D2:4 | A1:4 E2:4 E2:4 | D2:4 A2:4 A2:4' },
+      { w: 'square', g: 0.016, s: 'r:4 F4:4 A4:4 | r:4 F4:4 Bb4:4 | r:4 E4:4 G4:4 | r:4 F4:4 C5:4 | r:4 F4:4 Bb4:4 | r:4 G4:4 Bb4:4 | r:4 E4:4 A4:4 | r:4 F4:4 A4:4' }
+    ]
+  },
+  undermarket: {
+    bpm: 104, voices: [
+      { w: 'square', g: 0.032, s: 'E4:3 G4:1 A4:4 B4:3 A4:1 G4:4 | E4:3 D4:1 E4:4 r:8 | A4:3 C5:1 D5:4 C5:3 B4:1 A4:4 | G4:3 F#4:1 E4:4 r:8' },
+      { w: 'triangle', g: 0.13, s: 'E2:4 B2:4 E2:4 B2:4 | E2:4 B2:4 D2:4 B1:4 | A1:4 E2:4 A1:4 E2:4 | B1:4 F#2:4 E2:4 B1:4' },
+      { w: 'drum', g: 0.025, s: 'k:4 h:4 k:4 h:4 | k:4 h:4 k:2 k:2 h:4 | k:4 h:4 k:4 h:4 | k:4 h:4 k:2 h:2 h:4' }
+    ]
+  },
   ashtown: {
     bpm: 88, voices: [
       { w: 'square', g: 0.036, s: 'A4:4 C5:4 E5:8 | D5:4 C5:2 B4:2 A4:8 | F4:4 A4:4 C5:8 | B4:12 r:4 | A4:4 C5:4 E5:6 G5:2 | F5:4 E5:4 D5:8 | C5:4 B4:4 A4:4 G#4:4 | A4:16' },
@@ -863,7 +885,16 @@ const SPELLS = {
   e_blind: { name: 'Blinding Sand', type: 'status', status: 'blind', chance: 0.55, target: 'ally', fx: 'sand' },
   e_blindall: { name: 'Dazzle', type: 'status', status: 'blind', chance: 0.35, target: 'allies', fx: 'holy' },
   e_slow: { name: 'Time Warp', type: 'status', status: 'slow', chance: 0.5, target: 'ally', fx: 'dark' },
-  e_slowall: { name: 'Heavy Night', type: 'status', status: 'slow', chance: 0.35, target: 'allies', fx: 'dark' }
+  e_slowall: { name: 'Heavy Night', type: 'status', status: 'slow', chance: 0.35, target: 'allies', fx: 'dark' },
+  // 1.7 The Drowned Kingdom
+  e_maelstrom: { name: 'Maelstrom', type: 'dmg', elem: 'water', power: 32, target: 'allies', fx: 'water' },
+  e_undertow: { name: 'Undertow', type: 'dmg', elem: 'water', power: 62, target: 'ally', fx: 'water' },
+  e_depths: { name: 'Crushing Depths', type: 'phys', power: 1.0, target: 'allies', fx: 'hit' },
+  e_sting: { name: 'Lantern Sting', type: 'dmg', elem: 'bolt', power: 24, target: 'ally', fx: 'bolt' },
+  e_lure: { name: 'Lure Light', type: 'status', status: 'blind', chance: 0.5, target: 'allies', fx: 'holy' },
+  e_siren: { name: 'Siren Song', type: 'status', status: 'sleep', chance: 0.4, target: 'allies', fx: 'sleep' },
+  e_forget: { name: 'Forget', type: 'status', status: 'silence', chance: 0.45, target: 'allies', fx: 'water' },
+  e_remember: { name: 'Remember', type: 'heal', power: 500, target: 'self', fx: 'heal' }
 };
 const STATUS_LABEL = { sleep: 'Sleep', silence: 'Silence', blind: 'Blind', slow: 'Slow', poison: 'Poison' };
 const CASTERS = ['lyra', 'oswin', 'selene'];
@@ -952,6 +983,32 @@ const ITEMS = {
   hourglass: { name: 'Hourglass Pin', price: 2600, kind: 'acc', spd: 4, immune: ['slow'], desc: 'SPD +4. Prevents slow.' },
   scholar_monocle: { name: 'Scholar\'s Monocle', price: 0, kind: 'acc', mag: 14, xp: 1.25, immune: ['blind'], desc: 'MAG +14. +25% EXP. Prevents blind. Sable\'s reward.' },
   bestiary_seal: { name: 'Bestiary Seal', price: 0, kind: 'acc', all: 14, thief: true, desc: 'All +14. Rare steals twice as likely. Sable\'s reward for every creature.' },
+  // 1.7 The Drowned Kingdom
+  tide_chart: { name: 'Tessaly\'s Chart', price: 0, kind: 'key', desc: 'An old sea chart in the Abbot\'s hand. Four patches of black water are circled.' },
+  moth_whistle: { name: 'Moth Whistle', price: 0, kind: 'key', desc: 'Old Ivy\'s bone whistle. Blow it at a lit roadside lamp and a lanternmoth comes down to carry you.' },
+  tmap1: { name: 'Map: Smuggler\'s Cove', price: 0, kind: 'key', tmap: 1, desc: 'X marks a beach south of Port Halden, where the causeway runs out to the Sunken Shrine. "Dig at the third palm." There are no palms.' },
+  tmap2: { name: 'Map: The Cold Cairn', price: 0, kind: 'key', tmap: 2, desc: 'A cairn in the snowfields between Frostmere and Ironhold. Someone has drawn a very cold-looking face.' },
+  tmap3: { name: 'Map: Dune Sea', price: 0, kind: 'key', tmap: 3, desc: 'Deep in the Sunscar, south of Mirage and west of the Tomb. "Where the sand sings at noon."' },
+  tmap4: { name: 'Map: Hollow Root', price: 0, kind: 'key', tmap: 4, desc: 'At the edge of the Whisperwood, north of Brightwater. The ink smells of moss.' },
+  tmap5: { name: 'Map: Ash and Gold', price: 0, kind: 'key', tmap: 5, desc: 'The Ashen Isle, south of Lastlight. Charred at the edges. Somebody wanted this burned.' },
+  deep_pearl: { name: 'Deep Pearl', price: 1500, kind: 'mat', desc: 'A black pearl from the sea floor. It glows when you aren\'t looking at it.' },
+  coral_blade: { name: 'Coral Blade', price: 30000, kind: 'weapon', who: ['arin'], atk: 74, mag: 10, desc: 'Red coral over steel. It never rusts.' },
+  pearl_staff: { name: 'Pearl Staff', price: 28000, kind: 'weapon', who: ['lyra'], atk: 18, mag: 56, desc: 'A black pearl that holds a flame underwater.' },
+  reef_mace: { name: 'Reef Mace', price: 28000, kind: 'weapon', who: ['oswin'], atk: 50, mag: 40, desc: 'Struck from Nerith\'s old temple bell.' },
+  eel_fang: { name: 'Eel Fang', price: 29000, kind: 'weapon', who: ['kestrel'], atk: 66, spd: 10, desc: 'A knife that bends like an eel. It always finds the gap.' },
+  abyss_orb: { name: 'Abyss Orb', price: 30000, kind: 'weapon', who: ['selene'], atk: 16, mag: 60, desc: 'Black water, held in a glass ball. Something swims in it.' },
+  nacre_mail: { name: 'Nacre Mail', price: 26000, kind: 'armor', who: ['arin', 'oswin'], def: 40, desc: 'Mother-of-pearl plates. Rainbow-bright and very hard.' },
+  kelp_robe: { name: 'Kelp Robe', price: 24000, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 30, mag: 20, desc: 'Woven sea-silk. It is never quite dry.' },
+  shark_garb: { name: 'Sharkskin Garb', price: 25000, kind: 'armor', who: ['kestrel'], def: 32, spd: 10, desc: 'Rough one way, smooth the other.' },
+  abyssal_plate: { name: 'Abyssal Plate', price: 0, kind: 'armor', who: ['arin', 'oswin'], def: 56, desc: 'Forged by Orrin from deep pearls. It hums at low tide.' },
+  pearl_veil: { name: 'Pearl Veil', price: 0, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 42, mag: 30, desc: 'Forged by Orrin — strung, really. A thousand tiny pearls.' },
+  marlin_garb: { name: 'Marlin Garb', price: 0, kind: 'armor', who: ['kestrel'], def: 44, spd: 16, desc: 'Forged by Orrin. Fast enough to outswim a marlin.' },
+  siren_scale: { name: 'Siren Scale', price: 0, kind: 'acc', mag: 18, immune: ['sleep', 'silence'], desc: 'MAG +18. Prevents sleep and silence. Rare steal: Sirens of Nerith.' },
+  pressure_ring: { name: 'Pressure Ring', price: 9000, kind: 'acc', def: 14, hp: 300, desc: 'DEF +14, HP +300. Made to survive the deep.' },
+  lucky_coin: { name: 'Lucky Doubloon', price: 0, kind: 'acc', all: 6, goldx: 1.5, desc: 'All +6. +50% gold from battles. Buried treasure.' },
+  admiral_hat: { name: 'Admiral\'s Hat', price: 0, kind: 'acc', spd: 10, def: 8, fewer: true, desc: 'SPD +10, DEF +8. Halves random encounters. Buried treasure.' },
+  tidecrown: { name: 'Crown of Nerith', price: 0, kind: 'acc', all: 16, immune: ['slow', 'sleep'], desc: 'All +16. Prevents slow and sleep. The last king\'s crown, freely given.' },
+  tidesong: { name: 'Tidesong', price: 0, kind: 'acc', all: 26, regen: true, immune: AILMENTS, desc: 'All +26. Regen. No ailments. The sea remembers you now.' },
   heartlight: { name: 'Heartlight', price: 0, kind: 'acc', all: 20, reraise: true, immune: AILMENTS, desc: 'All +20. Revives once per battle. No ailments. Five lights, one lantern.' },
   twin_crown: { name: 'Crown of Dusk & Dawn', price: 0, kind: 'acc', all: 25, regen: true, immune: AILMENTS, desc: 'All +25. Regen. No ailments. Both halves of the first crown, at peace.' },
   // weapons
@@ -1062,7 +1119,7 @@ const MONSTERS = {
   cometimp: { name: 'Comet Imp', fam: 'imp', c: ['#ffb04a', '#8a3a1a'], hp: 900, atk: 140, def: 66, mag: 150, spd: 30, xp: 450, gold: 340, weak: ['ice'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_fire' }, { w: 1, a: 'e_lullaby' }], steal: 'elixir' },
   sandworm: { name: 'Sandworm', fam: 'serpent', size: 1.2, c: ['#d8a860', '#8a6030'], hp: 420, atk: 96, def: 40, mag: 30, spd: 12, xp: 170, gold: 120, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_crush' }, { w: 1, a: 'e_blind' }], steal: 'hipotion' },
   scorpion: { name: 'Death Scorpion', fam: 'crab', c: ['#8a2a1a', '#3a0a0a'], hp: 330, atk: 100, def: 58, mag: 20, spd: 14, xp: 160, gold: 110, weak: ['ice'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_bite' }], steal: 'antidote' },
-  bandit: { name: 'Sand Bandit', fam: 'goblin', c: ['#c89a6a', '#5a3a2a'], hp: 360, atk: 98, def: 40, mag: 20, spd: 20, xp: 165, gold: 220, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_blind' }], drop: ['hipotion', 0.3], steal: 'bomb', ai: 'weakest', rare: ['xpotion', 0.15] },
+  bandit: { name: 'Sand Bandit', fam: 'goblin', c: ['#c89a6a', '#5a3a2a'], hp: 360, atk: 98, def: 40, mag: 20, spd: 20, xp: 165, gold: 220, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_blind' }], drop: ['hipotion', 0.3], steal: 'bomb', ai: 'weakest', rare: ['xpotion', 0.15], tmap: true },
   cactoid: { name: 'Cactoid', fam: 'plant', c: ['#ff8ab0', '#4a9a4a'], hp: 300, atk: 90, def: 48, mag: 40, spd: 10, xp: 150, gold: 100, weak: ['fire'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_needles' }], steal: 'remedy' },
   mummy: { name: 'Mummy', fam: 'skeleton', c: ['#e0d0a8', '#7a6a4a'], hp: 640, atk: 128, def: 66, mag: 60, spd: 10, xp: 260, gold: 180, weak: ['fire', 'holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_hush' }], steal: 'remedy' },
   scarab: { name: 'Gilded Scarab', fam: 'crab', size: 0.85, c: ['#e8c84a', '#3a5a2a'], hp: 520, atk: 120, def: 96, mag: 30, spd: 18, xp: 240, gold: 260, weak: ['ice'], steal: 'hiether', rare: ['megalixir', 0.08] },
@@ -1089,7 +1146,7 @@ const MONSTERS = {
   cindersnake: { name: 'Cinder Serpent', fam: 'serpent', c: ['#c04a1a', '#3a0a05'], hp: 1900, atk: 205, def: 96, mag: 120, spd: 24, xp: 700, gold: 480, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_crush' }, { w: 1, a: 'e_blaze' }], steal: 'xpotion', mat: ['ember_core', 0.2] },
   deepone: { name: 'Deep One', fam: 'serpent', size: 1.15, c: ['#1a3a5a', '#050f1a'], hp: 2000, atk: 200, def: 96, mag: 170, spd: 26, xp: 720, gold: 500, weak: ['bolt'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_whirl' }, { w: 1, a: 'e_drain' }], steal: 'hiether', mat: ['frost_crystal', 0.2], absorb: ['water'], ai: 'weakest' },
   pearlguard: { name: 'Pearl Guard', fam: 'crab', size: 1.1, c: ['#e8e0f0', '#6a5a8a'], hp: 2300, atk: 215, def: 150, mag: 60, spd: 16, xp: 760, gold: 900, weak: ['bolt'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_shatter' }], steal: 'megalixir', mat: ['sun_gold', 0.2], rare: ['megalixir', 0.12] },
-  cutpurse: { name: 'Guild Cutpurse', fam: 'goblin', c: ['#6a6a7a', '#2a2a3a'], hp: 1500, atk: 200, def: 84, mag: 60, spd: 44, xp: 640, gold: 1200, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_bite' }, { w: 1, a: 'e_blind' }], drop: ['xpotion', 0.25], steal: 'elixir', mat: ['dusk_silk', 0.2], ai: 'weakest', rare: ['thief_gloves', 0.04] },
+  cutpurse: { name: 'Guild Cutpurse', fam: 'goblin', c: ['#6a6a7a', '#2a2a3a'], hp: 1500, atk: 200, def: 84, mag: 60, spd: 44, xp: 640, gold: 1200, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_bite' }, { w: 1, a: 'e_blind' }], drop: ['xpotion', 0.25], steal: 'elixir', mat: ['dusk_silk', 0.2], ai: 'weakest', rare: ['thief_gloves', 0.04], tmap: true },
   enforcer: { name: 'Guild Enforcer', fam: 'ogre', size: 1.1, c: ['#5a4a6a', '#2a2a3a'], hp: 2700, atk: 235, def: 110, mag: 40, spd: 16, xp: 820, gold: 900, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }, { w: 1, a: 'e_cleave' }], steal: 'megalixir', mat: ['sun_gold', 0.15] },
   sewerooze: { name: 'Sewer Ooze', fam: 'slime', c: ['#7a9a3a', '#2a3a10'], hp: 1700, atk: 180, def: 90, mag: 170, spd: 18, xp: 640, gold: 420, weak: ['fire'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_spores' }, { w: 1, a: 'e_bite' }], steal: 'remedy', mat: ['dusk_silk', 0.2] },
   lampeater: { name: 'The Lamp-Eater', fam: 'ghost', boss: true, size: 1.8, c: ['#4a4a6a', '#0a0a14'], hp: 12500, atk: 210, def: 90, mag: 218, spd: 30, actions: 2, xp: 16000, gold: 8000, weak: ['holy'], acts: [{ w: 2, a: 'e_drain' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_meteor' }, { w: 1, a: 'e_hush' }], steal: 'megalixir', phases: [{ hp: 0.5, msg: 'The Lamp-Eater gorges on the dark!', acts: [{ w: 2, a: 'e_drain' }, { w: 1, a: 'e_shadow' }, { w: 2, a: 'e_meteor' }, { w: 1, a: 'e_blindall' }] }] },
@@ -1097,8 +1154,24 @@ const MONSTERS = {
   abbot: { name: 'The Drowned Abbot', fam: 'warden', boss: true, size: 1.55, c: ['#2a4a6a', '#d8d0c0', '#8af0ff'], hp: 9000, atk: 210, def: 98, mag: 222, spd: 24, actions: 2, xp: 16000, gold: 8000, weak: ['bolt'], acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_lullaby' }], steal: 'megalixir', ai: 'healer', phases: [{ hp: 0.5, msg: 'The Abbot\'s bell tolls under the water!', acts: [{ w: 1, a: 'attack' }, { w: 3, a: 'e_whirl' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_slowall' }] }] },
   vane: { name: 'Guildmaster Vane', fam: 'knight', boss: true, size: 1.25, c: ['#3a2a1a', '#1a1008', '#e8c84a'], hp: 8500, atk: 226, def: 104, mag: 80, spd: 42, actions: 2, xp: 16000, gold: 20000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_needles' }, { w: 1, a: 'e_bite' }, { w: 1, a: 'e_shatter' }], steal: 'megalixir', ai: 'weakest', rare: ['thief_gloves', 0.3], phases: [{ hp: 0.5, msg: 'Vane draws a second knife.', acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_needles' }, { w: 1, a: 'e_blind' }, { w: 1, a: 'e_bite' }] }] },
   echo: { name: 'Vesper\'s Echo', fam: 'witch', boss: true, size: 1.4, c: ['#2a1a40', '#c04aa8', '#ffd0f0'], hp: 2600, atk: 218, def: 70, mag: 150, spd: 26, xp: 12000, gold: 0, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_shadow' }, { w: 1, a: 'e_drain' }], steal: 'elixir', phases: [{ hp: 0.5, msg: 'The echo laughs in Selene\'s own voice.', acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_shadow' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_slow' }] }] },
-  king2: { name: 'Hollow King, Unbound', fam: 'king2', boss: true, size: 1.3, c: ['#05020a', '#ff5ac8', '#5affe8'], hp: 5200, atk: 175, def: 78, mag: 148, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_blaze' }], steal: 'megalixir', ai: 'weakest', phases: [{ hp: 0.35, msg: 'The Unbound King tears at the light!', actions: 2, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }] }] }
+  king2: { name: 'Hollow King, Unbound', fam: 'king2', boss: true, size: 1.3, c: ['#05020a', '#ff5ac8', '#5affe8'], hp: 5200, atk: 175, def: 78, mag: 148, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_blaze' }], steal: 'megalixir', ai: 'weakest', phases: [{ hp: 0.35, msg: 'The Unbound King tears at the light!', actions: 2, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }] }] },
+  // 1.7 The Drowned Kingdom: the sea floor, the Drowned Palace and the Hadal Rift
+  lanternjelly: { name: 'Lantern Jelly', fam: 'jelly', c: ['#9ad8ff', '#3a6ab0', '#ffe9a8'], hp: 2400, atk: 190, def: 90, mag: 210, spd: 24, xp: 900, gold: 600, weak: ['bolt'], absorb: ['water'], acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_sting' }, { w: 1, a: 'e_slow' }], steal: 'hiether', mat: ['deep_pearl', 0.15] },
+  angler: { name: 'Abyssal Angler', fam: 'angler', c: ['#2a3a4a', '#0a141e', '#ffe070'], hp: 3000, atk: 240, def: 100, mag: 80, spd: 22, xp: 1000, gold: 700, weak: ['bolt'], resist: ['water'], ai: 'weakest', acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_lure' }, { w: 1, a: 'e_crush' }], steal: 'xpotion', mat: ['deep_pearl', 0.2], tmap: true },
+  kelphorror: { name: 'Kelp Horror', fam: 'plant', size: 1.2, c: ['#2a6a4a', '#0f2a1e'], hp: 2800, atk: 210, def: 110, mag: 150, spd: 14, xp: 950, gold: 600, weak: ['fire'], resist: ['water'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_spores' }, { w: 1, a: 'e_slowall' }], steal: 'xpotion' },
+  sentinel: { name: 'Drowned Sentinel', fam: 'knight', c: ['#3a6a7a', '#12262e', '#5af0d0'], hp: 3600, atk: 245, def: 140, mag: 60, spd: 16, xp: 1100, gold: 800, weak: ['bolt'], resist: ['water'], ai: 'magehunter', acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }, { w: 1, a: 'e_shatter' }], steal: 'elixir', mat: ['sun_gold', 0.15] },
+  trenchcrab: { name: 'Trench Crab', fam: 'crab', size: 1.15, c: ['#7a3a4a', '#2a0a14'], hp: 3200, atk: 230, def: 170, mag: 40, spd: 12, xp: 1000, gold: 900, weak: ['bolt'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_crush' }], steal: 'hiether', mat: ['deep_pearl', 0.25], rare: ['megalixir', 0.1] },
+  courtier: { name: 'Drowned Courtier', fam: 'skeleton', c: ['#9ab8c8', '#2a4a5a'], hp: 3000, atk: 235, def: 120, mag: 120, spd: 22, xp: 1100, gold: 900, weak: ['holy'], resist: ['water'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_hush' }], steal: 'xpotion' },
+  siren: { name: 'Siren of Nerith', fam: 'witch', c: ['#5af0d0', '#1a3a4a', '#ffe9a8'], hp: 2600, atk: 150, def: 90, mag: 230, spd: 28, xp: 1150, gold: 950, weak: ['bolt'], absorb: ['water'], ai: 'healer', acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_heal' }, { w: 1, a: 'e_siren' }], steal: 'hiether', rare: ['siren_scale', 0.15] },
+  coralgolem: { name: 'Coral Golem', fam: 'golem', size: 1.1, c: ['#e87a8a', '#7a2a3a'], hp: 4200, atk: 250, def: 180, mag: 40, spd: 8, xp: 1300, gold: 1000, weak: ['bolt'], resist: ['water', 'fire'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }, { w: 1, a: 'e_shatter' }], steal: 'xpotion', mat: ['deep_pearl', 0.3] },
+  tidewraith: { name: 'Tide Wraith', fam: 'ghost', c: ['#7ad8ff', '#1a4a6a'], hp: 2200, atk: 160, def: 80, mag: 240, spd: 30, xp: 1050, gold: 800, weak: ['holy'], absorb: ['water'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_undertow' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_forget' }], steal: 'hiether' },
+  deepgazer: { name: 'Deep Gazer', fam: 'eye', c: ['#1a3a4a', '#05141e', '#5af0d0'], hp: 2400, atk: 140, def: 90, mag: 220, spd: 26, xp: 1000, gold: 750, weak: ['holy'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_slow' }, { w: 1, a: 'e_hushall' }], steal: 'remedy' },
+  voidjelly: { name: 'Void Jelly', fam: 'jelly', size: 1.2, c: ['#4a2a6a', '#14082a', '#c070ff'], hp: 3200, atk: 200, def: 100, mag: 255, spd: 26, xp: 1400, gold: 1000, weak: ['holy'], absorb: ['dark', 'water'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_sting' }, { w: 1, a: 'e_forget' }], steal: 'megalixir', mat: ['deep_pearl', 0.3] },
+  hadalangler: { name: 'Hadal Angler', fam: 'angler', size: 1.3, c: ['#1a1a2a', '#05050a', '#ff6a8a'], hp: 4000, atk: 265, def: 115, mag: 90, spd: 24, xp: 1500, gold: 1100, weak: ['bolt'], resist: ['water'], ai: 'weakest', acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_lure' }, { w: 1, a: 'e_depths' }], steal: 'elixir', mat: ['deep_pearl', 0.35], rare: ['megalixir', 0.15] },
+  nereus: { name: 'Nereus, the Drowned King', fam: 'king', boss: true, pale: true, size: 0.95, c: ['#1a5a6a', '#0a2a34', '#5af0d0'], hp: 13000, atk: 225, def: 110, mag: 210, spd: 28, xp: 24000, gold: 14000, actions: 2, weak: ['bolt'], absorb: ['water'], ai: 'weakest', acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_slowall' }, { w: 1, a: 'e_doom' }], steal: 'megalixir', rare: ['siren_scale', 0.3], phases: [{ hp: 0.5, msg: 'Nereus calls the whole sea into his throne room!', acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_slowall' }, { w: 1, a: 'e_doom' }] }] },
+  tide: { name: 'The Tide That Remembers', fam: 'tide', boss: true, size: 1.3, c: ['#2c6fc4', '#0a1a3a', '#e8f4ff'], hp: 22000, atk: 238, def: 120, mag: 240, spd: 34, xp: 60000, gold: 30000, actions: 2, absorb: ['water'], resist: ['dark', 'ice'], acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_undertow' }, { w: 1, a: 'e_forget' }, { w: 1, a: 'e_depths' }], steal: 'megalixir', rare: ['megalixir', 1], phases: [{ hp: 0.6, msg: 'The Tide remembers every storm it ever was.', acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_meteor' }, { w: 1, a: 'e_siren' }, { w: 1, a: 'e_depths' }] }, { hp: 0.25, msg: 'The Tide remembers you. It does not want you to leave.', acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_remember' }, { w: 1, a: 'e_undertow' }, { w: 1, a: 'e_slowall' }] }] }
 };
+
 
 const ENCOUNTERS = {
   r1: [{ w: 3, g: ['slime', 'slime'] }, { w: 2, g: ['bat', 'bat', 'bat'] }, { w: 3, g: ['goblin'] }, { w: 2, g: ['goblin', 'slime'] }, { w: 2, g: ['wolf'] }, { w: 1, g: ['wolf', 'wolf'] }, { w: 1, g: ['slime', 'slime', 'slime'] }],
@@ -1116,6 +1189,9 @@ const ENCOUNTERS = {
   d7: [{ w: 3, g: ['crownshard', 'gloamknight'] }, { w: 2, g: ['nightmare'] }, { w: 2, g: ['abyssooze', 'abyssooze'] }, { w: 2, g: ['herald', 'crownshard'] }, { w: 1, g: ['gloamknight', 'herald'] }, { w: 1, g: ['nightmare', 'abyssooze'] }],
   d8: [{ w: 3, g: ['kilnimp', 'kilnimp'] }, { w: 2, g: ['cindersnake'] }, { w: 2, g: ['cinderwisp', 'kilnimp', 'cinderwisp'] }, { w: 2, g: ['ashgolem'] }, { w: 1, g: ['cindersnake', 'kilnimp'] }],
   d9: [{ w: 3, g: ['deepone'] }, { w: 2, g: ['pearlguard'] }, { w: 2, g: ['deepone', 'abyssooze'] }, { w: 1, g: ['pearlguard', 'deepone'] }, { w: 1, g: ['herald', 'deepone'] }],
+  u1: [{ w: 3, g: ['lanternjelly', 'lanternjelly'] }, { w: 3, g: ['angler'] }, { w: 2, g: ['kelphorror', 'lanternjelly'] }, { w: 2, g: ['trenchcrab'] }, { w: 2, g: ['sentinel'] }, { w: 1, g: ['angler', 'lanternjelly'] }, { w: 1, g: ['kelphorror', 'kelphorror'] }],
+  d11: [{ w: 3, g: ['courtier', 'courtier'] }, { w: 2, g: ['siren', 'courtier'] }, { w: 2, g: ['coralgolem'] }, { w: 2, g: ['tidewraith', 'tidewraith'] }, { w: 2, g: ['deepgazer', 'sentinel'] }, { w: 1, g: ['siren', 'coralgolem'] }],
+  d12: [{ w: 3, g: ['voidjelly', 'voidjelly'] }, { w: 3, g: ['hadalangler'] }, { w: 2, g: ['deepgazer', 'voidjelly'] }, { w: 2, g: ['sentinel', 'sentinel'] }, { w: 1, g: ['hadalangler', 'voidjelly'] }],
   d10: [{ w: 3, g: ['cutpurse', 'cutpurse'] }, { w: 2, g: ['enforcer'] }, { w: 2, g: ['sewerooze', 'sewerooze'] }, { w: 1, g: ['enforcer', 'cutpurse'] }, { w: 1, g: ['cutpurse', 'sewerooze', 'cutpurse'] }],
   d4: [{ w: 3, g: ['voidslime', 'wraith'] }, { w: 2, g: ['dreadknight'] }, { w: 2, g: ['nightgaze', 'nightgaze'] }, { w: 2, g: ['hollowknight', 'voidslime'] }, { w: 1, g: ['chimera', 'nightgaze'] }, { w: 1, g: ['dreadknight', 'wraith'] }]
 };
@@ -1133,6 +1209,10 @@ const SHOPS = {
   aerie_arms: ['moon_scepter', 'sunsteel_blade', 'sky_staff', 'scholar_lens', 'echo_bell', 'desert_veil', 'hourglass'],
   frostmere_items: ['hipotion', 'xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
   frostmere_arms: ['swift_boots', 'echo_bell', 'wake_charm', 'scholar_lens', 'guard_ring', 'power_ring', 'eye_charm', 'hourglass'],
+  nerith_items: ['xpotion', 'hiether', 'remedy', 'plume', 'tent', 'star_bomb'],
+  nerith_arms: ['coral_blade', 'pearl_staff', 'reef_mace', 'eel_fang', 'abyss_orb', 'nacre_mail', 'kelp_robe', 'shark_garb', 'pressure_ring'],
+  // the Undermarket: Ironhold's black market (prices are not negotiable)
+  blackmarket: ['megalixir', 'elixir', 'star_bomb', 'ember_core', 'frost_crystal', 'sun_gold', 'star_shard', 'dusk_silk', 'abyss_ash', 'deep_pearl', 'thief_gloves'],
   lastlight_items: ['xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb', 'star_bomb'],
   lastlight_arms: ['ashsteel_blade', 'cinder_staff', 'ash_mace', 'ash_kris', 'umbral_rod', 'ash_mail', 'ash_robe', 'ash_garb']
 };
@@ -1156,8 +1236,23 @@ const RECIPES = [
   { out: 'phoenix_staff', mats: { ember_core: 4, star_shard: 3, abyss_ash: 2 }, gold: 18000 },
   { out: 'tidecaller', mats: { frost_crystal: 3, sun_gold: 2, abyss_ash: 2 }, gold: 18000 },
   { out: 'gloamfang', mats: { dusk_silk: 4, abyss_ash: 3 }, gold: 18000 },
-  { out: 'evenstar', mats: { dusk_silk: 3, star_shard: 3, abyss_ash: 2 }, gold: 18000 }
+  { out: 'evenstar', mats: { dusk_silk: 3, star_shard: 3, abyss_ash: 2 }, gold: 18000 },
+  { out: 'abyssal_plate', mats: { deep_pearl: 4, abyss_ash: 2, sun_gold: 2 }, gold: 24000 },
+  { out: 'pearl_veil', mats: { deep_pearl: 4, dusk_silk: 3 }, gold: 22000 },
+  { out: 'marlin_garb', mats: { deep_pearl: 3, dusk_silk: 2, star_shard: 2 }, gold: 22000 }
 ];
+// The black market marks everything up; items with price 0 elsewhere get a price here
+const BLACKMARKET_PRICES = { megalixir: 20000, elixir: 6000, thief_gloves: 60000 };
+const BLACKMARKET_MARKUP = 3;
+
+// 1.7 Treasure maps: each map's dig spot is placed on the world map at load (see maps.js TREASURE_SPOTS)
+const TREASURES = {
+  1: { loot: ['gold:25000', 'megalixir', 'xpotion'], source: 'Whisper sells it in the Undermarket' },
+  2: { loot: ['frost_crystal', 'frost_crystal', 'frost_crystal', 'megalixir'], source: 'Dropped by Sand Bandits, Cutpurses and Abyssal Anglers' },
+  3: { loot: ['sun_gold', 'sun_gold', 'sun_gold', 'gold:30000'], source: 'Dropped by Sand Bandits, Cutpurses and Abyssal Anglers' },
+  4: { loot: ['lucky_coin', 'elixir', 'elixir'], source: 'Dropped by Sand Bandits, Cutpurses and Abyssal Anglers' },
+  5: { loot: ['admiral_hat', 'deep_pearl', 'deep_pearl', 'deep_pearl'], source: 'A wreck on the sea floor' }
+};
 
 // Fishing: where each fish bites. 'w' is weight; harder fish need more reel hits.
 const FISH = {
@@ -2491,18 +2586,22 @@ function drawMonster(g, def, x, by, st = {}) {
       for (let i = 0; i < 6; i++) { const a = t * 0.9 + i * Math.PI / 3; const R = 70; const sx = Math.cos(a) * R, sy = -96 + Math.sin(a) * 22; poly(g, [sx, sy - 9, sx + 4, sy, sx, sy + 9, sx - 4, sy], c[0], OUT, 1.2); }
       break;
     }
-    default: circle(g, 0, -20, 20, c[0], OUT, 2);
+    default: if (MONSTER_ART[def.fam]) MONSTER_ART[def.fam](g, def, t, { shadow, eyes }); else circle(g, 0, -20, 20, c[0], OUT, 2);
   }
   g.restore();
   if (st.flash) { // white flash overlay via composite
     g.save(); g.globalCompositeOperation = 'source-atop'; g.restore();
   }
 }
+// Registries so new content can add art without growing this file (see deep_art.js)
+const MONSTER_ART = {}, MONSTER_SIZE = {}, BATTLE_BGS = {};
 function monsterHeight(def) {
+  if (MONSTER_SIZE[def.fam]) return MONSTER_SIZE[def.fam][1] * (def.size || 1);
   const base = { slime: 42, bat: 60, beast: 54, goblin: 60, skeleton: 66, knight: 92, ogre: 88, plant: 54, serpent: 64, ghost: 74, crab: 48, golem: 82, imp: 64, eye: 70, witch: 104, gloomcap: 96, warden: 126, king: 172, king2: 190, wyrm: 150, crown: 170 }[def.fam] || 60;
   return base * (def.size || 1);
 }
 function monsterWidth(def) {
+  if (MONSTER_SIZE[def.fam]) return MONSTER_SIZE[def.fam][0] * (def.size || 1);
   const base = { slime: 56, bat: 64, beast: 84, goblin: 60, skeleton: 46, knight: 60, ogre: 72, plant: 58, serpent: 64, ghost: 50, crab: 72, golem: 72, imp: 50, eye: 56, witch: 66, gloomcap: 96, warden: 92, king: 140, king2: 200, wyrm: 180, crown: 150 }[def.fam] || 60;
   return base * (def.size || 1);
 }
@@ -2655,7 +2754,7 @@ function drawBattleBG(g, kind, t) {
       for (let i = 0; i < 18; i++) { const k = (t * 0.22 + hash(i, 3)) % 1; circle(g, hash(i, 4) * W, H - k * 340, 1.5 + hash(i, 5), `rgba(255,150,70,${1 - k})`); }
       break;
     }
-    default: sky('#333', '#666'); ground('#444', '#222');
+    default: if (BATTLE_BGS[kind]) BATTLE_BGS[kind](g, t, { sky, ground, hills, stars }); else { sky('#333', '#666'); ground('#444', '#222'); }
   }
 }
 
@@ -2787,6 +2886,313 @@ function drawAirship(g, cx, by, t, dir, flying) {
 
 'use strict';
 // ============================================================
+//  DEEP ART (1.7): the sea floor, Nerith's mood, the diving bell, lanternmoths,
+//  the jelly / angler / tide monster families and three battle backgrounds.
+//  Registers itself with art.js through MONSTER_ART, MONSTER_SIZE, BATTLE_BGS and DTHEME.
+// ============================================================
+
+DTHEME.palace = { wall: '#2a5a6a', top: '#0e2630', floor: '#3a6a74', floor2: '#35626b', acc: '#5af0d0', light: 270, bg: 'palace' };
+DTHEME.hadal = { wall: '#1a1a2e', top: '#06060e', floor: '#1c1c34', floor2: '#18182e', acc: '#c070ff', light: 255, bg: 'hadal' };
+
+const DEEP_PAL = { sand: '#1e3a4a', sandD: '#183242', sandL: '#2a4a5a', rock: '#0e1e2a', rockF: '#1a2e3c', rockL: '#28465a' };
+
+function drawDeepTile(g, m, x, y, px, py, t) {
+  const ch = m.at(x, y), P = DEEP_PAL;
+  if (ch === '#' || ch === undefined) {
+    const below = m.at(x, y + 1);
+    if (below && below !== '#') {
+      g.fillStyle = P.rockF; g.fillRect(px, py, TS, TS);
+      g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1;
+      for (let i = 0; i < 3; i++) { const yy = py + 6 + i * 9 + hash(x, y, i) * 3; g.beginPath(); g.moveTo(px, yy); g.quadraticCurveTo(px + 16, yy + (hash(x, i, 5) - 0.5) * 8, px + TS, yy); g.stroke(); }
+      g.fillStyle = 'rgba(90,240,208,.06)'; g.fillRect(px, py, TS, 3);
+      if (hash(x, y, 9) < 0.18) { const k = 0.5 + 0.5 * Math.sin(t * 2 + x); circle(g, px + 8 + hash(x, y, 10) * 16, py + 14, 2, `rgba(120,255,220,${0.25 + k * 0.4})`); }
+    } else {
+      g.fillStyle = P.rock; g.fillRect(px, py, TS, TS);
+      if (hash(x, y, 2) < 0.2) { g.fillStyle = 'rgba(40,80,100,.25)'; g.fillRect(px + hash(x, y, 3) * 22, py + hash(x, y, 4) * 22, 8, 5); }
+    }
+    return;
+  }
+  // sand floor with ripples
+  g.fillStyle = (x + y) % 2 ? P.sand : P.sandD; g.fillRect(px, py, TS, TS);
+  g.strokeStyle = 'rgba(120,200,220,.08)'; g.lineWidth = 1.2;
+  for (let i = 0; i < 2; i++) { const yy = py + 9 + i * 13; g.beginPath(); g.moveTo(px + 2, yy); g.quadraticCurveTo(px + 16, yy - 4, px + 30, yy); g.stroke(); }
+  if (m.at(x, y - 1) === '#') { g.fillStyle = 'rgba(0,0,0,.3)'; g.fillRect(px, py, TS, 6); }
+  if (hash(x, y, 7) < 0.08) { ellipse(g, px + 8 + hash(x, y, 8) * 16, py + 22, 3, 1.6, '#e8e0d0'); }   // shells
+  switch (ch) {
+    case 'k': { // kelp
+      for (let i = 0; i < 3; i++) {
+        const bx = px + 6 + i * 10, sw = Math.sin(t * 1.6 + x + i) * 5;
+        g.strokeStyle = i % 2 ? '#2a7a4a' : '#3a9a5a'; g.lineWidth = 3; g.lineCap = 'round';
+        g.beginPath(); g.moveTo(bx, py + TS); g.quadraticCurveTo(bx + sw, py + 14, bx + sw * 1.4, py - 6); g.stroke();
+        ellipse(g, bx + sw * 0.8, py + 10, 3, 1.8, '#4aba6a', null, 1, 0.6);
+      }
+      break;
+    }
+    case 'o': { // boulder
+      ellipse(g, px + 16, py + 26, 14, 4, 'rgba(0,0,0,.35)');
+      ellipse(g, px + 16, py + 17, 13, 11, P.rockL, OUT, 1.5);
+      ellipse(g, px + 12, py + 12, 5, 3, 'rgba(255,255,255,.08)');
+      if (hash(x, y, 3) < 0.5) ellipse(g, px + 20, py + 9, 4, 2, '#3a8a5a');
+      break;
+    }
+    case 'c': { // coral
+      const col = ['#e87a8a', '#f0a060', '#c070ff', '#5af0d0'][Math.floor(hash(x, y, 4) * 4)];
+      g.strokeStyle = col; g.lineWidth = 3.5; g.lineCap = 'round';
+      const branch = (x0, y0, a, l, d) => { if (d > 3) return; const x1 = x0 + Math.cos(a) * l, y1 = y0 + Math.sin(a) * l; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); branch(x1, y1, a - 0.5, l * 0.7, d + 1); branch(x1, y1, a + 0.5, l * 0.7, d + 1); };
+      branch(px + 16, py + 30, -Math.PI / 2, 10, 0);
+      break;
+    }
+    case 'v': { // vent
+      ellipse(g, px + 16, py + 22, 7, 3, '#0a1a22', OUT, 1);
+      for (let i = 0; i < 4; i++) { const k = (t * 0.6 + i * 0.25 + hash(x, y, i)) % 1; circle(g, px + 16 + Math.sin(k * 9 + i) * 3, py + 20 - k * 30, 1.5 + k * 1.5, `rgba(200,240,255,${0.7 * (1 - k)})`); }
+      break;
+    }
+    case 'w': { // wreck
+      poly(g, [px - 2, py + 28, px + 34, py + 28, px + 30, py + 12, px + 2, py + 16], '#4a3424', OUT, 1.5);
+      for (let i = 0; i < 4; i++) line(g, px + 4 + i * 7, py + 15, px + 5 + i * 7, py + 28, '#2a1c14', 1.2);
+      line(g, px + 22, py + 14, px + 26, py - 10, '#3a2a1a', 3);
+      poly(g, [px + 26, py - 8, px + 36, py + 2, px + 26, py + 4], 'rgba(200,190,160,.35)');
+      break;
+    }
+    case 'u': { // the diving bell's line, back to the surface
+      g.save(); g.globalAlpha = 0.35 + 0.15 * Math.sin(t * 3); ellipse(g, px + 16, py + 20, 13, 5, '#9ad8ff'); g.restore();
+      line(g, px + 16, py - 200, px + 16, py + 18, '#c8a868', 2);
+      poly(g, [px + 11, py + 10, px + 21, py + 10, px + 16, py + 3], '#ffe9a8');
+      break;
+    }
+    case 'H': { // Nerith, in its bubble
+      g.save(); g.globalAlpha = 0.25 + 0.05 * Math.sin(t * 2); circle(g, px + 16, py + 14, 22, '#9ad8ff'); g.restore();
+      for (const [dx, h] of [[-8, 14], [0, 22], [8, 16]]) { rrect(g, px + 16 + dx - 3, py + 28 - h, 6, h, 1, '#b8d0d4', OUT, 1); poly(g, [px + 16 + dx - 4, py + 28 - h, px + 16 + dx, py + 22 - h, px + 16 + dx + 4, py + 28 - h], '#3a8a9a'); }
+      g.strokeStyle = 'rgba(200,240,255,.6)'; g.lineWidth = 1.5; g.beginPath(); g.arc(px + 16, py + 22, 18, Math.PI, 0); g.stroke();
+      break;
+    }
+    case '0': { // the Drowned Palace
+      rrect(g, px + 2, py + 12, 28, 16, 1, '#2a5a6a', OUT, 1.2);
+      for (let i = 0; i < 4; i++) line(g, px + 6 + i * 7, py + 14, px + 6 + i * 7, py + 28, '#5a9aa8', 2);
+      poly(g, [px, py + 12, px + 16, py + 2, px + 32, py + 12], '#1a4a5a', OUT, 1.2);
+      circle(g, px + 16, py + 8, 2, '#5af0d0');
+      break;
+    }
+    case 'I': { // the Hadal Rift
+      ellipse(g, px + 16, py + 18, 15, 9, '#020208', '#c070ff', 1.5);
+      g.save(); g.globalAlpha = 0.4 + 0.3 * Math.sin(t * 2); ellipse(g, px + 16, py + 18, 9, 4, '#4a1a6a'); g.restore();
+      break;
+    }
+  }
+}
+// darkness around the bell's lamp, with glows at vents, wrecks and the city
+function drawDeepLight(g, m, cx, cy, psx, psy, t) {
+  const R = 230 + Math.sin(t * 2) * 6;
+  const gr = g.createRadialGradient(psx, psy - 14, R * 0.25, psx, psy - 14, R);
+  gr.addColorStop(0, 'rgba(2,10,20,0)'); gr.addColorStop(1, 'rgba(2,10,20,.86)');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  g.save(); g.globalCompositeOperation = 'lighter';
+  const x0 = Math.floor(cx / TS) - 4, y0 = Math.floor(cy / TS) - 4;
+  for (let y = y0; y <= y0 + VH + 8; y++) for (let x = x0; x <= x0 + VW + 8; x++) {
+    const ch = m.at(x, y);
+    const col = { v: '120,255,220', H: '150,220,255', 0: '90,240,208', I: '192,112,255', u: '154,216,255' }[ch];
+    if (!col) continue;
+    const r = ch === 'H' ? 160 : ch === 'v' ? 60 : 110;
+    const sx = x * TS - cx + 16, sy = y * TS - cy + 14;
+    const lg = g.createRadialGradient(sx, sy, 3, sx, sy, r);
+    lg.addColorStop(0, `rgba(${col},.4)`); lg.addColorStop(1, `rgba(${col},0)`);
+    g.fillStyle = lg; g.fillRect(sx - r, sy - r, r * 2, r * 2);
+  }
+  g.restore();
+  // marine snow
+  for (let i = 0; i < 40; i++) { const k = (t * 0.05 + hash(i, 71)) % 1; circle(g, (hash(i, 72) * W + Math.sin(t + i) * 10) % W, k * H, 1 + hash(i, 73), `rgba(220,240,255,${0.25 + 0.2 * hash(i, 74)})`); }
+}
+// a blue, watery tint for Nerith; a dim lamplit gloom for the Undermarket
+function drawTownMood(g, m, t) {
+  if (m.underwater) {
+    g.fillStyle = 'rgba(20,90,150,.2)'; g.fillRect(0, 0, W, H);
+    g.save(); g.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 6; i++) { const x = (i * 130 + Math.sin(t * 0.3 + i) * 60) % (W + 100) - 50; poly(g, [x, 0, x + 40, 0, x + 120, H, x + 60, H], 'rgba(150,220,255,.05)'); }
+    g.restore();
+    for (let i = 0; i < 24; i++) { const k = (t * 0.12 + hash(i, 91)) % 1; circle(g, hash(i, 92) * W + Math.sin(t * 2 + i) * 6, H - k * H, 1.5 + hash(i, 93) * 2, null, `rgba(220,245,255,${0.5 * (1 - k)})`, 1); }
+  } else if (m.underground) {
+    const gr = g.createRadialGradient(W / 2, H / 2, 120, W / 2, H / 2, 420);
+    gr.addColorStop(0, 'rgba(10,8,4,.15)'); gr.addColorStop(1, 'rgba(10,8,4,.7)');
+    g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  }
+}
+function drawDiveSpot(g, x, y, t) {
+  ellipse(g, x, y, 26, 16, 'rgba(2,10,24,.7)');
+  ellipse(g, x, y, 34, 21, null, 'rgba(2,10,24,.35)', 4);
+  for (let r = 0; r < 3; r++) { const k = (t * 0.4 + r / 3) % 1; g.strokeStyle = `rgba(90,240,208,${0.6 * (1 - k)})`; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y, 8 + k * 26, 5 + k * 16, 0, 0, Math.PI * 2); g.stroke(); }
+}
+function drawBell(g, cx, by, t) {
+  const bob = Math.sin(t * 2) * 2;
+  line(g, cx, by - 120, cx, by - 40 + bob, '#c8a868', 2);
+  ellipse(g, cx, by - 1, 14, 4, 'rgba(0,0,0,.35)');
+  g.beginPath(); g.moveTo(cx - 13, by - 6 + bob); g.bezierCurveTo(cx - 14, by - 30 + bob, cx - 8, by - 40 + bob, cx, by - 40 + bob); g.bezierCurveTo(cx + 8, by - 40 + bob, cx + 14, by - 30 + bob, cx + 13, by - 6 + bob); g.closePath();
+  const gr = g.createLinearGradient(cx - 14, 0, cx + 14, 0); gr.addColorStop(0, '#8a6a2a'); gr.addColorStop(0.4, '#e8c060'); gr.addColorStop(1, '#7a5a22');
+  g.fillStyle = gr; g.fill(); g.strokeStyle = OUT; g.lineWidth = 1.8; g.stroke();
+  line(g, cx - 13, by - 6 + bob, cx + 13, by - 6 + bob, '#5a4218', 3);
+  circle(g, cx, by - 22 + bob, 5.5, '#9ad8ff', '#5a4218', 2);
+  g.save(); g.globalAlpha = 0.5 + 0.3 * Math.sin(t * 5); circle(g, cx, by - 22 + bob, 3, '#fff8d0'); g.restore();
+  for (let i = 0; i < 3; i++) { const k = (t * 0.8 + i / 3) % 1; circle(g, cx + 8 + Math.sin(k * 8) * 2, by - 40 - k * 30 + bob, 1.5 + k, null, `rgba(220,245,255,${1 - k})`, 1); }
+}
+function drawMoth(g, cx, cy, t, dir, look) {
+  const f = Math.sin(t * 16), flip = dir === 'left' ? -1 : 1;
+  g.save(); g.translate(cx, cy + Math.sin(t * 4) * 2); g.scale(flip, 1);
+  for (const s of [-1, 1]) {
+    g.save(); g.scale(s, 1);
+    poly(g, [2, -4, 22, -16 - f * 8, 26, -2, 18, 6, 4, 4], '#e8dcc8', OUT, 1.2);
+    poly(g, [3, 2, 16, 8 + f * 3, 12, 14, 3, 8], '#d8c8b0', OUT, 1.2);
+    circle(g, 14, -7 - f * 3, 3, '#ffd27a');
+    g.restore();
+  }
+  ellipse(g, 0, 2, 4, 10, '#c8b8a0', OUT, 1.2);
+  line(g, -2, -8, -6, -16, '#8a7a6a', 1); line(g, 2, -8, 6, -16, '#8a7a6a', 1);
+  // rider: a small head and shoulders
+  circle(g, 0, -12, 5, look.skin, OUT, 1); g.fillStyle = look.hair; g.beginPath(); g.arc(0, -13, 5, Math.PI, 0); g.fill();
+  rrect(g, -5, -8, 10, 6, 2, look.body, OUT, 1);
+  g.restore();
+  g.save(); g.globalAlpha = 0.25; circle(g, cx, cy, 18, '#ffd27a'); g.restore();
+}
+function drawLampMoths(g, sx, sy, t) {
+  for (let i = 0; i < 3; i++) {
+    const a = t * (1.6 + i * 0.4) + i * 2.1, x = sx + Math.cos(a) * (9 + i * 3), y = sy - 24 + Math.sin(a * 1.3) * 6;
+    const f = Math.sin(t * 20 + i) * 2;
+    poly(g, [x, y, x - 4, y - 2 - f, x - 3, y + 2], '#f0e8d8'); poly(g, [x, y, x + 4, y - 2 - f, x + 3, y + 2], '#f0e8d8');
+  }
+}
+
+// ---------- the sea floor on the map screen ----------
+function drawDeepMap(g, ox, oy, ow, oh, wsc) {
+  const m = getMap('deep'); applyDeepFlags(m);
+  const sc = wsc * 2, t = performance.now() / 1000;
+  g.fillStyle = 'rgba(2,8,18,.94)'; g.fillRect(0, 0, W, H);
+  drawWindow(g, ox - 10, oy - 34, ow + 20, oh + 58);
+  text(g, 'The Sea Floor', ox, oy - 26, { size: 15, bold: true, color: '#9ad8ff' });
+  for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+    const c = m.at(x, y);
+    g.fillStyle = { '#': '#0a1620', k: '#1e5a3a', o: '#1a2e3c', c: '#7a3a5a', w: '#5a3a24' }[c] || '#1e4a5a';
+    g.fillRect(ox + x * sc, oy + y * sc, sc + 0.5, sc + 0.5);
+  }
+  for (const d of DIVE_SPOTS) { const x = ox + d.x / 2 * sc + sc / 2, y = oy + d.y / 2 * sc + sc / 2; poly(g, [x - 4, y + 3, x + 4, y + 3, x, y - 4], '#ffe9a8', OUT, 1); }
+  for (const k in DEEP_LOC) {
+    const L = DEEP_LOC[k]; if (k === 'I' && !G.flags.boss_palace) continue;
+    const x = ox + L.x * sc + sc / 2, y = oy + L.y * sc + sc / 2;
+    circle(g, x, y, 5, L.town ? '#9ad8ff' : k === 'I' ? '#c070ff' : '#5af0d0', OUT, 1.5);
+    if (G.flags['visit_' + k] || k === 'H') text(g, L.name, x + 8, y - 7, { size: 11, bold: true });
+  }
+  if (onSeaFloor() && Math.sin(t * 8) > -0.3) { const p = Field.map.kind === 'deep' ? { x: G.x, y: G.y } : (() => { const q = worldPos(); return { x: q.x / 2, y: q.y / 2 }; })(); circle(g, ox + p.x * sc + sc / 2, oy + p.y * sc + sc / 2, 4, '#ff3a3a', '#fff', 1.5); }
+  text(g, 'Red: you   ▲ bell lines (surface)   Shift: world map   Enter/Esc to close', W / 2, oy + oh + 5, { size: 11, align: 'center', color: '#b8c4ee' });
+}
+
+// ---------- monsters ----------
+MONSTER_SIZE.jelly = [60, 84]; MONSTER_SIZE.angler = [96, 70]; MONSTER_SIZE.tide = [220, 200];
+MONSTER_ART.jelly = (g, def, t) => {
+  const c = def.c, fl = Math.sin(t * 1.8) * 6, pulse = 1 + Math.sin(t * 3) * 0.06;
+  g.translate(0, -48 + fl);
+  ellipse(g, 0, 48 - fl, 18, 4, 'rgba(0,0,0,.2)');
+  for (let i = 0; i < 6; i++) {
+    const x0 = -15 + i * 6;
+    g.beginPath(); g.moveTo(x0, 4);
+    g.bezierCurveTo(x0 + Math.sin(t * 2 + i) * 8, 18, x0 - Math.sin(t * 2.4 + i) * 8, 30, x0 + Math.sin(t * 3 + i) * 5, 44);
+    g.strokeStyle = rgba(c[0], 0.7); g.lineWidth = 2.5; g.lineCap = 'round'; g.stroke();
+  }
+  g.save(); g.globalAlpha *= 0.35; circle(g, 0, -6, 34, c[2]); g.restore();
+  g.save(); g.scale(pulse, 1 / pulse);
+  g.beginPath(); g.moveTo(-26, 4); g.bezierCurveTo(-28, -30, 28, -30, 26, 4); g.quadraticCurveTo(0, -4, -26, 4); g.closePath();
+  const gr = g.createRadialGradient(0, -14, 2, 0, -8, 30); gr.addColorStop(0, shade(c[0], 0.4)); gr.addColorStop(1, rgba(c[1], 0.85));
+  g.fillStyle = gr; g.fill(); g.strokeStyle = OUT; g.lineWidth = 1.5; g.stroke();
+  g.restore();
+  g.save(); g.globalAlpha = 0.6 + 0.4 * Math.sin(t * 4); circle(g, 0, -10, 6, c[2]); g.restore();
+  ellipse(g, -10, -14, 6, 3, 'rgba(255,255,255,.45)', null, 1, -0.4);
+};
+MONSTER_ART.angler = (g, def, t, { shadow }) => {
+  const c = def.c, sw = Math.sin(t * 3) * 3;
+  shadow();
+  g.translate(0, -34 + Math.sin(t * 1.5) * 3);
+  // tail
+  poly(g, [36, -2, 54, -18 + sw, 50, 0, 54, 18 + sw, 36, 4], c[1], OUT, 1.5);
+  // body
+  ellipse(g, 0, 0, 40, 26, c[0], OUT, 2);
+  ellipse(g, 2, 10, 30, 12, shade(c[0], 0.15));
+  for (let i = 0; i < 3; i++) poly(g, [-6 + i * 12, -24, 0 + i * 12, -36 - sw, 4 + i * 12, -23], c[1], OUT, 1);
+  // jaw and teeth
+  g.beginPath(); g.moveTo(-40, -4); g.quadraticCurveTo(-20, 22, 8, 12); g.lineTo(-38, 8); g.closePath(); g.fillStyle = '#05050a'; g.fill();
+  for (let i = 0; i < 6; i++) poly(g, [-36 + i * 6, -2 + i * 1.5, -33 + i * 6, 6 + i * 1.5, -30 + i * 6, -1 + i * 1.6], '#f0f0e0');
+  // eye
+  circle(g, -18, -10, 6, '#f0f0d0', OUT, 1.5); circle(g, -19, -10, 3, '#05050a');
+  // lure
+  g.beginPath(); g.moveTo(-14, -24); g.quadraticCurveTo(-30, -54, -48 + sw, -40); g.strokeStyle = c[1]; g.lineWidth = 2.5; g.stroke();
+  g.save(); g.globalAlpha = 0.35 + 0.25 * Math.sin(t * 5); circle(g, -48 + sw, -38, 14, c[2]); g.restore();
+  circle(g, -48 + sw, -38, 5, c[2], OUT, 1);
+};
+MONSTER_ART.tide = (g, def, t) => {
+  const c = def.c, sw = Math.sin(t * 1.2) * 6;
+  g.save(); g.globalAlpha *= 0.25; circle(g, 0, -110, 120 + Math.sin(t * 1.5) * 6, c[0]); g.restore();
+  ellipse(g, 0, -2, 96, 12, 'rgba(0,0,0,.45)');
+  // the body: a wave rearing up, wide at the base, curling over at the top
+  const body = () => {
+    g.beginPath(); g.moveTo(-96, 0);
+    g.bezierCurveTo(-110, -60, -70 + sw, -150, -20 + sw, -190);
+    g.bezierCurveTo(20 + sw, -222, 86 + sw, -206, 92 + sw, -160);
+    g.bezierCurveTo(96 + sw, -128, 64, -132, 54, -150);
+    g.bezierCurveTo(46, -120, 80, -70, 100, 0);
+    g.closePath();
+  };
+  body();
+  const gr = g.createLinearGradient(0, -210, 0, 0); gr.addColorStop(0, shade(c[0], 0.35)); gr.addColorStop(0.5, c[0]); gr.addColorStop(1, c[1]);
+  g.fillStyle = gr; g.fill(); g.strokeStyle = OUT; g.lineWidth = 2.5; g.stroke();
+  // foam bands, clipped to the body
+  g.save(); body(); g.clip();
+  for (let i = 0; i < 7; i++) {
+    const y0 = -20 - i * 28;
+    g.beginPath();
+    for (let x = -110; x <= 110; x += 8) { const y = y0 + Math.sin(x * 0.06 + t * 2 + i * 1.3) * 6; x === -110 ? g.moveTo(x, y) : g.lineTo(x, y); }
+    g.strokeStyle = rgba(c[2], 0.12 + i * 0.03); g.lineWidth = 3; g.stroke();
+  }
+  g.restore();
+  // the curl's foam lip and spray
+  g.beginPath(); g.moveTo(-20 + sw, -190); g.bezierCurveTo(20 + sw, -222, 86 + sw, -206, 92 + sw, -160);
+  g.strokeStyle = c[2]; g.lineWidth = 5; g.lineCap = 'round'; g.stroke();
+  for (let i = 0; i < 12; i++) { const k = (t * 0.45 + i / 12) % 1; circle(g, 90 + sw - k * 50 + Math.sin(i) * 10, -160 + k * 30 - Math.sin(k * 3) * 20, 3.5 * (1 - k), rgba(c[2], 0.9 * (1 - k))); }
+  // eyes, opening and closing, scattered through the water
+  for (let i = 0; i < 16; i++) {
+    const ex = -70 + hash(i, 61) * 130, ey = -20 - hash(i, 62) * 150;
+    const half = 92 - (-ey) * 0.25; if (ex < -half || ex > half - 10 || (ey < -140 && ex > 40)) continue;
+    const open = Math.max(0, Math.sin(t * (0.7 + hash(i, 63)) + i * 1.7));
+    g.save(); g.globalAlpha = 0.35; ellipse(g, ex, ey, 11, 8, c[2]); g.restore();
+    ellipse(g, ex, ey, 7, 0.8 + open * 5, '#e8f4ff', OUT, 1);
+    if (open > 0.3) circle(g, ex + Math.sin(t + i) * 2, ey, 2.6 * open, '#0a1a3a');
+  }
+};
+
+// ---------- battle backgrounds ----------
+BATTLE_BGS.deep = (g, t, { ground }) => {
+  const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#0a2a44'); gr.addColorStop(0.6, '#06182a'); gr.addColorStop(1, '#030c16');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  g.save(); g.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < 5; i++) { const x = (i * 150 + Math.sin(t * 0.2 + i) * 40); poly(g, [x, 0, x + 50, 0, x + 140, 300, x + 80, 300], 'rgba(120,200,255,.05)'); }
+  g.restore();
+  ground('#1e3a4a', '#0c1a24', 262);
+  for (let i = 0; i < 10; i++) { const x = hash(i, 21) * W, h = 40 + hash(i, 22) * 90, sw = Math.sin(t * 1.4 + i) * 10; g.strokeStyle = i % 2 ? '#1e6a3a' : '#2a7a4a'; g.lineWidth = 5; g.lineCap = 'round'; g.beginPath(); g.moveTo(x, 300); g.quadraticCurveTo(x + sw, 300 - h / 2, x + sw * 1.5, 300 - h); g.stroke(); }
+  for (let i = 0; i < 24; i++) { const k = (t * 0.1 + hash(i, 23)) % 1; circle(g, hash(i, 24) * W, H - k * H, 1.5 + hash(i, 25) * 2, null, `rgba(220,245,255,${0.5 * (1 - k)})`, 1); }
+};
+BATTLE_BGS.palace = (g, t, { ground }) => {
+  const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#0e3a48'); gr.addColorStop(1, '#06161e');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 6; i++) { const x = 40 + i * 112; rrect(g, x - 14, 40, 28, 230, 3, '#2a5a6a', OUT, 1.5); rrect(g, x - 20, 30, 40, 14, 2, '#3a7a8a', OUT, 1.5); ellipse(g, x, 120, 6, 18, 'rgba(90,240,208,.15)'); }
+  ground('#3a6a74', '#163038', 262);
+  for (let r = 0; r < 4; r++) for (let i = 0; i < 9; i++) { const x = i * 80 + (r % 2) * 40, y = 280 + r * 46; rrect(g, x, y, 74, 40, 2, null, 'rgba(0,0,0,.15)', 1); }
+  for (let i = 0; i < 16; i++) { const k = (t * 0.12 + hash(i, 33)) % 1; circle(g, hash(i, 34) * W, H - k * H, 2 + hash(i, 35) * 2, null, `rgba(200,255,240,${0.45 * (1 - k)})`, 1); }
+};
+BATTLE_BGS.hadal = (g, t, { ground }) => {
+  const gr = g.createRadialGradient(W / 2, 220, 20, W / 2, 220, 520); gr.addColorStop(0, '#1a1036'); gr.addColorStop(0.5, '#08061a'); gr.addColorStop(1, '#010104');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 30; i++) { const tw = 0.4 + 0.6 * Math.sin(t * 1.5 + i * 2); circle(g, hash(i, 41) * W, hash(i, 42) * 240, 1 + hash(i, 43) * 1.5, `rgba(192,112,255,${0.5 * tw})`); }
+  ground('#16162a', '#05050c', 262);
+  g.strokeStyle = 'rgba(192,112,255,.35)'; g.lineWidth = 2;
+  for (let i = 0; i < 7; i++) { const x0 = hash(i, 44) * W; g.beginPath(); g.moveTo(x0, 266); g.lineTo(x0 + 24 - hash(i, 45) * 48, 340); g.lineTo(x0 + 30 - hash(i, 46) * 60, H); g.stroke(); }
+};
+
+'use strict';
+// ============================================================
 //  MAPS — world generation, towns, dungeons
 // ============================================================
 class GameMap {
@@ -2825,6 +3231,18 @@ const WORLD_LOC = {
   9: { x: 42, y: 40, dungeon: 'grotto', name: 'Sea Mother\'s Grotto' }
 };
 // Arin's quest: twelve roadside lamps, each beside a road
+// 1.7 The Drowned Kingdom: locations on the sea floor ('deep' map), dive spots and dig spots
+const DEEP_LOC = {
+  H: { x: 24, y: 15, town: 'nerith', name: 'Nerith', map: 'deep' },
+  0: { x: 30, y: 12, dungeon: 'palace', name: 'The Drowned Palace', map: 'deep' },
+  I: { x: 40, y: 24, dungeon: 'hadal', name: 'The Hadal Rift', map: 'deep' }
+};
+// world coordinates of the four patches of black water; each is directly above (x/2, y/2) on the sea floor
+const DIVE_SPOTS = [{ x: 20, y: 22, name: 'the North Shallows' }, { x: 46, y: 48, name: 'the Shrine Deep' }, { x: 68, y: 26, name: 'the Open Sea' }, { x: 88, y: 50, name: 'the Far Reach' }];
+// treasure-map dig spots (world); genWorld nudges each onto the nearest walkable tile
+const TREASURE_SPOTS = { 1: [33, 49], 2: [33, 6], 3: [80, 43], 4: [12, 35], 5: [79, 11] };
+function locDef(ch) { return WORLD_LOC[ch] || DEEP_LOC[ch]; }
+function locMap(ch) { return (DEEP_LOC[ch] && !WORLD_LOC[ch]) ? 'deep' : 'world'; }
 const ROAD_LAMPS = [[13, 31], [15, 34], [17, 42], [26, 42], [33, 40], [37, 46], [46, 10], [43, 13], [33, 7], [79, 42], [56, 41], [83, 6]];
 const ISLE_LOCS = ['G', '7'];
 const SHIP_HOME = { x: 40, y: 38 };
@@ -2985,8 +3403,85 @@ function genWorld() {
     const d = Math.hypot(x - 50, y - 29);
     if (d < wd) { wd = d; whirl = { x, y }; }
   }
-  const m = new GameMap({ id: 'world', kind: 'world', w, h, tiles, region, name: 'World', whirl, isle });
+  // treasure dig spots: nearest plain walkable tile (the isle's spot is checked with the isle raised)
+  const isleAt = new Map(isle.map(([x, y, c]) => [x + ',' + y, c]));
+  const walk = (x, y) => { const c = isleAt.get(x + ',' + y) || at(x, y); return '.s*nqzd='.includes(c) && !isLoc(c); };
+  const digs = {};
+  for (const k in TREASURE_SPOTS) {
+    const [tx, ty] = TREASURE_SPOTS[k]; let best = null, bd = 1e9;
+    for (let y = ty - 4; y <= ty + 4; y++) for (let x = tx - 4; x <= tx + 4; x++) { const d = Math.abs(x - tx) + Math.abs(y - ty); if (walk(x, y) && d < bd) { bd = d; best = { x, y }; } }
+    digs[k] = best;
+  }
+  const m = new GameMap({ id: 'world', kind: 'world', w, h, tiles, region, name: 'World', whirl, isle, digs });
   return m;
+}
+
+// ------------ THE SEA FLOOR (1.7) ------------
+// Half the world's resolution: a seabed tile lies under four open-sea world tiles; everything else is rock.
+// Tunnels join the dive spots, Nerith, the Palace and the Rift, so every place is reachable.
+// Legend: # rock, . sand, k kelp (more encounters), o boulder, c coral, v vent, w wreck, u diving-bell line (surface), H I 0 locations
+const DEEP_SOLID = new Set(['#', 'o', 'c', 'w']);
+function genDeep() {
+  const world = genWorld();
+  for (const [x, y, c] of world.isle) world.tiles[y][x] = c;
+  const w = Math.floor(world.w / 2), h = Math.floor(world.h / 2);
+  const T = [];
+  for (let y = 0; y < h; y++) {
+    T.push([]);
+    for (let x = 0; x < w; x++) {
+      let sea = 0;
+      for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) if (world.at(x * 2 + dx, y * 2 + dy) === '~') sea++;
+      const edge = x === 0 || y === 0 || x === w - 1 || y === h - 1;
+      T[y].push(!edge && sea === 4 ? '.' : '#');
+    }
+  }
+  const at = (x, y) => (x < 0 || y < 0 || x >= w || y >= h) ? '#' : T[y][x];
+  const carve = (x0, y0, x1, y1) => {
+    let x = x0, y = y0, n = 0;
+    while ((x !== x1 || y !== y1) && n++ < 300) {
+      if (x !== x1 && (y === y1 || hash(x, y, 1701) < 0.5)) x += Math.sign(x1 - x); else y += Math.sign(y1 - y);
+      if (x > 0 && y > 0 && x < w - 1 && y < h - 1 && T[y][x] === '#') T[y][x] = '.';
+    }
+  };
+  const P = DIVE_SPOTS.map(s => ({ x: s.x / 2, y: s.y / 2 }));
+  const L = DEEP_LOC;
+  // the trench network
+  carve(P[0].x, P[0].y, L.H.x, L.H.y); carve(P[1].x, P[1].y, L.H.x, L.H.y); carve(P[2].x, P[2].y, L.H.x, L.H.y);
+  carve(L.H.x, L.H.y, L[0].x, L[0].y); carve(P[2].x, P[2].y, L[0].x, L[0].y);
+  carve(P[3].x, P[3].y, L.I.x, L.I.y); carve(P[3].x, P[3].y, P[2].x, P[2].y);
+  // features
+  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+    if (T[y][x] !== '.') continue;
+    const n = fbm(x * 0.21, y * 0.21, 4242), k = fbm(x * 0.3, y * 0.3, 77);
+    const nearRock = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => at(x + dx, y + dy) === '#');
+    if (k > 0.6) T[y][x] = 'k';
+    else if (n > 0.74 && !nearRock) T[y][x] = 'o';
+    else if (nearRock && hash(x, y, 31) < 0.1) T[y][x] = 'c';
+    else if (hash(x, y, 32) < 0.025) T[y][x] = 'v';
+  }
+  // keep the network open: clear features on every carved line and around key points
+  const keep = [...P, L.H, L[0], L.I];
+  for (const p of keep) for (let y = p.y - 1; y <= p.y + 1; y++) for (let x = p.x - 1; x <= p.x + 1; x++) if (x > 0 && y > 0 && x < w - 1 && y < h - 1) T[y][x] = '.';
+  const reachAll = () => {
+    const D = new Set([P[0].x + ',' + P[0].y]), q = [[P[0].x, P[0].y]];
+    while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, key = nx + ',' + ny; if (!D.has(key) && !DEEP_SOLID.has(at(nx, ny))) { D.add(key); q.push([nx, ny]); } } }
+    return keep.every(p => D.has(p.x + ',' + p.y));
+  };
+  // boulders and coral that cut the network are removed until everything connects
+  for (let pass = 0; pass < 40 && !reachAll(); pass++)
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) if ((T[y][x] === 'o' || T[y][x] === 'c') && hash(x, y, 900 + pass) < 0.3) T[y][x] = '.';
+  // wrecks (chests sit next to them)
+  const wrecks = [];
+  for (const [wx, wy] of [[16, 9], [36, 20], [8, 16]]) {
+    let best = null, bd = 1e9;
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 2; x++) if (T[y][x] === '.' && T[y][x + 1] === '.' && !keep.some(p => Math.abs(p.x - x) + Math.abs(p.y - y) < 3)) { const d = Math.abs(x - wx) + Math.abs(y - wy); if (d < bd) { bd = d; best = { x, y }; } }
+    if (best) { T[best.y][best.x] = 'w'; if (!reachAll()) T[best.y][best.x] = '.'; else wrecks.push({ x: best.x + 1, y: best.y }); }
+  }
+  for (const p of P) T[p.y][p.x] = 'u';
+  T[L.H.y][L.H.x] = 'H'; T[L[0].y][L[0].x] = '0';
+  // the Rift stays sealed rock until the Tide calls (applyDeepFlags opens it)
+  T[L.I.y][L.I.x] = '#';
+  return new GameMap({ id: 'deep', kind: 'deep', w, h, tiles: T, name: 'The Sea Floor', wrecks, enc: 'u1', bg: 'deep' });
 }
 function worldRegionAt(map, x, y) {
   const c = map.at(x, y);
@@ -3116,6 +3611,35 @@ TOWN_DEFS.lastlight = {
   water: [[8, 15, 3, 2]],
   decor: [[11, 9, 'b'], [12, 9, 'b'], [8, 9, 'l'], [15, 9, 'l'], [8, 12, 'g'], [9, 12, 'g'], [15, 12, 'g'], [20, 16, 'c'], [3, 16, 'c'], [14, 16, 'l']]
 };
+// 1.7: Nerith, the Sea Mother's sunken city (it keeps its own air), and the Undermarket beneath Ironhold
+TOWN_DEFS.nerith = {
+  name: 'Nerith', w: 24, h: 18, border: 'r', theme: 'stone', music: 'nerith', loc: 'H', underwater: true,
+  exits: [[11, 17], [12, 17]],
+  buildings: [
+    { x: 2, y: 2, w: 6, h: 4, kind: 'inn', roof: '#2a6a7a', sign: 'inn', id: 'inn', price: 500, wall: '#9ab8c0' },
+    { x: 9, y: 1, w: 6, h: 5, kind: 'chapel', roof: '#3a8a9a', id: 'temple', wall: '#b8d0d4' },
+    { x: 17, y: 2, w: 5, h: 4, kind: 'hall', roof: '#2a5a6a', sign: 'hall', id: 'archive', wall: '#9ab8c0' },
+    { x: 2, y: 10, w: 5, h: 4, kind: 'shop', roof: '#3a7a6a', sign: 'item', id: 'items', shop: 'nerith_items', wall: '#9ab8c0' },
+    { x: 17, y: 10, w: 5, h: 4, kind: 'shop', roof: '#2a4a6a', sign: 'arms', id: 'arms', shop: 'nerith_arms', wall: '#9ab8c0' }
+  ],
+  paths: [[11, 6, 12, 17], [3, 6, 20, 7], [4, 14, 19, 14]],
+  water: [[8, 15, 3, 2], [14, 15, 3, 2]],
+  decor: [[11, 9, 'w'], [8, 9, 'l'], [15, 9, 'l'], [8, 12, 'P'], [15, 12, 'P'], [20, 16, 'g'], [3, 16, 'g'], [5, 8, 'l'], [19, 8, 'l']]
+};
+TOWN_DEFS.undermarket = {
+  name: 'The Undermarket', w: 22, h: 16, border: 'r', theme: 'stone', music: 'undermarket', loc: 'C', underground: true,
+  exitTo: { map: 'in:ironhold:jail', x: 6, y: 6 },
+  exits: [[10, 15], [11, 15]],
+  buildings: [
+    { x: 2, y: 2, w: 6, h: 4, kind: 'inn', roof: '#4a3a2a', sign: 'inn', id: 'inn', price: 40, wall: '#7a746a' },
+    { x: 9, y: 1, w: 5, h: 5, kind: 'hall', roof: '#3a3a3a', sign: 'hall', id: 'guild', wall: '#6a645a' },
+    { x: 15, y: 2, w: 5, h: 4, kind: 'house', roof: '#5a3a4a', id: 'broker', wall: '#7a746a' },
+    { x: 8, y: 9, w: 6, h: 4, kind: 'shop', roof: '#2a2a2a', sign: 'item', id: 'market', shop: 'blackmarket', wall: '#6a645a' }
+  ],
+  paths: [[10, 6, 11, 15], [3, 6, 18, 7], [3, 13, 18, 13]],
+  water: [[1, 9, 3, 3]],
+  decor: [[5, 9, 'c'], [6, 10, 'c'], [16, 9, 'c'], [17, 10, 'l'], [4, 8, 'l'], [15, 12, 'b'], [18, 14, 'g']]
+};
 const TOWN_SOLID = new Set(['t', 'P', 'r', '~', 'F', 'w', 'c', 'a', 'g', 'l', 'm', 'b']);
 function buildTown(id) {
   const d = TOWN_DEFS[id];
@@ -3134,7 +3658,7 @@ function buildTown(id) {
   for (const [x, y] of d.exits) tiles[y][x] = ':';
   const buildings = d.buildings.map(b => ({ ...b, doorX: b.x + Math.floor(b.w / 2) }));
   if (d.theme === 'snow' || d.theme === 'sand' || d.theme === 'ash') for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) if (tiles[y][x] === 'f') tiles[y][x] = '.';
-  const m = new GameMap({ id, kind: 'town', w: d.w, h: d.h, tiles, buildings, theme: d.theme, name: d.name, music: d.music, loc: d.loc });
+  const m = new GameMap({ id, kind: 'town', w: d.w, h: d.h, tiles, buildings, theme: d.theme, name: d.name, music: d.music, loc: d.loc, underwater: !!d.underwater, underground: !!d.underground });
   return m;
 }
 
@@ -3159,6 +3683,11 @@ const DUNGEONS = {
   undercity: { name: 'The Undercity', theme: 'undercity', floors: 2, w: 36, h: 26, seed: 1010, enc: 'd10', bg: 'mine', loc: 'C', deco: '~', deco2: 'o', noLantern: true,
     exitTo: { map: 'in:ironhold:jail', x: 6, y: 6 },
     loot: [['xpotion', 'dusk_silk', 'gold:9000', 'elixir'], ['megalixir', 'dusk_silk', 'gold:15000']], boss: 'vane' },
+  // 1.7 The Drowned Kingdom
+  palace: { name: 'The Drowned Palace', theme: 'palace', floors: 4, w: 38, h: 30, seed: 1111, enc: 'd11', bg: 'palace', loc: '0', deco: '~', deco2: 'k', noLantern: true,
+    loot: [['deep_pearl', 'xpotion', 'gold:14000', 'hiether'], ['kelp_robe', 'megalixir', 'deep_pearl', 'star_bomb'], ['pressure_ring', 'elixir', 'deep_pearl', 'megalixir'], ['megalixir', 'gold:25000', 'deep_pearl']], boss: 'nereus' },
+  hadal: { name: 'The Hadal Rift', theme: 'hadal', floors: 2, w: 36, h: 28, seed: 1212, enc: 'd12', bg: 'hadal', loc: 'I', deco: '~', deco2: 'k', noLantern: true,
+    loot: [['deep_pearl', 'megalixir', 'gold:30000', 'elixir'], ['megalixir', 'deep_pearl', 'megalixir']], boss: 'tide' },
   abyss: { name: 'Crownfall Abyss', theme: 'abyss', floors: 4, w: 38, h: 30, seed: 707, enc: 'd7', bg: 'abyss', loc: '7', deco: 'L', deco2: 'k',
     loot: [['abyss_ash', 'xpotion', 'gold:12000', 'hiether'], ['ash_robe', 'megalixir', 'abyss_ash', 'star_bomb'], ['ash_mail', 'elixir', 'abyss_ash', 'megalixir'], ['nightglass', 'megalixir', 'gold:20000', 'abyss_ash']], boss: 'crown', lantern: 'night', lanternCol: '#b8a8ff' }
 };
@@ -3478,6 +4007,7 @@ function loadGame(slot = latestSlot()) {
 // A short description of a save, for the slot menus
 function placeName(mapId) {
   if (!mapId || mapId === 'world') return 'World map';
+  if (mapId === 'deep') return 'The Sea Floor';
   if (TOWN_DEFS[mapId]) return TOWN_DEFS[mapId].name;
   if (mapId.startsWith('in:')) { const t = mapId.split(':')[1]; return TOWN_DEFS[t] ? TOWN_DEFS[t].name : 'Indoors'; }
   const [did, f] = mapId.split(':'), D = DUNGEONS[did];
@@ -3505,6 +4035,7 @@ function getMap(id) {
   if (G.maps[id]) return G.maps[id];
   let m;
   if (id === 'world') m = genWorld();
+  else if (id === 'deep') m = genDeep();
   else if (TOWN_DEFS[id]) m = buildTown(id);
   else if (id.startsWith('in:')) m = buildInterior(id);
   else { const [did, f] = id.split(':'); m = genDungeonFloor(did, parseInt(f)); }
@@ -3513,7 +4044,8 @@ function getMap(id) {
 }
 function populate(map) {
   map.entities = [];
-  if (map.kind === 'world') { applyWorldFlags(map); for (const q of worldQuestEntities(map)) map.entities.push(q); }
+  if (map.kind === 'world') { applyWorldFlags(map); for (const q of [...worldQuestEntities(map), ...mothLampEntities(map)]) map.entities.push(q); }
+  if (map.kind === 'deep') { applyDeepFlags(map); for (const q of deepEntities(map)) map.entities.push(q); }
   if (map.kind === 'interior') {
     for (const n of interiorNpcs(map)) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
     for (const q of interiorQuestEntities(map)) map.entities.push(q);
@@ -3555,14 +4087,15 @@ const Field = {
     populate(map);
     G.scene = this;
     this.playMusic();
-    this.banner = map.kind === 'town' || map.kind === 'dungeon' ? { text: map.name, t: 2.6 } : null;
+    this.banner = map.kind === 'town' || map.kind === 'dungeon' || map.kind === 'deep' ? { text: map.name, t: 2.6 } : null;
   },
   playMusic() {
     const m = this.map;
     if (m.kind === 'world') Audio_.play(worldTrack());
+    else if (m.kind === 'deep') Audio_.play('deep');
     else if (m.kind === 'interior') Audio_.play((TOWN_DEFS[m.town] && TOWN_DEFS[m.town].music) || 'town');
     else if (m.kind === 'town') Audio_.play(m.id === 'mirage' ? 'desert' : m.music || 'town');
-    else Audio_.play(m.dungeon === 'spire' ? 'spire' : m.dungeon === 'abyss' ? 'abyss' : 'dungeon');
+    else Audio_.play(m.dungeon === 'spire' ? 'spire' : m.dungeon === 'abyss' || m.dungeon === 'hadal' ? 'abyss' : m.dungeon === 'palace' ? 'deep' : 'dungeon');
   },
   entityAt(x, y) { return this.map.entities.find(e => e.x === x && e.y === y && e.kind !== 'ghost'); },
   buildingAt(x, y) { return (this.map.buildings || []).find(b => x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h); },
@@ -3571,6 +4104,7 @@ const Field = {
     if (c === undefined) return false;
     if (m.kind === 'world') return !(c === '~' || c === 'r' || c === '^' || c === 'M' || c === 'x' || c === 'm');
     if (m.kind === 'interior') return !INT_SOLID.has(c) && c !== '#';
+    if (m.kind === 'deep') return !DEEP_SOLID.has(c);
     if (m.kind === 'town') return !TOWN_SOLID.has(c) && !this.buildingAt(x, y);
     return !DUNGEON_SOLID.has(c);
   },
@@ -3585,6 +4119,9 @@ const Field = {
   async interact() {
     if (this.map.kind === 'world') {
       if (G.inAir) { runScript(landAirship); return; }
+      if (G.onMoth) { runScript(dismountMoth); return; }
+      if (G.onShip && diveSpotAt(G.x, G.y)) { runScript(() => diveDown(diveSpotAt(G.x, G.y))); return; }
+      if (!G.onShip && digSpotAt(G.x, G.y)) { runScript(() => digTreasure(digSpotAt(G.x, G.y))); return; }
       if (G.airship && G.flags.airship && !G.onShip && G.airship.x === G.x && G.airship.y === G.y) { boardAirship(); return; }
     }
     const [dx, dy] = DIRS[G.dir];
@@ -3618,6 +4155,7 @@ const Field = {
       const c = m.at(nx, ny);
       if (c === undefined) return this.bump();
       if (G.inAir) return this.startMove(nx, ny, 'air');
+      if (G.onMoth) { if (!this.walkable(nx, ny) || this.entityAt(nx, ny)) return this.bump(); return this.startMove(nx, ny, 'moth'); }
       if (!G.onShip && G.flags.airship && G.airship && G.airship.x === nx && G.airship.y === ny && !isLoc(c)) { this.startMove(nx, ny); this._board = true; return; }
       if (G.onShip) {
         if (c === '~' || c === 'r') return this.startMove(nx, ny, true);
@@ -3650,7 +4188,7 @@ const Field = {
   bump() { if (this.t - (this._bt || 0) > 0.25) { Audio_.sfx('bump'); this._bt = this.t; } },
   startMove(nx, ny, ship = false) {
     const run = Input.h('run') !== !!CFG.dash;
-    this.anim = { fx: G.x, fy: G.y, tx: nx, ty: ny, t: 0, dur: ship === 'air' ? 0.075 : ship ? 0.11 : run ? 0.1 : 0.16 };
+    this.anim = { fx: G.x, fy: G.y, tx: nx, ty: ny, t: 0, dur: ship === 'air' ? 0.075 : ship === 'moth' ? 0.08 : ship ? 0.11 : run ? 0.1 : 0.16 };
   },
   tick(dt) {
     this.t += dt;
@@ -3701,7 +4239,13 @@ const Field = {
       if (!G.onShip && Audio_.curName !== worldTrack()) this.playMusic();
       if (isLoc(c) && !G.onShip) { runScript(() => enterLocation(c)); return; }
       if (G.onShip && m.whirl && G.x === m.whirl.x && G.y === m.whirl.y && !G.flags.leviathan) { runScript(whirlpoolEvent); return; }
+      if (G.onMoth) { if (isLoc(c)) { G.onMoth = false; runScript(() => enterLocation(c)); } return; }   // moths never meet monsters
       this.encounterCheck(c === 'T' || c === 'P' || c === 'd' || c === 'n' ? 1.5 : 1);
+    } else if (m.kind === 'deep') {
+      const c = m.at(G.x, G.y);
+      if (isLoc(c)) { runScript(() => enterLocation(c)); return; }
+      if (c === 'u') { runScript(surfacePrompt); return; }
+      this.encounterCheck(c === 'k' ? 1.5 : 1);
     } else if (m.kind === 'interior') {
       if (m.at(G.x, G.y) === 'E') { runScript(exitInterior); return; }
     } else if (m.kind === 'dungeon') {
@@ -3742,12 +4286,13 @@ const Field = {
   draw(g) {
     const m = this.map, t = this.t;
     const { cx, cy, px, py } = this.camera();
-    g.fillStyle = m.kind === 'dungeon' || m.kind === 'interior' ? '#000' : m.kind === 'town' ? (m.theme === 'stone' ? '#5f574f' : '#2f6a2a') : WPAL.water;
+    g.fillStyle = m.kind === 'deep' ? '#04101c' : m.kind === 'dungeon' || m.kind === 'interior' ? '#000' : m.kind === 'town' ? (m.theme === 'stone' ? '#5f574f' : '#2f6a2a') : WPAL.water;
     g.fillRect(0, 0, W, H);
     const x0 = Math.floor(cx / TS) - 1, y0 = Math.floor(cy / TS) - 1, x1 = x0 + VW + 3, y1 = y0 + VH + 3;
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
       const sx = x * TS - cx, sy = y * TS - cy;
       if (m.kind === 'world') drawWorldTile(g, m, x, y, sx, sy, t);
+      else if (m.kind === 'deep') drawDeepTile(g, m, x, y, sx, sy, t);
       else if (m.kind === 'town') { if (m.at(x, y) !== undefined) drawTownTile(g, m, x, y, sx, sy, t); }
       else if (m.kind === 'interior') { if (m.at(x, y) !== undefined) drawInteriorTile(g, m, x, y, sx, sy, t); }
       else drawDungeonTile(g, m, x, y, sx, sy, t);
@@ -3761,6 +4306,7 @@ const Field = {
       const sx = ex * TS - cx + TS / 2, sy = ey * TS - cy + TS - 2;
       list.push({ y: ey * TS + TS / 2, draw: () => drawEntity(g, e, sx, sy, t) });
     }
+    if (m.kind === 'world' && G.flags.q_drowned) for (const d of DIVE_SPOTS) { const wx = d.x * TS - cx + 16, wy = d.y * TS - cy + 16; if (wx > -40 && wy > -40 && wx < W + 40 && wy < H + 40) list.push({ y: -1e6 + 1, draw: () => drawDiveSpot(g, wx, wy, t) }); }
     if (m.kind === 'world' && m.whirl && !G.flags.leviathan) { const wx = m.whirl.x * TS - cx + 16, wy = m.whirl.y * TS - cy + 16; if (wx > -40 && wy > -40 && wx < W + 40 && wy < H + 40) list.push({ y: -1e6, draw: () => drawWhirl(g, wx, wy, t) }); }
     if (m.kind === 'world' && G.airship && G.flags.airship && !G.inAir) {
       const sx = G.airship.x * TS - cx + TS / 2, sy = G.airship.y * TS - cy + TS - 2;
@@ -3775,11 +4321,16 @@ const Field = {
     list.push({
       y: py + TS / 2 + 0.5, draw: () => {
         if (G.inAir) { ellipse(g, psx, psy, 16, 5, 'rgba(0,0,0,.25)'); drawAirship(g, psx, psy - 26, t, G.dir, true); }
+        else if (G.onMoth) { ellipse(g, psx, psy, 14, 4, 'rgba(0,0,0,.25)'); drawMoth(g, psx, psy - 14, t, G.dir, HEROES[G.party[0].id].look); }
+        else if (m.kind === 'deep') drawBell(g, psx, psy, t);
         else if (G.onShip) drawShip(g, psx, psy - 2, t, G.dir);
         else drawChar(g, HEROES[G.party[0].id].look, psx, psy, G.dir, step, 1, null, t);
       }
     });
     list.sort((a, b) => a.y - b.y).forEach(d => d.draw());
+    // the sea floor: dark water with the bell's lamp, glowing vents and the lights of Nerith
+    if (m.kind === 'deep') drawDeepLight(g, m, cx, cy, psx, psy, t);
+    if (m.kind === 'town' && (m.underwater || m.underground)) drawTownMood(g, m, t);
     // dungeon lighting
     if (m.kind === 'dungeon') {
       const th = DTHEME[m.theme];
@@ -3828,7 +4379,7 @@ function drawEntity(g, e, sx, sy, t) {
   else if (e.kind === 'lantern') drawLantern(g, sx, sy + 2, e.lit, t, e.col);
   else if (e.kind === 'cat') drawCat(g, sx, sy, t);
   else if (e.kind === 'glint') drawGlint(g, sx, sy, t);
-  else if (e.kind === 'roadlamp') drawRoadLamp(g, sx, sy, e.lit, t);
+  else if (e.kind === 'roadlamp') { drawRoadLamp(g, sx, sy, e.lit, t); if (e.moths) drawLampMoths(g, sx, sy, t); }
   else if (e.kind === 'riddle') drawRiddleFire(g, sx, sy, e.solved, t);
   else if (e.kind === 'hatch') drawHatch(g, sx, sy);
   else if (e.kind === 'boss') {
@@ -3853,8 +4404,9 @@ function freeNeighbor(map, x, y) {
   return [x, y + 1];
 }
 async function enterLocation(ch) {
-  const L = WORLD_LOC[ch];
+  const L = locDef(ch);
   G.flags['visit_' + ch] = true;
+  G.onMoth = false;
   if (L.town) {
     const d = TOWN_DEFS[L.town];
     const [ex, ey] = d.exits[0];
@@ -3874,16 +4426,18 @@ async function enterLocation(ch) {
   }
 }
 async function leaveTown() {
-  const loc = WORLD_LOC[Field.map.loc];
-  await changeMap('world', loc.x, loc.y, G.dir);
+  const d = TOWN_DEFS[Field.map.id];
+  if (d && d.exitTo) { await changeMap(d.exitTo.map, d.exitTo.x, d.exitTo.y, 'down'); return; }
+  const loc = locDef(Field.map.loc);
+  await changeMap(locMap(Field.map.loc), loc.x, loc.y, G.dir);
 }
 async function stairs(d) {
   const m = Field.map, did = m.dungeon, f = m.floor + d;
   Audio_.sfx('stairs');
   if (f < 0 && DUNGEONS[did].exitTo) { const e = DUNGEONS[did].exitTo; await changeMap(e.map, e.x, e.y, 'down'); return; }
   if (f < 0) {
-    const loc = WORLD_LOC[DUNGEONS[did].loc];
-    await changeMap('world', loc.x, loc.y, 'down');
+    const loc = locDef(DUNGEONS[did].loc);
+    await changeMap(locMap(DUNGEONS[did].loc), loc.x, loc.y, 'down');
     return;
   }
   const nm = getMap(did + ':' + f);
@@ -5103,6 +5657,7 @@ class Battle {
       if (e.def.drop && Math.random() < e.def.drop[1]) drops.push(e.def.drop[0]);
       if (e.def.mat && Math.random() < e.def.mat[1]) drops.push(e.def.mat[0]);
     }
+    const tm = treasureMapDrop(this.enemies); if (tm) drops.push(tm);
     if (BP().some(m => alive(m) && accOf(m) && accOf(m).goldx)) gold = Math.round(gold * 1.5);
     if (mealIs('gold')) gold = Math.round(gold * (1 + mealNow().amount));
     if (mealIs('xp')) xp = Math.round(xp * (1 + mealNow().amount));
@@ -5543,14 +6098,14 @@ async function openShop(listId, keeper) {
         const sel = { v: idx };
         const r = await listMenu({
           x: 16, y: 70, w: 300, rows: 9, title: 'Buy', index: idx, onChange: i => sel.v = i,
-          items: stock.map(id => ({ label: ITEMS[id].name, right: ITEMS[id].price + ' G', disabled: G.gold < ITEMS[id].price })),
+          items: stock.map(id => ({ label: ITEMS[id].name, right: shopPrice(listId, id) + ' G', disabled: G.gold < shopPrice(listId, id) })),
           help: i => ITEMS[stock[i]].desc
         });
         closePanel(det);
         if (r < 0) break;
         idx = r;
         const it = ITEMS[stock[r]];
-        G.gold -= it.price; addItem(stock[r]); Audio_.sfx('item');
+        G.gold -= shopPrice(listId, stock[r]); addItem(stock[r]); Audio_.sfx('item');
         toast(`Bought ${it.name}`);
       }
     } else {
@@ -5685,16 +6240,18 @@ const MAP_COL = { '~': '#2c6fc4', r: '#3a80d0', '.': '#6dbb4f', T: '#2f7a35', '^
 async function worldMapView() {
   const m = getMap('world');
   const sc = Math.min(600 / m.w, 384 / m.h), ow = m.w * sc, oh = m.h * sc, ox = (W - ow) / 2, oy = (H - oh) / 2 + 12;
-  // where is the party?
-  let px = G.x, py = G.y;
-  if (Field.map && Field.map.kind !== 'world') {
-    const loc = Field.map.kind === 'town' ? WORLD_LOC[Field.map.loc] : WORLD_LOC[DUNGEONS[Field.map.dungeon].loc];
-    px = loc.x; py = loc.y;
-  }
+  // where is the party? (on the sea floor, the marker shows the spot above you)
+  const { x: px, y: py } = worldPos();
   const obj = mainObjective();
+  const canDeep = !!G.flags.seen_deep;
+  let deep = canDeep && onSeaFloor();
   await UI.push({
-    update() { if (Input.p('ok') || Input.p('cancel')) { Audio_.sfx('cancel'); UI.close(this); } },
+    update() {
+      if (canDeep && Input.p('run')) { deep = !deep; Audio_.sfx('cursor'); }
+      else if (Input.p('ok') || Input.p('cancel')) { Audio_.sfx('cancel'); UI.close(this); }
+    },
     draw(g) {
+      if (deep) { drawDeepMap(g, ox, oy, ow, oh, sc); return; }
       const t = performance.now() / 1000;
       g.fillStyle = 'rgba(4,6,20,.92)'; g.fillRect(0, 0, W, H);
       drawWindow(g, ox - 10, oy - 34, ow + 20, oh + 58);
@@ -5720,8 +6277,10 @@ async function worldMapView() {
       if (obj.loc && WORLD_LOC[obj.loc]) { const L = WORLD_LOC[obj.loc]; const x = ox + L.x * sc + 3.5, y = oy + L.y * sc - 8 + Math.sin(t * 4) * 2; poly(g, [x - 5, y - 6, x + 5, y - 6, x, y + 2], '#ffd23a', OUT, 1); }
       if (G.airship && G.flags.airship) { const x = ox + G.airship.x * sc + 3, y = oy + G.airship.y * sc + 3; ellipse(g, x, y - 2, 5, 3, '#c8443a', '#fff', 1); }
       if (G.ship && G.flags.ship && !G.onShip) { const x = ox + G.ship.x * sc + 3, y = oy + G.ship.y * sc + 3; poly(g, [x - 4, y + 2, x + 4, y + 2, x + 2, y + 4, x - 2, y + 4], '#7a4a22'); poly(g, [x, y - 5, x + 4, y + 1, x, y + 1], '#fff'); }
+      if (G.flags.q_drowned) for (const d of DIVE_SPOTS) { const x = ox + d.x * sc + 3, y = oy + d.y * sc + 3; circle(g, x, y, 4 + Math.sin(t * 3) * 0.8, '#06182a', '#5af0d0', 1.5); }
+      for (const k in m.digs || {}) if (m.digs[k] && hasItem('tmap' + k) && !G.flags['dug_' + k]) { const x = ox + m.digs[k].x * sc + 3, y = oy + m.digs[k].y * sc + 3; line(g, x - 3.5, y - 3.5, x + 3.5, y + 3.5, '#ff3a6a', 2.5); line(g, x - 3.5, y + 3.5, x + 3.5, y - 3.5, '#ff3a6a', 2.5); }
       if (Math.sin(t * 8) > -0.3) { circle(g, ox + px * sc + 3.5, oy + py * sc + 3.5, 4, '#ff3a3a', '#fff', 1.5); }
-      text(g, 'Red: you   ▼ objective   Enter/Esc to close', W / 2, oy + oh + 5, { size: 11, align: 'center', color: '#b8c4ee' });
+      text(g, `Red: you   ▼ objective${G.flags.q_drowned ? '   ◎ black water' : ''}${mapsFound() ? '   ✕ dig' : ''}${canDeep ? '   Shift: sea floor' : ''}   Enter/Esc to close`, W / 2, oy + oh + 5, { size: 11, align: 'center', color: '#b8c4ee' });
     }
   });
 }
@@ -6194,6 +6753,7 @@ function interiorQuestEntities(m) {
       await changeMap(d.id, x, y, 'down');
       if (!f.seen_undercity) { f.seen_undercity = true; await say(KE, 'Two levels down to the Guild hall. The guards here are mine. Well — they were.'); }
     } });
+  if (m.town === 'ironhold' && m.ikind === 'jail' && f.debt_done) out.push(undermarketHatch());
   return out;
 }
 
@@ -6294,6 +6854,349 @@ function heartsQuests() {
 
 'use strict';
 // ============================================================
+//  THE DROWNED KINGDOM (1.7)
+//  The diving bell and the sea floor, Nerith and the Drowned Palace,
+//  the Hadal Rift, treasure maps, lanternmoths and the Undermarket.
+//  Loaded after hearts.js and before story.js: top-level code here must not
+//  read story.js constants (the speaker names A, OS, KE, ... are used only inside functions).
+// ============================================================
+
+const DEEP_TOWNS = ['nerith', 'undermarket'];
+function listJoin(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
+
+// Where the party is, in world coordinates (for the map screen)
+function worldPos() {
+  const m = Field.map;
+  if (!m || m.kind === 'world') return { x: G.x, y: G.y };
+  if (m.kind === 'deep') return { x: G.x * 2, y: G.y * 2 };
+  let ch = null;
+  if (m.kind === 'town') ch = m.loc;
+  else if (m.kind === 'interior') ch = TOWN_DEFS[m.town].loc;
+  else if (m.kind === 'dungeon') ch = DUNGEONS[m.dungeon].loc;
+  const L = ch && locDef(ch);
+  if (!L) return { x: G.x, y: G.y };
+  return locMap(ch) === 'deep' ? { x: L.x * 2, y: L.y * 2 } : { x: L.x, y: L.y };
+}
+function onSeaFloor() {
+  const m = Field.map;
+  if (!m) return false;
+  if (m.kind === 'deep') return true;
+  const ch = m.kind === 'town' ? m.loc : m.kind === 'interior' ? TOWN_DEFS[m.town].loc : m.kind === 'dungeon' ? DUNGEONS[m.dungeon].loc : null;
+  return !!ch && locMap(ch) === 'deep' && m.id !== 'undermarket' && m.town !== 'undermarket';
+}
+
+// ---------------- the sea floor ----------------
+function applyDeepFlags(m) {
+  if (!m || m.kind !== 'deep') return;
+  const I = DEEP_LOC.I;
+  m.set(I.x, I.y, G.flags.boss_palace ? 'I' : '#');
+}
+const WRECK_LOOT = ['tmap5', 'deep_pearl', 'megalixir'];
+function deepEntities(m) {
+  return (m.wrecks || []).map((w, i) => {
+    const key = `chest:deep:${w.x},${w.y}`;
+    return { kind: 'chest', x: w.x, y: w.y, key, loot: WRECK_LOOT[i] || 'gold:5000', opened: !!G.flags[key] };
+  });
+}
+function diveSpotAt(x, y) { return G.flags.q_drowned ? DIVE_SPOTS.find(d => d.x === x && d.y === y) || null : null; }
+async function diveDown(spot) {
+  const f = G.flags;
+  if (!f.bell) { await narrate('The water here is black and very still. Whatever is down there is far too deep to reach. Brann might know a way.'); return; }
+  const c = await choose(null, `Black water above ${spot.name}. Lower the diving bell?`, ['Dive', 'Not now'], 1);
+  if (c !== 0) return;
+  G.ship = { x: spot.x, y: spot.y, dir: G.dir }; G.onShip = false;
+  Audio_.sfx('water');
+  await fadeTo(1, 600, '#04101c');
+  Field.enter('deep', spot.x / 2, spot.y / 2, 'down');
+  await fadeTo(0, 800, '#04101c');
+  if (!f.seen_deep) {
+    f.seen_deep = true;
+    await sayAll([
+      [KE, 'I can hear my own heartbeat. And something else. Something big, breathing.'],
+      [LY, 'The lamp only reaches a few steps. Everything past that is just... dark.'],
+      [OS, 'The Abbot\'s chart puts Nerith at the centre, right below where the whirlpool used to turn. Follow the trenches.']
+    ]);
+    toast('Walk onto a bell line (↑) to surface');
+  }
+  autoSave();
+}
+async function surfacePrompt() {
+  const spot = DIVE_SPOTS.find(d => d.x / 2 === G.x && d.y / 2 === G.y);
+  if (!spot) return;
+  const c = await choose(null, `The bell's line rises toward ${spot.name}. Surface here?`, ['Surface', 'Stay down'], 1);
+  if (c !== 0) return;
+  G.onShip = true; G.ship = { x: spot.x, y: spot.y, dir: G.dir };
+  Audio_.sfx('water');
+  await fadeTo(1, 500, '#9ad8ff');
+  Field.enter('world', spot.x, spot.y, G.dir);
+  await fadeTo(0, 600, '#9ad8ff');
+}
+
+// ---------------- The Drowned Kingdom (quest) ----------------
+async function drownedQuestStart() {
+  await sayAll([
+    ['Sister Wenna', 'Father Oswin. When we cleaned the Abbot\'s bell, this fell out of the clapper. Folded very small.'],
+    [OS, '...A sea chart. In Tessaly\'s hand. Four patches of black water, and in the middle, one word: Nerith.'],
+    ['Sister Wenna', 'Nerith? The first temple? The children\'s stories say the Sea Mother took it under the waves to keep it safe.'],
+    [OS, 'The Abbot never told stories he didn\'t believe. If he marked it, it is there. At the bottom of the sea.'],
+    [KE, 'Great. Has anyone got a very long ladder?'],
+    [OS, 'Brann might have something better. He has a shed full of things he swears he will fix one day.']
+  ]);
+  addItem('tide_chart'); G.flags.q_drowned = true; Audio_.sfx('chest'); toast('New quest: The Drowned Kingdom');
+  await narrate('Received Tessaly\'s Chart! The four patches of black water are now marked on your world map.');
+}
+// Brann fits the Dawnrunner with a diving bell. Returns true when it handled the conversation.
+async function brannBell() {
+  const f = G.flags;
+  if (!f.q_drowned || f.bell) return false;
+  const have = (G.inv.frost_crystal || 0) >= 2 && (G.inv.sun_gold || 0) >= 1;
+  if (!f.bellAsked) {
+    f.bellAsked = true;
+    await sayAll([
+      ['Brann', 'Dive? Under the sea? On purpose?'],
+      ['Brann', '...I have a bell. A diving bell, from my grandfather\'s salvage days. Brass, big as a cart. Never had the nerve to try it.'],
+      ['Brann', 'The glass is cracked and the lamp\'s dead. Bring me two Frost Crystals for the glass and a Sun Gold for the lamp, and I\'ll hang it off the Dawnrunner myself.']
+    ]);
+  }
+  if (!have) { await say('Brann', `Two Frost Crystals and one Sun Gold. You have ${G.inv.frost_crystal || 0} and ${G.inv.sun_gold || 0}. Orrin's monsters drop them, or try the black market under Ironhold — if you didn't hear it from me.`); return true; }
+  addItem('frost_crystal', -2); addItem('sun_gold', -1);
+  await fadeTo(1, 400); Audio_.sfx('forge'); await wait(900); Audio_.sfx('forge'); await wait(600); await fadeTo(0, 400);
+  f.bell = true; Audio_.sfx('chest');
+  await sayAll([['Brann', 'There. She\'s fitted. Sail onto a patch of black water and press Enter, and down you go.'], ['Brann', 'If you meet my grandfather down there, tell him the bell works. He bet me it never would.']]);
+  await narrate('The Dawnrunner now carries a diving bell. Sail onto black water (marked on your map) and press Enter to dive.');
+  return true;
+}
+
+// ---------------- Nerith ----------------
+function nerithNpcs() {
+  const f = G.flags;
+  const ghost = (seed, o) => npcLook(seed, { skin: '#c8e4ea', ...o });
+  return [
+    N(11, 8, 81, ghost(81, { hair: '#e8f4ff', style: 'long', body: '#2a6a7a', accent: '#5af0d0' }), async () => say('Memory of a Guard', f.boss_palace ? 'I can stop standing guard now. I think I\'ll sit down. I haven\'t sat down in a thousand years.' : 'The palace is east of the city. The King lets no one in. Mother Ysolde in the temple might change his mind. She\'s the only one he ever listened to.')),
+    N(6, 9, 82, ghost(82, { style: 'bun', body: '#3a7a8a', accent: '#e8c24a' }), async () => say('Memory of a Fishwife', f.boss_palace ? 'The tide is moving again. You can feel it in your teeth. I\'ve missed it.' : 'Fish? Oh, dear, we haven\'t sold fish in ten centuries. We just remember selling them. It\'s nearly as good. Not really.'), { wander: true }),
+    N(17, 8, 83, ghost(83, { style: 'spiky', body: '#4a8aa0' }), async () => say('Memory of a Boy', 'Are you alive? Really alive? Can I touch your sleeve? ...It\'s WARM. Mum! The visitors are WARM!'), { wander: true }),
+    N(14, 12, 84, ghost(84, { hair: '#d8e8f0', style: 'bald', beard: true, body: '#2a4a5a', robe: true }), async () => sayAll(f.boss_palace ? [['Old Captain Oriel', 'I sailed the first ship out of Nerith. I\'ll sail the last one too, I suppose — straight up, into the light. Thank you for that.']] : [['Old Captain Oriel', 'When the Long Night came, Nereus was afraid the world would forget us. So he asked the sea to remember us instead.'], ['Old Captain Oriel', 'The sea said yes. That is the trouble with the sea. It always says yes.']])),
+    N(5, 15, 85, ghost(85, { style: 'long', body: '#5a8a9a', accent: '#ffe9a8' }), async () => say('Coral-singer Liss', hasItem('abbots_bell') || inParty('oswin') ? 'That priest of yours hums the old hymns flat. Tell him the Sea Mother forgives him. I don\'t.' : 'We sing to the coral so it keeps growing. It has grown for a thousand years. It is VERY big now.'))
+  ];
+}
+function deepInteriorNpcs(m) {
+  const f = G.flags, t = m.town;
+  if (t === 'nerith' && m.ikind === 'chapel') return [{ x: 6, y: 3, look: { skin: '#d8eef2', hair: '#f0f8ff', style: 'long', body: '#1a5a6a', accent: '#5af0d0', robe: true }, name: 'Mother Ysolde', mark: !f.ysolde || (f.boss_palace && !f.ysolde_thanks), talk: talkYsolde }];
+  if (t === 'nerith' && m.ikind === 'hall') return [{ x: 6, y: 2, look: npcLook(86, { skin: '#c8e4ea', style: 'bald', beard: true, robe: true, body: '#2a4a5a' }), talk: async () => sayAll([['Archivist Thule', 'Every book in Nerith is wet. We read them anyway. The ink has been running for a thousand years, so the endings keep changing.'], ['Archivist Thule', f.boss_palace ? 'The newest entry reads: "Warm strangers came, and the King let go." I wrote it myself. I cried on it. Now it says "Worm strangers."' : 'If you want the old king\'s story, ask Mother Ysolde. She was there. We all were, but she remembers it best.']]) }];
+  if (t === 'nerith' && m.ikind === 'house') return [];
+  if (t === 'undermarket' && m.ikind === 'hall') return [{ x: 6, y: 2, look: { skin: '#e0b088', hair: '#c83a2a', style: 'spiky', body: '#3a2a3a', accent: '#9adf5a' }, name: 'Mags', talk: talkMags }];
+  if (t === 'undermarket' && m.ikind === 'house') return [{ x: 6, y: 4, look: { skin: '#c8a888', hair: '#3a3a3a', style: 'long', body: '#2a2a3a', accent: '#e8c24a', hat: 'cap' }, name: 'Whisper', mark: !hasItem('tmap1') && !f.dug_1, talk: talkWhisper }];
+  return null;
+}
+async function talkYsolde() {
+  const f = G.flags;
+  if (!f.ysolde) {
+    await sayAll([
+      ['Mother Ysolde', 'Living hearts. I can hear them from here, like drums. Come in, come in, before you let the warm out.'],
+      [OS, '...Mother Ysolde. The first priestess. Your name is on the oldest stone in the Sunken Shrine.'],
+      ['Mother Ysolde', 'Then the stone is kinder than I was. Sit, child of my order. You should know what happened here.'],
+      ['Mother Ysolde', 'When the Long Night fell, King Nereus was afraid the world would end, and that nobody would be left to remember Nerith.'],
+      ['Mother Ysolde', 'So he went down to the deepest trench and made a bargain with the oldest thing in the sea: the Tide That Remembers. It keeps everything that drowns.'],
+      ['Mother Ysolde', 'It took the whole city down, and it remembers us still. That is why we are here, and why we cannot leave. Memories do not get to rest.'],
+      [A, 'And the King?'],
+      ['Mother Ysolde', 'He sits in his palace, east of here, and holds on. As long as he holds on, the Tide holds us. He was a frightened man. He is a frightened ghost.'],
+      ['Mother Ysolde', 'Go to him. Tell him the world did not end. Tell him the lamps are lit. If he will not listen... then make him let go.']
+    ]);
+    f.ysolde = true; Audio_.sfx('heal'); healAll();
+    await narrate('The doors of the Drowned Palace will open for you now. (Your party was healed.)');
+    return;
+  }
+  if (f.boss_palace && !f.ysolde_thanks) {
+    await sayAll([
+      ['Mother Ysolde', 'I felt him let go. The whole city sighed. Some of us are already fading, smiling. It is a good fading.'],
+      ['Mother Ysolde', 'But listen. The Tide itself is still down there, in the Hadal Rift at the far southeast of the sea floor. The trench has opened.'],
+      ['Mother Ysolde', 'It remembers every storm, every wreck, every drowned sailor. And now it remembers you. It will want to keep you.'],
+      [OS, 'Then we will have to be very hard to keep.'],
+      ['Mother Ysolde', 'Spoken like my order. Go when you are ready, and not before. It is far older than any king.']
+    ]);
+    f.ysolde_thanks = true; Audio_.sfx('heal'); healAll(); toast('New quest: The Tide That Remembers');
+    return;
+  }
+  await say('Mother Ysolde', f.tide_done ? 'The sea is only the sea now. It forgets, like everyone else. I find I like that.' : f.boss_palace ? 'The Hadal Rift lies at the far southeast of the sea floor. Rest first. Then rest again.' : 'The palace is east of the city. The King is waiting. He has been waiting for a thousand years. He will not mind waiting while you rest.');
+  Audio_.sfx('heal'); healAll();
+  await narrate('Mother Ysolde\'s blessing restored your party.');
+}
+async function palaceBoss() {
+  const f = G.flags;
+  await sayAll([
+    ['Nereus', 'WARM THINGS. IN MY CITY. YOU WILL MAKE THEM REMEMBER BEING ALIVE.'],
+    [A, 'The Long Night is over, Your Majesty. The Lanterns are lit. The world didn\'t end.'],
+    ['Nereus', 'LIES. THE WORLD ALWAYS ENDS. I SAVED NERITH FROM FORGETTING. I WILL SAVE IT FROM YOU.'],
+    [OS, 'You saved it from living. Let them go.']
+  ]);
+  const r = await startBattle(['nereus'], { boss: true, bg: 'palace' });
+  if (r === 'lose') return gameOver();
+  f.boss_palace = true; refreshEntities();
+  await sayAll([
+    ['', 'The water in the throne room goes still. Nereus sinks onto his throne, small and grey, an old man at last.'],
+    ['Nereus', 'Is it true? The lamps?'],
+    [A, 'Twelve on the roads. Seven in the world. And one in my pocket.'],
+    ['Nereus', '...Then I was afraid for nothing. For a thousand years. Take the crown. It is heavy, and I am tired of being king of nothing.']
+  ]);
+  addItem('tidecrown'); Audio_.sfx('chest');
+  await narrate('Received the Crown of Nerith! (Accessory: all stats +16, prevents slow and sleep)');
+  await narrate('Far to the southeast, something in the deep turns over in its sleep.');
+}
+async function hadalBoss() {
+  const f = G.flags;
+  await sayAll([
+    ['', 'The trench opens into nothing. Then the nothing opens its eyes. Hundreds of them, pale as drowned moons.'],
+    ['The Tide That Remembers', 'I REMEMBER THE FIRST RAIN. I REMEMBER EVERY SHIP. I REMEMBER THE KING WHO GAVE ME HIS CITY.'],
+    ['The Tide That Remembers', 'AND NOW HE HAS TAKEN IT BACK. SOMETHING MUST BE KEPT. YOU WILL DO.'],
+    [KE, 'Hard pass.'],
+    [OS, 'Sea Mother, if you are listening down here, now would be a lovely time.']
+  ]);
+  const r = await startBattle(['tide'], { boss: true, bg: 'hadal', music: 'final' });
+  if (r === 'lose') return gameOver();
+  f.boss_hadal = true; f.tide_done = true; refreshEntities();
+  await sayAll([
+    ['', 'The eyes close, one by one. The water around you warms, just slightly, like a held breath let go.'],
+    ['The Tide That Remembers', '...I WILL TRY TO FORGET. IT IS VERY HARD. BUT I WILL TRY TO REMEMBER YOU KINDLY.'],
+    [SE, 'That\'s the nicest thing a monster has ever said to me.']
+  ]);
+  addItem('tidesong'); Audio_.sfx('chest');
+  await narrate('Received Tidesong! (Accessory: all stats +26, Regen, no ailments)');
+}
+
+// ---------------- treasure maps ----------------
+function digSpotAt(x, y) {
+  const m = Field.map;
+  if (!m || !m.digs) return null;
+  for (const k in m.digs) { const d = m.digs[k]; if (d && d.x === x && d.y === y && hasItem('tmap' + k) && !G.flags['dug_' + k]) return +k; }
+  return null;
+}
+function mapsDug() { return [1, 2, 3, 4, 5].filter(k => G.flags['dug_' + k]).length; }
+function mapsFound() { return [1, 2, 3, 4, 5].filter(k => G.flags['dug_' + k] || hasItem('tmap' + k)).length; }
+// a battle against map-carrying monsters may drop the next missing map (2, 3 or 4), once per battle
+function treasureMapDrop(enemies) {
+  if (!enemies.some(e => e.def.tmap) || Math.random() >= 0.2) return null;
+  const k = [2, 3, 4].find(n => !hasItem('tmap' + n) && !G.flags['dug_' + n]);
+  return k ? 'tmap' + k : null;
+}
+async function digTreasure(k) {
+  await narrate('This is the spot from the map. The party starts digging...');
+  for (let i = 0; i < 3; i++) { Audio_.sfx('bump'); await wait(320); }
+  Audio_.sfx('chest');
+  G.flags['dug_' + k] = true; addItem('tmap' + k, -1);
+  const got = [];
+  for (const l of TREASURES[k].loot) {
+    if (l.startsWith('gold:')) { const n = parseInt(l.slice(5)); G.gold += n; got.push(n + ' gold'); }
+    else { addItem(l); got.push(ITEMS[l].name); }
+  }
+  await narrate(`Buried treasure! Found ${listJoin(got)}.`);
+  if (mapsDug() === 5) await narrate('That was the last of the five maps. Whisper in the Undermarket will want to hear about this.');
+}
+
+// ---------------- lanternmoths ----------------
+// After Arin's roads are lit, every roadside lamp stays on the world map. With the Moth Whistle, a lamp gives you a moth to ride.
+function mothLampEntities(map) {
+  if (!G.flags.road_done) return [];
+  return ROAD_LAMPS.filter(([x, y]) => !(map.region[y][x] === null && map.at(x, y) === '~')).map(([x, y]) => ({ kind: 'roadlamp', x, y, lit: true, moths: true, talk: lampMoth }));
+}
+async function lampMoth() {
+  if (!hasItem('moth_whistle')) { await narrate(G.flags.q_moth ? 'Pale moths circle the lamp. Old Ivy\'s whistle would call one down.' : 'The roadside lamp burns small and steady. Big pale moths circle it, drowsy with the light.'); return; }
+  const c = await choose(null, 'A lanternmoth the size of a pony rests on the lamp. Ride it?', ['Ride', 'Leave it'], 1);
+  if (c !== 0) return;
+  G.onMoth = true; Audio_.sfx('buff'); Audio_.play('sky');
+  toast('No monsters on a moth · Enter to land');
+}
+async function dismountMoth() {
+  G.onMoth = false; Audio_.sfx('stairs'); Field.playMusic();
+  toast('The moth flutters back toward its lamp');
+}
+async function talkIvy() {
+  const f = G.flags;
+  if (!f.road_done) { await say('Old Ivy', 'I kept lanternmoths, once. When the roadside lamps went dark, my flock flew off into the Whisperwood and never came back. Seven years now.'); return; }
+  if (!hasItem('moth_whistle')) {
+    await sayAll([
+      ['Old Ivy', 'Do you see them? On every lamp! My moths came home the night the twelfth lamp was lit.'],
+      ['Old Ivy', 'You did that, didn\'t you, Lamplighter? Your father used to give me a wave on his rounds.'],
+      ['Old Ivy', 'Here: my whistle. Blow it at any lit roadside lamp and a moth will come down for you. They fly low and fast, and nothing with teeth can catch them.']
+    ]);
+    addItem('moth_whistle'); f.q_moth = true; Audio_.sfx('chest');
+    await narrate('Received the Moth Whistle! Talk to a lit roadside lamp to ride a lanternmoth. Moths can\'t cross water or mountains, and meet no monsters.');
+    return;
+  }
+  await say('Old Ivy', 'Be gentle with them over the mountains. They hate mountains. They hate wind, too. And rain. They\'re moths.');
+}
+
+// ---------------- the Undermarket ----------------
+function undermarketHatch() {
+  return { kind: 'hatch', x: 6, y: 7, talk: async () => {
+    const c = await choose(null, 'The trapdoor to the Undercity. Kestrel left it unbolted.', ['The Undermarket', 'The old tunnels', 'Stay here'], 2);
+    if (c === 0) {
+      await changeMap('undermarket', 10, 14, 'up');
+      if (!G.flags.seen_undermarket) {
+        G.flags.seen_undermarket = true;
+        await sayAll(inParty('kestrel') ? [[KE, 'Welcome to the Undermarket. Now that Vane\'s gone, the Guild runs it properly. Which is to say: still crookedly, but with lamps.'], [OS, 'Is that a... black market?'], [KE, 'It\'s a market. It\'s just very dark down here.']] : [['', 'Lanterns hang from rusted pipes. Stalls crowd the old tunnels. Someone is selling something that is still moving.']]);
+      }
+    } else if (c === 1) {
+      const d = getMap('undercity:0'); const [x, y] = freeNeighbor(d, d.up.x, d.up.y);
+      await changeMap(d.id, x, y, 'down');
+    }
+  } };
+}
+function undermarketNpcs() {
+  return [
+    N(6, 12, 91, { body: '#3a3a3a', hat: 'cap', accent: '#9adf5a' }, async () => say('Lookout', 'Captain Dunmar knows we\'re here. Captain Dunmar buys his pipe tobacco here. Everybody wins.'), { wander: true }),
+    N(15, 8, 92, { style: 'bun', body: '#5a2a3a', accent: '#e8c24a' }, async () => say('Stallkeeper Nim', 'Crystals, gold, silk, pearls. Three times the price, no questions asked. Questions are extra.')),
+    N(17, 13, 93, { style: 'spiky', body: '#4a4a2a' }, async () => say('Rat-catcher', G.flags.boss_palace ? 'Heard a rumour you went to the bottom of the sea. Down here, that\'s called "Tuesday".' : 'Biggest rat I ever caught was the size of a dog. Second biggest was the dog.'), { wander: true })
+  ];
+}
+async function talkMags() {
+  const f = G.flags;
+  if (inParty('kestrel')) await sayAll([['Mags', 'Kes! Look at you, all respectable. Guildmaster, they\'re saying. I nearly fell off my stool.'], [KE, 'I am NOT the Guildmaster. I\'m a... silent partner.'], ['Mags', 'Very silent. You haven\'t paid your dues in three years. Go on, spend some money at Nim\'s. That counts.']]);
+  else await say('Mags', 'Friends of Kestrel? Then you\'re friends of the Guild. Mind your purses anyway. Professional habit.');
+  if (f.debt_done && !f.mags_gift) { f.mags_gift = true; addItem('star_bomb'); addItem('star_bomb'); Audio_.sfx('item'); await narrate('Mags slips you two Star Bombs. "For old times. Don\'t ask where they\'re from."'); }
+}
+async function talkWhisper() {
+  const f = G.flags;
+  if (mapsDug() === 5) {
+    if (!f.whisper_done) {
+      f.whisper_done = true;
+      await sayAll([['Whisper', 'All five? Every last hole in the ground? I sold those maps to forty people. You\'re the first who ever dug.'], ['Whisper', 'Here. My own map. It shows where I keep my savings. Go on — it\'s just that sack, behind you.']]);
+      G.gold += 50000; Audio_.sfx('chest');
+      await narrate('Received 50,000 gold!');
+      return;
+    }
+    await say('Whisper', 'I\'m drawing new maps. Fake ones, mostly. Don\'t buy them.'); return;
+  }
+  if (!hasItem('tmap1') && !f.dug_1) {
+    const c = await choose('Whisper', 'Treasure maps. Real ones. The first is 8,000 gold. The other four? Bandits carry them, if you can catch one. And one went down with a ship.', ['Buy (8,000 G)', 'No thanks'], 1);
+    if (c === 0) {
+      if (G.gold < 8000) { await say('Whisper', 'Come back when your purse is heavier than your boots.'); return; }
+      G.gold -= 8000; addItem('tmap1'); Audio_.sfx('item');
+      await narrate('Received the Map: Smuggler\'s Cove! Dig spots for the maps you carry are marked on your world map. Stand on the spot and press Enter to dig.');
+    }
+    return;
+  }
+  await say('Whisper', `${mapsDug()} of 5 dug. Sand Bandits, Cutpurses and the Anglers on the sea floor carry the rest. Hit them until something falls out.`);
+}
+function blackmarketPrice(id) { return BLACKMARKET_PRICES[id] || ITEMS[id].price * BLACKMARKET_MARKUP; }
+function shopPrice(listId, id) { return listId === 'blackmarket' ? blackmarketPrice(id) : ITEMS[id].price; }
+
+// ---------------- quest log ----------------
+function deepQuests() {
+  const f = G.flags, q = [];
+  if (f.q_drowned) q.push({ title: 'The Drowned Kingdom', giver: 'Sister Wenna, Port Halden', done: !!f.boss_palace, reward: 'Crown of Nerith', desc:
+    f.boss_palace ? 'King Nereus let go, and Nerith can rest at last.'
+      : !f.bell ? 'Ask Brann in Port Halden to fit the Dawnrunner with a diving bell. He needs 2 Frost Crystals and 1 Sun Gold.'
+      : !f.visit_H ? 'Sail onto a patch of black water (marked on your map) and press Enter to dive. Find Nerith on the sea floor, below where the whirlpool was.'
+      : !f.ysolde ? 'Speak with Mother Ysolde in Nerith\'s temple.'
+      : 'Enter the Drowned Palace, east of Nerith, and face King Nereus. Recommended level: 46+.' });
+  if (f.ysolde_thanks) q.push({ title: 'The Tide That Remembers', giver: 'Mother Ysolde, Nerith', done: !!f.tide_done, reward: 'Tidesong', desc: f.tide_done ? 'The Tide is trying to forget. It will remember you kindly.' : 'Descend into the Hadal Rift, at the far southeast of the sea floor. The oldest thing in the sea is waiting. Recommended: level 50, a full Lantern Board and a good meal.' });
+  if (f.q_moth) q.push({ title: 'Lanternmoths', giver: 'Old Ivy, Brightwater', done: true, reward: 'Moth Whistle', desc: 'Talk to any lit roadside lamp to ride a lanternmoth: fast, low, and no monsters. Moths can\'t cross water or mountains.' });
+  if (mapsFound()) q.push({ title: 'Buried Treasure', giver: 'Whisper, the Undermarket', done: !!f.whisper_done, reward: '50,000 gold', desc: f.whisper_done ? 'Five maps, five holes, one very surprised map-seller.' : `Dig up all five treasure maps. Carried maps are marked on your world map; stand on the spot and press Enter. (${mapsDug()}/5 dug)` });
+  return q;
+}
+
+'use strict';
+// ============================================================
 //  STORY — NPCs, doors, cutscenes, bosses, title, ending
 // ============================================================
 const A = 'Arin', LY = 'Lyra', OS = 'Oswin', KE = 'Kestrel';
@@ -6314,6 +7217,8 @@ function N(x, y, seed, o, talk, extra = {}) { return { x, y, look: o.skin && o.h
 
 function townNpcs(id) {
   const f = G.flags;
+  if (id === 'nerith') return nerithNpcs();
+  if (id === 'undermarket') return undermarketNpcs();
   if (id === 'brightwater') return [
     N(5, 8, 1, LOOKS.elder, talkElder, { mark: !f.q1 || (f.lantern1 && !f.bridge) || (f.ending && !f.q_road) || (f.q_road && !f.road_done && lampsLit() >= ROAD_LAMPS.length) || (HEROES_DONE() === 5 && !f.festival), name: 'Elder Maren' }),
     N(12, 8, 2, LOOKS.mother, talkMother, { name: 'Mira', mark: f.ending && ((!f.q_grimoire && inParty('lyra')) || (!f.q_echo && inParty('selene'))) }),
@@ -6321,11 +7226,12 @@ function townNpcs(id) {
     N(13, 16, 4, LOOKS.guard, talkTobin),
     N(18, 8, 5, { body: '#3a7a4a', hat: 'cap', accent: '#a07a3a' }, talkHob, { wander: true }),
     N(15, 10, 6, { hair: '#a0a0a0', style: 'bald', beard: true, body: '#7a6a5a' }, talkBram),
-    N(4, 16, 7, { style: 'bun', body: '#c05a7a' }, talkAda, { wander: true })
+    N(4, 16, 7, { style: 'bun', body: '#c05a7a' }, talkAda, { wander: true }),
+    N(20, 15, 8, { skin: '#e8c8a8', hair: '#d8d8d0', style: 'bun', body: '#6a5a8a', accent: '#ffe9a8', robe: true }, talkIvy, { name: 'Old Ivy', mark: f.road_done && !hasItem('moth_whistle') })
   ];
   if (id === 'halden') {
     const l = [
-      N(20, 10, 11, LOOKS.sailor, talkBrann, { mark: (f.lantern2 && !f.ship) || (f.ship && !f.bounty) || (f.leviathan && !f.bounty_done), name: 'Brann' }),
+      N(20, 10, 11, LOOKS.sailor, talkBrann, { mark: (f.lantern2 && !f.ship) || (f.ship && !f.bounty) || (f.leviathan && !f.bounty_done) || (f.q_drowned && !f.bell), name: 'Brann' }),
       N(17, 18, 12, { style: 'bun', body: '#3a8a8a' }, talkNell, { wander: true, mark: !f.q_locket || (hasItem('locket') && !f.locket_done) }),
       N(6, 10, 13, LOOKS.sailor, talkSailor, { wander: true }),
       N(12, 17, 14, { style: 'spiky', body: '#c05a3a' }, talkKid, { wander: true }),
@@ -6480,6 +7386,7 @@ async function joinOswin() {
 }
 async function talkBrann() {
   const f = G.flags;
+  if (await brannBell()) return;
   if (!f.lantern2) { await say('Brann', 'The sea\'s gone mad since the Tide Lantern dimmed. Waves like walls. No ship leaves this harbor, not even my Dawnrunner.'); return; }
   if (!f.ship) {
     await sayAll([
@@ -6655,6 +7562,7 @@ async function onEnterTown(id) {
   if (id === 'halden' && !f.seenHalden) { f.seenHalden = true; await say(LY, 'Port Halden! Smell that salt air. Elder Maren said to look for a priest named Oswin — he must be near the chapel.'); }
   if (id === 'frostmere' && !f.seenFrost) { f.seenFrost = true; await sayAll([[LY, 'A village up here? In all this snow?'], [OS, 'Frostmere. Star-watchers and trappers. They say the sky is clearer here than anywhere in the world.']]); }
   if (id === 'ironhold' && !f.seenIron) { f.seenIron = true; await say(OS, 'Ironhold. Mind your manners — dwarves remember every insult for three generations.'); }
+  if (id === 'nerith' && !f.seenNerith) { f.seenNerith = true; await sayAll([[LY, 'There\'s AIR down here. A whole city, inside a bubble.'], [KE, 'And people. Pale, see-through people. Waving at us.'], [OS, 'Nerith. The Sea Mother\'s first city. I\'m standing in a story my mother told me.'], [SE, 'They\'re not ghosts, exactly. They feel like... memories. Someone is remembering them very hard.']]); }
   if (id === 'lastlight' && !f.seenLast) { f.seenLast = true; await sayAll([[LY, 'People! Living on an island that was under the sea this morning?!'], [OS, 'And the streets are dry. And the fire is lit. I have officially stopped being surprised by anything.'], [KE, 'That old woman by the fire is staring at us like she\'s been expecting us for a thousand years.']]); }
 }
 
@@ -6669,6 +7577,7 @@ function applyWorldFlags(m) {
 // ------------- dungeons -------------
 async function canEnterDungeon(did) {
   const f = G.flags;
+  if (did === 'palace' && !f.ysolde) { await narrate('Great doors of black coral, shut tight. Faces are carved into them. All of them look afraid.'); await say(OS, 'Nerith\'s temple might know how to open these. The priestesses always knew where the keys were.'); return false; }
   if (did === 'hollow' && !f.q1) { await say(LY, 'Wait — shouldn\'t we talk to Elder Maren first? She\'ll want to know we\'re going in.'); return false; }
   if (did === 'shrine') {
     if (!f.oswin) { await narrate('A shimmering curtain of seawater seals the entrance. It pushes you back gently, like a tide.'); await say(LY, 'It\'s like the sea itself is holding the door shut. Maybe that priest in Port Halden knows something.'); return false; }
@@ -6728,6 +7637,8 @@ async function onEnterDungeon(did) {
   if (did === 'spire') await sayAll([[LY, 'I can feel him. Like cold water poured down my spine.'], [OS, 'Then we are close. Courage, children. Light is only ever a small thing, until it isn\'t.']]);
   if (did === 'embercave') await sayAll([[LY, 'It\'s warm. Like her kitchen.'], [A, 'Careful, Lyra. Warm can still bite.']]);
   if (did === 'grotto') await say(OS, 'I took my vows in this grotto. I was nineteen. The ceiling was taller then, or I was shorter.');
+  if (did === 'palace') await sayAll([[A, 'Four floors down to the throne, if it\'s built like a palace on land.'], [KE, 'Palaces are always built the same. Stairs, guards, a man on a chair who thinks he\'s important.']]);
+  if (did === 'hadal') await sayAll([[SE, 'Even the dark is darker here. I didn\'t think that was possible.'], [OS, 'Keep close. Whatever lives at the bottom of this has never seen a lamp.']]);
   if (did === 'abyss') await sayAll([[KE, 'Down we go. Into a hole. That a crown fell into. Put that on my grave, so people know I was brave.'], [OS, 'Keep the lamp high, children. Four floors down, the Warden said. My knees heard that and filed a complaint.']]);
 }
 async function examineLantern(e) {
@@ -6887,6 +7798,8 @@ async function bossEncounter(did) {
   if (did === 'embercave') return grimoireBoss();
   if (did === 'grotto') return grottoBoss();
   if (did === 'undercity') return vaneBoss();
+  if (did === 'palace') return palaceBoss();
+  if (did === 'hadal') return hadalBoss();
   if (did === 'spire') {
     Audio_.stopMusic();
     await sayAll([
@@ -7213,7 +8126,7 @@ function interiorNpcs(m) {
   if (m.ikind === 'inn') out.push({ x: 9, y: 2, look: keeperLook(t.length * 7 + 3), talk: () => innStay(t, b.price) });
   if (m.ikind === 'arena') out.push({ x: K.x, y: K.y, look: { skin: '#c98e62', hair: '#1f1b2e', style: 'short', body: '#a03a2a', accent: '#e8c24a', beard: true }, talk: arenaMenu, name: 'Arena Master' });
   if (m.ikind === 'chapel' && t === 'lastlight') out.push({ x: 6, y: 3, look: { skin: '#e2b48c', hair: '#5a4a3a', style: 'short', body: '#5a4a5a', accent: '#ff8a4a', robe: true, beard: true }, talk: async () => { await say('Brother Cael', 'We pray to no god here. Only to the fire, and the fire never answers. Still — sit. You look like people who have walked a long way.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
-  else if (m.ikind === 'chapel') out.push({ x: 6, y: 3, look: { skin: '#f1c9a0', hair: '#c8b8a0', style: 'bun', body: '#e9ecf2', accent: '#3a8fd0', robe: true }, mark: f.ending && !f.q_grotto && inParty('oswin'), talk: async () => { if (f.ending && !f.q_grotto && inParty('oswin')) return grottoQuestStart(); await say('Sister Wenna', 'May the tide carry your burdens. Rest a moment in the Sea Mother\'s house.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
+  else if (m.ikind === 'chapel') out.push({ x: 6, y: 3, look: { skin: '#f1c9a0', hair: '#c8b8a0', style: 'bun', body: '#e9ecf2', accent: '#3a8fd0', robe: true }, mark: (f.ending && !f.q_grotto && inParty('oswin')) || (f.grotto_done && !f.q_drowned && inParty('oswin')), talk: async () => { if (f.ending && !f.q_grotto && inParty('oswin')) return grottoQuestStart(); if (f.grotto_done && !f.q_drowned && inParty('oswin')) return drownedQuestStart(); await say('Sister Wenna', 'May the tide carry your burdens. Rest a moment in the Sea Mother\'s house.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
   if (m.ikind === 'jail' && t === 'ironhold') {
     if (!f.kestrel) out.push({ x: 3, y: 3, look: LOOKS.kestrel, talk: talkKestrelJail, mark: !f.metKestrel });
     out.push({ x: 8, y: 6, look: LOOKS.guard, talk: talkJailGuard, mark: f.ending && !f.q_debt && inParty('kestrel') });
@@ -7238,6 +8151,8 @@ function interiorNpcs(m) {
       out.push({ x: 5, y: 4, look: npcLook(t.length * 31 + b.x * 3), talk: async () => say('Resident', pick(lines)), wander: true });
     }
   }
+  // Nerith and the Undermarket have their own people in temples, halls and houses
+  if (DEEP_TOWNS.includes(t)) { const dn = deepInteriorNpcs(m); if (dn) { out.length = 0; out.push(...dn); } }
   return out.filter(n => n.look || n.cat).map((n, i) => n.cat ? { ...n, kind: 'npc', look: LOOKS.elder, catSprite: true } : (n.look.skin && n.look.hair ? n : { ...n, look: npcLook(t.length * 17 + i * 5 + b.x, n.look) }));
 }
 async function talkKestrelJail() {
@@ -7287,6 +8202,7 @@ function questList() {
   if (f.q_fish) { const n = fishKinds(), tot = Object.keys(FISH).length; q.push({ title: 'The Ones That Got Away', giver: 'Ice Fisher, Frostmere', done: !!f.fish_r2, reward: 'Angler\'s Ring, Moonfin Charm', desc: f.fish_r2 ? 'Every kind of fish in the world, caught. The Ice Fisher needs to sit down.' : `Catch every kind of fish, then visit the Ice Fisher. Face water and press Enter to fish. (${n}/${tot} kinds)${f.fish_r1 ? '' : ' — 6 kinds earns the Angler\'s Ring.'}` }); }
   if (f.forgeMet) q.push({ title: 'Orrin\'s Forge', giver: 'Orrin, Ironhold', done: !!f.forge_done, reward: 'Orrin\'s Seal', desc: f.forge_done ? 'Orrin calls you family now. The forge is always hot for you.' : `Bring monster materials to Orrin and forge three pieces of gear. (${f.forged || 0}/3)` });
   q.push(...heartsQuests());
+  q.push(...deepQuests());
   if (f.arenaMet) { const n = ARENA_CUPS.slice(0, 5).filter(c => f['cup_' + c.id]).length; q.push({ title: 'Arena Legend', giver: 'Arena Master, Aerie', done: !!f.cup_champion, reward: 'Lantern Crown', desc: f.cup_champion ? 'Grand Champions of the Aerie Arena!' : `Win all five cups at the Aerie Arena. (${n}/5 won)` }); }
   if (f.q_scholar) q.push({ title: 'Monster Scholar', giver: 'Sable, Frostmere', done: !!f.scholar_done, reward: 'Silk Ribbon', desc: f.scholar_done ? 'Your notes are in Sable\'s bestiary.' : `Record 30 different creatures in your bestiary, then visit Sable. (${seenCount()}/30)` });
   if (f.scholar_done) { const tot = Object.keys(MONSTERS).length, goal = f.codex45 ? tot : 45; q.push({ title: 'The Complete Bestiary', giver: 'Sable, Frostmere', done: !!f.codex_all, reward: f.codex45 ? 'Bestiary Seal' : 'Scholar\'s Monocle', desc: f.codex_all ? 'Every creature is recorded. Sable\'s book is finished.' : `Record ${f.codex45 ? 'every creature' : '45 creatures'}, then visit Sable. (${seenCount()}/${goal})` }); }

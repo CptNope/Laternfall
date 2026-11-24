@@ -2,8 +2,8 @@
 
 Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
 
-- **Current release:** 1.5.0 *Hearts of the Lamplighters*. **In review:** 1.6.0 *Deeper systems* (DS-1 to DS-7). See [CHANGELOG.md](CHANGELOG.md#unreleased).
-- **Next up:** 1.7 *The Drowned Kingdom*, with 1.8 *Install anywhere* (PWA) as a quick parallel win. The rest of 1.6 (day and night, weather, the card game, stealth) is optional and can ship as 1.6.x.
+- **Current release:** 1.6.0 *Deeper systems*. **In review:** 1.7.0 *The Drowned Kingdom* (WD-1 to WD-6). See [CHANGELOG.md](CHANGELOG.md#unreleased).
+- **Next up:** 1.8 *Install anywhere* (PWA, achievements, speedrun mode). The rest of 1.6 (Berserk and Stop, day and night, weather, the card game, stealth) is optional and can ship as 1.6.x.
 - ✅ marks items that are done.
 
 ## Contents
@@ -39,33 +39,35 @@ These rules decide what makes the cut.
 
 ```mermaid
 mindmap
-  root((Lanternfall 1.6))
+  root((Lanternfall 1.7))
     World
-      7 towns
-      10 dungeons, 26 floors
-      Ship and airship
-      12 roadside lamps
+      9 towns, 2 under the sea or ground
+      12 dungeons, 32 floors
+      Ship, airship, diving bell, lanternmoths
+      The sea floor
     Story
       Main quest: 4 Lanterns
       Chapter VI post-game
       Five hero quests and a festival
-      17 side quests
+      The Drowned Kingdom
+      21 side quests
     Battle
       5 heroes, 4 active
       39 skills, 12 combos, 5 Limits
-      75 monsters, 15 bosses with phases
+      89 monsters, 17 bosses with phases
       Blind, Slow, Haste
       Resists, absorbs, enemy AI
     Systems
       Lantern Board: 11 passives
-      36 accessories, rare steals
+      42 accessories, rare steals
       Fishing 13 fish, cooking 11 meals
-      Forge: 9 recipes
+      Forge: 12 recipes, black market
+      Treasure maps
       3 save slots, New Game+
     Tech
       Canvas 2D vector art
-      Web Audio chiptune, 18 tracks
-      Single-file build
+      Web Audio chiptune, 21 tracks
+      Single-file build from 14 modules
       Play-test harness, battle simulator, CI
 ```
 
@@ -73,18 +75,20 @@ mindmap
 
 ```mermaid
 pie showData
-    title Lines of source by module (1.6.0)
-    "art.js: all drawing" : 1516
-    "story.js: dialogue and events" : 1193
-    "battle.js: combat" : 1062
-    "core.js: engine, UI, audio" : 706
-    "menu.js: menus" : 590
-    "data.js: game data" : 532
-    "maps.js: world, towns, dungeons" : 511
-    "field.js: exploration" : 448
-    "hearts.js: hero quests" : 300
+    title Lines of source by module (1.7.0)
+    "art.js: all drawing" : 1520
+    "story.js: dialogue and events" : 1206
+    "battle.js: combat" : 1063
+    "core.js: engine, UI, audio" : 728
+    "maps.js: world, sea floor, towns, dungeons" : 634
+    "data.js: game data" : 605
+    "menu.js: menus" : 594
+    "field.js: exploration" : 472
+    "deep.js: the Drowned Kingdom" : 342
+    "deep_art.js: sea-floor art" : 306
+    "hearts.js: hero quests" : 301
     "crafts.js: fishing, forge, board, cooking" : 248
-    "party.js: state, saves, board" : 195
+    "party.js: state, saves, board" : 196
     "interior.js: buildings" : 145
 ```
 
@@ -104,9 +108,9 @@ gantt
     section Heroes
     1.5 Hearts of the Lamplighters   :done, m15, 2026-11-23, 1d
     section Depth
-    1.6 Deeper systems               :active, m16, 2026-11-23, 2w
+    1.6 Deeper systems               :done, m16, 2026-11-23, 1d
     section World
-    1.7 The Drowned Kingdom          :m17, after m16, 10w
+    1.7 The Drowned Kingdom          :active, m17, 2026-11-24, 2w
     section Platform
     1.8 Install anywhere             :m18, after m14, 6w
     section Engine
@@ -119,7 +123,7 @@ gantt
 | **1.4** | Comfort | Save slots, auto-save, battle speed, gamepad, accessibility | Nov 2026 | ✅ Done (1.4.0, finished in 1.5.0) |
 | **1.5** | Heroes | A personal quest for each of the five heroes, with an ultimate weapon and a Limit | Dec 2026 | ✅ Done (1.5.0) |
 | **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | Nov 2026 | ✅ Done (1.6.0: DS-1 to DS-7) |
-| **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ⚪ Planned |
+| **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | 🟡 In review (1.7.0: WD-1 to WD-6) |
 | **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ⚪ Planned |
 | **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 💭 Exploring |
 
@@ -271,14 +275,14 @@ stateDiagram-v2
 
 A new region and a sixth way to travel.
 
-| ID | Item | Description | Size |
-| --- | --- | --- | --- |
-| WD-1 | **Diving bell** | The *Dawnrunner* can dive at dark-water spots, reaching an underwater layer of the world map | L |
-| WD-2 | **The Drowned Kingdom** | The Sea Mother's sunken city: a town and a 4-floor dungeon, tied to Oswin's order | L |
-| WD-3 | **Ironhold Undercity** | A town beneath Ironhold (Kestrel's home turf), with a black-market shop | M |
-| WD-4 | **Treasure maps** | Dropped by bandits; they point to dig spots marked on the world map | M |
-| WD-5 | **Lanternmoths** | Ride-able giant moths in the Whisperwood: fast travel on foot, ignoring encounters | M |
-| WD-6 | **Secret superboss** | *The Tide That Remembers*, at the bottom of the Drowned Kingdom | M |
+| ID | Item | Description | Outcome | Size |
+| --- | --- | --- | --- | --- |
+| ✅ WD-1 | **Diving bell** | The *Dawnrunner* can dive at dark-water spots, reaching an underwater layer of the world map | Shipped: four dive spots and a half-scale sea floor generated from the world map | L |
+| ✅ WD-2 | **The Drowned Kingdom** | The Sea Mother's sunken city: a town and a 4-floor dungeon, tied to Oswin's order | Shipped: Nerith, the Drowned Palace and King Nereus, started from Oswin's quest | L |
+| ✅ WD-3 | **Ironhold Undercity** | A town beneath Ironhold (Kestrel's home turf), with a black-market shop | Shipped as the Undermarket, through the jail trapdoor after Kestrel's quest | M |
+| ✅ WD-4 | **Treasure maps** | Dropped by bandits; they point to dig spots marked on the world map | Shipped: five maps (bought, dropped and found in a wreck) | M |
+| ✅ WD-5 | **Lanternmoths** | Ride-able giant moths in the Whisperwood: fast travel on foot, ignoring encounters | Shipped: they roost at Arin's roadside lamps rather than in the Whisperwood, so they're useful everywhere | M |
+| ✅ WD-6 | **Secret superboss** | *The Tide That Remembers*, at the bottom of the Drowned Kingdom | Shipped in the Hadal Rift, which opens after the palace | M |
 
 ### 1.8 · Install anywhere
 
@@ -320,7 +324,7 @@ flowchart TB
 | ✅ EN-2 | **Save versioning** (done early, in 1.4): `version` in the save, plus an ordered list of migrations | M |
 | EN-3 | **In-browser map editor** for towns and fixed dungeon floors | L |
 | EN-4 | **Mod loader**: content folders merged at build time | M |
-| EN-5 | Split `art.js` into per-family files with a registry (`registerMonsterArt('crown', fn)`) | M |
+| EN-5 | Split `art.js` into per-family files with a registry (`registerMonsterArt('crown', fn)`). **Started in 1.7:** `MONSTER_ART`, `MONSTER_SIZE` and `BATTLE_BGS` exist and the 1.7 families use them; the older families still live in `art.js` | M |
 | EN-6 | **Localisation**: move every dialogue line into a string table keyed by ID | L |
 | EN-7 | *Lanternfall II* design document (the Sixth Flame?) | M |
 
@@ -372,7 +376,7 @@ quadrantChart
 | 11 | DS-2 | Cooking ✅ | 1.6 | Medium | Medium |
 | 12 | DS-3 | Enemy AI ✅ | 1.6 | Medium | Medium |
 | 13 | DS-1 | Lantern Board ✅ | 1.6 | Medium | High |
-| 14 | WD-1–2 | Drowned Kingdom | 1.7 | High | High |
+| 14 | WD-1–2 | Drowned Kingdom ✅ | 1.7 | High | High |
 | 15 | EN-2 | Save versioning ✅ (moved up into 1.4 as TD-1) | 1.4 | High | Medium |
 
 ```mermaid

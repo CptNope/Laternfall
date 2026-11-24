@@ -10,6 +10,7 @@ function getMap(id) {
   if (G.maps[id]) return G.maps[id];
   let m;
   if (id === 'world') m = genWorld();
+  else if (id === 'deep') m = genDeep();
   else if (TOWN_DEFS[id]) m = buildTown(id);
   else if (id.startsWith('in:')) m = buildInterior(id);
   else { const [did, f] = id.split(':'); m = genDungeonFloor(did, parseInt(f)); }
@@ -18,7 +19,8 @@ function getMap(id) {
 }
 function populate(map) {
   map.entities = [];
-  if (map.kind === 'world') { applyWorldFlags(map); for (const q of worldQuestEntities(map)) map.entities.push(q); }
+  if (map.kind === 'world') { applyWorldFlags(map); for (const q of [...worldQuestEntities(map), ...mothLampEntities(map)]) map.entities.push(q); }
+  if (map.kind === 'deep') { applyDeepFlags(map); for (const q of deepEntities(map)) map.entities.push(q); }
   if (map.kind === 'interior') {
     for (const n of interiorNpcs(map)) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
     for (const q of interiorQuestEntities(map)) map.entities.push(q);
@@ -60,14 +62,15 @@ const Field = {
     populate(map);
     G.scene = this;
     this.playMusic();
-    this.banner = map.kind === 'town' || map.kind === 'dungeon' ? { text: map.name, t: 2.6 } : null;
+    this.banner = map.kind === 'town' || map.kind === 'dungeon' || map.kind === 'deep' ? { text: map.name, t: 2.6 } : null;
   },
   playMusic() {
     const m = this.map;
     if (m.kind === 'world') Audio_.play(worldTrack());
+    else if (m.kind === 'deep') Audio_.play('deep');
     else if (m.kind === 'interior') Audio_.play((TOWN_DEFS[m.town] && TOWN_DEFS[m.town].music) || 'town');
     else if (m.kind === 'town') Audio_.play(m.id === 'mirage' ? 'desert' : m.music || 'town');
-    else Audio_.play(m.dungeon === 'spire' ? 'spire' : m.dungeon === 'abyss' ? 'abyss' : 'dungeon');
+    else Audio_.play(m.dungeon === 'spire' ? 'spire' : m.dungeon === 'abyss' || m.dungeon === 'hadal' ? 'abyss' : m.dungeon === 'palace' ? 'deep' : 'dungeon');
   },
   entityAt(x, y) { return this.map.entities.find(e => e.x === x && e.y === y && e.kind !== 'ghost'); },
   buildingAt(x, y) { return (this.map.buildings || []).find(b => x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h); },
@@ -76,6 +79,7 @@ const Field = {
     if (c === undefined) return false;
     if (m.kind === 'world') return !(c === '~' || c === 'r' || c === '^' || c === 'M' || c === 'x' || c === 'm');
     if (m.kind === 'interior') return !INT_SOLID.has(c) && c !== '#';
+    if (m.kind === 'deep') return !DEEP_SOLID.has(c);
     if (m.kind === 'town') return !TOWN_SOLID.has(c) && !this.buildingAt(x, y);
     return !DUNGEON_SOLID.has(c);
   },
@@ -90,6 +94,9 @@ const Field = {
   async interact() {
     if (this.map.kind === 'world') {
       if (G.inAir) { runScript(landAirship); return; }
+      if (G.onMoth) { runScript(dismountMoth); return; }
+      if (G.onShip && diveSpotAt(G.x, G.y)) { runScript(() => diveDown(diveSpotAt(G.x, G.y))); return; }
+      if (!G.onShip && digSpotAt(G.x, G.y)) { runScript(() => digTreasure(digSpotAt(G.x, G.y))); return; }
       if (G.airship && G.flags.airship && !G.onShip && G.airship.x === G.x && G.airship.y === G.y) { boardAirship(); return; }
     }
     const [dx, dy] = DIRS[G.dir];
@@ -123,6 +130,7 @@ const Field = {
       const c = m.at(nx, ny);
       if (c === undefined) return this.bump();
       if (G.inAir) return this.startMove(nx, ny, 'air');
+      if (G.onMoth) { if (!this.walkable(nx, ny) || this.entityAt(nx, ny)) return this.bump(); return this.startMove(nx, ny, 'moth'); }
       if (!G.onShip && G.flags.airship && G.airship && G.airship.x === nx && G.airship.y === ny && !isLoc(c)) { this.startMove(nx, ny); this._board = true; return; }
       if (G.onShip) {
         if (c === '~' || c === 'r') return this.startMove(nx, ny, true);
@@ -155,7 +163,7 @@ const Field = {
   bump() { if (this.t - (this._bt || 0) > 0.25) { Audio_.sfx('bump'); this._bt = this.t; } },
   startMove(nx, ny, ship = false) {
     const run = Input.h('run') !== !!CFG.dash;
-    this.anim = { fx: G.x, fy: G.y, tx: nx, ty: ny, t: 0, dur: ship === 'air' ? 0.075 : ship ? 0.11 : run ? 0.1 : 0.16 };
+    this.anim = { fx: G.x, fy: G.y, tx: nx, ty: ny, t: 0, dur: ship === 'air' ? 0.075 : ship === 'moth' ? 0.08 : ship ? 0.11 : run ? 0.1 : 0.16 };
   },
   tick(dt) {
     this.t += dt;
@@ -206,7 +214,13 @@ const Field = {
       if (!G.onShip && Audio_.curName !== worldTrack()) this.playMusic();
       if (isLoc(c) && !G.onShip) { runScript(() => enterLocation(c)); return; }
       if (G.onShip && m.whirl && G.x === m.whirl.x && G.y === m.whirl.y && !G.flags.leviathan) { runScript(whirlpoolEvent); return; }
+      if (G.onMoth) { if (isLoc(c)) { G.onMoth = false; runScript(() => enterLocation(c)); } return; }   // moths never meet monsters
       this.encounterCheck(c === 'T' || c === 'P' || c === 'd' || c === 'n' ? 1.5 : 1);
+    } else if (m.kind === 'deep') {
+      const c = m.at(G.x, G.y);
+      if (isLoc(c)) { runScript(() => enterLocation(c)); return; }
+      if (c === 'u') { runScript(surfacePrompt); return; }
+      this.encounterCheck(c === 'k' ? 1.5 : 1);
     } else if (m.kind === 'interior') {
       if (m.at(G.x, G.y) === 'E') { runScript(exitInterior); return; }
     } else if (m.kind === 'dungeon') {
@@ -247,12 +261,13 @@ const Field = {
   draw(g) {
     const m = this.map, t = this.t;
     const { cx, cy, px, py } = this.camera();
-    g.fillStyle = m.kind === 'dungeon' || m.kind === 'interior' ? '#000' : m.kind === 'town' ? (m.theme === 'stone' ? '#5f574f' : '#2f6a2a') : WPAL.water;
+    g.fillStyle = m.kind === 'deep' ? '#04101c' : m.kind === 'dungeon' || m.kind === 'interior' ? '#000' : m.kind === 'town' ? (m.theme === 'stone' ? '#5f574f' : '#2f6a2a') : WPAL.water;
     g.fillRect(0, 0, W, H);
     const x0 = Math.floor(cx / TS) - 1, y0 = Math.floor(cy / TS) - 1, x1 = x0 + VW + 3, y1 = y0 + VH + 3;
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
       const sx = x * TS - cx, sy = y * TS - cy;
       if (m.kind === 'world') drawWorldTile(g, m, x, y, sx, sy, t);
+      else if (m.kind === 'deep') drawDeepTile(g, m, x, y, sx, sy, t);
       else if (m.kind === 'town') { if (m.at(x, y) !== undefined) drawTownTile(g, m, x, y, sx, sy, t); }
       else if (m.kind === 'interior') { if (m.at(x, y) !== undefined) drawInteriorTile(g, m, x, y, sx, sy, t); }
       else drawDungeonTile(g, m, x, y, sx, sy, t);
@@ -266,6 +281,7 @@ const Field = {
       const sx = ex * TS - cx + TS / 2, sy = ey * TS - cy + TS - 2;
       list.push({ y: ey * TS + TS / 2, draw: () => drawEntity(g, e, sx, sy, t) });
     }
+    if (m.kind === 'world' && G.flags.q_drowned) for (const d of DIVE_SPOTS) { const wx = d.x * TS - cx + 16, wy = d.y * TS - cy + 16; if (wx > -40 && wy > -40 && wx < W + 40 && wy < H + 40) list.push({ y: -1e6 + 1, draw: () => drawDiveSpot(g, wx, wy, t) }); }
     if (m.kind === 'world' && m.whirl && !G.flags.leviathan) { const wx = m.whirl.x * TS - cx + 16, wy = m.whirl.y * TS - cy + 16; if (wx > -40 && wy > -40 && wx < W + 40 && wy < H + 40) list.push({ y: -1e6, draw: () => drawWhirl(g, wx, wy, t) }); }
     if (m.kind === 'world' && G.airship && G.flags.airship && !G.inAir) {
       const sx = G.airship.x * TS - cx + TS / 2, sy = G.airship.y * TS - cy + TS - 2;
@@ -280,11 +296,16 @@ const Field = {
     list.push({
       y: py + TS / 2 + 0.5, draw: () => {
         if (G.inAir) { ellipse(g, psx, psy, 16, 5, 'rgba(0,0,0,.25)'); drawAirship(g, psx, psy - 26, t, G.dir, true); }
+        else if (G.onMoth) { ellipse(g, psx, psy, 14, 4, 'rgba(0,0,0,.25)'); drawMoth(g, psx, psy - 14, t, G.dir, HEROES[G.party[0].id].look); }
+        else if (m.kind === 'deep') drawBell(g, psx, psy, t);
         else if (G.onShip) drawShip(g, psx, psy - 2, t, G.dir);
         else drawChar(g, HEROES[G.party[0].id].look, psx, psy, G.dir, step, 1, null, t);
       }
     });
     list.sort((a, b) => a.y - b.y).forEach(d => d.draw());
+    // the sea floor: dark water with the bell's lamp, glowing vents and the lights of Nerith
+    if (m.kind === 'deep') drawDeepLight(g, m, cx, cy, psx, psy, t);
+    if (m.kind === 'town' && (m.underwater || m.underground)) drawTownMood(g, m, t);
     // dungeon lighting
     if (m.kind === 'dungeon') {
       const th = DTHEME[m.theme];
@@ -333,7 +354,7 @@ function drawEntity(g, e, sx, sy, t) {
   else if (e.kind === 'lantern') drawLantern(g, sx, sy + 2, e.lit, t, e.col);
   else if (e.kind === 'cat') drawCat(g, sx, sy, t);
   else if (e.kind === 'glint') drawGlint(g, sx, sy, t);
-  else if (e.kind === 'roadlamp') drawRoadLamp(g, sx, sy, e.lit, t);
+  else if (e.kind === 'roadlamp') { drawRoadLamp(g, sx, sy, e.lit, t); if (e.moths) drawLampMoths(g, sx, sy, t); }
   else if (e.kind === 'riddle') drawRiddleFire(g, sx, sy, e.solved, t);
   else if (e.kind === 'hatch') drawHatch(g, sx, sy);
   else if (e.kind === 'boss') {
@@ -358,8 +379,9 @@ function freeNeighbor(map, x, y) {
   return [x, y + 1];
 }
 async function enterLocation(ch) {
-  const L = WORLD_LOC[ch];
+  const L = locDef(ch);
   G.flags['visit_' + ch] = true;
+  G.onMoth = false;
   if (L.town) {
     const d = TOWN_DEFS[L.town];
     const [ex, ey] = d.exits[0];
@@ -379,16 +401,18 @@ async function enterLocation(ch) {
   }
 }
 async function leaveTown() {
-  const loc = WORLD_LOC[Field.map.loc];
-  await changeMap('world', loc.x, loc.y, G.dir);
+  const d = TOWN_DEFS[Field.map.id];
+  if (d && d.exitTo) { await changeMap(d.exitTo.map, d.exitTo.x, d.exitTo.y, 'down'); return; }
+  const loc = locDef(Field.map.loc);
+  await changeMap(locMap(Field.map.loc), loc.x, loc.y, G.dir);
 }
 async function stairs(d) {
   const m = Field.map, did = m.dungeon, f = m.floor + d;
   Audio_.sfx('stairs');
   if (f < 0 && DUNGEONS[did].exitTo) { const e = DUNGEONS[did].exitTo; await changeMap(e.map, e.x, e.y, 'down'); return; }
   if (f < 0) {
-    const loc = WORLD_LOC[DUNGEONS[did].loc];
-    await changeMap('world', loc.x, loc.y, 'down');
+    const loc = locDef(DUNGEONS[did].loc);
+    await changeMap(locMap(DUNGEONS[did].loc), loc.x, loc.y, 'down');
     return;
   }
   const nm = getMap(did + ':' + f);

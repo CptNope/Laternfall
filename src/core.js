@@ -59,7 +59,7 @@ function rgba(hex, a) {
 }
 
 // world-map location tiles: towns A–G, dungeons 1–9
-const LOC_RE = /^[A-G1-9]$/;
+const LOC_RE = /^[A-I0-9]$/;   // A–G towns and 1–9 dungeons on the world; H, I and 0 on the sea floor (1.7)
 const isLoc = c => typeof c === 'string' && LOC_RE.test(c);
 
 // ---------- settings (persist separately from the save file) ----------
@@ -510,6 +510,28 @@ const TRACKS = {
       { w: 'square', g: 0.038, s: 'E5:4 F5:2 E5:2 B4:8 | C5:4 B4:2 A4:2 B4:8 | E5:4 G5:2 F5:2 E5:4 D5:4 | E5:12 r:4 | B5:4 A5:2 G5:2 F5:4 E5:4 | G5:4 F5:2 E5:2 D5:8 | C5:4 D5:4 E5:4 F5:4 | E5:16' },
       { w: 'triangle', g: 0.13, s: pump(['E2', 'E2', 'C2', 'E2', 'E2', 'C2', 'D2', 'E2'], 'half') },
       { w: 'drum', g: 0.04, s: 'k:4 h:4 s:4 h:2 h:2 '.repeat(8) }
+    ]
+  },
+  // 1.7: the sea floor (slow, D dorian, a bell-like arpeggio), Nerith (a gentle waltz) and the Undermarket (sly swing)
+  deep: {
+    bpm: 60, voices: [
+      { w: 'triangle', g: 0.05, s: 'D4:2 A4:2 D5:2 E5:2 F5:4 E5:4 | C4:2 G4:2 C5:2 D5:2 E5:4 D5:4 | A3:2 E4:2 A4:2 C5:2 D5:4 B4:4 | D4:2 A4:2 D5:2 F5:2 A5:8' },
+      { w: 'triangle', g: 0.15, s: 'D2:16 | C2:16 | A1:16 | D2:16' },
+      { w: 'square', g: 0.018, s: 'r:8 A5:8 | r:8 G5:8 | r:8 E5:8 | r:8 F5:4 E5:4' }
+    ]
+  },
+  nerith: {
+    bpm: 96, voices: [
+      { w: 'triangle', g: 0.05, s: 'F5:4 E5:2 D5:2 A4:4 | Bb4:4 C5:4 D5:4 | C5:4 Bb4:2 A4:2 G4:4 | A4:12 | D5:4 E5:2 F5:2 G5:4 | F5:4 E5:4 D5:4 | C#5:4 D5:2 E5:2 C#5:4 | D5:12' },
+      { w: 'triangle', g: 0.12, s: 'D2:4 A2:4 A2:4 | Bb1:4 F2:4 F2:4 | C2:4 G2:4 G2:4 | F2:4 C3:4 C3:4 | Bb1:4 F2:4 F2:4 | G1:4 D2:4 D2:4 | A1:4 E2:4 E2:4 | D2:4 A2:4 A2:4' },
+      { w: 'square', g: 0.016, s: 'r:4 F4:4 A4:4 | r:4 F4:4 Bb4:4 | r:4 E4:4 G4:4 | r:4 F4:4 C5:4 | r:4 F4:4 Bb4:4 | r:4 G4:4 Bb4:4 | r:4 E4:4 A4:4 | r:4 F4:4 A4:4' }
+    ]
+  },
+  undermarket: {
+    bpm: 104, voices: [
+      { w: 'square', g: 0.032, s: 'E4:3 G4:1 A4:4 B4:3 A4:1 G4:4 | E4:3 D4:1 E4:4 r:8 | A4:3 C5:1 D5:4 C5:3 B4:1 A4:4 | G4:3 F#4:1 E4:4 r:8' },
+      { w: 'triangle', g: 0.13, s: 'E2:4 B2:4 E2:4 B2:4 | E2:4 B2:4 D2:4 B1:4 | A1:4 E2:4 A1:4 E2:4 | B1:4 F#2:4 E2:4 B1:4' },
+      { w: 'drum', g: 0.025, s: 'k:4 h:4 k:4 h:4 | k:4 h:4 k:2 k:2 h:4 | k:4 h:4 k:4 h:4 | k:4 h:4 k:2 h:2 h:4' }
     ]
   },
   ashtown: {
