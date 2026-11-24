@@ -34,7 +34,7 @@ function buildInterior(id) {
   const tiles = INT_TEMPLATES[kind].map(r => r.split(''));
   let keeper = null;
   tiles.forEach((r, y) => r.forEach((c, x) => { if (c === 'k') { keeper = { x, y }; r[x] = '.'; } }));
-  const theme = TOWN_DEFS[town].theme === 'stone' || kind === 'jail' || kind === 'chapel' ? 'stone' : TOWN_DEFS[town].theme === 'sand' ? 'sand' : 'wood';
+  const theme = TOWN_DEFS[town].theme === 'stone' || TOWN_DEFS[town].theme === 'ash' || kind === 'jail' || kind === 'chapel' ? 'stone' : TOWN_DEFS[town].theme === 'sand' ? 'sand' : 'wood';
   const names = { inn: 'Inn', shop: b.sign === 'arms' ? 'Armory' : 'Item Shop', chapel: 'Chapel', jail: 'Jail', arena: 'The Arena', hall: 'Hall', study: 'Observatory Hut', forge: 'Smithy', house: 'House' };
   return new GameMap({ id, kind: 'interior', town, bid, building: b, ikind: kind, keeper, w: tiles[0].length, h: tiles.length, tiles, theme, name: names[kind] });
 }
@@ -54,7 +54,8 @@ const SEARCH_POOLS = {
   ironhold: ['hipotion', 'ether', 'gold:300', 'remedy', 'bomb'],
   frostmere: ['xpotion', 'hiether', 'gold:500', 'remedy'],
   mirage: ['xpotion', 'elixir', 'gold:800', 'hiether'],
-  aerie: ['elixir', 'xpotion', 'gold:1200', 'megalixir']
+  aerie: ['elixir', 'xpotion', 'gold:1200', 'megalixir'],
+  lastlight: ['megalixir', 'elixir', 'gold:2500', 'abyss_ash']
 };
 async function interiorInteract(tx, ty, dx, dy) {
   const m = Field.map, c = m.at(tx, ty);

@@ -36,6 +36,19 @@ function populate(map) {
   }
 }
 function refreshEntities() { if (Field.map) populate(Field.map); }
+function worldTrack() {
+  const m = Field.map, reg = m && m.region && m.region[G.y] && m.region[G.y][G.x];
+  return G.inAir ? 'sky' : G.onShip ? 'sea' : (reg === 'F' || reg === 'G') ? 'desert' : reg === 'H' ? 'ash' : 'world';
+}
+// which fish table applies when facing (x, y), or null if it isn't fishable water
+function fishingSpot(m, x, y) {
+  const c = m.at(x, y);
+  if (c !== '~' && c !== 'r') return null;
+  if (m.kind === 'world') { const reg = m.region[G.y] && m.region[G.y][G.x]; return c === 'r' ? 'river' : reg === 'H' ? 'ash' : 'sea'; }
+  if (m.kind === 'town') return FISH_SPOTS[m.id] ? m.id : null;
+  if (m.kind === 'dungeon') return FISH_SPOTS[m.dungeon] ? m.dungeon : null;
+  return null;
+}
 
 const Field = {
   map: null, anim: null, walkT: 0, banner: null, t: 0, lastStepSfx: 0,
@@ -50,10 +63,10 @@ const Field = {
   },
   playMusic() {
     const m = this.map;
-    if (m.kind === 'world') { const reg = m.region[G.y] && m.region[G.y][G.x]; Audio_.play(G.inAir ? 'sky' : G.onShip ? 'sea' : (reg === 'F' || reg === 'G') ? 'desert' : 'world'); }
-    else if (m.kind === 'interior') Audio_.play('town');
-    else if (m.kind === 'town') Audio_.play(m.id === 'mirage' ? 'desert' : 'town');
-    else Audio_.play(m.dungeon === 'spire' ? 'spire' : 'dungeon');
+    if (m.kind === 'world') Audio_.play(worldTrack());
+    else if (m.kind === 'interior') Audio_.play((TOWN_DEFS[m.town] && TOWN_DEFS[m.town].music) || 'town');
+    else if (m.kind === 'town') Audio_.play(m.id === 'mirage' ? 'desert' : m.music || 'town');
+    else Audio_.play(m.dungeon === 'spire' ? 'spire' : m.dungeon === 'abyss' ? 'abyss' : 'dungeon');
   },
   entityAt(x, y) { return this.map.entities.find(e => e.x === x && e.y === y && e.kind !== 'ghost'); },
   buildingAt(x, y) { return (this.map.buildings || []).find(b => x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h); },
@@ -90,6 +103,8 @@ const Field = {
       else if (e.kind === 'boss') runScript(() => bossEncounter(e.did));
       return;
     }
+    const spot = fishingSpot(this.map, tx, ty);
+    if (spot && hasItem('fishing_rod') && !G.onShip && !G.inAir) { runScript(() => goFishing(spot)); return; }
     if (this.map.kind === 'interior') { runScript(() => interiorInteract(tx, ty, dx, dy)); return; }
     if (this.map.kind === 'town') {
       const b = this.buildingAt(tx, ty);
@@ -107,7 +122,7 @@ const Field = {
       const c = m.at(nx, ny);
       if (c === undefined) return this.bump();
       if (G.inAir) return this.startMove(nx, ny, 'air');
-      if (!G.onShip && G.flags.airship && G.airship && G.airship.x === nx && G.airship.y === ny && !/[A-F1-6]/.test(c)) { this.startMove(nx, ny); this._board = true; return; }
+      if (!G.onShip && G.flags.airship && G.airship && G.airship.x === nx && G.airship.y === ny && !isLoc(c)) { this.startMove(nx, ny); this._board = true; return; }
       if (G.onShip) {
         if (c === '~' || c === 'r') return this.startMove(nx, ny, true);
         if (this.walkable(nx, ny)) {
@@ -137,7 +152,7 @@ const Field = {
   },
   bump() { if (this.t - (this._bt || 0) > 0.25) { Audio_.sfx('bump'); this._bt = this.t; } },
   startMove(nx, ny, ship = false) {
-    const run = Input.h('run');
+    const run = Input.h('run') !== !!CFG.dash;
     this.anim = { fx: G.x, fy: G.y, tx: nx, ty: ny, t: 0, dur: ship === 'air' ? 0.075 : ship ? 0.11 : run ? 0.1 : 0.16 };
   },
   tick(dt) {
@@ -186,9 +201,8 @@ const Field = {
       if (G.inAir) return;
       const c = m.at(G.x, G.y);
       const reg = m.region[G.y] && m.region[G.y][G.x];
-      if (!G.onShip && Audio_.curName !== 'world' && Audio_.curName !== 'desert') this.playMusic();
-      else if (!G.onShip && ((reg === 'F' || reg === 'G') !== (Audio_.curName === 'desert'))) this.playMusic();
-      if (/[A-F1-6]/.test(c) && !G.onShip) { runScript(() => enterLocation(c)); return; }
+      if (!G.onShip && Audio_.curName !== worldTrack()) this.playMusic();
+      if (isLoc(c) && !G.onShip) { runScript(() => enterLocation(c)); return; }
       if (G.onShip && m.whirl && G.x === m.whirl.x && G.y === m.whirl.y && !G.flags.leviathan) { runScript(whirlpoolEvent); return; }
       this.encounterCheck(c === 'T' || c === 'P' || c === 'd' || c === 'n' ? 1.5 : 1);
     } else if (m.kind === 'interior') {
@@ -329,6 +343,7 @@ async function changeMap(mapId, x, y, dir) {
   await fadeTo(1, 220);
   Field.enter(mapId, x, y, dir);
   await fadeTo(0, 260);
+  if (mapId === 'world') await worldEvents();
 }
 function freeNeighbor(map, x, y) {
   for (const [dx, dy] of [[0, 1], [1, 0], [-1, 0], [0, -1]]) {
@@ -421,5 +436,5 @@ async function landAirship() {
   G.inAir = false; G.airship = { x: G.x, y: G.y, dir: G.dir };
   Audio_.sfx('stairs');
   Field.playMusic();
-  if (/[A-F1-6]/.test(c)) await enterLocation(c);
+  if (isLoc(c)) await enterLocation(c);
 }

@@ -38,6 +38,7 @@ function drawInfoPanel(g) {
   text(g, 'Lanterns', 486, 424, { size: 13, color: '#b8c4ee' });
   lit.forEach((l, i) => { circle(g, 498 + i * 26, 450, 8, l ? ['#ff9a3a', '#5af0d0', '#ff6a2a', '#ffe08a'][i] : 'rgba(255,255,255,.12)', '#fff', 1.2); });
   if (G.flags.lantern5) { const x = 602, y = 450; poly(g, [x, y - 9, x + 3, y - 3, x + 9, y, x + 3, y + 3, x, y + 9, x - 3, y + 3, x - 9, y, x - 3, y - 3], '#a8d8ff', '#fff', 1); }
+  if (G.flags.lantern_abyss) { const x = 602, y = 426; circle(g, x, y, 6, '#b8a8ff', '#fff', 1); circle(g, x + 3, y - 2, 5, '#0c1650'); }
 }
 async function pickMember(title, opt = {}) {
   const panel = openPanel(g => drawPartyPanel(g, sel.v));
@@ -52,7 +53,7 @@ async function openMainMenu() {
   const panel = openPanel(g => { drawPartyPanel(g); drawInfoPanel(g); });
   let idx = 0;
   while (true) {
-    const items = [{ label: 'Items' }, { label: 'Magic' }, { label: 'Equip' }, { label: 'Status' }, { label: 'Formation', disabled: G.party.length < 2 }, { label: 'Quests' }, { label: 'Bestiary' }, { label: 'Map' }, { label: 'Save' }, { label: Audio_.muted ? 'Sound: Off' : 'Sound: On' }, { label: 'Close' }];
+    const items = [{ label: 'Items' }, { label: 'Magic' }, { label: 'Equip' }, { label: 'Status' }, { label: 'Formation', disabled: G.party.length < 2 }, { label: 'Quests' }, { label: 'Bestiary' }, { label: 'Map' }, { label: 'Save' }, { label: 'Config' }, { label: 'Close' }];
     const k = await listMenu({ x: 472, y: 16, w: 152, rows: 11, rowH: 24, items, index: idx });
     if (k < 0 || k === 10) break;
     idx = k;
@@ -68,18 +69,37 @@ async function openMainMenu() {
       const c = await choose(null, 'Record your journey? This will overwrite your previous save.', ['Save', 'Cancel'], 1);
       if (c === 0) { if (saveGame()) { Audio_.sfx('save'); await narrate('Your journey has been recorded.'); } else await narrate('Saving failed — your browser blocked storage.'); }
     }
-    if (k === 9) Audio_.toggleMute();
+    if (k === 9) await configMenu();
   }
   closePanel(panel);
+}
+async function configMenu() {
+  let idx = 0;
+  while (true) {
+    const rows = [
+      { label: 'Sound', right: Audio_.muted ? 'Off' : 'On', act: d => Audio_.toggleMute() },
+      { label: 'Auto-dash', right: CFG.dash ? 'On' : 'Off', act: d => { CFG.dash = !CFG.dash; saveCfg(); } },
+      { label: 'Text speed', right: TEXT_SPEEDS[CFG.textSpeed].label, act: d => { CFG.textSpeed = (CFG.textSpeed + (d || 1) + TEXT_SPEEDS.length) % TEXT_SPEEDS.length; saveCfg(); } },
+      { label: 'Done' }
+    ];
+    const helps = ['Toggle music and sound effects (or press M).', 'Run everywhere without holding Shift. Hold Shift to walk.', 'How fast dialogue appears.', ''];
+    // Enter or Left/Right changes a setting; the menu re-opens to show the new value
+    const k = await listMenu({ x: 180, y: 120, w: 280, rows: 4, title: 'Config', items: rows, index: idx, help: i => helps[i], helpY: H - 52,
+      lr(i, d) { if (rows[i].act) { rows[i].act(d); Audio_.sfx('cursor'); UI.close(this, -2 - i); } } });
+    if (k === -1 || k === 3) return;
+    if (k <= -2) { idx = -2 - k; continue; }
+    idx = k;
+    rows[k].act(1);
+  }
 }
 async function itemsMenu() {
   let idx = 0;
   while (true) {
-    const ord = k => ({ use: 0, weapon: 1, armor: 2, acc: 3, key: 4 })[ITEMS[k].kind];
+    const ord = k => ({ use: 0, weapon: 1, armor: 2, acc: 3, mat: 4, fish: 5, key: 6 })[ITEMS[k].kind] ?? 7;
     const keys = Object.keys(G.inv).sort((a, b) => ord(a) - ord(b));
     if (!keys.length) { await narrate('Your pack is empty.'); return; }
-    const items = keys.map(k => ({ label: ITEMS[k].name, right: '×' + G.inv[k], disabled: ITEMS[k].kind !== 'use' || ITEMS[k].battleOnly, color: ITEMS[k].kind === 'key' ? '#ffe9a8' : ITEMS[k].kind !== 'use' ? '#c8d0f0' : '#fff' }));
-    const k = await listMenu({ x: 140, y: 60, w: 360, rows: 10, title: 'Items', items, index: idx, help: i => { const it = ITEMS[keys[i]]; return it.kind === 'use' || it.kind === 'key' ? it.desc : `${it.desc}  (${equipInfo(it)})`; } });
+    const items = keys.map(k => ({ label: ITEMS[k].name, right: '×' + G.inv[k], disabled: ITEMS[k].kind !== 'use' || ITEMS[k].battleOnly, color: ITEMS[k].kind === 'key' ? '#ffe9a8' : ITEMS[k].kind === 'fish' ? '#9ad8ff' : ITEMS[k].kind === 'mat' ? '#ffc8a0' : ITEMS[k].kind !== 'use' ? '#c8d0f0' : '#fff' }));
+    const k = await listMenu({ x: 140, y: 60, w: 360, rows: 10, title: 'Items', items, index: idx, help: i => { const it = ITEMS[keys[i]]; return ['use', 'key', 'mat', 'fish'].includes(it.kind) ? it.desc : `${it.desc}  (${equipInfo(it)})`; } });
     if (k < 0) return;
     idx = k;
     const id = keys[k], it = ITEMS[id];
@@ -111,7 +131,7 @@ async function magicMenu() {
   let idx = 0;
   while (true) {
     const sp = spellsOf(m);
-    const fieldOk = s => ['heal', 'revive', 'cure'].includes(SPELLS[s].type);
+    const fieldOk = s => ['heal', 'revive', 'cure', 'sanctuary'].includes(SPELLS[s].type);
     const k = await listMenu({
       x: 140, y: 60, w: 360, rows: 9, title: `${memberName(m)} — ${HEROES[m.id].skill}  (MP ${m.mp}/${maxMp(m)})`,
       items: sp.map(s => ({ label: SPELLS[s].name, right: SPELLS[s].mp ? SPELLS[s].mp + ' MP' : '—', disabled: !fieldOk(s) || m.mp < SPELLS[s].mp || !alive(m) })),
@@ -122,7 +142,11 @@ async function magicMenu() {
     const s = SPELLS[sp[k]];
     if (s.target === 'allies') {
       m.mp -= s.mp; Audio_.sfx('heal');
-      for (const t of G.party) if (alive(t)) t.hp = Math.min(maxHp(t), t.hp + Math.round((s.power + stat(m, 'mag') * 1.5) * (s.scale || 1)));
+      for (const t of G.party) {
+        if (s.type === 'sanctuary' && !alive(t)) { t.hp = Math.floor(maxHp(t) * 0.5); continue; }
+        if (alive(t)) t.hp = Math.min(maxHp(t), t.hp + Math.round((s.power + stat(m, 'mag') * 1.5) * (s.scale || 1)));
+        if (s.type === 'sanctuary') t.status = {};
+      }
       continue;
     }
     while (m.mp >= s.mp) {
@@ -358,7 +382,7 @@ async function bestiaryMenu() {
     rows.forEach(([a, b], i) => { const x = 304 + (i % 2) * 160, y = 262 + Math.floor(i / 2) * 22; text(g, a, x, y, { size: 13, color: '#b8c4ee' }); text(g, String(b), x + 140, y, { size: 13, align: 'right' }); });
     text(g, 'Weak to: ' + (d.weak ? d.weak.join(', ') : '—'), 304, 354, { size: 13, color: '#ffd27a' });
     text(g, 'Steal: ' + (d.steal ? ITEMS[d.steal].name : '—'), 304, 376, { size: 13 });
-    text(g, 'Drops: ' + (d.drop ? ITEMS[d.drop[0]].name : '—'), 304, 398, { size: 13 });
+    text(g, 'Drops: ' + ([d.drop && ITEMS[d.drop[0]].name, d.mat && ITEMS[d.mat[0]].name].filter(Boolean).join(', ') || '—'), 304, 398, { size: 13 });
     const sk = (d.acts || []).filter(a => a.a !== 'attack').map(a => SPELLS[a.a].name);
     wrapText(g, 'Skills: ' + (sk.length ? sk.join(', ') : '—'), 310, font(13)).forEach((l, i) => text(g, l, 304, 420 + i * 18, { size: 13, color: '#c8d0f0' }));
   });
@@ -389,12 +413,14 @@ async function worldMapView() {
         const c = m.at(x, y);
         let col = MAP_COL[c] || '#6dbb4f';
         if (c === '^' && m.region[y][x] === 'C') col = '#4a3a5a';
+        if (m.region[y][x] === 'H' && c !== '~') col = { '^': '#2e282c', d: '#3e363a', s: '#8a8078', '=': '#a09080' }[c] || '#5a5458';
         g.fillStyle = col; g.fillRect(ox + x * sc, oy + y * sc, sc + 0.5, sc + 0.5);
       }
       for (const k in WORLD_LOC) {
         const L = WORLD_LOC[k], x = ox + L.x * sc + sc / 2, y = oy + L.y * sc + sc / 2;
         const known = G.flags['visit_' + k];
         if (k === 'F' && !known && !G.flags.airship) continue;
+        if (ISLE_LOCS.includes(k) && !G.flags.isle) continue;
         circle(g, x, y, 4.5, L.town ? '#fff4c8' : '#e88a6a', OUT, 1.5);
         if (known) { g.font = font(11, true); const tw = g.measureText(L.name).width; const right = x + 7 + tw > ox + ow - 4; text(g, L.name, right ? x - 7 : x + 7, y - 7, { size: 11, bold: true, align: right ? 'right' : 'left' }); }
       }

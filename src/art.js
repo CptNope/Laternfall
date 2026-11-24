@@ -42,6 +42,7 @@ const WPAL = {
 };
 function isWaterCh(c) { return c === '~' || c === 'r'; }
 function groundOf(ch, reg) {
+  if (reg === 'H') return ch === 's' ? 'ashsand' : 'ash';
   if (reg === 'F' || ch === 'z' || ch === 'v' || ch === 'm') return 'desert';
   if (ch === '*' || ch === 'P' || ch === 'M') return 'snow';
   if (ch === 'q' || ch === 'd' || reg === 'C') return 'q';
@@ -59,6 +60,16 @@ function fillGround(g, kind, px, py, x, y) {
     g.beginPath(); const a = hash(x, y, 3); g.moveTo(px + a * 30, py); g.quadraticCurveTo(px + 16, py + 16, px + hash(x, y, 4) * 30, py + 32); g.stroke();
     const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 600 + x * 1.7 + y);
     if (hash(x, y, 5) < 0.4) circle(g, px + 6 + hash(x, y, 6) * 20, py + 6 + hash(x, y, 7) * 20, 1.6, `rgba(200,120,255,${0.3 + pulse * 0.5})`);
+  } else if (kind === 'ash' || kind === 'ashsand') {
+    const sand = kind === 'ashsand';
+    g.fillStyle = sand ? ((x + y) % 2 ? '#8a8078' : '#857b73') : ((x + y) % 2 ? '#5a5458' : '#565054'); g.fillRect(px, py, TS, TS);
+    g.fillStyle = sand ? '#6a625a' : '#3e383c';
+    for (let i = 0; i < 4; i++) g.fillRect(px + 3 + hash(x, y, i) * 26, py + 3 + hash(x, y, i + 7) * 26, 3, 2);
+    if (!sand && hash(x, y, 12) < 0.22) {
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 500 + x * 2.1 + y);
+      g.strokeStyle = `rgba(255,120,50,${0.35 + pulse * 0.45})`; g.lineWidth = 1.4;
+      const a = hash(x, y, 13); g.beginPath(); g.moveTo(px + 4 + a * 10, py + 8); g.lineTo(px + 14, py + 16); g.lineTo(px + 10 + a * 14, py + 27); g.stroke();
+    }
   } else if (kind === 'desert') {
     g.fillStyle = (x + y) % 2 ? '#e8c47a' : '#e4be72'; g.fillRect(px, py, TS, TS);
     g.strokeStyle = 'rgba(160,110,50,.35)'; g.lineWidth = 1.3;
@@ -99,20 +110,20 @@ function drawDeadTree(g, x, y, s) {
   g.stroke();
 }
 function drawMountain(g, px, py, x, y, snowy, dark) {
-  const h = hash(x, y, 11);
-  const base = dark ? '#4a3a5a' : snowy ? '#9aa8b8' : WPAL.rock;
-  const light = dark ? '#6a5a7a' : snowy ? '#c8d4e2' : WPAL.rockL;
-  const shadowC = dark ? '#2a1a3a' : snowy ? '#6a7a8e' : WPAL.rockD;
+  const h = hash(x, y, 11), ash = dark === 'ash';
+  const base = ash ? '#3a3438' : dark ? '#4a3a5a' : snowy ? '#9aa8b8' : WPAL.rock;
+  const light = ash ? '#5a5258' : dark ? '#6a5a7a' : snowy ? '#c8d4e2' : WPAL.rockL;
+  const shadowC = ash ? '#1a1418' : dark ? '#2a1a3a' : snowy ? '#6a7a8e' : WPAL.rockD;
   const pk = px + 12 + h * 8, top = py - 8 - h * 4;
   poly(g, [pk, top, px - 2, py + TS, px + TS + 2, py + TS], base);
   poly(g, [pk, top, px - 2, py + TS, pk - 2, py + TS], light);
   poly(g, [pk, top, pk + 8, py + 18, px + TS + 2, py + TS, pk + 4, py + TS], shadowC);
-  poly(g, [pk, top, pk - 6, top + 10, pk - 1, top + 8, pk + 3, top + 11, pk + 6, top + 8], dark ? '#9a7aba' : '#fff');
+  poly(g, [pk, top, pk - 6, top + 10, pk - 1, top + 8, pk + 3, top + 11, pk + 6, top + 8], ash ? '#ff7a3a' : dark ? '#9a7aba' : '#fff');
   g.strokeStyle = OUT; g.lineWidth = 1.2;
   g.beginPath(); g.moveTo(px - 2, py + TS); g.lineTo(pk, top); g.lineTo(px + TS + 2, py + TS); g.stroke();
 }
 function roadLinks(map, x, y) {
-  const isR = (xx, yy) => { const c = map.at(xx, yy); return c === '=' || c === 'b' || c === 'x' || /[A-F1-6]/.test(c); };
+  const isR = (xx, yy) => { const c = map.at(xx, yy); return c === '=' || c === 'b' || c === 'x' || isLoc(c); };
   return [isR(x, y - 1), isR(x + 1, y), isR(x, y + 1), isR(x - 1, y)];
 }
 function drawWater(g, px, py, x, y, map, t) {
@@ -183,7 +194,7 @@ function drawWorldTile(g, map, x, y, px, py, t) {
       if (hash(x, y, 2) < 0.5) drawDeadTree(g, px + 15, py + 31, 0.8);
       break;
     }
-    case '^': drawMountain(g, px, py, x, y, false, reg === 'C'); break;
+    case '^': drawMountain(g, px, py, x, y, false, reg === 'H' ? 'ash' : reg === 'C'); break;
     case 'm': drawMesa(g, px, py, x, y); break;
     case 'v': drawCactus(g, px + 10 + hash(x, y, 1) * 12, py + 28, 0.9); break;
     case 'M': drawMountain(g, px, py, x, y, true, false); break;
@@ -193,10 +204,10 @@ function drawWorldTile(g, map, x, y, px, py, t) {
       line(g, px + 8, py + 20, px + 12, py + 17, WPAL.grassL, 1.5);
       break;
     }
-    case '=': case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case '1': case '2': case '3': case '4': case '5': case '6': {
-      if (ch === '=' || /[ABCDEF]/.test(ch)) {
+    case '=': case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case '1': case '2': case '3': case '4': case '5': case '6': case '7': {
+      if (ch === '=' || /^[A-G]$/.test(ch)) {
         const L = roadLinks(map, x, y);
-        g.fillStyle = gk === 'snow' ? '#c8b89a' : gk === 'q' ? '#5a4a6a' : WPAL.dirt;
+        g.fillStyle = gk === 'snow' ? '#c8b89a' : gk === 'q' ? '#5a4a6a' : gk === 'ash' ? '#7a6e66' : WPAL.dirt;
         const c = 10, cx = px + 16, cy = py + 16;
         rrect(g, cx - c / 2 - 1, cy - c / 2 - 1, c + 2, c + 2, 4, g.fillStyle);
         if (L[0]) g.fillRect(cx - c / 2, py, c, 16); if (L[2]) g.fillRect(cx - c / 2, cy, c, 16);
@@ -259,6 +270,25 @@ function drawLocationIcon(g, ch, px, py, t) {
     });
     ellipse(g, cx, by - 16, 10, 6, '#d8cfc0', OUT, 1.2); rrect(g, cx - 10, by - 16, 20, 8, 1, '#d8cfc0', OUT, 1);
     line(g, cx, by - 22, cx, by - 32, '#333', 1.2); poly(g, [cx, by - 32, cx + 7 + Math.sin(t * 5) * 1.5, by - 30, cx, by - 28], '#a03a2a');
+  } else if (ch === 'G') {
+    // Lastlight: stone huts around an ever-burning brazier
+    [[-10, 0, 11], [9, 1, 11], [0, -10, 10]].sort((a, b) => a[1] - b[1]).forEach(([dx, dy, w], i) => {
+      const x = cx + dx, y = by + dy;
+      rrect(g, x - w / 2, y - 9, w, 9, 1, '#9a948a', OUT, 1);
+      poly(g, [x - w / 2 - 2, y - 8, x, y - 15, x + w / 2 + 2, y - 8], ['#5a4a5a', '#7a3a2a', '#4a3a5a'][i], OUT, 1);
+      g.fillStyle = `rgba(255,170,90,${0.55 + 0.35 * Math.sin(t * 3 + i)})`; g.fillRect(x - 1.5, y - 6, 3, 3);
+    });
+    const f = Math.sin(t * 9) * 1.5;
+    rrect(g, cx - 3, by - 2, 6, 4, 1, '#3a3438', OUT, 1);
+    g.save(); g.globalAlpha = 0.35; circle(g, cx, by - 6, 7, '#ffb04a'); g.restore();
+    poly(g, [cx - 3, by - 2, cx + f * 0.4, by - 11 - f, cx + 3, by - 2], '#ff8a2a');
+  } else if (ch === '7') {
+    // Crownfall Abyss: a glowing crater with a crown-shard spire
+    ellipse(g, cx, by - 4, 15, 8, '#1a1418', OUT, 1.2);
+    g.save(); g.globalAlpha = 0.45 + 0.25 * Math.sin(t * 2); ellipse(g, cx, by - 4, 11, 5, '#ff5a2a'); g.restore();
+    ellipse(g, cx, by - 4, 7, 3, '#05020a');
+    poly(g, [cx - 3, by - 6, cx - 1, by - 30, cx + 1, by - 22, cx + 4, by - 34, cx + 5, by - 6], '#e8c84a', OUT, 1.2);
+    for (let i = 0; i < 3; i++) circle(g, cx - 8 + i * 8 + Math.sin(t + i) * 2, by - 18 - ((t * 10 + i * 7) % 14), 1.2, `rgba(255,140,60,${0.6 + 0.4 * Math.sin(t * 3 + i)})`);
   } else if (ch === '6') {
     poly(g, [cx, by - 26, cx - 17, by + 1, cx + 17, by + 1], '#e0b860', OUT, 1.3);
     poly(g, [cx, by - 26, cx + 17, by + 1, cx + 4, by + 1], '#b88a40');
@@ -316,8 +346,12 @@ function drawShip(g, cx, by, t, dir) {
 function drawTownTile(g, map, x, y, px, py, t) {
   const ch = map.at(x, y);
   const theme = map.theme;
-  const grassC = theme === 'stone' ? '#8a8f86' : '#6dbb4f';
   const base = () => {
+    if (theme === 'ash') {
+      fillGround(g, 'ashsand', px, py, x, y);
+      if (hash(x, y, 41) < 0.12) { const p = 0.5 + 0.5 * Math.sin(t * 2 + x * 1.7 + y); g.strokeStyle = `rgba(255,120,50,${0.3 + p * 0.4})`; g.lineWidth = 1.3; g.beginPath(); g.moveTo(px + 6, py + 10); g.lineTo(px + 15, py + 17); g.lineTo(px + 11, py + 27); g.stroke(); }
+      return;
+    }
     if (theme === 'snow') { fillGround(g, 'snow', px, py, x, y); return; }
     if (theme === 'sand') { fillGround(g, 'desert', px, py, x, y); return; }
     if (theme === 'stone') { g.fillStyle = (x + y) % 2 ? '#8e938a' : '#888d84'; g.fillRect(px, py, TS, TS); if (hash(x, y) < .3) { g.fillStyle = '#7a7f76'; g.fillRect(px + hash(x, y, 1) * 26, py + hash(x, y, 2) * 26, 4, 3); } }
@@ -325,8 +359,8 @@ function drawTownTile(g, map, x, y, px, py, t) {
   };
   switch (ch) {
     case ':': {
-      g.fillStyle = theme === 'stone' ? '#a8a49a' : theme === 'snow' ? '#cfd6e2' : theme === 'sand' ? '#d8b880' : '#d6c8a6'; g.fillRect(px, py, TS, TS);
-      g.strokeStyle = theme === 'stone' ? '#8a867c' : theme === 'snow' ? '#aeb8c8' : '#b8a882'; g.lineWidth = 1;
+      g.fillStyle = theme === 'stone' ? '#a8a49a' : theme === 'ash' ? '#a09890' : theme === 'snow' ? '#cfd6e2' : theme === 'sand' ? '#d8b880' : '#d6c8a6'; g.fillRect(px, py, TS, TS);
+      g.strokeStyle = theme === 'stone' || theme === 'ash' ? '#8a867c' : theme === 'snow' ? '#aeb8c8' : '#b8a882'; g.lineWidth = 1;
       const o = (y % 2) * 8;
       g.beginPath();
       for (let i = 0; i < 2; i++) { g.moveTo(px, py + i * 16 + 16); g.lineTo(px + TS, py + i * 16 + 16); }
@@ -392,6 +426,17 @@ function drawTownTile(g, map, x, y, px, py, t) {
       rrect(g, px + 6, py + 16, 20, 6, 2, '#3a3a40', OUT, 1); rrect(g, px + 12, py + 22, 8, 8, 1, '#2a2a30', OUT, 1);
       break;
     }
+    case 'b': { // brazier — Lastlight's thousand-year fire
+      base();
+      ellipse(g, px + 16, py + 29, 11, 3, 'rgba(0,0,0,.3)');
+      poly(g, [px + 6, py + 16, px + 26, py + 16, px + 21, py + 28, px + 11, py + 28], '#4a4448', OUT, 1.2);
+      rrect(g, px + 4, py + 13, 24, 4, 1, '#6a6268', OUT, 1);
+      const f = Math.sin(t * 10 + x) * 2;
+      g.save(); g.globalAlpha = 0.3 + 0.1 * Math.sin(t * 5); circle(g, px + 16, py + 6, 16, '#ffa040'); g.restore();
+      poly(g, [px + 8, py + 14, px + 13 + f, py - 2 - f, px + 16, py + 6, px + 20 - f, py - 6 + f, px + 24, py + 14], '#ff7a2a');
+      poly(g, [px + 12, py + 14, px + 16 + f * 0.5, py + 1, px + 20, py + 14], '#ffe08a');
+      break;
+    }
     case 'g': { // grave / stone
       base(); rrect(g, px + 10, py + 8, 12, 18, 6, '#9a9aa2', OUT, 1); line(g, px + 16, py + 12, px + 16, py + 20, '#6a6a72', 1.5); line(g, px + 13, py + 15, px + 19, py + 15, '#6a6a72', 1.5);
       break;
@@ -405,7 +450,7 @@ function drawBuilding(g, b, ox, oy, t, theme) {
   const x = b.x * TS - ox, y = b.y * TS - oy, w = b.w * TS, h = b.h * TS;
   const roofH = Math.floor(b.h * 0.55) * TS;
   const wallY = y + roofH, wallH = h - roofH;
-  const stone = theme === 'stone' || b.kind === 'jail' || b.kind === 'chapel';
+  const stone = theme === 'stone' || theme === 'ash' || b.kind === 'jail' || b.kind === 'chapel';
   const wallC = b.wall || (stone ? '#b8b2a6' : '#f0e2c0');
   // shadow
   g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(x + 6, y + h - 2, w, 6);
@@ -489,7 +534,8 @@ const DTHEME = {
   mine: { wall: '#5a3a2a', top: '#2e1e14', floor: '#6a4a36', floor2: '#5f4230', acc: '#ff8a2a', light: 240, bg: 'mine' },
   tomb: { wall: '#a8844a', top: '#4a3418', floor: '#c8a868', floor2: '#bc9c5e', acc: '#ffc04a', light: 255, bg: 'tomb' },
   astral: { wall: '#2a3a6a', top: '#141e3c', floor: '#22305a', floor2: '#1e2a50', acc: '#a8d8ff', light: 280, bg: 'astral' },
-  spire: { wall: '#3a2a4e', top: '#1c1228', floor: '#2e2440', floor2: '#281f38', acc: '#c070ff', light: 260, bg: 'spire' }
+  spire: { wall: '#3a2a4e', top: '#1c1228', floor: '#2e2440', floor2: '#281f38', acc: '#c070ff', light: 260, bg: 'spire' },
+  abyss: { wall: '#3a3238', top: '#120c10', floor: '#2e282c', floor2: '#2a2428', acc: '#ff8a4a', light: 235, bg: 'abyss' }
 };
 function drawDungeonTile(g, map, x, y, px, py, t) {
   const th = DTHEME[map.theme];
@@ -512,6 +558,7 @@ function drawDungeonTile(g, map, x, y, px, py, t) {
         g.strokeStyle = '#7a5a2a'; g.lineWidth = 2; g.beginPath(); g.moveTo(px + 8 + hash(x, y, 6) * 16, py); g.quadraticCurveTo(px + 12, py + 16, px + 6 + hash(x, y, 7) * 20, py + 28); g.stroke();
       }
       if ((map.theme === 'spire' || map.theme === 'astral') && hash(x, y, 5) < 0.3) { g.fillStyle = map.theme === 'astral' ? `rgba(168,216,255,${0.4 + 0.3 * Math.sin(t * 2 + x)})` : `rgba(192,112,255,${0.4 + 0.3 * Math.sin(t * 2 + x)})`; g.fillRect(px + 14, py + 6, 4, 16); }
+      if (map.theme === 'abyss' && hash(x, y, 5) < 0.28) { const p = 0.5 + 0.5 * Math.sin(t * 1.6 + x * 0.7 + y); g.strokeStyle = `rgba(255,110,40,${0.3 + p * 0.5})`; g.lineWidth = 1.6; g.beginPath(); g.moveTo(px + 6 + hash(x, y, 6) * 8, py + 2); g.lineTo(px + 16, py + 14); g.lineTo(px + 10 + hash(x, y, 7) * 14, py + 28); g.stroke(); }
       if (map.torches && map.torches.has(x + ',' + y)) drawTorch(g, px + 16, py + 12, t + x, th.acc);
     } else {
       g.fillStyle = th.top; g.fillRect(px, py, TS, TS);
@@ -527,6 +574,7 @@ function drawDungeonTile(g, map, x, y, px, py, t) {
   if (map.theme === 'hollow' && hash(x, y, 8) < 0.06) { circle(g, px + 10, py + 22, 3, '#b6f25a'); line(g, px + 10, py + 25, px + 10, py + 29, '#e8e0c0', 2); }
   if (map.theme === 'mine' && hash(x, y, 8) < 0.05) { circle(g, px + 8 + hash(x, y, 9) * 16, py + 20, 3, '#3a2a20'); }
   if ((map.theme === 'spire' || map.theme === 'astral') && hash(x, y, 8) < (map.theme === 'astral' ? 0.18 : 0.08)) { const s = 0.5 + 0.5 * Math.sin(t * 3 + x * y); circle(g, px + 6 + hash(x, y, 9) * 20, py + 6 + hash(x, y, 10) * 20, 1.3, `rgba(220,180,255,${s})`); }
+  if (map.theme === 'abyss' && hash(x, y, 8) < 0.1) { const k = (t * 0.25 + hash(x, y, 11)) % 1; circle(g, px + 6 + hash(x, y, 9) * 20, py + 26 - k * 22, 1.3, `rgba(255,150,70,${0.8 * (1 - k)})`); }
   if (map.theme === 'shrine' && hash(x, y, 8) < 0.06) { g.strokeStyle = 'rgba(90,240,208,.4)'; g.beginPath(); g.arc(px + 16, py + 16, 6 + Math.sin(t * 2 + x) * 2, 0, Math.PI * 2); g.stroke(); }
   switch (ch) {
     case '<': {
@@ -1094,11 +1142,12 @@ function drawMonster(g, def, x, by, st = {}) {
       g.fillStyle = c[0]; g.fill(); g.strokeStyle = c[2]; g.lineWidth = 2.5; g.stroke();
       g.strokeStyle = rgba(c[2], 0.4); g.lineWidth = 1.5;
       for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i * 4, -100); g.quadraticCurveTo(i * 20, -50, i * 26, 0); g.stroke(); }
-      // body
-      rrect(g, -22, -110, 44, 70, 14, '#1c1230', c[1], 2);
+      // body (Orun's restored form is pale instead of void-black)
+      rrect(g, -22, -110, 44, 70, 14, def.pale ? shade(c[0], 0.15) : '#1c1230', c[1], 2);
       circle(g, 0, -82, 7, c[2]);
-      // head void
-      circle(g, 0, -126, 20, '#05020a', c[1], 2);
+      // head
+      circle(g, 0, -126, 20, def.pale ? '#d8d0e8' : '#05020a', c[1], 2);
+      if (def.pale) { line(g, -16, -138, 16, -138, '#c8c8d8', 4); g.fillStyle = '#2a2a3a'; g.fillRect(-9, -116, 18, 3); }
       ellipse(g, -7, -126, 4, 2.5, c[2]); ellipse(g, 7, -126, 4, 2.5, c[2]);
       g.save(); g.globalAlpha = 0.5 + 0.4 * Math.sin(t * 4); ellipse(g, -7, -126, 8, 5, rgba(c[2], 0.5)); ellipse(g, 7, -126, 8, 5, rgba(c[2], 0.5)); g.restore();
       // crown
@@ -1107,7 +1156,7 @@ function drawMonster(g, def, x, by, st = {}) {
       // orbiting orbs
       for (let i = 0; i < 3; i++) { const a = t * 1.2 + i * Math.PI * 2 / 3; circle(g, Math.cos(a) * 56, -90 + Math.sin(a) * 16, 6, '#1a0a30', c[2], 2); }
       // hand + sword
-      line(g, 26, -90, 40, -60, '#1c1230', 8);
+      line(g, 26, -90, 40, -60, def.pale ? shade(c[0], 0.1) : '#1c1230', 8);
       g.save(); g.translate(42, -58); g.rotate(0.3); g.scale(2.2, 2.2); drawWeapon(g, 'sword', 0, 0, 0); g.restore();
       break;
     }
@@ -1130,6 +1179,35 @@ function drawMonster(g, def, x, by, st = {}) {
       for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + (i - 2) * 0.35 + Math.sin(t + i) * 0.04; const R = 58 + Math.sin(t * 2 + i) * 3; poly(g, [Math.cos(a) * R - 5, -90 + Math.sin(a) * R, Math.cos(a) * (R + 22), -90 + Math.sin(a) * (R + 22), Math.cos(a) * R + 5, -90 + Math.sin(a) * R], '#e8c84a', OUT, 1.5); }
       break;
     }
+    case 'crown': { // The Hollow Crown — the night-half of the first crown, looking for a head
+      const bob = Math.sin(t * 1.3) * 6;
+      g.save(); g.globalAlpha *= 0.3; circle(g, 0, -96, 86 + Math.sin(t * 2.2) * 5, c[2]); g.restore();
+      ellipse(g, 0, -1, 46, 7, 'rgba(0,0,0,.4)');
+      g.translate(0, bob);
+      // trailing ash veil
+      g.beginPath(); g.moveTo(-50, -86);
+      for (let i = 0; i <= 10; i++) { const xx = -50 + i * 10; g.lineTo(xx, -30 + Math.sin(t * 3 + i * 0.9) * 10 + (i % 2) * 14); }
+      g.lineTo(50, -86); g.closePath();
+      const vg = g.createLinearGradient(0, -86, 0, -10); vg.addColorStop(0, rgba(c[1], 0.9)); vg.addColorStop(1, rgba(c[1], 0)); g.fillStyle = vg; g.fill();
+      // the void the crown circles
+      ellipse(g, 0, -100, 42, 24, '#05020a', c[2], 2.5);
+      // crown band and spikes
+      const pts = [-56, -96];
+      for (let i = 0; i < 7; i++) { const xx = -48 + i * 16, hgt = (i % 2 ? 30 : 52) + Math.sin(t * 2 + i) * 3; pts.push(xx, -110, xx + 8, -110 - hgt, xx + 16, -110); }
+      pts.push(56, -96);
+      poly(g, pts, c[0], OUT, 2.2);
+      rrect(g, -56, -110, 112, 18, 6, shade(c[0], -0.25), OUT, 2);
+      for (let i = 0; i < 5; i++) { const xx = -40 + i * 20; circle(g, xx, -101, 4.5, i === 2 ? c[2] : '#8a2a4a', OUT, 1.2); }
+      // cracks through the gold
+      g.strokeStyle = 'rgba(20,10,20,.8)'; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(-24, -110); g.lineTo(-18, -132); g.lineTo(-22, -150); g.moveTo(30, -110); g.lineTo(26, -126); g.lineTo(34, -140); g.stroke();
+      // single great eye in the void
+      const bl = Math.max(0.12, Math.abs(Math.sin(t * 0.6)));
+      ellipse(g, 0, -80, 18, 10 * bl, '#f8f0ff'); circle(g, 2, -80, 6 * Math.min(1, bl * 1.6), c[2]); circle(g, 2, -80, 2.4, '#000');
+      // orbiting shards
+      for (let i = 0; i < 6; i++) { const a = t * 0.9 + i * Math.PI / 3; const R = 70; const sx = Math.cos(a) * R, sy = -96 + Math.sin(a) * 22; poly(g, [sx, sy - 9, sx + 4, sy, sx, sy + 9, sx - 4, sy], c[0], OUT, 1.2); }
+      break;
+    }
     default: circle(g, 0, -20, 20, c[0], OUT, 2);
   }
   g.restore();
@@ -1138,11 +1216,11 @@ function drawMonster(g, def, x, by, st = {}) {
   }
 }
 function monsterHeight(def) {
-  const base = { slime: 42, bat: 60, beast: 54, goblin: 60, skeleton: 66, knight: 92, ogre: 88, plant: 54, serpent: 64, ghost: 74, crab: 48, golem: 82, imp: 64, eye: 70, witch: 104, gloomcap: 96, warden: 126, king: 172, king2: 190, wyrm: 150 }[def.fam] || 60;
+  const base = { slime: 42, bat: 60, beast: 54, goblin: 60, skeleton: 66, knight: 92, ogre: 88, plant: 54, serpent: 64, ghost: 74, crab: 48, golem: 82, imp: 64, eye: 70, witch: 104, gloomcap: 96, warden: 126, king: 172, king2: 190, wyrm: 150, crown: 170 }[def.fam] || 60;
   return base * (def.size || 1);
 }
 function monsterWidth(def) {
-  const base = { slime: 56, bat: 64, beast: 84, goblin: 60, skeleton: 46, knight: 60, ogre: 72, plant: 58, serpent: 64, ghost: 50, crab: 72, golem: 72, imp: 50, eye: 56, witch: 66, gloomcap: 96, warden: 92, king: 140, king2: 200, wyrm: 180 }[def.fam] || 60;
+  const base = { slime: 56, bat: 64, beast: 84, goblin: 60, skeleton: 46, knight: 60, ogre: 72, plant: 58, serpent: 64, ghost: 50, crab: 72, golem: 72, imp: 50, eye: 56, witch: 66, gloomcap: 96, warden: 92, king: 140, king2: 200, wyrm: 180, crown: 150 }[def.fam] || 60;
   return base * (def.size || 1);
 }
 
@@ -1272,6 +1350,26 @@ function drawBattleBG(g, kind, t) {
       ground('#2e2440', '#120a1c', 265);
       g.strokeStyle = 'rgba(192,112,255,.3)'; g.lineWidth = 1;
       for (let i = 0; i < 8; i++) { g.beginPath(); g.moveTo(W / 2, 265); g.lineTo(i * 92 - 20, H); g.stroke(); }
+      break;
+    }
+    case 'ash': {
+      sky('#3a2a30', '#a8705a');
+      circle(g, 470, 110, 46, 'rgba(255,170,110,.5)'); circle(g, 470, 110, 30, '#ffc890');
+      hills(190, 34, '#2a2226', 9, 0.016); hills(228, 16, '#3e363a', 10);
+      ground('#5a5458', '#2a2428', 258);
+      for (let i = 0; i < 8; i++) { g.save(); g.translate(i * 86 + hash(i, 2) * 30, 262); g.scale(2.6, 2.6); drawDeadTree(g, 0, 0, 1); g.restore(); }
+      for (let i = 0; i < 40; i++) { const k = (t * 0.12 + hash(i, 6)) % 1; circle(g, (hash(i, 7) * W + Math.sin(t + i) * 30) % W, k * H, 1.3, `rgba(220,210,200,${0.6 * (1 - k)})`); }
+      for (let i = 0; i < 12; i++) { const k = (t * 0.3 + hash(i, 8)) % 1; circle(g, hash(i, 9) * W, H - k * 260, 1.6, `rgba(255,140,60,${1 - k})`); }
+      break;
+    }
+    case 'abyss': case 'crownfall': {
+      const gr = g.createRadialGradient(W / 2, 330, 30, W / 2, 330, 520); gr.addColorStop(0, kind === 'crownfall' ? '#5a1a14' : '#3a1a14'); gr.addColorStop(0.5, '#140a0e'); gr.addColorStop(1, '#030104'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+      for (let i = 0; i < 7; i++) { const x = 20 + i * 100 + hash(i, 1) * 30; poly(g, [x - 26, 0, x + 26, 0, x + 6, 60 + hash(i, 2) * 120], '#1a1216'); }
+      if (kind === 'crownfall') { g.save(); g.globalAlpha = 0.85; for (let r = 0; r < 4; r++) { g.strokeStyle = `rgba(232,200,74,${0.15 + r * 0.05})`; g.lineWidth = 2; g.beginPath(); g.ellipse(W / 2, 150, 120 + r * 40, 30 + r * 10, 0, 0, Math.PI * 2); g.stroke(); } g.restore(); }
+      ground('#2e282c', '#0e0a0c', 262);
+      g.strokeStyle = 'rgba(255,110,40,.45)'; g.lineWidth = 2;
+      for (let i = 0; i < 9; i++) { const x0 = hash(i, 4) * W; g.beginPath(); g.moveTo(x0, 266); g.lineTo(x0 + 20 - hash(i, 5) * 40, 320 + hash(i, 6) * 60); g.lineTo(x0 + 30 - hash(i, 7) * 60, H); g.stroke(); }
+      for (let i = 0; i < 18; i++) { const k = (t * 0.22 + hash(i, 3)) % 1; circle(g, hash(i, 4) * W, H - k * 340, 1.5 + hash(i, 5), `rgba(255,150,70,${1 - k})`); }
       break;
     }
     default: sky('#333', '#666'); ground('#444', '#222');

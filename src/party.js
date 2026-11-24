@@ -76,7 +76,7 @@ function loadGame() {
   let d;
   try { d = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) { return false; }
   if (!d) return false;
-  G.party = d.party.map(p => ({ acc: null, ...p, status: {} }));
+  G.party = d.party.map(p => { const m = { acc: null, ...p, status: {} }; m.hp = clamp(m.hp, 0, maxHp(m)); m.mp = clamp(m.mp, 0, maxMp(m)); return m; });
   G.seen = d.seen || {}; G.killed = d.killed || {};
   G.inv = d.inv || {}; G.gold = d.gold || 0; G.flags = d.flags || {}; G.playTime = d.playTime || 0;
   G.mapId = d.mapId; G.x = d.x; G.y = d.y; G.dir = d.dir || 'down';
