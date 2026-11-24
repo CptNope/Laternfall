@@ -5,7 +5,7 @@ const path = require('path');
 const src = p => fs.readFileSync(path.join(__dirname, '..', 'src', p), 'utf8');
 const ctx = { console, Math };
 vm.createContext(ctx);
-vm.runInContext(src('data.js') + '\n;this.D={HEROES,SPELLS,ITEMS,MONSTERS,ENCOUNTERS,SHOPS,COMBOS,ARENA_CUPS,RECIPES,FISH,FISH_SPOTS,LIMITS,MAX_LEVEL,xpForLevel};', ctx);
+vm.runInContext(src('data.js') + '\n;this.D={HEROES,SPELLS,ITEMS,MONSTERS,ENCOUNTERS,SHOPS,COMBOS,ARENA_CUPS,RECIPES,FISH,FISH_SPOTS,LIMITS,MAX_LEVEL,xpForLevel,MEALS,MEAL_BATTLES,BOARD_NODES,BOARD_HERO,BOARD_STATS,PASSIVES,STATUS_TURNS};', ctx);
 const maps = src('maps.js');
 const grab = name => { const i = maps.indexOf('const ' + name); let d = 0, j = maps.indexOf('{', i); const s = j; for (; j < maps.length; j++) { if (maps[j] === '{') d++; if (maps[j] === '}' && --d === 0) break; } return maps.slice(s, j + 1); };
 vm.runInContext('this.WL=' + grab('WORLD_LOC') + ';this.DG=' + grab('DUNGEONS') + ';', ctx);

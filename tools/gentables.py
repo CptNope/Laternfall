@@ -13,6 +13,16 @@ out = {}
 def tbl(head, rows): return '| ' + ' | '.join(head) + ' |\n| ' + ' | '.join('---' for _ in head) + ' |\n' + '\n'.join('| ' + ' | '.join(str(c) for c in r) + ' |' for r in rows) + '\n'
 nm = lambda k: I[k]['name'] if k in I else k
 cap = lambda s: s[0].upper() + s[1:] if s else s
+def elems(d):
+    """'Weak to' and 'Resists' cells: resist halves damage, absorb (shown as 'absorbs X') heals the monster"""
+    w = ', '.join(map(cap, d.get('weak', []))) or '—'
+    r = ', '.join([*map(cap, d.get('resist', [])), *(f'absorbs {e}' for e in d.get('absorb', []))]) or '—'
+    return w, r
+def steal(d):
+    s = nm(d['steal']) if d.get('steal') else '—'
+    if d.get('rare'): s += f" · ★ {nm(d['rare'][0])} ({round(d['rare'][1] * 100)}%)"
+    return s
+AI = {'weakest': 'Hunts the wounded', 'magehunter': 'Hunts casters', 'healer': 'Heals allies'}
 
 # heroes
 rows = []
@@ -45,14 +55,38 @@ for code, title in AREAS:
     for m in ids:
         d = M[m]
         drops = ', '.join(filter(None, [d.get('drop') and f"{nm(d['drop'][0])} ({int(d['drop'][1]*100)}%)", d.get('mat') and f"{nm(d['mat'][0])} ({int(d['mat'][1]*100)}%)"])) or '—'
-        rows.append([d['name'], d['hp'], d['atk'], d['mag'], ', '.join(map(cap, d.get('weak', []))) or '—', nm(d['steal']) if d.get('steal') else '—', drops, d['xp'], d['gold']])
-    parts.append(f"#### {title}\n\n" + tbl(['Monster', 'HP', 'ATK', 'MAG', 'Weak to', 'Steal', 'Drops', 'EXP', 'Gold'], rows))
+        w, r = elems(d)
+        rows.append([d['name'] + (f" *({AI[d['ai']]})*" if d.get('ai') else ''), d['hp'], d['atk'], d['mag'], w, r, steal(d), drops, d['xp'], d['gold']])
+    parts.append(f"#### {title}\n\n" + tbl(['Monster', 'HP', 'ATK', 'MAG', 'Weak to', 'Resists', 'Steal', 'Drops', 'EXP', 'Gold'], rows))
 out['monsters'] = '\n'.join(parts)
 WHERE = {'gloomcap': 'Whisperwood Hollow 2F', 'warden': 'Sunken Shrine 2F', 'vesper': 'Emberdeep Mines 3F', 'leviathan': 'Whirlpool, open sea (bounty)', 'firstking': 'Tomb of the First King 3F',
          'wyrm': 'Starfall Observatory 3F (optional)', 'king': 'Hollow Spire 3F (phase 1)', 'king2': 'Hollow Spire 3F (phase 2)', 'crown': 'Crownfall Abyss 4F (phase 1)', 'orun': 'Crownfall Abyss 4F (phase 2)',
          'lampeater': 'The last roadside lamp (Arin)', 'hearthwarden': 'Ember Caves 2F (Lyra)', 'abbot': "Sea Mother's Grotto 2F (Oswin)", 'vane': 'The Undercity 2F (Kestrel)', 'echo': "Selene's dream, solo (Selene)"}
-rows = [[f"**{M[b]['name']}**", w, M[b]['hp'], M[b]['atk'], M[b]['mag'], M[b]['spd'], M[b].get('actions', 1), ', '.join(map(cap, M[b].get('weak', []))) or '—', nm(M[b]['steal']), ', '.join(S[a['a']]['name'] for a in M[b].get('acts', []) if a['a'] != 'attack')] for b, w in WHERE.items()]
-out['bosses'] = tbl(['Boss', 'Where', 'HP', 'ATK', 'MAG', 'SPD', 'Turns', 'Weak to', 'Steal', 'Special attacks'], rows)
+def phase(d):
+    if not d.get('phases'): return '—'
+    out_ = []
+    for ph in d['phases']:
+        base = {a['a'] for a in d.get('acts', [])}
+        new = [S[a['a']]['name'] for a in ph['acts'] if a['a'] != 'attack' and a['a'] not in base]
+        out_.append(f"Below {round(ph['hp'] * 100)}% HP" + (f", {ph['actions']} turns" if ph.get('actions') else '') + (': adds ' + ', '.join(new) if new else ': more aggressive'))
+    return '; '.join(out_)
+rows = [[f"**{M[b]['name']}**", w, M[b]['hp'], M[b]['atk'], M[b]['mag'], M[b]['spd'], M[b].get('actions', 1), *elems(M[b]), steal(M[b]), ', '.join(S[a['a']]['name'] for a in M[b].get('acts', []) if a['a'] != 'attack'), phase(M[b])] for b, w in WHERE.items()]
+out['bosses'] = tbl(['Boss', 'Where', 'HP', 'ATK', 'MAG', 'SPD', 'Turns', 'Weak to', 'Resists', 'Steal', 'Special attacks', 'When hurt'], rows)
+# Lantern Board
+BN, BH, BS, PS = D['BOARD_NODES'], D['BOARD_HERO'], D['BOARD_STATS'], D['PASSIVES']
+SN = {'hp': 'Max HP', 'mp': 'Max MP', 'str': 'ATK', 'def': 'DEF', 'mag': 'MAG', 'spd': 'SPD'}
+NODE_NAME = {'hp': 'Vigor', 'mp': 'Focus', 'atk': 'Might', 'mag': 'Insight', 'def': 'Ward', 'spd': 'Swiftness', 'big': 'Great Flame', 'p1': 'Passive I', 'p2': 'Passive II', 'p3': 'Passive III', 'cap': '★ Capstone'}
+def node_eff(n):
+    if n in BS: st, v = BS[n]; return f"{SN[st]} +{round(v * 100)}%" if v < 1 else f"{SN[st]} +{v}"
+    if n == 'big': return '+20 to the hero\'s main stat (see below)'
+    return 'A passive (see below)'
+rows = [[f"**{NODE_NAME[n]}**", BN[n]['cost'], node_eff(n), ', '.join(NODE_NAME[l] for l in BN[n]['links'] if l != 'spark') + (', the Spark' if 'spark' in BN[n]['links'] else '')] for n in BN if n != 'spark']
+out['board_nodes'] = tbl(['Node', 'Embers', 'Effect', 'Linked to'], rows)
+rows = [[f"**{H[k]['name']}**", SN[v['big']] + ' +20', *[f"{PS[v[p]]['name']}: {PS[v[p]]['desc']}" for p in ('p1', 'p2', 'p3')], f"**{PS[v['cap']]['name']}**: {PS[v['cap']]['desc']}"] for k, v in BH.items()]
+out['board_heroes'] = tbl(['Hero', 'Great Flame', 'Passive I', 'Passive II', 'Passive III', 'Capstone'], rows)
+# meals
+rows = [[f"**{m['name']}**", ', '.join(f"{nm(f)} ×{n}" for f, n in m['needs'].items()), m['desc']] for m in D['MEALS'].values()]
+out['meals'] = tbl(['Meal', 'Ingredients', f"Effect (next {D['MEAL_BATTLES']} battles)"], rows)
 # limits
 L = D['LIMITS']
 QUEST = {'arin': "The Lamplighter's Road", 'lyra': "Mother's Grimoire", 'oswin': 'The Drowned Priesthood', 'kestrel': 'Old Debts', 'selene': 'Echo of Vesper'}

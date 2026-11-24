@@ -13,8 +13,8 @@ timeline
     title Lanternfall releases
     2026-11-19 : 1.0.0 First playable : 1.1.0 Frostmere and side quests
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
-    2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance
-    Next : 1.5.0 Hearts of the Lamplighters
+    2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance : 1.5.0 Hearts of the Lamplighters
+    Next : 1.6.0 Deeper systems
 ```
 
 ```mermaid
@@ -36,13 +36,38 @@ xychart-beta
 | 1.3.0 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#4](https://github.com/CptNope/Laternfall/pull/4) |
 | 1.3.1 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#5](https://github.com/CptNope/Laternfall/pull/5) |
 | 1.4.0 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#6](https://github.com/CptNope/Laternfall/pull/6) |
-| 1.5.0 | next | 7 | 10 (26) | 75 (15) | 16 | 5 | this release |
+| 1.5.0 | 2026-11-23 | 7 | 10 (26) | 75 (15) | 16 | 5 | [#7](https://github.com/CptNope/Laternfall/pull/7) |
+| 1.6.0 | next | 7 | 10 (26) | 75 (15) | 17 | 5 | this release |
 
 ---
 
 ## [Unreleased]
 
-Planned as **1.5.0 · *Hearts of the Lamplighters***. It finishes the 1.4 *Comfort* milestone and delivers 1.5 from the [roadmap](ROADMAP.md).
+Planned as **1.6.0 · *Deeper systems***. It delivers DS-1 to DS-7 from the [roadmap](ROADMAP.md#16--deeper-systems).
+
+### Added
+- **The Lantern Board**: from level 30 each level-up gives an **Ember** (and at the cap, one per 20,000 EXP). Spend them on a 12-node board per hero (Status → Enter): stat nodes, a Great Flame, three passives and a capstone. Eleven passives in all, including Counter, Quick Limit, Auto-Regen, Auto-Haste, MP Saver, Lookout, Ghost Step, Wildfire, Twilight, Tidal Grace and Lamplighter's Resolve.
+- **Cooking**: innkeepers cook your fish into 11 meals that buff the party for the next 3 battles (ATK, DEF, MAG, SPD, Regen, Haste, no ailments, +EXP, +gold, or everything). The active meal shows under the menu.
+- **New statuses**: **Blind** (attacks miss half the time), **Slow** and **Haste**. New skills: Oswin's **Haste** (Lv 24), Kestrel's **Flash Powder** (Lv 18) and Selene's **Slow**. Seven monsters and 11 bosses use the new statuses; Remedy and Purify cure them.
+- **Resistances and absorbs**: 23 monsters now resist or absorb an element (Magma Slimes drink fire, the Leviathan drinks water). Absorbed hits heal the monster and say so.
+- **Smarter enemies**: monsters that hunt the wounded, hunt casters, or heal their allies (the healer now mends the most hurt monster, not just itself).
+- **Boss phases**: all 15 bosses change tactics when hurt, announce it, and some start acting twice.
+- **Rare steals**: 13 monsters carry a rare item (★), including four new accessories from bosses: the Thief's Gloves (Vane), Starlit Cloak (Astral Wyrm), King's Signet (Hollow King) and Sun Circlet (Ozymar).
+- **The Complete Bestiary** quest: Sable gives the **Scholar's Monocle** at 45 creatures and the **Bestiary Seal** for all 75.
+- New shop accessories: **Eye Charm** (prevents blind) and **Hourglass Pin** (prevents slow).
+- The bestiary shows resistances, absorbs, AI, rare steals and the skills a boss gains when hurt. The game guide has new Lantern Board, Cooking, Elements and Enemy behaviour sections.
+- `depth` play-test scenario (19 checks: save migration, the board by keyboard, passives, cooking, absorb, Haste and Slow, a boss phase, a rare steal, Sable's rewards, save round trip).
+
+### Changed
+- **Save version 3.** Older saves upgrade automatically, and heroes above level 30 get the Embers they would have earned.
+- Gold and EXP rewards now include the meal bonus; the Silk Ribbon and other all-ailment accessories also block Blind and Slow.
+- Balance: boss phases swap moves rather than adding damage, so the simulator's numbers stay where 1.5 left them (Chapter VI finale at Lv 42: 83% with shop gear, 92% with mid gear; every Hearts boss 83–100%). The Lantern Board and meals are not in the simulator, so real players are stronger than these numbers.
+
+---
+
+## [1.5.0] — 2026-11-23 · *Hearts of the Lamplighters*
+
+It finishes the 1.4 *Comfort* milestone and delivers 1.5 from the [roadmap](ROADMAP.md).
 
 ### Added
 - **Hearts of the Lamplighters**: five post-game personal quests, one per hero. Each ends in a Limit and an ultimate weapon.
@@ -225,6 +250,7 @@ Shipped together with 1.0.0 in pull request #1.
 - The full main story, with an ending.
 
 [Unreleased]: https://github.com/CptNope/Laternfall/compare/main...HEAD
+[1.5.0]: https://github.com/CptNope/Laternfall/pull/7
 [1.4.0]: https://github.com/CptNope/Laternfall/pull/6
 [1.3.1]: https://github.com/CptNope/Laternfall/pull/5
 [1.3.0]: https://github.com/CptNope/Laternfall/pull/4

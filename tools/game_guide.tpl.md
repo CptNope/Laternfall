@@ -17,11 +17,13 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 - [Combo techs](#combo-techs)
 - [Limits](#limits)
 - [How battles work](#how-battles-work)
+- [The Lantern Board](#the-lantern-board)
 - [Bosses](#bosses)
 - [Monsters by area](#monsters-by-area)
 - [Side quests](#side-quests)
 - [The Aerie Arena](#the-aerie-arena)
 - [Fishing](#fishing)
+- [Cooking](#cooking)
 - [Orrin's Forge](#orrins-forge)
 - [Equipment](#equipment)
 - [Items](#items)
@@ -303,10 +305,10 @@ sequenceDiagram
     participant E as Enemies
     Y->>B: Choose a command for each hero
     Note over Y,B: Combo partners skip their own command
-    B->>B: Sort everyone by SPD × random 0.8–1.2<br/>(Defend always goes first)
+    B->>B: Sort everyone by SPD × Haste/Slow × random 0.8–1.2<br/>(Defend always goes first)
     loop Each actor in order
         B->>E: Hero acts (attack, skill, item, combo)
-        E->>B: Enemy acts (weighted move list)
+        E->>B: Enemy acts (weighted move list, its AI picks the target)
     end
     B->>B: End of round: poison, regen,<br/>status timers, buff timers
     alt All enemies down
@@ -320,7 +322,30 @@ sequenceDiagram
 
 **Repeat last turn:** press **Shift**, **R** (touch) or **X** (gamepad) at the first hero's command menu to give everyone the same commands as last round. **Config → Battle speed** runs battles at 2× or 4×.
 
-Some late bosses **act twice per round**.
+Some late bosses **act twice per round**. Every boss **changes tactics when hurt**: below a share of its HP it announces the change and switches to a new move list (see [Bosses](#bosses)).
+
+### Elements: weak, resist, absorb
+
+```mermaid
+flowchart LR
+    H["Elemental hit<br/>(fire, ice, water, holy, dark…)"] --> Q{"The monster…"}
+    Q -->|is weak| W["×1.6 damage"]
+    Q -->|resists| R["×0.5 damage (grey number)"]
+    Q -->|absorbs| A["Heals it instead (green, 'Absorb')"]
+    Q -->|none of these| N["×1"]
+```
+
+The bestiary shows each monster's weaknesses, resistances and absorbs once you've met it. Fire on a Magma Slime or water on the Leviathan heals them, so switch elements.
+
+### Enemy behaviour
+
+Most enemies pick a random target. Some are smarter, and the bestiary says so:
+
+| AI | What it does | Examples |
+| --- | --- | --- |
+| Hunts the wounded | 60% of the time it attacks the hero lowest on HP | Wolves, Bandits, Deep Ones, Ozymar, the Hollow King, Orun, Vane |
+| Hunts casters | 60% of the time it goes for Lyra, Oswin or Selene | Hollow Knights, Dread Knights, Cinder Knights, Vesper |
+| Heals allies | Heals the most hurt monster (often not itself) when one is below half HP | Tomb Priests, Hollow Heralds, the Drowned Abbot |
 
 ### Formulas
 
@@ -338,9 +363,11 @@ Some late bosses **act twice per round**.
 | Gravity | 25% of the target's current HP (8% on bosses) |
 | Poison | Heroes lose 6% of max HP per round (never below 1); enemies lose 5% (at most 250) |
 | Regen | Renew: 8% of max HP per round for 5 rounds. Regen accessories: 5% per round |
-| Steal | `55% + (your SPD − their SPD) × 2%`, between 25% and 92%; once per enemy |
+| Steal | `55% + (your SPD − their SPD) × 2%`, between 25% and 92%; once per enemy. Some monsters carry a **rare item** (★): a successful steal takes it first with the listed chance, doubled by the Thief's Gloves or the Bestiary Seal |
 | Run | `60% + (party SPD − enemy SPD) × 3%`, between 30% and 95%. Never from bosses or in the Arena |
-| First strike | 8% of normal battles: the enemies lose their first round |
+| First strike | 8% of normal battles (25% with Lookout on the Lantern Board): the enemies lose their first round |
+| Blind | Physical attacks and skills miss 50% of the time |
+| Haste / Slow | Turn speed ×1.6 / ×0.6 |
 | Sleep | Heroes sleep 2 rounds and enemies 3. Any hit wakes an enemy; a hit wakes a hero 60% of the time |
 
 ### Statuses
@@ -350,9 +377,47 @@ Some late bosses **act twice per round**.
 | Poison | Loses HP every round | Antidote, Remedy, Purify, Sanctuary | Tide Pendant, Desert Veil, Silk Ribbon, Orrin's Seal, and others |
 | Sleep | Skips turns | Getting hit, Remedy, Purify | Wake Charm, Pip's Candle, Dwarven Band, Nightglass Locket, and others |
 | Silence | Can't use skills or combos | Remedy, Purify, Sanctuary | Echo Bell, Sage Circlet, Dwarven Band, Eclipse Mantle, and others |
+| Blind | Attacks and physical skills miss half the time | Remedy, Purify, Sanctuary | Eye Charm, Sun Circlet, Scholar's Monocle, all-ailment accessories |
+| Slow | Acts later (speed ×0.6) | Remedy, Purify, Haste, Sanctuary | Hourglass Pin, Starlit Cloak, all-ailment accessories |
+| Haste | Acts sooner (speed ×1.6) for 4 rounds | Wears off; Slow cancels it | — |
 | Regen | Heals every round | Wears off | — |
 
-Bosses are immune to Sleep and Silence. Kestrel's Venom Edge poisons bosses 40% of the time.
+Heroes are blinded or slowed for 3 rounds, enemies for 4. Bosses are immune to Sleep and Silence, take Slow half as often and Blind 30% as often. Kestrel's Venom Edge poisons bosses 40% of the time. A **Hotpot meal** (see [Cooking](#cooking)) prevents every ailment.
+
+New in 1.6: Oswin learns **Haste** at Lv 24, Kestrel **Flash Powder** (blind all foes) at Lv 18, and Selene starts with **Slow**.
+
+---
+
+## The Lantern Board
+
+From **level 30** every level-up gives the hero an **Ember**. At the level cap, every **20,000 EXP** gives another. Spend Embers on the hero's **Lantern Board**: open **Status**, pick a hero and press **Enter**. A node can be lit once one of its neighbours is lit. Every hero starts with the Spark lit. Lighting the whole board takes 23 Embers.
+
+Saves from before 1.6 get the Embers their heroes would already have earned (one per level from 30).
+
+```mermaid
+flowchart TB
+    cap(["★ Capstone · 5"])
+    p1(["Passive I · 2"]) --- cap
+    p2(["Passive II · 2"]) --- cap
+    hp["Vigor · 1<br/>Max HP +10%"] --- p1
+    mp["Focus · 1<br/>Max MP +15%"] --- p2
+    spark(("Spark")) --- hp
+    spark --- mp
+    spark --- atk["Might · 1<br/>ATK +8"]
+    spark --- mag["Insight · 1<br/>MAG +8"]
+    atk --- def["Ward · 2<br/>DEF +10"]
+    mag --- spd["Swiftness · 2<br/>SPD +6"]
+    p1 --- big(["Great Flame · 3"])
+    def --- big
+    p2 --- p3(["Passive III · 3"])
+    spd --- p3
+```
+
+{{board_nodes}}
+
+What the passives and the Great Flame do depends on the hero:
+
+{{board_heroes}}
 
 ---
 
@@ -479,6 +544,14 @@ stateDiagram-v2
 Harder fish need more hits and have a narrower green zone (30% of the bar for ★, 22% for ★★, 15% for ★★★).
 
 {{fish}}
+
+---
+
+## Cooking
+
+Any innkeeper will cook your catch. Choose **Cook a meal** when you talk to them (it only appears when you're carrying fish). A meal lasts for the next **3 battles**, win, lose or run, and shows under the menu. Cooking a new meal replaces the old one.
+
+{{meals}}
 
 ---
 

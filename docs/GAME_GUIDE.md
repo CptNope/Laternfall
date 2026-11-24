@@ -17,11 +17,13 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 - [Combo techs](#combo-techs)
 - [Limits](#limits)
 - [How battles work](#how-battles-work)
+- [The Lantern Board](#the-lantern-board)
 - [Bosses](#bosses)
 - [Monsters by area](#monsters-by-area)
 - [Side quests](#side-quests)
 - [The Aerie Arena](#the-aerie-arena)
 - [Fishing](#fishing)
+- [Cooking](#cooking)
 - [Orrin's Forge](#orrins-forge)
 - [Equipment](#equipment)
 - [Items](#items)
@@ -240,9 +242,9 @@ Every building can be entered. Search **barrels, pots and crates** (face one and
 | **Brightwater** | Potion, Antidote, Phoenix Plume, Tent | Bronze Sword, Oak Staff, Leather Armor, Cloth Robe |
 | **Port Halden** | Potion, Hi-Potion, Ether, Antidote, Remedy, Phoenix Plume, Tent, Ember Bomb | Iron Sword, Mage Staff, Iron Mace, Chain Mail, Silk Robe, Power Ring, Guard Ring |
 | **Ironhold** | Hi-Potion, X-Potion, Ether, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Steel Sword, Rune Staff, Steel Mace, Steel Dagger, Plate Armor, Sage Robe, Thief Vest, Mage Ring, Wake Charm |
-| **Mirage** | Hi-Potion, X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Sunsteel Blade, Sky Staff, Desert Veil, Swift Boots, Mage Ring, Wake Charm |
-| **Aerie** | X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Moon Scepter, Sunsteel Blade, Sky Staff, Scholar's Lens, Echo Bell, Desert Veil |
-| **Frostmere** | Hi-Potion, X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Swift Boots, Echo Bell, Wake Charm, Scholar's Lens, Guard Ring, Power Ring |
+| **Mirage** | Hi-Potion, X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Sunsteel Blade, Sky Staff, Desert Veil, Swift Boots, Mage Ring, Wake Charm, Eye Charm |
+| **Aerie** | X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Moon Scepter, Sunsteel Blade, Sky Staff, Scholar's Lens, Echo Bell, Desert Veil, Hourglass Pin |
+| **Frostmere** | Hi-Potion, X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb | Swift Boots, Echo Bell, Wake Charm, Scholar's Lens, Guard Ring, Power Ring, Eye Charm, Hourglass Pin |
 | **Lastlight** | X-Potion, Hi-Ether, Remedy, Phoenix Plume, Tent, Ember Bomb, Star Bomb | Ashsteel Blade, Cinder Staff, Ashen Mace, Ash Kris, Umbral Rod, Ash Mail, Ash Robe, Ash Garb |
 
 ---
@@ -310,13 +312,14 @@ Four heroes fight at once. Arrange them in **Menu → Formation**; the fifth wai
 | Lv | Skill | MP | Element | Target | Effect |
 | --- | --- | --- | --- | --- | --- |
 | 1 | **Cure** | 4 | — | One ally | Restore HP to one ally. |
-| 1 | **Purify** | 2 | — | One ally | Cure poison, sleep and silence. |
+| 1 | **Purify** | 2 | — | One ally | Cure poison, sleep, silence, blind and slow. |
 | 7 | **Cura** | 9 | — | All allies | Restore HP to all allies. |
 | 9 | **Raise** | 14 | — | One ally | Revive a fallen ally. |
 | 12 | **Barrier** | 10 | — | All allies | Raise party defense for a time. |
 | 15 | **Holy** | 16 | Holy | One foe | Searing holy light on one foe. |
 | 16 | **Renew** | 10 | — | One ally | Slowly restore an ally's HP each round. |
 | 19 | **Curaga** | 18 | — | All allies | Greatly restore all allies. |
+| 24 | **Haste** | 10 | — | One ally | One ally acts much sooner for 4 rounds. |
 | 42 | **Sanctuary** | 40 | — | All allies | Revive the fallen and restore the whole party. |
 
 ### Kestrel · Rogue
@@ -327,6 +330,7 @@ Four heroes fight at once. Arrange them in **Menu → Formation**; the fifth wai
 | 1 | **Twin Strike** | 4 | — | One foe | Two quick cuts. |
 | 1 | **Smoke Bomb** | 3 | — | Self | Guaranteed escape (not from bosses). |
 | 14 | **Venom Edge** | 7 | — | One foe | Strike and poison. |
+| 18 | **Flash Powder** | 6 | — | All foes | Blind all foes: their attacks miss half the time. Bosses resist. |
 | 20 | **Shadowstep** | 15 | — | One foe | Three strikes from nowhere. |
 | 26 | **Mug** | 6 | — | One foe | Strike, and pocket something on the way out. |
 | 42 | **Thousand Cuts** | 24 | — | One foe | Five strikes faster than thought. |
@@ -338,6 +342,7 @@ Four heroes fight at once. Arrange them in **Menu → Formation**; the fifth wai
 | 1 | **Shade** | 6 | Dark | One foe | A lance of shadow. |
 | 1 | **Drain** | 9 | Dark | One foe | Steal HP from a foe. |
 | 1 | **Gravity** | 12 | — | One foe | Crush a foe for a quarter of its HP (less on bosses). |
+| 1 | **Slow** | 8 | — | One foe | One foe acts later for 4 rounds. Works on bosses half as often. |
 | 1 | **Nightfall** | 16 | Dark | All foes | Darkness falls on all foes. |
 | 28 | **Requiem** | 34 | Dark | All foes | The last song of the night. |
 | 44 | **Eventide** | 46 | Dark | All foes | Night falls gently on all foes, and takes a little back. |
@@ -389,10 +394,10 @@ sequenceDiagram
     participant E as Enemies
     Y->>B: Choose a command for each hero
     Note over Y,B: Combo partners skip their own command
-    B->>B: Sort everyone by SPD × random 0.8–1.2<br/>(Defend always goes first)
+    B->>B: Sort everyone by SPD × Haste/Slow × random 0.8–1.2<br/>(Defend always goes first)
     loop Each actor in order
         B->>E: Hero acts (attack, skill, item, combo)
-        E->>B: Enemy acts (weighted move list)
+        E->>B: Enemy acts (weighted move list, its AI picks the target)
     end
     B->>B: End of round: poison, regen,<br/>status timers, buff timers
     alt All enemies down
@@ -406,7 +411,30 @@ sequenceDiagram
 
 **Repeat last turn:** press **Shift**, **R** (touch) or **X** (gamepad) at the first hero's command menu to give everyone the same commands as last round. **Config → Battle speed** runs battles at 2× or 4×.
 
-Some late bosses **act twice per round**.
+Some late bosses **act twice per round**. Every boss **changes tactics when hurt**: below a share of its HP it announces the change and switches to a new move list (see [Bosses](#bosses)).
+
+### Elements: weak, resist, absorb
+
+```mermaid
+flowchart LR
+    H["Elemental hit<br/>(fire, ice, water, holy, dark…)"] --> Q{"The monster…"}
+    Q -->|is weak| W["×1.6 damage"]
+    Q -->|resists| R["×0.5 damage (grey number)"]
+    Q -->|absorbs| A["Heals it instead (green, 'Absorb')"]
+    Q -->|none of these| N["×1"]
+```
+
+The bestiary shows each monster's weaknesses, resistances and absorbs once you've met it. Fire on a Magma Slime or water on the Leviathan heals them, so switch elements.
+
+### Enemy behaviour
+
+Most enemies pick a random target. Some are smarter, and the bestiary says so:
+
+| AI | What it does | Examples |
+| --- | --- | --- |
+| Hunts the wounded | 60% of the time it attacks the hero lowest on HP | Wolves, Bandits, Deep Ones, Ozymar, the Hollow King, Orun, Vane |
+| Hunts casters | 60% of the time it goes for Lyra, Oswin or Selene | Hollow Knights, Dread Knights, Cinder Knights, Vesper |
+| Heals allies | Heals the most hurt monster (often not itself) when one is below half HP | Tomb Priests, Hollow Heralds, the Drowned Abbot |
 
 ### Formulas
 
@@ -424,9 +452,11 @@ Some late bosses **act twice per round**.
 | Gravity | 25% of the target's current HP (8% on bosses) |
 | Poison | Heroes lose 6% of max HP per round (never below 1); enemies lose 5% (at most 250) |
 | Regen | Renew: 8% of max HP per round for 5 rounds. Regen accessories: 5% per round |
-| Steal | `55% + (your SPD − their SPD) × 2%`, between 25% and 92%; once per enemy |
+| Steal | `55% + (your SPD − their SPD) × 2%`, between 25% and 92%; once per enemy. Some monsters carry a **rare item** (★): a successful steal takes it first with the listed chance, doubled by the Thief's Gloves or the Bestiary Seal |
 | Run | `60% + (party SPD − enemy SPD) × 3%`, between 30% and 95%. Never from bosses or in the Arena |
-| First strike | 8% of normal battles: the enemies lose their first round |
+| First strike | 8% of normal battles (25% with Lookout on the Lantern Board): the enemies lose their first round |
+| Blind | Physical attacks and skills miss 50% of the time |
+| Haste / Slow | Turn speed ×1.6 / ×0.6 |
 | Sleep | Heroes sleep 2 rounds and enemies 3. Any hit wakes an enemy; a hit wakes a hero 60% of the time |
 
 ### Statuses
@@ -436,31 +466,87 @@ Some late bosses **act twice per round**.
 | Poison | Loses HP every round | Antidote, Remedy, Purify, Sanctuary | Tide Pendant, Desert Veil, Silk Ribbon, Orrin's Seal, and others |
 | Sleep | Skips turns | Getting hit, Remedy, Purify | Wake Charm, Pip's Candle, Dwarven Band, Nightglass Locket, and others |
 | Silence | Can't use skills or combos | Remedy, Purify, Sanctuary | Echo Bell, Sage Circlet, Dwarven Band, Eclipse Mantle, and others |
+| Blind | Attacks and physical skills miss half the time | Remedy, Purify, Sanctuary | Eye Charm, Sun Circlet, Scholar's Monocle, all-ailment accessories |
+| Slow | Acts later (speed ×0.6) | Remedy, Purify, Haste, Sanctuary | Hourglass Pin, Starlit Cloak, all-ailment accessories |
+| Haste | Acts sooner (speed ×1.6) for 4 rounds | Wears off; Slow cancels it | — |
 | Regen | Heals every round | Wears off | — |
 
-Bosses are immune to Sleep and Silence. Kestrel's Venom Edge poisons bosses 40% of the time.
+Heroes are blinded or slowed for 3 rounds, enemies for 4. Bosses are immune to Sleep and Silence, take Slow half as often and Blind 30% as often. Kestrel's Venom Edge poisons bosses 40% of the time. A **Hotpot meal** (see [Cooking](#cooking)) prevents every ailment.
+
+New in 1.6: Oswin learns **Haste** at Lv 24, Kestrel **Flash Powder** (blind all foes) at Lv 18, and Selene starts with **Slow**.
+
+---
+
+## The Lantern Board
+
+From **level 30** every level-up gives the hero an **Ember**. At the level cap, every **20,000 EXP** gives another. Spend Embers on the hero's **Lantern Board**: open **Status**, pick a hero and press **Enter**. A node can be lit once one of its neighbours is lit. Every hero starts with the Spark lit. Lighting the whole board takes 23 Embers.
+
+Saves from before 1.6 get the Embers their heroes would already have earned (one per level from 30).
+
+```mermaid
+flowchart TB
+    cap(["★ Capstone · 5"])
+    p1(["Passive I · 2"]) --- cap
+    p2(["Passive II · 2"]) --- cap
+    hp["Vigor · 1<br/>Max HP +10%"] --- p1
+    mp["Focus · 1<br/>Max MP +15%"] --- p2
+    spark(("Spark")) --- hp
+    spark --- mp
+    spark --- atk["Might · 1<br/>ATK +8"]
+    spark --- mag["Insight · 1<br/>MAG +8"]
+    atk --- def["Ward · 2<br/>DEF +10"]
+    mag --- spd["Swiftness · 2<br/>SPD +6"]
+    p1 --- big(["Great Flame · 3"])
+    def --- big
+    p2 --- p3(["Passive III · 3"])
+    spd --- p3
+```
+
+| Node | Embers | Effect | Linked to |
+| --- | --- | --- | --- |
+| **Vigor** | 1 | Max HP +10% | Passive I, the Spark |
+| **Focus** | 1 | Max MP +15% | Passive II, the Spark |
+| **Might** | 1 | ATK +8 | Ward, the Spark |
+| **Insight** | 1 | MAG +8 | Swiftness, the Spark |
+| **Passive I** | 2 | A passive (see below) | Vigor, Great Flame, ★ Capstone |
+| **Passive II** | 2 | A passive (see below) | Focus, Passive III, ★ Capstone |
+| **Ward** | 2 | DEF +10 | Might, Great Flame |
+| **Swiftness** | 2 | SPD +6 | Insight, Passive III |
+| **Great Flame** | 3 | +20 to the hero's main stat (see below) | Passive I, Ward |
+| **Passive III** | 3 | A passive (see below) | Passive II, Swiftness |
+| **★ Capstone** | 5 | A passive (see below) | Passive I, Passive II |
+
+What the passives and the Great Flame do depends on the hero:
+
+| Hero | Great Flame | Passive I | Passive II | Passive III | Capstone |
+| --- | --- | --- | --- | --- | --- |
+| **Arin** | ATK +20 | Counter: 20% chance to strike back when hit by an attack. | Quick Limit: The Limit gauge fills 50% faster. | Auto-Regen: Starts every battle with Regen. | **Lamplighter's Resolve**: Once per battle, survive a fatal blow with 1 HP. |
+| **Lyra** | MAG +20 | MP Saver: Skills cost 25% less MP. | Quick Limit: The Limit gauge fills 50% faster. | Auto-Haste: Starts every battle with Haste. | **Wildfire**: Magic damage +20%. |
+| **Oswin** | MAG +20 | MP Saver: Skills cost 25% less MP. | Auto-Regen: Starts every battle with Regen. | Lookout: The party gets the first strike far more often. | **Tidal Grace**: Healing +30%. |
+| **Kestrel** | ATK +20 | Counter: 20% chance to strike back when hit by an attack. | Lookout: The party gets the first strike far more often. | Auto-Haste: Starts every battle with Haste. | **Ghost Step**: Dodge 25% of attacks. |
+| **Selene** | MAG +20 | MP Saver: Skills cost 25% less MP. | Quick Limit: The Limit gauge fills 50% faster. | Auto-Haste: Starts every battle with Haste. | **Twilight**: Dark damage +25%. |
 
 ---
 
 ## Bosses
 
-| Boss | Where | HP | ATK | MAG | SPD | Turns | Weak to | Steal | Special attacks |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Gloomcap** | Whisperwood Hollow 2F | 520 | 35 | 22 | 8 | 1 | Fire | Ether | Spore Cloud, Slam |
-| **Drowned Warden** | Sunken Shrine 2F | 1900 | 80 | 55 | 10 | 1 | Bolt | Hi-Ether | Tidal Wave, Cleave |
-| **Vesper** | Emberdeep Mines 3F | 5000 | 115 | 104 | 24 | 1 | Holy | Elixir | Shadow Bolt, Hollow Night, Drain, Hush |
-| **Leviathan** | Whirlpool, open sea (bounty) | 3500 | 97 | 78 | 14 | 1 | Bolt | Hi-Ether | Maelstrom, Crushing Coil |
-| **Ozymar, the First King** | Tomb of the First King 3F | 6200 | 138 | 110 | 24 | 1 | — | Megalixir | Sandstorm, Hush, Drain, Cleave |
-| **Astral Wyrm** | Starfall Observatory 3F (optional) | 12000 | 182 | 150 | 30 | 1 | — | Megalixir | Meteor Rain, Starfire Breath, Frost Breath, Dream Fog, Crushing Coil |
-| **The Hollow King** | Hollow Spire 3F (phase 1) | 6500 | 165 | 135 | 28 | 1 | — | Megalixir | Crown of Ash, Eclipse, Cleave |
-| **Hollow King, Unbound** | Hollow Spire 3F (phase 2) | 5200 | 175 | 148 | 32 | 1 | — | Megalixir | Crown of Ash, Eclipse, Drain, Frost Breath, Blaze |
-| **The Hollow Crown** | Crownfall Abyss 4F (phase 1) | 8000 | 205 | 192 | 32 | 2 | — | Megalixir | Crownfall, Shadow Bolt, Hollow Hush, Dream Fog, Meteor Rain |
-| **Orun, the Night-Bearer** | Crownfall Abyss 4F (phase 2) | 9500 | 232 | 204 | 34 | 2 | — | Megalixir | Crown of Ash, Drain, Frost Breath, Night Song, Starfire Breath |
-| **The Lamp-Eater** | The last roadside lamp (Arin) | 12500 | 210 | 218 | 30 | 2 | Holy | Megalixir | Drain, Shadow Bolt, Meteor Rain, Hush |
-| **Hearth Warden** | Ember Caves 2F (Lyra) | 9500 | 238 | 196 | 20 | 2 | Ice | Megalixir | Blaze, Ash Storm, Slam |
-| **The Drowned Abbot** | Sea Mother's Grotto 2F (Oswin) | 9000 | 210 | 222 | 24 | 2 | Bolt | Megalixir | Maelstrom, Drain, Lullaby |
-| **Guildmaster Vane** | The Undercity 2F (Kestrel) | 8500 | 226 | 80 | 42 | 2 | — | Megalixir | Needle Storm, Venom Bite, Shatter |
-| **Vesper's Echo** | Selene's dream, solo (Selene) | 2600 | 218 | 150 | 26 | 1 | Holy | Elixir | Shadow Bolt, Drain |
+| Boss | Where | HP | ATK | MAG | SPD | Turns | Weak to | Resists | Steal | Special attacks | When hurt |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **Gloomcap** | Whisperwood Hollow 2F | 520 | 35 | 22 | 8 | 1 | Fire | — | Ether | Spore Cloud, Slam | Below 50% HP: more aggressive |
+| **Drowned Warden** | Sunken Shrine 2F | 1900 | 80 | 55 | 10 | 1 | Bolt | — | Hi-Ether | Tidal Wave, Cleave | Below 50% HP: more aggressive |
+| **Vesper** | Emberdeep Mines 3F | 5000 | 115 | 104 | 24 | 1 | Holy | — | Elixir | Shadow Bolt, Hollow Night, Drain, Hush | Below 40% HP: adds Heavy Night |
+| **Leviathan** | Whirlpool, open sea (bounty) | 3500 | 97 | 78 | 14 | 1 | Bolt | absorbs water | Hi-Ether | Maelstrom, Crushing Coil | Below 50% HP: more aggressive |
+| **Ozymar, the First King** | Tomb of the First King 3F | 6200 | 138 | 110 | 24 | 1 | — | — | Megalixir · ★ Sun Circlet (25%) | Sandstorm, Hush, Drain, Cleave | Below 50% HP: adds Dazzle |
+| **Astral Wyrm** | Starfall Observatory 3F (optional) | 12000 | 182 | 150 | 30 | 1 | — | — | Megalixir · ★ Starlit Cloak (20%) | Meteor Rain, Starfire Breath, Frost Breath, Dream Fog, Crushing Coil | Below 35% HP, 2 turns: adds Heavy Night |
+| **The Hollow King** | Hollow Spire 3F (phase 1) | 6500 | 165 | 135 | 28 | 1 | — | — | Megalixir · ★ King's Signet (20%) | Crown of Ash, Eclipse, Cleave | Below 50% HP: adds Time Warp |
+| **Hollow King, Unbound** | Hollow Spire 3F (phase 2) | 5200 | 175 | 148 | 32 | 1 | — | — | Megalixir | Crown of Ash, Eclipse, Drain, Frost Breath, Blaze | Below 35% HP, 2 turns: more aggressive |
+| **The Hollow Crown** | Crownfall Abyss 4F (phase 1) | 8000 | 205 | 192 | 32 | 2 | — | — | Megalixir · ★ Megalixir (50%) | Crownfall, Shadow Bolt, Hollow Hush, Dream Fog, Meteor Rain | Below 40% HP: adds Dazzle |
+| **Orun, the Night-Bearer** | Crownfall Abyss 4F (phase 2) | 9500 | 232 | 204 | 34 | 2 | — | — | Megalixir | Crown of Ash, Drain, Frost Breath, Night Song, Starfire Breath | Below 40% HP: adds Heavy Night |
+| **The Lamp-Eater** | The last roadside lamp (Arin) | 12500 | 210 | 218 | 30 | 2 | Holy | — | Megalixir | Drain, Shadow Bolt, Meteor Rain, Hush | Below 50% HP: adds Dazzle |
+| **Hearth Warden** | Ember Caves 2F (Lyra) | 9500 | 238 | 196 | 20 | 2 | Ice | — | Megalixir | Blaze, Ash Storm, Slam | Below 50% HP: adds Dazzle |
+| **The Drowned Abbot** | Sea Mother's Grotto 2F (Oswin) | 9000 | 210 | 222 | 24 | 2 | Bolt | — | Megalixir | Maelstrom, Drain, Lullaby | Below 50% HP: adds Heavy Night |
+| **Guildmaster Vane** | The Undercity 2F (Kestrel) | 8500 | 226 | 80 | 42 | 2 | — | — | Megalixir · ★ Thief's Gloves (30%) | Needle Storm, Venom Bite, Shatter | Below 50% HP: adds Blinding Sand |
+| **Vesper's Echo** | Selene's dream, solo (Selene) | 2600 | 218 | 150 | 26 | 1 | Holy | — | Elixir | Shadow Bolt, Drain | Below 50% HP: adds Time Warp |
 
 ```mermaid
 xychart-beta
@@ -507,158 +593,158 @@ Ordered roughly as you meet them.
 
 #### Brightwater plains (west of the river)
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Green Slime | 22 | 13 | 4 | Fire | Potion | Potion (12%) | 6 | 5 |
-| Cave Bat | 18 | 15 | 2 | Bolt | Potion | — | 7 | 4 |
-| Goblin | 34 | 17 | 2 | — | Antidote | Potion (15%) | 10 | 9 |
-| Wild Wolf | 30 | 19 | 2 | Fire | Potion | — | 11 | 6 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Green Slime | 22 | 13 | 4 | Fire | — | Potion | Potion (12%) | 6 | 5 |
+| Cave Bat | 18 | 15 | 2 | Bolt | — | Potion | — | 7 | 4 |
+| Goblin | 34 | 17 | 2 | — | — | Antidote | Potion (15%) | 10 | 9 |
+| Wild Wolf *(Hunts the wounded)* | 30 | 19 | 2 | Fire | — | Potion | — | 11 | 6 |
 
 #### Whisperwood Hollow
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Spore Cap | 50 | 22 | 10 | Fire | Antidote | Antidote (25%) | 18 | 12 |
-| Shade Bat | 42 | 26 | 4 | Bolt | Potion | — | 17 | 10 |
-| Root Crawler | 66 | 25 | 4 | Fire | Potion | Potion (20%) | 22 | 15 |
-| Goblin | 34 | 17 | 2 | — | Antidote | Potion (15%) | 10 | 9 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Spore Cap | 50 | 22 | 10 | Fire | — | Antidote | Antidote (25%) | 18 | 12 |
+| Shade Bat | 42 | 26 | 4 | Bolt | — | Potion | — | 17 | 10 |
+| Root Crawler | 66 | 25 | 4 | Fire | — | Potion | Potion (20%) | 22 | 15 |
+| Goblin | 34 | 17 | 2 | — | — | Antidote | Potion (15%) | 10 | 9 |
 
 #### Eastern lowlands (Port Halden)
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Gel Slime | 70 | 34 | 10 | Bolt | Potion | — | 26 | 20 |
-| Hobgoblin | 95 | 41 | 4 | — | Hi-Potion | Hi-Potion (10%) | 34 | 28 |
-| Harpy | 80 | 39 | 6 | Bolt | Potion | — | 30 | 22 |
-| Sand Crab | 110 | 37 | 4 | Bolt | Antidote | — | 36 | 30 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Gel Slime | 70 | 34 | 10 | Bolt | — | Potion | — | 26 | 20 |
+| Hobgoblin | 95 | 41 | 4 | — | — | Hi-Potion | Hi-Potion (10%) | 34 | 28 |
+| Harpy | 80 | 39 | 6 | Bolt | — | Potion | — | 30 | 22 |
+| Sand Crab | 110 | 37 | 4 | Bolt | — | Antidote | — | 36 | 30 |
 
 #### Sunken Shrine
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Drowned One | 140 | 49 | 8 | Holy, Fire | Ether | Hi-Potion (15%) | 50 | 35 |
-| Tide Serpent | 160 | 53 | 20 | Bolt | Hi-Potion | — | 58 | 40 |
-| Will-o-Wisp | 100 | 30 | 38 | Holy, Fire | Ether | — | 52 | 32 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Drowned One | 140 | 49 | 8 | Holy, Fire | Water | Ether | Hi-Potion (15%) | 50 | 35 |
+| Tide Serpent | 160 | 53 | 20 | Bolt | absorbs water | Hi-Potion | — | 58 | 40 |
+| Will-o-Wisp | 100 | 30 | 38 | Holy, Fire | — | Ether | — | 52 | 32 |
 
 #### Open sea
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Sea Serpent | 200 | 60 | 30 | Bolt | Hi-Potion | — | 70 | 50 |
-| King Crab | 240 | 62 | 6 | Bolt | Hi-Potion | — | 78 | 60 |
-| Harpy | 80 | 39 | 6 | Bolt | Potion | — | 30 | 22 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Sea Serpent | 200 | 60 | 30 | Bolt | absorbs water | Hi-Potion | — | 70 | 50 |
+| King Crab | 240 | 62 | 6 | Bolt | — | Hi-Potion | — | 78 | 60 |
+| Harpy | 80 | 39 | 6 | Bolt | — | Potion | — | 30 | 22 |
 
 #### Northern continent (Ironhold, Frostmere)
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Frost Wolf | 220 | 68 | 20 | Fire | Hi-Potion | Frost Crystal (22%) | 85 | 55 |
-| Ice Golem | 340 | 76 | 10 | Fire | Ether | Frost Crystal (22%) | 110 | 80 |
-| Snow Imp | 180 | 52 | 58 | Fire | Ether | Frost Crystal (22%) | 90 | 70 |
-| Ogre | 300 | 86 | 5 | — | Hi-Potion | Hi-Potion (25%) | 120 | 110 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Frost Wolf *(Hunts the wounded)* | 220 | 68 | 20 | Fire | Ice | Hi-Potion | Frost Crystal (22%) | 85 | 55 |
+| Ice Golem | 340 | 76 | 10 | Fire | absorbs ice | Ether | Frost Crystal (22%) | 110 | 80 |
+| Snow Imp | 180 | 52 | 58 | Fire | Ice | Ether | Frost Crystal (22%) | 90 | 70 |
+| Ogre | 300 | 86 | 5 | — | — | Hi-Potion | Hi-Potion (25%) | 120 | 110 |
 
 #### Emberdeep Mines
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Magma Slime | 320 | 84 | 60 | Ice | Ember Bomb | Ember Core (22%) | 150 | 100 |
-| Fire Bat | 260 | 88 | 40 | Ice | Ember Bomb | Ember Core (22%) | 140 | 90 |
-| Dwarf Revenant | 420 | 98 | 20 | Holy | Hi-Ether | Ether (15%) | 180 | 130 |
-| Ember Golem | 520 | 104 | 50 | Ice | X-Potion | Ember Core (22%) | 220 | 160 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Magma Slime | 320 | 84 | 60 | Ice | absorbs fire | Ember Bomb | Ember Core (22%) | 150 | 100 |
+| Fire Bat | 260 | 88 | 40 | Ice | Fire | Ember Bomb | Ember Core (22%) | 140 | 90 |
+| Dwarf Revenant | 420 | 98 | 20 | Holy | — | Hi-Ether | Ether (15%) | 180 | 130 |
+| Ember Golem | 520 | 104 | 50 | Ice | absorbs fire | X-Potion | Ember Core (22%) | 220 | 160 |
 
 #### Sunscar Desert and the Aerie valley
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Sandworm | 420 | 96 | 30 | Ice | Hi-Potion | — | 170 | 120 |
-| Death Scorpion | 330 | 100 | 20 | Ice | Antidote | — | 160 | 110 |
-| Sand Bandit | 360 | 98 | 20 | — | Ember Bomb | Hi-Potion (30%) | 165 | 220 |
-| Cactoid | 300 | 90 | 40 | Fire | Remedy | — | 150 | 100 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Sandworm | 420 | 96 | 30 | Ice | — | Hi-Potion | — | 170 | 120 |
+| Death Scorpion | 330 | 100 | 20 | Ice | — | Antidote | — | 160 | 110 |
+| Sand Bandit *(Hunts the wounded)* | 360 | 98 | 20 | — | — | Ember Bomb · ★ X-Potion (15%) | Hi-Potion (30%) | 165 | 220 |
+| Cactoid | 300 | 90 | 40 | Fire | — | Remedy | — | 150 | 100 |
 
 #### Tomb of the First King
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Mummy | 640 | 128 | 60 | Fire, Holy | Remedy | Sun Gold (22%) | 260 | 180 |
-| Gilded Scarab | 520 | 120 | 30 | Ice | Hi-Ether | Sun Gold (22%) | 240 | 260 |
-| Sphinx | 940 | 142 | 120 | Bolt | X-Potion | Sun Gold (22%) | 320 | 240 |
-| Cursed Priest | 680 | 90 | 132 | Holy | Elixir | — | 280 | 230 |
-| Gilded Golem | 1050 | 146 | 40 | Bolt | X-Potion | Sun Gold (22%) | 340 | 400 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mummy | 640 | 128 | 60 | Fire, Holy | — | Remedy | Sun Gold (22%) | 260 | 180 |
+| Gilded Scarab | 520 | 120 | 30 | Ice | — | Hi-Ether · ★ Megalixir (8%) | Sun Gold (22%) | 240 | 260 |
+| Sphinx | 940 | 142 | 120 | Bolt | — | X-Potion | Sun Gold (22%) | 320 | 240 |
+| Cursed Priest *(Heals allies)* | 680 | 90 | 132 | Holy | — | Elixir · ★ Elixir (20%) | — | 280 | 230 |
+| Gilded Golem | 1050 | 146 | 40 | Bolt | — | X-Potion · ★ Sun Gold (30%) | Sun Gold (22%) | 340 | 400 |
 
 #### Isle of Dusk
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Hollow Knight | 700 | 138 | 30 | Holy | X-Potion | Hi-Potion (25%), Dusk Silk (22%) | 300 | 220 |
-| Night Gaze | 520 | 80 | 118 | Bolt | Hi-Ether | Dusk Silk (22%) | 280 | 200 |
-| Shade Wraith | 600 | 118 | 100 | Holy | Ether | Dusk Silk (22%) | 290 | 210 |
-| Chimera | 900 | 148 | 90 | Ice | X-Potion | Dusk Silk (22%) | 350 | 260 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Hollow Knight *(Hunts casters)* | 700 | 138 | 30 | Holy | Dark | X-Potion | Hi-Potion (25%), Dusk Silk (22%) | 300 | 220 |
+| Night Gaze | 520 | 80 | 118 | Bolt | — | Hi-Ether | Dusk Silk (22%) | 280 | 200 |
+| Shade Wraith | 600 | 118 | 100 | Holy | Dark | Ether | Dusk Silk (22%) | 290 | 210 |
+| Chimera *(Hunts the wounded)* | 900 | 148 | 90 | Ice | — | X-Potion | Dusk Silk (22%) | 350 | 260 |
 
 #### Hollow Spire
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Void Slime | 780 | 140 | 110 | Holy | Hi-Ether | Dusk Silk (22%) | 320 | 240 |
-| Shade Wraith | 600 | 118 | 100 | Holy | Ether | Dusk Silk (22%) | 290 | 210 |
-| Dread Knight | 1000 | 160 | 40 | Holy | Megalixir | X-Potion (15%), Dusk Silk (22%) | 420 | 320 |
-| Night Gaze | 520 | 80 | 118 | Bolt | Hi-Ether | Dusk Silk (22%) | 280 | 200 |
-| Hollow Knight | 700 | 138 | 30 | Holy | X-Potion | Hi-Potion (25%), Dusk Silk (22%) | 300 | 220 |
-| Chimera | 900 | 148 | 90 | Ice | X-Potion | Dusk Silk (22%) | 350 | 260 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Void Slime | 780 | 140 | 110 | Holy | absorbs dark | Hi-Ether | Dusk Silk (22%) | 320 | 240 |
+| Shade Wraith | 600 | 118 | 100 | Holy | Dark | Ether | Dusk Silk (22%) | 290 | 210 |
+| Dread Knight *(Hunts casters)* | 1000 | 160 | 40 | Holy | Dark | Megalixir · ★ Megalixir (10%) | X-Potion (15%), Dusk Silk (22%) | 420 | 320 |
+| Night Gaze | 520 | 80 | 118 | Bolt | — | Hi-Ether | Dusk Silk (22%) | 280 | 200 |
+| Hollow Knight *(Hunts casters)* | 700 | 138 | 30 | Holy | Dark | X-Potion | Hi-Potion (25%), Dusk Silk (22%) | 300 | 220 |
+| Chimera *(Hunts the wounded)* | 900 | 148 | 90 | Ice | — | X-Potion | Dusk Silk (22%) | 350 | 260 |
 
 #### Starfall Observatory
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Starspawn | 1100 | 120 | 150 | Bolt | Hi-Ether | Star Shard (22%) | 520 | 380 |
-| Astral Knight | 1400 | 182 | 60 | Holy | Megalixir | X-Potion (20%), Star Shard (22%) | 600 | 420 |
-| Void Drake | 1500 | 175 | 130 | Holy | X-Potion | Star Shard (22%) | 650 | 480 |
-| Nebula Slime | 1000 | 160 | 140 | Ice | Hi-Ether | Star Shard (22%) | 480 | 360 |
-| Comet Imp | 900 | 140 | 150 | Ice | Elixir | Star Shard (22%) | 450 | 340 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Starspawn | 1100 | 120 | 150 | Bolt | — | Hi-Ether · ★ Star Shard (30%) | Star Shard (22%) | 520 | 380 |
+| Astral Knight *(Hunts casters)* | 1400 | 182 | 60 | Holy | — | Megalixir | X-Potion (20%), Star Shard (22%) | 600 | 420 |
+| Void Drake | 1500 | 175 | 130 | Holy | — | X-Potion | Star Shard (22%) | 650 | 480 |
+| Nebula Slime | 1000 | 160 | 140 | Ice | — | Hi-Ether | Star Shard (22%) | 480 | 360 |
+| Comet Imp | 900 | 140 | 150 | Ice | — | Elixir | Star Shard (22%) | 450 | 340 |
 
 #### Ashen Isle
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Ash Hound | 1500 | 196 | 60 | Ice | X-Potion | Abyss Ash (12%) | 640 | 420 |
-| Cinder Wisp | 1200 | 120 | 176 | Ice, Holy | Hi-Ether | Ember Core (20%) | 600 | 400 |
-| Cinder Knight | 2000 | 212 | 60 | Ice | Megalixir | X-Potion (20%), Abyss Ash (15%) | 760 | 520 |
-| Ash Colossus | 2600 | 220 | 40 | Bolt | X-Potion | Ember Core (25%) | 820 | 600 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Ash Hound *(Hunts the wounded)* | 1500 | 196 | 60 | Ice | — | X-Potion | Abyss Ash (12%) | 640 | 420 |
+| Cinder Wisp | 1200 | 120 | 176 | Ice, Holy | absorbs fire | Hi-Ether | Ember Core (20%) | 600 | 400 |
+| Cinder Knight *(Hunts casters)* | 2000 | 212 | 60 | Ice | Fire | Megalixir | X-Potion (20%), Abyss Ash (15%) | 760 | 520 |
+| Ash Colossus | 2600 | 220 | 40 | Bolt | Fire | X-Potion | Ember Core (25%) | 820 | 600 |
 
 #### Crownfall Abyss
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Crown Shard | 1500 | 140 | 196 | Bolt | Hi-Ether | Abyss Ash (20%) | 700 | 500 |
-| Gloam Knight | 2800 | 240 | 70 | Holy | Megalixir | Megalixir (10%), Abyss Ash (25%) | 960 | 680 |
-| Nightmare | 2600 | 232 | 90 | Holy | Megalixir | Dusk Silk (25%) | 880 | 600 |
-| Abyss Ooze | 2000 | 196 | 188 | Holy | Hi-Ether | Abyss Ash (20%) | 760 | 520 |
-| Hollow Herald | 2100 | 140 | 206 | Holy | Elixir | Dusk Silk (20%) | 820 | 560 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Crown Shard | 1500 | 140 | 196 | Bolt | — | Hi-Ether | Abyss Ash (20%) | 700 | 500 |
+| Gloam Knight *(Hunts casters)* | 2800 | 240 | 70 | Holy | Dark | Megalixir | Megalixir (10%), Abyss Ash (25%) | 960 | 680 |
+| Nightmare *(Hunts the wounded)* | 2600 | 232 | 90 | Holy | absorbs dark | Megalixir | Dusk Silk (25%) | 880 | 600 |
+| Abyss Ooze | 2000 | 196 | 188 | Holy | absorbs dark | Hi-Ether | Abyss Ash (20%) | 760 | 520 |
+| Hollow Herald *(Heals allies)* | 2100 | 140 | 206 | Holy | Dark | Elixir | Dusk Silk (20%) | 820 | 560 |
 
 #### Ember Caves (Lyra's quest)
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Kiln Imp | 1600 | 150 | 190 | Ice | Hi-Ether | Ember Core (25%) | 650 | 450 |
-| Cinder Serpent | 1900 | 205 | 120 | Ice | X-Potion | Ember Core (20%) | 700 | 480 |
-| Cinder Wisp | 1200 | 120 | 176 | Ice, Holy | Hi-Ether | Ember Core (20%) | 600 | 400 |
-| Ash Colossus | 2600 | 220 | 40 | Bolt | X-Potion | Ember Core (25%) | 820 | 600 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Kiln Imp | 1600 | 150 | 190 | Ice | Fire | Hi-Ether | Ember Core (25%) | 650 | 450 |
+| Cinder Serpent | 1900 | 205 | 120 | Ice | — | X-Potion | Ember Core (20%) | 700 | 480 |
+| Cinder Wisp | 1200 | 120 | 176 | Ice, Holy | absorbs fire | Hi-Ether | Ember Core (20%) | 600 | 400 |
+| Ash Colossus | 2600 | 220 | 40 | Bolt | Fire | X-Potion | Ember Core (25%) | 820 | 600 |
 
 #### Sea Mother's Grotto (Oswin's quest)
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Deep One | 2000 | 200 | 170 | Bolt | Hi-Ether | Frost Crystal (20%) | 720 | 500 |
-| Pearl Guard | 2300 | 215 | 60 | Bolt | Megalixir | Sun Gold (20%) | 760 | 900 |
-| Abyss Ooze | 2000 | 196 | 188 | Holy | Hi-Ether | Abyss Ash (20%) | 760 | 520 |
-| Hollow Herald | 2100 | 140 | 206 | Holy | Elixir | Dusk Silk (20%) | 820 | 560 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Deep One *(Hunts the wounded)* | 2000 | 200 | 170 | Bolt | absorbs water | Hi-Ether | Frost Crystal (20%) | 720 | 500 |
+| Pearl Guard | 2300 | 215 | 60 | Bolt | — | Megalixir · ★ Megalixir (12%) | Sun Gold (20%) | 760 | 900 |
+| Abyss Ooze | 2000 | 196 | 188 | Holy | absorbs dark | Hi-Ether | Abyss Ash (20%) | 760 | 520 |
+| Hollow Herald *(Heals allies)* | 2100 | 140 | 206 | Holy | Dark | Elixir | Dusk Silk (20%) | 820 | 560 |
 
 #### The Undercity (Kestrel's quest)
 
-| Monster | HP | ATK | MAG | Weak to | Steal | Drops | EXP | Gold |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Guild Cutpurse | 1500 | 200 | 60 | — | Elixir | X-Potion (25%), Dusk Silk (20%) | 640 | 1200 |
-| Guild Enforcer | 2700 | 235 | 40 | — | Megalixir | Sun Gold (15%) | 820 | 900 |
-| Sewer Ooze | 1700 | 180 | 170 | Fire | Remedy | Dusk Silk (20%) | 640 | 420 |
+| Monster | HP | ATK | MAG | Weak to | Resists | Steal | Drops | EXP | Gold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guild Cutpurse *(Hunts the wounded)* | 1500 | 200 | 60 | — | — | Elixir · ★ Thief's Gloves (4%) | X-Potion (25%), Dusk Silk (20%) | 640 | 1200 |
+| Guild Enforcer | 2700 | 235 | 40 | — | — | Megalixir | Sun Gold (15%) | 820 | 900 |
+| Sewer Ooze | 1700 | 180 | 170 | Fire | — | Remedy | Dusk Silk (20%) | 640 | 420 |
 
 ---
 
@@ -755,6 +841,26 @@ Harder fish need more hits and have a narrower green zone (30% of the bar for �
 | **Mirage Pearlfish** | ★★★ | 4 | 1500 | Mirage oasis (12%) |
 | **Ember Eel** | ★★★ | 4 | 900 | Lastlight pond (40%)<br>Ashen Isle shore (30%) |
 | **Lantern Koi** | ★★★ | 4 | 5000 | Anywhere, 3% per cast, after the ending |
+
+---
+
+## Cooking
+
+Any innkeeper will cook your catch. Choose **Cook a meal** when you talk to them (it only appears when you're carrying fish). A meal lasts for the next **3 battles**, win, lose or run, and shows under the menu. Cooking a new meal replaces the old one.
+
+| Meal | Ingredients | Effect (next 3 battles) |
+| --- | --- | --- |
+| **Minnow Fry** | Brook Minnow ×3 | Start battles with Regen. |
+| **Grilled Trout** | River Trout ×2 | ATK +12%. |
+| **Sea Bass Stew** | Sea Bass ×1, Silver Mackerel ×1 | DEF +12%. |
+| **Eel Skewers** | Harbor Eel ×2 | SPD +15%. |
+| **Frost Char Sashimi** | Frost Char ×1, Ice Pike ×1 | MAG +12%. |
+| **Catfish Gumbo** | Oasis Catfish ×2 | Start battles with Haste. |
+| **Ember Eel Hotpot** | Ember Eel ×2 | No ailments can take hold. |
+| **Golden Carp Feast** | Golden Carp ×1, Brook Minnow ×1 | EXP +25%. |
+| **Pearl Pilaf** | Mirage Pearlfish ×1 | Gold +50%. |
+| **Snow Sturgeon Roast** | Snow Sturgeon ×1 | ATK and MAG +15%. |
+| **Lantern Koi Banquet** | Lantern Koi ×1 | All stats +15%, and Regen. |
 
 ---
 
@@ -911,6 +1017,14 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **Orrin's Seal** | ATK +6, DEF +18. Prevents all ailments. | — | Quest, chest or prize |
 | **Eclipse Mantle** | DEF +24, MAG +24. Revives once per battle. Prevents silence. | — | Quest, chest or prize |
 | **Nightglass Locket** | All +18. Prevents sleep. A drop of gentle night. | — | Quest, chest or prize |
+| **Thief's Gloves** | SPD +10. Rare steals are twice as likely. Rare steal: Guildmaster Vane. | — | Quest, chest or prize |
+| **Starlit Cloak** | DEF +20, MAG +20. Prevents sleep and slow. Rare steal: Astral Wyrm. | — | Quest, chest or prize |
+| **King's Signet** | ATK +18, MAG +18. Rare steal: the Hollow King. | — | Quest, chest or prize |
+| **Sun Circlet** | MAG +16. Prevents blind and silence. Rare steal: Ozymar. | — | Quest, chest or prize |
+| **Eye Charm** | DEF +4. Prevents blind. | 2200 | Mirage shop, Frostmere shop |
+| **Hourglass Pin** | SPD +4. Prevents slow. | 2600 | Aerie shop, Frostmere shop |
+| **Scholar's Monocle** | MAG +14. +25% EXP. Prevents blind. Sable's reward. | — | Quest, chest or prize |
+| **Bestiary Seal** | All +14. Rare steals twice as likely. Sable's reward for every creature. | — | Quest, chest or prize |
 | **Heartlight** | All +20. Revives once per battle. No ailments. Five lights, one lantern. | — | Quest, chest or prize |
 | **Crown of Dusk & Dawn** | All +25. Regen. No ailments. Both halves of the first crown, at peace. | — | Quest, chest or prize |
 
@@ -930,7 +1044,7 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **Tent** | 120 | Rest on the world map. Restores the party. |
 | **Elixir** | — | Fully restores HP and MP. |
 | **Megalixir** | — | Fully restores the whole party. |
-| **Remedy** | 60 | Cures poison, sleep and silence. |
+| **Remedy** | 60 | Cures poison, sleep, silence, blind and slow. |
 | **Ember Bomb** | 90 | Deals fire damage to all foes. |
 | **Star Bomb** | 900 | Bursts with holy light on all foes. |
 

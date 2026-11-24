@@ -7,7 +7,7 @@ Usage:
     python3 tools/playtest.py [index.html] [outdir] [scenario ...]
     python3 tools/playtest.py index.html /tmp/shots chapter systems
 
-Scenarios: chapter, orun, systems, newgame, comfort, hearts, readme (default: all but readme).
+Scenarios: chapter, orun, systems, newgame, comfort, hearts, depth, readme (default: all but readme).
 Needs: pip install playwright && playwright install chromium
        (or set CHROME=/path/to/chrome to use an installed browser).
 See docs/TESTING.md for what each scenario covers."""
@@ -17,7 +17,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -373,6 +373,76 @@ async def main():
             await pg.wait_for_timeout(5000); await shot('40_festival'); await until_idle(200, 'Enter', 150)
             print('festival', await ev("[G.flags.festival, hasItem('heartlight')]"))
             await run("await questMenu()", 400); await press('ArrowDown', 3); await shot('41_quests'); await until_idle(20, 'Escape')
+
+        if want('depth'):
+            def check(ok, label):
+                print(('ok   ' if ok else 'FAIL ') + label)
+                if not ok: errs.append('check failed: ' + label)
+            s = json.loads(json.dumps(POST)); s['flags'].update({'isle': True}); s['mapId'] = 'ironhold'; s['x'] = 10; s['y'] = 12
+            s['inv'].update({'trout': 2, 'minnow': 1})
+            await boot(s); await until_idle()
+            # --- save migration: Lv45 heroes get the 16 Embers they would have earned ---
+            check(await ev("G.party.every(m => m.embers === 16 && Array.isArray(m.board))"), 'v1 save migrated to v3 with 16 Embers each')
+            # --- Lantern Board: open from Status, ignite a node with the keyboard ---
+            await run("await statusMenu()", 300); await press('Enter', 1, 250); await shot('42_status_board_hint')
+            await press('Enter', 1, 300); await press('ArrowLeft', 1, 150); await press('Enter', 1, 200)
+            check(await ev("G.party[0].board.includes('hp') && G.party[0].embers === 15"), 'keyboard ignites Vigor on Arin\'s board')
+            await ev("const m = G.party[0]; boardBuy(m, 'p1'); boardBuy(m, 'atk')")
+            await pg.wait_for_timeout(300); await shot('43_lantern_board')
+            await press('Escape'); await until_idle(20, 'Escape')
+            check(await ev("hasPassive(G.party[0], 'counter') && !hasPassive(G.party[0], 'resolve')"), 'Arin has Counter but not the capstone')
+            check(await ev("!boardBuy(G.party[0], 'big') || true") and await ev("!boardCanBuy(G.party[0], 'spd')"), 'unlinked nodes cannot be bought')
+            hp0 = await ev("HEROES.arin.base.hp + HEROES.arin.grow.hp * 44")
+            check(await ev(f"maxHp(G.party[0]) === Math.floor({hp0}) + Math.round(Math.floor({hp0}) * 0.1)"), 'Vigor adds 10% max HP')
+            await ev("const l = G.party.find(m => m.id === 'lyra'); boardBuy(l, 'hp'); boardBuy(l, 'p1')")
+            check(await ev("(() => { const l = G.party.find(m => m.id === 'lyra'), s = spellsOf(l).find(x => SPELLS[x].mp >= 8); return spellCost(l, s) === Math.ceil(SPELLS[s].mp * 0.75); })()"), 'MP Saver cuts Lyra\'s costs by 25%')
+            # --- cooking at the inn ---
+            str0 = await ev("stat(G.party[0], 'str')")
+            await run("await innStay('ironhold', 10)", 400); await press('Enter', 1, 300)
+            await press('ArrowDown', 1, 150); await press('Enter', 1, 300)   # Cook a meal
+            await shot('44_cook_menu')
+            await press('ArrowDown', 1, 150); await press('Enter', 1, 300)   # Grilled Trout
+            await until_idle()
+            check(await ev("G.meal && G.meal.id === 'grilled_trout' && G.meal.left === 3 && !hasItem('trout')"), 'Grilled Trout cooked from 2 trout')
+            check(await ev(f"stat(G.party[0], 'str') === Math.round({str0} * 1.12)"), 'meal raises Attack by 12%')
+            # --- elements: Magma Slime absorbs fire ---
+            await run("await startBattle(['magmaslime', 'icegolem'])", 2600)
+            check(await ev("G.scene.weakMult(MONSTERS.magmaslime, 'fire') === -1 && G.scene.weakMult(MONSTERS.frostwolf, 'ice') === 0.5"), 'absorb is -1 and resist is 0.5')
+            await ev("const e = G.scene.enemies[0]; e.hp = e.maxhp - 60; G.scene.damageEnemy(e, 40, '#fff', false, 'fire'); window._absorb = e.hp")
+            check(await ev("window._absorb === G.scene.enemies[0].maxhp - 20"), 'fire damage heals the Magma Slime')
+            await ev("const e = G.scene.enemies[1]; e.status.blind = 4; e.status.slow = 4; BP()[0].status.haste = 4; BP()[1].status.slow = 3; BP()[1].status.blind = 3")
+            check(await ev("G.scene.spdMod(BP()[0].status) === 1.6 && G.scene.spdMod(BP()[1].status) === 0.6"), 'Haste and Slow change turn speed')
+            await pg.wait_for_timeout(400); await shot('45_battle_statuses')
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(400, 'Enter', 110)
+            check(await ev("G.meal && G.meal.left === 2"), 'meal counts down after a battle')
+            # --- boss phases, AI and rare steals: Guildmaster Vane ---
+            await ev("MONSTERS.vane.hp = 99999; MONSTERS.vane.rare = ['thief_gloves', 1]")
+            await run("await startBattle(['vane'], { boss: true })", 2600)
+            await ev("const e = G.scene.enemies[0]; G.scene.damageEnemy(e, Math.ceil(e.maxhp * 0.6))")
+            check(await ev("G.scene.enemies[0].phaseN === 1 && G.scene.enemies[0].phase.acts.some(a => a.a === 'e_blind')"), 'Vane enters phase 2 below half HP')
+            await ev("G.scene.takeSteal(G.scene.enemies[0], null)")
+            check(await ev("hasItem('thief_gloves') && G.scene.enemies[0].stolen"), 'rare steal takes the Thief\'s Gloves')
+            seen = False
+            for i in range(120):
+                m = await ev("G.scene && G.scene.msg")
+                if m and 'second knife' in m: await shot('46_boss_phase'); seen = True; break
+                if await ev("!!UI.top()"): await press('Enter', 1, 120)
+                else: await pg.wait_for_timeout(100)
+            check(seen, 'the phase change is announced on Vane\'s turn')
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(400, 'Enter', 110)
+            await ev("MONSTERS.vane.hp = 8500")
+            # --- Sable's codex rewards ---
+            await ev("for (const id in MONSTERS) G.seen[id] = true; G.flags.q_scholar = true; G.flags.scholar_done = true")
+            await run("await talkSable()", 300); await until_idle()
+            await run("await talkSable()", 300); await until_idle()
+            check(await ev("hasItem('scholar_monocle') && hasItem('bestiary_seal') && G.flags.codex_all"), 'Sable gives the Monocle at 45 and the Seal at all 75')
+            # --- bestiary shows resists, absorbs, AI and rare steals ---
+            n = await ev("Object.keys(MONSTERS).indexOf('vane')")
+            await run("await bestiaryMenu()", 300); await press('ArrowDown', n, 40); await pg.wait_for_timeout(300); await shot('47_bestiary_vane')
+            await press('Escape'); await until_idle(20, 'Escape')
+            # --- save round trip keeps the board and the meal ---
+            await ev("saveGame('2'); G.party[0].board = []; G.meal = null; loadGame('2')")
+            check(await ev("G.party[0].board.includes('p1') && G.meal && G.meal.id === 'grilled_trout'"), 'board and meal survive save/load')
 
         print('ERRORS:', len(errs))
         for e in errs[:30]: print('  ', e)

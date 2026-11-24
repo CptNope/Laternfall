@@ -69,6 +69,7 @@ The exit code is `0` when there were no errors and `1` otherwise, so it can gate
 | `newgame` | Starts a fresh game, walks with auto-dash, checks the isle is still underwater, fights an early encounter and an isle encounter | Party is Arin and Lyra at Lv 1; isle tiles are `~` before the ending; isle encounters use the `ash` background | `20`–`21` |
 | `comfort` | Seeds a 1.x save and checks it migrates into slot 1; saves to slot 2; auto-save on entering a town; Config; a battle at 4× where round 2 is repeated with Shift; equipment optimisation; the Log; a fake gamepad walking the hero; the post-game encounter toggle; the title's Load Game menu | Save `version` 2, legacy key kept, Auto slot written, repeat deals damage, the hero moves on gamepad input | `22`–`27` |
 | `hearts` | All five hero quests from a post-Chapter-VI save: Elder Maren and the 12 lamps (the last wakes the Lamp-Eater), Mira and the Ember Caves riddles and Hearth Warden, Wenna and the Grotto, the jail trapdoor and Vane, an inn dream where Selene fights alone, every hero using a Limit in one battle, a campfire talk, the festival | Each quest's `*_done` and `limit_*` flags and weapon; the Undercity exits to the jail; Limit gauges empty after use; Heartlight received | `30`–`41` |
+| `depth` | The 1.6 systems from a Lv 45 save at the Ironhold inn (seeded as a 1.x save, so it also tests the v1→v3 migration) | 19 named checks: 16 Embers each after migration; lighting Vigor with the keyboard; Counter and MP Saver; Vigor's +10% HP; cooking Grilled Trout at the inn and its +12% ATK; fire healing a Magma Slime; Haste and Slow turn speed; the meal counting down; Vane's phase change and its announcement; a rare steal; Sable's two rewards; the board and meal surviving save/load. A failed check counts as an error | `42`–`47` |
 | `readme` | Takes clean screenshots for the README | — | Lastlight, Ashen Isle, Abyss, Hollow Crown, fishing |
 
 ```mermaid
@@ -222,7 +223,7 @@ tools/check_mermaid.sh README.md ROADMAP.md CHANGELOG.md docs/*.md
 
 1. builds the game and fails if `index.html` doesn't match `src/` (someone forgot to run `build.py`);
 2. regenerates the game guide and fails if `docs/GAME_GUIDE.md` is out of date;
-3. runs the `chapter`, `systems`, `newgame`, `comfort` and `hearts` scenarios, failing on any JavaScript error;
+3. runs the `chapter`, `systems`, `newgame`, `comfort`, `hearts` and `depth` scenarios, failing on any JavaScript error or failed check;
 4. uploads the screenshots as a `playtest-screenshots` artifact.
 
 ```mermaid

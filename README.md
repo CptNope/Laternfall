@@ -1,7 +1,7 @@
 # Lanternfall — A Tale of the Four Flames
 
 [![Play on itch.io](https://img.shields.io/badge/play-itch.io-fa5c5c?logo=itchdotio&logoColor=white)](https://cptnope.itch.io/lanternfall)
-[![Version](https://img.shields.io/badge/version-1.5.0-e8c24a)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.6.0-e8c24a)](CHANGELOG.md)
 [![Play-test](https://github.com/CptNope/Laternfall/actions/workflows/playtest.yml/badge.svg)](https://github.com/CptNope/Laternfall/actions/workflows/playtest.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3a8fd0)](LICENSE)
 ![No asset files](https://img.shields.io/badge/assets-0%20files-7b3fa8)
@@ -112,12 +112,13 @@ flowchart LR
 | --- | --- | --- | --- |
 | Playable heroes | **5** (4 fight at once) | Monsters | **75** in 21 drawn families |
 | Towns | **7** | Boss battles | **15** |
-| Dungeons | **10** (26 floors) | Skills and spells | **36**, plus **31** enemy abilities |
-| Side quests | **16** | Combo techs and Limits | **12** and **5** |
-| Arena cups | **6** | Weapons, armour, accessories | **43**, **17**, **28** |
+| Dungeons | **10** (26 floors) | Skills and spells | **39**, plus **35** enemy abilities |
+| Side quests | **17** | Combo techs and Limits | **12** and **5** |
+| Arena cups | **6** | Weapons, armour, accessories | **43**, **17**, **36** |
 | Fish | **13** | Forge recipes | **9** |
 | Music tracks | **18** | Image or audio files | **0** |
-| Level cap | **50** | Source lines | ~7,100 across 12 files |
+| Level cap | **50**, then the Lantern Board | Source lines | ~7,450 across 12 files |
+| Lantern Board passives | **11** | Meals | **11** |
 
 ```mermaid
 mindmap
@@ -131,14 +132,17 @@ mindmap
       Turn-based, side view
       Combos for 2 or 3 heroes
       Steal, statuses, elements
+      Bosses that change tactics
       Arena gauntlets
     Grow
       Levels up to 50
+      The Lantern Board
       Gear and accessories
       Forge with materials
       New Game+
     Relax
       Fishing mini-game
+      Cooking at inns
       Bestiary
       60+ townsfolk
 ```
@@ -153,9 +157,9 @@ Four heroes fight at a time. The fifth waits in reserve and still earns half EXP
 | --- | --- | --- | --- | --- | --- |
 | **Arin** | Lamplighter | Sturdy fighter with holy strikes and support | Cure, Sunstrike, Rally, Lionheart | Dawnbreak (Lv 42) | ★ First Light |
 | **Lyra** | Flamecaller | Elemental nuker | Fire, Ice, Bolt, Sleep, Flare, Starfall | Supernova (Lv 44) | ★ Phoenix Rite |
-| **Oswin** | Tide Priest | Healer and protector | Cura, Raise, Barrier, Renew, Holy, Curaga | Sanctuary (Lv 42) | ★ High Tide |
-| **Kestrel** | Rogue | Fastest hero; stealing and multi-hits | Steal, Twin Strike, Smoke Bomb, Shadowstep, Mug | Thousand Cuts (Lv 42) | ★ Grand Larceny |
-| **Selene** | Duskmage | Dark magic; joins after her story chapter | Shade, Drain, Gravity, Nightfall, Requiem | Eventide (Lv 44) | ★ Long Night |
+| **Oswin** | Tide Priest | Healer and protector | Cura, Raise, Barrier, Renew, Holy, Curaga, Haste | Sanctuary (Lv 42) | ★ High Tide |
+| **Kestrel** | Rogue | Fastest hero; stealing and multi-hits | Steal, Twin Strike, Smoke Bomb, Flash Powder, Shadowstep, Mug | Thousand Cuts (Lv 42) | ★ Grand Larceny |
+| **Selene** | Duskmage | Dark magic; joins after her story chapter | Shade, Drain, Gravity, Slow, Nightfall, Requiem | Eventide (Lv 44) | ★ Long Night |
 
 Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE.md#the-party).
 
@@ -173,19 +177,21 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 **Battle**
 - Classic turn-based, side-view combat: Attack, Skill, **Combo**, Item, Defend, Run
 - **12 combo techs**: dual and triple attacks such as Flame Edge, Crossfang, Twin Stars, Shadow Waltz, Lantern Light and Last Light (taught in Lastlight). They use every member's turn and MP.
-- Elemental weaknesses, critical hits, stealing, buffs, poison, sleep, silence, regen and auto-revive. The [formulas](docs/GAME_GUIDE.md#formulas) are all documented.
+- Elemental weaknesses, **resistances and absorbs**, critical hits, stealing (with **rare steals**), buffs, poison, sleep, silence, **blind, slow, haste**, regen and auto-revive. The [formulas](docs/GAME_GUIDE.md#formulas) are all documented.
+- **Smarter enemies**: some hunt your weakest hero or your casters, healers mend their allies, and every boss **changes tactics when hurt**
 - **Limits**: a gauge that fills as each hero takes damage, unlocking a once-per-charge super move
 - **75 monsters** in 21 drawn families, including **15 boss battles**: two two-phase finales, a sea monster, the First King, an optional superboss dragon, and five personal nemeses (one a solo duel)
 
 **Progression**
-- Levels up to **50**, learned skills, and weapon, armour and accessory slots, with **27 accessories**
+- Levels up to **50**, learned skills, and weapon, armour and accessory slots, with **36 accessories**
+- **The Lantern Board**: from level 30, Embers light nodes on each hero's board: stats, three passives (Counter, MP Saver, Auto-Haste, Ghost Step and more) and a capstone
 - **Formation** menu: four fight, and the reserve earns half EXP
 - **Orrin's Forge**: monsters drop materials (Ember Cores, Frost Crystals, Sun Gold, Star Shards, Dusk Silk, Abyss Ash). Orrin in Ironhold forges them into 9 pieces of gear, including each hero's best weapon. The bestiary shows who drops what.
-- **Fishing**: get a rod from the Ice Fisher in Frostmere, then fish any pond, river, harbour or sea. 13 kinds of fish, each with its own spots, and a timing mini-game that gets harder for rarer fish. One legend only rises once every Lantern burns.
+- **Fishing**: get a rod from the Ice Fisher in Frostmere, then fish any pond, river, harbour or sea. 13 kinds of fish, each with its own spots, and a timing mini-game that gets harder for rarer fish. One legend only rises once every Lantern burns. Innkeepers **cook** your catch into 11 meals that buff the next three battles.
 - **The Aerie Arena**: six cups of back-to-back battles with unique prizes, up to the Grand Champion gauntlet and the post-game Eclipse Cup
-- **16 side quests** in a quest log, including five personal hero quests and the Festival of Lanterns, with the main objective always shown
+- **17 side quests** in a quest log, including five personal hero quests and the Festival of Lanterns, with the main objective always shown
 - **Campfire talks** when you rest with a Tent
-- A **bestiary** with stats, weaknesses, steals and drops, and a **world map** with your next objective marked
+- A **bestiary** with stats, weaknesses, resistances, AI, steals and drops (Sable rewards you at 45 and at all 75), and a **world map** with your next objective marked
 - **New Game+**: finish the story to replay with your levels and gear against stronger enemies
 
 **Comfort**

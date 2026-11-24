@@ -29,6 +29,8 @@ function drawPartyPanel(g, sel = -1) {
   });
 }
 function drawInfoPanel(g) {
+  const ml = mealNow();
+  if (ml) { drawWindow(g, 472, 330, 152, 26); text(g, ml.name, 482, 335, { size: 11, color: '#ffd27a' }); text(g, `×${G.meal.left}`, 614, 335, { size: 11, align: 'right', color: '#b8c4ee' }); }
   drawWindow(g, 472, 360, 152, 104);
   text(g, 'Gold', 486, 372, { size: 13, color: '#b8c4ee' });
   text(g, `${G.gold}`, 610, 370, { size: 16, align: 'right', color: '#ffe9a8' });
@@ -238,14 +240,14 @@ async function magicMenu() {
     const fieldOk = s => ['heal', 'revive', 'cure', 'sanctuary'].includes(SPELLS[s].type);
     const k = await listMenu({
       x: 140, y: 60, w: 360, rows: 9, title: `${memberName(m)} — ${HEROES[m.id].skill}  (MP ${m.mp}/${maxMp(m)})`,
-      items: sp.map(s => ({ label: SPELLS[s].name, right: SPELLS[s].mp ? SPELLS[s].mp + ' MP' : '—', disabled: !fieldOk(s) || m.mp < SPELLS[s].mp || !alive(m) })),
+      items: sp.map(s => ({ label: SPELLS[s].name, right: SPELLS[s].mp ? spellCost(m, s) + ' MP' : '—', disabled: !fieldOk(s) || m.mp < spellCost(m, s) || !alive(m) })),
       index: idx, help: i => SPELLS[sp[i]].desc
     });
     if (k < 0) return;
     idx = k;
-    const s = SPELLS[sp[k]];
+    const s = SPELLS[sp[k]], cost = spellCost(m, sp[k]);
     if (s.target === 'allies') {
-      m.mp -= s.mp; Audio_.sfx('heal');
+      m.mp -= cost; Audio_.sfx('heal');
       for (const t of G.party) {
         if (s.type === 'sanctuary' && !alive(t)) { t.hp = Math.floor(maxHp(t) * 0.5); continue; }
         if (alive(t)) t.hp = Math.min(maxHp(t), t.hp + Math.round((s.power + stat(m, 'mag') * 1.5) * (s.scale || 1)));
@@ -253,15 +255,15 @@ async function magicMenu() {
       }
       continue;
     }
-    while (m.mp >= s.mp) {
+    while (m.mp >= cost) {
       const t = await pickMember(s.name);
       if (t === null) break;
       const tg = G.party[t];
       let ok = false;
       if (s.type === 'heal' && alive(tg) && tg.hp < maxHp(tg)) { tg.hp = Math.min(maxHp(tg), tg.hp + Math.round((s.power + stat(m, 'mag') * 1.5) * (s.scale || 1))); ok = true; }
       if (s.type === 'revive' && !alive(tg)) { tg.hp = Math.floor(maxHp(tg) * 0.35); ok = true; }
-      if (s.type === 'cure' && alive(tg)) { tg.status.poison = false; ok = true; }
-      if (ok) { m.mp -= s.mp; Audio_.sfx('heal'); } else Audio_.sfx('buzz');
+      if (s.type === 'cure' && alive(tg)) { cureAll(tg); ok = true; }
+      if (ok) { m.mp -= cost; Audio_.sfx('heal'); } else Audio_.sfx('buzz');
     }
   }
 }
@@ -350,7 +352,7 @@ async function statusMenu() {
     drawChar(g, HEROES[m.id].look, 120, 170, 'down', 0, 3);
     text(g, memberName(m), 200, 50, { size: 26, bold: true, fam: SERIF });
     text(g, `${HEROES[m.id].cls}  ·  Level ${m.level}`, 200, 86, { size: 15, color: '#ffe9a8' });
-    text(g, `EXP ${m.xp}   Next ${m.level >= MAX_LEVEL ? '—' : xpForLevel(m.level + 1) - m.xp}`, 200, 110, { size: 14, color: '#b8c4ee' });
+    text(g, `EXP ${m.xp}   Next ${m.level >= MAX_LEVEL ? `Ember in ${EMBER_CAP_XP - (m.capxp || 0)}` : xpForLevel(m.level + 1) - m.xp}`, 200, 110, { size: 14, color: '#b8c4ee' });
     const st = [['HP', `${m.hp} / ${maxHp(m)}`], ['MP', `${m.mp} / ${maxMp(m)}`], ['Attack', stat(m, 'str')], ['Defense', stat(m, 'def')], ['Magic', stat(m, 'mag')], ['Speed', stat(m, 'spd')]];
     st.forEach(([a, b], i) => { text(g, a, 200, 150 + i * 28, { size: 16, color: '#c8d0f0' }); text(g, String(b), 400, 150 + i * 28, { size: 16, align: 'right' }); });
     text(g, 'Weapon', 430, 150, { size: 13, color: '#b8c4ee' }); text(g, ITEMS[m.weapon] ? ITEMS[m.weapon].name : '—', 430, 168, { size: 15 });
@@ -359,10 +361,17 @@ async function statusMenu() {
     const sp = spellsOf(m).map(s => SPELLS[s].name).join(', ') || '—';
     text(g, HEROES[m.id].skill, 70, 330, { size: 14, color: '#ffe9a8' });
     wrapText(g, sp, 500, font(14)).forEach((l, i) => text(g, l, 70, 350 + i * 20, { size: 14 }));
+    const pas = Object.keys(PASSIVES).filter(k => hasPassive(m, k)).map(k => PASSIVES[k].name);
+    if (boardOpen(m)) {
+      text(g, `Board ${(m.board || []).length}/${Object.keys(BOARD_NODES).length - 1} · ${m.embers || 0} Ember${m.embers === 1 ? '' : 's'}`, 430, 296, { size: 12, color: '#ffd27a' });
+      text(g, 'Enter: Lantern Board', 430, 312, { size: 12, color: '#b8c4ee' });
+      if (pas.length) wrapText(g, pas.join(', '), 160, font(11)).slice(0, 2).forEach((l, i) => text(g, l, 430, 328 + i * 14, { size: 11, color: '#9ad8ff' }));
+    }
     wrapText(g, HEROES[m.id].bio, 500, font(14, false, SERIF)).forEach((l, i) => text(g, l, 70, 400 + i * 20, { size: 14, fam: SERIF, color: '#d8dcf0' }));
   });
-  await UI.push({ update() { if (Input.p('ok') || Input.p('cancel')) { Audio_.sfx('cancel'); UI.close(this); } }, draw() { } });
+  const r = await UI.push({ update() { if (Input.p('ok') && boardOpen(m)) { Audio_.sfx('ok'); UI.close(this, 'board'); } else if (Input.p('ok') || Input.p('cancel')) { Audio_.sfx('cancel'); UI.close(this); } }, draw() { } });
   closePanel(p);
+  if (r === 'board') await lanternBoard(mi);
 }
 // ---------- shop ----------
 async function openShop(listId, keeper) {
@@ -443,7 +452,9 @@ function drawShopDetail(g, id) {
 }
 // ---------- inn ----------
 async function innStay(townId, price, keeper = 'Innkeeper') {
-  const c = await choose(keeper, `Welcome, travelers! A warm bed is ${price} gold for the party. Will you rest?`, ['Stay', 'No thanks'], 1);
+  const fish = hasAnyFish(), opts = fish ? ['Stay', 'Cook a meal', 'No thanks'] : ['Stay', 'No thanks'];
+  const c = await choose(keeper, `Welcome, travelers! A warm bed is ${price} gold for the party. Will you rest?${fish ? ' Or I can cook up that catch of yours.' : ''}`, opts, opts.length - 1);
+  if (opts[c] === 'Cook a meal') { if (await cookMenu(keeper)) await say(keeper, 'Eat up! That\'ll keep you going for a few fights.'); return; }
   if (c !== 0) { await say(keeper, 'Another time, then.'); return; }
   if (G.gold < price) { await say(keeper, "Ah... you're a bit short on coin, I'm afraid."); return; }
   G.gold -= price;
@@ -503,11 +514,15 @@ async function bestiaryMenu() {
     text(g, `Defeated: ${G.killed[id] || 0}`, 610, 26, { size: 12, align: 'right', color: '#b8c4ee' });
     const rows = [['HP', d.hp], ['Attack', d.atk], ['Defense', d.def], ['Magic', d.mag], ['Speed', d.spd], ['EXP', d.xp], ['Gold', d.gold]];
     rows.forEach(([a, b], i) => { const x = 304 + (i % 2) * 160, y = 262 + Math.floor(i / 2) * 22; text(g, a, x, y, { size: 13, color: '#b8c4ee' }); text(g, String(b), x + 140, y, { size: 13, align: 'right' }); });
-    text(g, 'Weak to: ' + (d.weak ? d.weak.join(', ') : '—'), 304, 354, { size: 13, color: '#ffd27a' });
-    text(g, 'Steal: ' + (d.steal ? ITEMS[d.steal].name : '—'), 304, 376, { size: 13 });
+    text(g, 'Weak: ' + (d.weak ? d.weak.join(', ') : '—'), 304, 344, { size: 13, color: '#ffd27a' });
+    text(g, 'Resist: ' + (d.resist ? d.resist.join(', ') : '—'), 464, 344, { size: 13, color: '#b8b8c8' });
+    if (d.absorb) text(g, 'Absorbs: ' + d.absorb.join(', '), 304, 362, { size: 13, color: '#9ad8ff' });
+    const ai = { weakest: 'Hunts the wounded', magehunter: 'Hunts casters', healer: 'Heals its allies' }[d.ai];
+    if (ai) text(g, ai, d.absorb ? 464 : 304, 362, { size: 13, color: '#ffb0d0' });
+    text(g, 'Steal: ' + (d.steal ? ITEMS[d.steal].name : '—') + (d.rare ? '   ★ ' + ITEMS[d.rare[0]].name : ''), 304, 380, { size: 13 });
     text(g, 'Drops: ' + ([d.drop && ITEMS[d.drop[0]].name, d.mat && ITEMS[d.mat[0]].name].filter(Boolean).join(', ') || '—'), 304, 398, { size: 13 });
-    const sk = (d.acts || []).filter(a => a.a !== 'attack').map(a => SPELLS[a.a].name);
-    wrapText(g, 'Skills: ' + (sk.length ? sk.join(', ') : '—'), 310, font(13)).forEach((l, i) => text(g, l, 304, 420 + i * 18, { size: 13, color: '#c8d0f0' }));
+    const sk = [...new Set([...(d.acts || []), ...(d.phases || []).flatMap(ph => ph.acts)].filter(a => a.a !== 'attack').map(a => SPELLS[a.a].name))];
+    wrapText(g, (d.phases ? 'Skills (changes when hurt): ' : 'Skills: ') + (sk.length ? sk.join(', ') : '—'), 310, font(13)).slice(0, 3).forEach((l, i) => text(g, l, 304, 416 + i * 16, { size: 13, color: '#c8d0f0' }));
   });
   await listMenu({ x: 16, y: 16, w: 262, rows: 15, rowH: 26, title: `Bestiary  ${seen}/${ids.length}`, items: ids.map((id, i) => ({ label: G.seen[id] ? MONSTERS[id].name : '??????', right: G.seen[id] ? (G.killed[id] || 0) : '', color: G.seen[id] ? (MONSTERS[id].boss ? '#ffb86a' : '#fff') : '#8792b8' })), onChange: i => sel.v = i, size: 14 });
   closePanel(p);
