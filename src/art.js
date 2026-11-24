@@ -1221,18 +1221,22 @@ function drawMonster(g, def, x, by, st = {}) {
       for (let i = 0; i < 6; i++) { const a = t * 0.9 + i * Math.PI / 3; const R = 70; const sx = Math.cos(a) * R, sy = -96 + Math.sin(a) * 22; poly(g, [sx, sy - 9, sx + 4, sy, sx, sy + 9, sx - 4, sy], c[0], OUT, 1.2); }
       break;
     }
-    default: circle(g, 0, -20, 20, c[0], OUT, 2);
+    default: if (MONSTER_ART[def.fam]) MONSTER_ART[def.fam](g, def, t, { shadow, eyes }); else circle(g, 0, -20, 20, c[0], OUT, 2);
   }
   g.restore();
   if (st.flash) { // white flash overlay via composite
     g.save(); g.globalCompositeOperation = 'source-atop'; g.restore();
   }
 }
+// Registries so new content can add art without growing this file (see deep_art.js)
+const MONSTER_ART = {}, MONSTER_SIZE = {}, BATTLE_BGS = {};
 function monsterHeight(def) {
+  if (MONSTER_SIZE[def.fam]) return MONSTER_SIZE[def.fam][1] * (def.size || 1);
   const base = { slime: 42, bat: 60, beast: 54, goblin: 60, skeleton: 66, knight: 92, ogre: 88, plant: 54, serpent: 64, ghost: 74, crab: 48, golem: 82, imp: 64, eye: 70, witch: 104, gloomcap: 96, warden: 126, king: 172, king2: 190, wyrm: 150, crown: 170 }[def.fam] || 60;
   return base * (def.size || 1);
 }
 function monsterWidth(def) {
+  if (MONSTER_SIZE[def.fam]) return MONSTER_SIZE[def.fam][0] * (def.size || 1);
   const base = { slime: 56, bat: 64, beast: 84, goblin: 60, skeleton: 46, knight: 60, ogre: 72, plant: 58, serpent: 64, ghost: 50, crab: 72, golem: 72, imp: 50, eye: 56, witch: 66, gloomcap: 96, warden: 92, king: 140, king2: 200, wyrm: 180, crown: 150 }[def.fam] || 60;
   return base * (def.size || 1);
 }
@@ -1385,7 +1389,7 @@ function drawBattleBG(g, kind, t) {
       for (let i = 0; i < 18; i++) { const k = (t * 0.22 + hash(i, 3)) % 1; circle(g, hash(i, 4) * W, H - k * 340, 1.5 + hash(i, 5), `rgba(255,150,70,${1 - k})`); }
       break;
     }
-    default: sky('#333', '#666'); ground('#444', '#222');
+    default: if (BATTLE_BGS[kind]) BATTLE_BGS[kind](g, t, { sky, ground, hills, stars }); else { sky('#333', '#666'); ground('#444', '#222'); }
   }
 }
 

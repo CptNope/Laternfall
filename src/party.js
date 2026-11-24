@@ -179,6 +179,7 @@ function loadGame(slot = latestSlot()) {
 // A short description of a save, for the slot menus
 function placeName(mapId) {
   if (!mapId || mapId === 'world') return 'World map';
+  if (mapId === 'deep') return 'The Sea Floor';
   if (TOWN_DEFS[mapId]) return TOWN_DEFS[mapId].name;
   if (mapId.startsWith('in:')) { const t = mapId.split(':')[1]; return TOWN_DEFS[t] ? TOWN_DEFS[t].name : 'Indoors'; }
   const [did, f] = mapId.split(':'), D = DUNGEONS[did];

@@ -1013,6 +1013,7 @@ class Battle {
       if (e.def.drop && Math.random() < e.def.drop[1]) drops.push(e.def.drop[0]);
       if (e.def.mat && Math.random() < e.def.mat[1]) drops.push(e.def.mat[0]);
     }
+    const tm = treasureMapDrop(this.enemies); if (tm) drops.push(tm);
     if (BP().some(m => alive(m) && accOf(m) && accOf(m).goldx)) gold = Math.round(gold * 1.5);
     if (mealIs('gold')) gold = Math.round(gold * (1 + mealNow().amount));
     if (mealIs('xp')) xp = Math.round(xp * (1 + mealNow().amount));

@@ -126,7 +126,16 @@ const SPELLS = {
   e_blind: { name: 'Blinding Sand', type: 'status', status: 'blind', chance: 0.55, target: 'ally', fx: 'sand' },
   e_blindall: { name: 'Dazzle', type: 'status', status: 'blind', chance: 0.35, target: 'allies', fx: 'holy' },
   e_slow: { name: 'Time Warp', type: 'status', status: 'slow', chance: 0.5, target: 'ally', fx: 'dark' },
-  e_slowall: { name: 'Heavy Night', type: 'status', status: 'slow', chance: 0.35, target: 'allies', fx: 'dark' }
+  e_slowall: { name: 'Heavy Night', type: 'status', status: 'slow', chance: 0.35, target: 'allies', fx: 'dark' },
+  // 1.7 The Drowned Kingdom
+  e_maelstrom: { name: 'Maelstrom', type: 'dmg', elem: 'water', power: 32, target: 'allies', fx: 'water' },
+  e_undertow: { name: 'Undertow', type: 'dmg', elem: 'water', power: 62, target: 'ally', fx: 'water' },
+  e_depths: { name: 'Crushing Depths', type: 'phys', power: 1.0, target: 'allies', fx: 'hit' },
+  e_sting: { name: 'Lantern Sting', type: 'dmg', elem: 'bolt', power: 24, target: 'ally', fx: 'bolt' },
+  e_lure: { name: 'Lure Light', type: 'status', status: 'blind', chance: 0.5, target: 'allies', fx: 'holy' },
+  e_siren: { name: 'Siren Song', type: 'status', status: 'sleep', chance: 0.4, target: 'allies', fx: 'sleep' },
+  e_forget: { name: 'Forget', type: 'status', status: 'silence', chance: 0.45, target: 'allies', fx: 'water' },
+  e_remember: { name: 'Remember', type: 'heal', power: 500, target: 'self', fx: 'heal' }
 };
 const STATUS_LABEL = { sleep: 'Sleep', silence: 'Silence', blind: 'Blind', slow: 'Slow', poison: 'Poison' };
 const CASTERS = ['lyra', 'oswin', 'selene'];
@@ -215,6 +224,32 @@ const ITEMS = {
   hourglass: { name: 'Hourglass Pin', price: 2600, kind: 'acc', spd: 4, immune: ['slow'], desc: 'SPD +4. Prevents slow.' },
   scholar_monocle: { name: 'Scholar\'s Monocle', price: 0, kind: 'acc', mag: 14, xp: 1.25, immune: ['blind'], desc: 'MAG +14. +25% EXP. Prevents blind. Sable\'s reward.' },
   bestiary_seal: { name: 'Bestiary Seal', price: 0, kind: 'acc', all: 14, thief: true, desc: 'All +14. Rare steals twice as likely. Sable\'s reward for every creature.' },
+  // 1.7 The Drowned Kingdom
+  tide_chart: { name: 'Tessaly\'s Chart', price: 0, kind: 'key', desc: 'An old sea chart in the Abbot\'s hand. Four patches of black water are circled.' },
+  moth_whistle: { name: 'Moth Whistle', price: 0, kind: 'key', desc: 'Old Ivy\'s bone whistle. Blow it at a lit roadside lamp and a lanternmoth comes down to carry you.' },
+  tmap1: { name: 'Map: Smuggler\'s Cove', price: 0, kind: 'key', tmap: 1, desc: 'X marks a beach south of Port Halden, where the causeway runs out to the Sunken Shrine. "Dig at the third palm." There are no palms.' },
+  tmap2: { name: 'Map: The Cold Cairn', price: 0, kind: 'key', tmap: 2, desc: 'A cairn in the snowfields between Frostmere and Ironhold. Someone has drawn a very cold-looking face.' },
+  tmap3: { name: 'Map: Dune Sea', price: 0, kind: 'key', tmap: 3, desc: 'Deep in the Sunscar, south of Mirage and west of the Tomb. "Where the sand sings at noon."' },
+  tmap4: { name: 'Map: Hollow Root', price: 0, kind: 'key', tmap: 4, desc: 'At the edge of the Whisperwood, north of Brightwater. The ink smells of moss.' },
+  tmap5: { name: 'Map: Ash and Gold', price: 0, kind: 'key', tmap: 5, desc: 'The Ashen Isle, south of Lastlight. Charred at the edges. Somebody wanted this burned.' },
+  deep_pearl: { name: 'Deep Pearl', price: 1500, kind: 'mat', desc: 'A black pearl from the sea floor. It glows when you aren\'t looking at it.' },
+  coral_blade: { name: 'Coral Blade', price: 30000, kind: 'weapon', who: ['arin'], atk: 74, mag: 10, desc: 'Red coral over steel. It never rusts.' },
+  pearl_staff: { name: 'Pearl Staff', price: 28000, kind: 'weapon', who: ['lyra'], atk: 18, mag: 56, desc: 'A black pearl that holds a flame underwater.' },
+  reef_mace: { name: 'Reef Mace', price: 28000, kind: 'weapon', who: ['oswin'], atk: 50, mag: 40, desc: 'Struck from Nerith\'s old temple bell.' },
+  eel_fang: { name: 'Eel Fang', price: 29000, kind: 'weapon', who: ['kestrel'], atk: 66, spd: 10, desc: 'A knife that bends like an eel. It always finds the gap.' },
+  abyss_orb: { name: 'Abyss Orb', price: 30000, kind: 'weapon', who: ['selene'], atk: 16, mag: 60, desc: 'Black water, held in a glass ball. Something swims in it.' },
+  nacre_mail: { name: 'Nacre Mail', price: 26000, kind: 'armor', who: ['arin', 'oswin'], def: 40, desc: 'Mother-of-pearl plates. Rainbow-bright and very hard.' },
+  kelp_robe: { name: 'Kelp Robe', price: 24000, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 30, mag: 20, desc: 'Woven sea-silk. It is never quite dry.' },
+  shark_garb: { name: 'Sharkskin Garb', price: 25000, kind: 'armor', who: ['kestrel'], def: 32, spd: 10, desc: 'Rough one way, smooth the other.' },
+  abyssal_plate: { name: 'Abyssal Plate', price: 0, kind: 'armor', who: ['arin', 'oswin'], def: 56, desc: 'Forged by Orrin from deep pearls. It hums at low tide.' },
+  pearl_veil: { name: 'Pearl Veil', price: 0, kind: 'armor', who: ['lyra', 'oswin', 'selene'], def: 42, mag: 30, desc: 'Forged by Orrin — strung, really. A thousand tiny pearls.' },
+  marlin_garb: { name: 'Marlin Garb', price: 0, kind: 'armor', who: ['kestrel'], def: 44, spd: 16, desc: 'Forged by Orrin. Fast enough to outswim a marlin.' },
+  siren_scale: { name: 'Siren Scale', price: 0, kind: 'acc', mag: 18, immune: ['sleep', 'silence'], desc: 'MAG +18. Prevents sleep and silence. Rare steal: Sirens of Nerith.' },
+  pressure_ring: { name: 'Pressure Ring', price: 9000, kind: 'acc', def: 14, hp: 300, desc: 'DEF +14, HP +300. Made to survive the deep.' },
+  lucky_coin: { name: 'Lucky Doubloon', price: 0, kind: 'acc', all: 6, goldx: 1.5, desc: 'All +6. +50% gold from battles. Buried treasure.' },
+  admiral_hat: { name: 'Admiral\'s Hat', price: 0, kind: 'acc', spd: 10, def: 8, fewer: true, desc: 'SPD +10, DEF +8. Halves random encounters. Buried treasure.' },
+  tidecrown: { name: 'Crown of Nerith', price: 0, kind: 'acc', all: 16, immune: ['slow', 'sleep'], desc: 'All +16. Prevents slow and sleep. The last king\'s crown, freely given.' },
+  tidesong: { name: 'Tidesong', price: 0, kind: 'acc', all: 26, regen: true, immune: AILMENTS, desc: 'All +26. Regen. No ailments. The sea remembers you now.' },
   heartlight: { name: 'Heartlight', price: 0, kind: 'acc', all: 20, reraise: true, immune: AILMENTS, desc: 'All +20. Revives once per battle. No ailments. Five lights, one lantern.' },
   twin_crown: { name: 'Crown of Dusk & Dawn', price: 0, kind: 'acc', all: 25, regen: true, immune: AILMENTS, desc: 'All +25. Regen. No ailments. Both halves of the first crown, at peace.' },
   // weapons
@@ -325,7 +360,7 @@ const MONSTERS = {
   cometimp: { name: 'Comet Imp', fam: 'imp', c: ['#ffb04a', '#8a3a1a'], hp: 900, atk: 140, def: 66, mag: 150, spd: 30, xp: 450, gold: 340, weak: ['ice'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_fire' }, { w: 1, a: 'e_lullaby' }], steal: 'elixir' },
   sandworm: { name: 'Sandworm', fam: 'serpent', size: 1.2, c: ['#d8a860', '#8a6030'], hp: 420, atk: 96, def: 40, mag: 30, spd: 12, xp: 170, gold: 120, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_crush' }, { w: 1, a: 'e_blind' }], steal: 'hipotion' },
   scorpion: { name: 'Death Scorpion', fam: 'crab', c: ['#8a2a1a', '#3a0a0a'], hp: 330, atk: 100, def: 58, mag: 20, spd: 14, xp: 160, gold: 110, weak: ['ice'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_bite' }], steal: 'antidote' },
-  bandit: { name: 'Sand Bandit', fam: 'goblin', c: ['#c89a6a', '#5a3a2a'], hp: 360, atk: 98, def: 40, mag: 20, spd: 20, xp: 165, gold: 220, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_blind' }], drop: ['hipotion', 0.3], steal: 'bomb', ai: 'weakest', rare: ['xpotion', 0.15] },
+  bandit: { name: 'Sand Bandit', fam: 'goblin', c: ['#c89a6a', '#5a3a2a'], hp: 360, atk: 98, def: 40, mag: 20, spd: 20, xp: 165, gold: 220, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_blind' }], drop: ['hipotion', 0.3], steal: 'bomb', ai: 'weakest', rare: ['xpotion', 0.15], tmap: true },
   cactoid: { name: 'Cactoid', fam: 'plant', c: ['#ff8ab0', '#4a9a4a'], hp: 300, atk: 90, def: 48, mag: 40, spd: 10, xp: 150, gold: 100, weak: ['fire'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_needles' }], steal: 'remedy' },
   mummy: { name: 'Mummy', fam: 'skeleton', c: ['#e0d0a8', '#7a6a4a'], hp: 640, atk: 128, def: 66, mag: 60, spd: 10, xp: 260, gold: 180, weak: ['fire', 'holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_hush' }], steal: 'remedy' },
   scarab: { name: 'Gilded Scarab', fam: 'crab', size: 0.85, c: ['#e8c84a', '#3a5a2a'], hp: 520, atk: 120, def: 96, mag: 30, spd: 18, xp: 240, gold: 260, weak: ['ice'], steal: 'hiether', rare: ['megalixir', 0.08] },
@@ -352,7 +387,7 @@ const MONSTERS = {
   cindersnake: { name: 'Cinder Serpent', fam: 'serpent', c: ['#c04a1a', '#3a0a05'], hp: 1900, atk: 205, def: 96, mag: 120, spd: 24, xp: 700, gold: 480, weak: ['ice'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_crush' }, { w: 1, a: 'e_blaze' }], steal: 'xpotion', mat: ['ember_core', 0.2] },
   deepone: { name: 'Deep One', fam: 'serpent', size: 1.15, c: ['#1a3a5a', '#050f1a'], hp: 2000, atk: 200, def: 96, mag: 170, spd: 26, xp: 720, gold: 500, weak: ['bolt'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_whirl' }, { w: 1, a: 'e_drain' }], steal: 'hiether', mat: ['frost_crystal', 0.2], absorb: ['water'], ai: 'weakest' },
   pearlguard: { name: 'Pearl Guard', fam: 'crab', size: 1.1, c: ['#e8e0f0', '#6a5a8a'], hp: 2300, atk: 215, def: 150, mag: 60, spd: 16, xp: 760, gold: 900, weak: ['bolt'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_shatter' }], steal: 'megalixir', mat: ['sun_gold', 0.2], rare: ['megalixir', 0.12] },
-  cutpurse: { name: 'Guild Cutpurse', fam: 'goblin', c: ['#6a6a7a', '#2a2a3a'], hp: 1500, atk: 200, def: 84, mag: 60, spd: 44, xp: 640, gold: 1200, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_bite' }, { w: 1, a: 'e_blind' }], drop: ['xpotion', 0.25], steal: 'elixir', mat: ['dusk_silk', 0.2], ai: 'weakest', rare: ['thief_gloves', 0.04] },
+  cutpurse: { name: 'Guild Cutpurse', fam: 'goblin', c: ['#6a6a7a', '#2a2a3a'], hp: 1500, atk: 200, def: 84, mag: 60, spd: 44, xp: 640, gold: 1200, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_bite' }, { w: 1, a: 'e_blind' }], drop: ['xpotion', 0.25], steal: 'elixir', mat: ['dusk_silk', 0.2], ai: 'weakest', rare: ['thief_gloves', 0.04], tmap: true },
   enforcer: { name: 'Guild Enforcer', fam: 'ogre', size: 1.1, c: ['#5a4a6a', '#2a2a3a'], hp: 2700, atk: 235, def: 110, mag: 40, spd: 16, xp: 820, gold: 900, acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }, { w: 1, a: 'e_cleave' }], steal: 'megalixir', mat: ['sun_gold', 0.15] },
   sewerooze: { name: 'Sewer Ooze', fam: 'slime', c: ['#7a9a3a', '#2a3a10'], hp: 1700, atk: 180, def: 90, mag: 170, spd: 18, xp: 640, gold: 420, weak: ['fire'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_spores' }, { w: 1, a: 'e_bite' }], steal: 'remedy', mat: ['dusk_silk', 0.2] },
   lampeater: { name: 'The Lamp-Eater', fam: 'ghost', boss: true, size: 1.8, c: ['#4a4a6a', '#0a0a14'], hp: 12500, atk: 210, def: 90, mag: 218, spd: 30, actions: 2, xp: 16000, gold: 8000, weak: ['holy'], acts: [{ w: 2, a: 'e_drain' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_meteor' }, { w: 1, a: 'e_hush' }], steal: 'megalixir', phases: [{ hp: 0.5, msg: 'The Lamp-Eater gorges on the dark!', acts: [{ w: 2, a: 'e_drain' }, { w: 1, a: 'e_shadow' }, { w: 2, a: 'e_meteor' }, { w: 1, a: 'e_blindall' }] }] },
@@ -360,8 +395,24 @@ const MONSTERS = {
   abbot: { name: 'The Drowned Abbot', fam: 'warden', boss: true, size: 1.55, c: ['#2a4a6a', '#d8d0c0', '#8af0ff'], hp: 9000, atk: 210, def: 98, mag: 222, spd: 24, actions: 2, xp: 16000, gold: 8000, weak: ['bolt'], acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_lullaby' }], steal: 'megalixir', ai: 'healer', phases: [{ hp: 0.5, msg: 'The Abbot\'s bell tolls under the water!', acts: [{ w: 1, a: 'attack' }, { w: 3, a: 'e_whirl' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_slowall' }] }] },
   vane: { name: 'Guildmaster Vane', fam: 'knight', boss: true, size: 1.25, c: ['#3a2a1a', '#1a1008', '#e8c84a'], hp: 8500, atk: 226, def: 104, mag: 80, spd: 42, actions: 2, xp: 16000, gold: 20000, acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_needles' }, { w: 1, a: 'e_bite' }, { w: 1, a: 'e_shatter' }], steal: 'megalixir', ai: 'weakest', rare: ['thief_gloves', 0.3], phases: [{ hp: 0.5, msg: 'Vane draws a second knife.', acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_needles' }, { w: 1, a: 'e_blind' }, { w: 1, a: 'e_bite' }] }] },
   echo: { name: 'Vesper\'s Echo', fam: 'witch', boss: true, size: 1.4, c: ['#2a1a40', '#c04aa8', '#ffd0f0'], hp: 2600, atk: 218, def: 70, mag: 150, spd: 26, xp: 12000, gold: 0, weak: ['holy'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_shadow' }, { w: 1, a: 'e_drain' }], steal: 'elixir', phases: [{ hp: 0.5, msg: 'The echo laughs in Selene\'s own voice.', acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_shadow' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_slow' }] }] },
-  king2: { name: 'Hollow King, Unbound', fam: 'king2', boss: true, size: 1.3, c: ['#05020a', '#ff5ac8', '#5affe8'], hp: 5200, atk: 175, def: 78, mag: 148, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_blaze' }], steal: 'megalixir', ai: 'weakest', phases: [{ hp: 0.35, msg: 'The Unbound King tears at the light!', actions: 2, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }] }] }
+  king2: { name: 'Hollow King, Unbound', fam: 'king2', boss: true, size: 1.3, c: ['#05020a', '#ff5ac8', '#5affe8'], hp: 5200, atk: 175, def: 78, mag: 148, spd: 32, xp: 0, gold: 0, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_frost' }, { w: 1, a: 'e_blaze' }], steal: 'megalixir', ai: 'weakest', phases: [{ hp: 0.35, msg: 'The Unbound King tears at the light!', actions: 2, acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_doom' }, { w: 2, a: 'e_eclipse' }, { w: 1, a: 'e_drain' }] }] },
+  // 1.7 The Drowned Kingdom: the sea floor, the Drowned Palace and the Hadal Rift
+  lanternjelly: { name: 'Lantern Jelly', fam: 'jelly', c: ['#9ad8ff', '#3a6ab0', '#ffe9a8'], hp: 2400, atk: 190, def: 90, mag: 210, spd: 24, xp: 900, gold: 600, weak: ['bolt'], absorb: ['water'], acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_sting' }, { w: 1, a: 'e_slow' }], steal: 'hiether', mat: ['deep_pearl', 0.15] },
+  angler: { name: 'Abyssal Angler', fam: 'angler', c: ['#2a3a4a', '#0a141e', '#ffe070'], hp: 3000, atk: 240, def: 100, mag: 80, spd: 22, xp: 1000, gold: 700, weak: ['bolt'], resist: ['water'], ai: 'weakest', acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_lure' }, { w: 1, a: 'e_crush' }], steal: 'xpotion', mat: ['deep_pearl', 0.2], tmap: true },
+  kelphorror: { name: 'Kelp Horror', fam: 'plant', size: 1.2, c: ['#2a6a4a', '#0f2a1e'], hp: 2800, atk: 210, def: 110, mag: 150, spd: 14, xp: 950, gold: 600, weak: ['fire'], resist: ['water'], acts: [{ w: 2, a: 'attack' }, { w: 1, a: 'e_spores' }, { w: 1, a: 'e_slowall' }], steal: 'xpotion' },
+  sentinel: { name: 'Drowned Sentinel', fam: 'knight', c: ['#3a6a7a', '#12262e', '#5af0d0'], hp: 3600, atk: 245, def: 140, mag: 60, spd: 16, xp: 1100, gold: 800, weak: ['bolt'], resist: ['water'], ai: 'magehunter', acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_cleave' }, { w: 1, a: 'e_shatter' }], steal: 'elixir', mat: ['sun_gold', 0.15] },
+  trenchcrab: { name: 'Trench Crab', fam: 'crab', size: 1.15, c: ['#7a3a4a', '#2a0a14'], hp: 3200, atk: 230, def: 170, mag: 40, spd: 12, xp: 1000, gold: 900, weak: ['bolt'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_crush' }], steal: 'hiether', mat: ['deep_pearl', 0.25], rare: ['megalixir', 0.1] },
+  courtier: { name: 'Drowned Courtier', fam: 'skeleton', c: ['#9ab8c8', '#2a4a5a'], hp: 3000, atk: 235, def: 120, mag: 120, spd: 22, xp: 1100, gold: 900, weak: ['holy'], resist: ['water'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_hush' }], steal: 'xpotion' },
+  siren: { name: 'Siren of Nerith', fam: 'witch', c: ['#5af0d0', '#1a3a4a', '#ffe9a8'], hp: 2600, atk: 150, def: 90, mag: 230, spd: 28, xp: 1150, gold: 950, weak: ['bolt'], absorb: ['water'], ai: 'healer', acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_heal' }, { w: 1, a: 'e_siren' }], steal: 'hiether', rare: ['siren_scale', 0.15] },
+  coralgolem: { name: 'Coral Golem', fam: 'golem', size: 1.1, c: ['#e87a8a', '#7a2a3a'], hp: 4200, atk: 250, def: 180, mag: 40, spd: 8, xp: 1300, gold: 1000, weak: ['bolt'], resist: ['water', 'fire'], acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_slam' }, { w: 1, a: 'e_shatter' }], steal: 'xpotion', mat: ['deep_pearl', 0.3] },
+  tidewraith: { name: 'Tide Wraith', fam: 'ghost', c: ['#7ad8ff', '#1a4a6a'], hp: 2200, atk: 160, def: 80, mag: 240, spd: 30, xp: 1050, gold: 800, weak: ['holy'], absorb: ['water'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_undertow' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_forget' }], steal: 'hiether' },
+  deepgazer: { name: 'Deep Gazer', fam: 'eye', c: ['#1a3a4a', '#05141e', '#5af0d0'], hp: 2400, atk: 140, def: 90, mag: 220, spd: 26, xp: 1000, gold: 750, weak: ['holy'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_gaze' }, { w: 1, a: 'e_slow' }, { w: 1, a: 'e_hushall' }], steal: 'remedy' },
+  voidjelly: { name: 'Void Jelly', fam: 'jelly', size: 1.2, c: ['#4a2a6a', '#14082a', '#c070ff'], hp: 3200, atk: 200, def: 100, mag: 255, spd: 26, xp: 1400, gold: 1000, weak: ['holy'], absorb: ['dark', 'water'], acts: [{ w: 1, a: 'attack' }, { w: 2, a: 'e_shadow' }, { w: 1, a: 'e_sting' }, { w: 1, a: 'e_forget' }], steal: 'megalixir', mat: ['deep_pearl', 0.3] },
+  hadalangler: { name: 'Hadal Angler', fam: 'angler', size: 1.3, c: ['#1a1a2a', '#05050a', '#ff6a8a'], hp: 4000, atk: 265, def: 115, mag: 90, spd: 24, xp: 1500, gold: 1100, weak: ['bolt'], resist: ['water'], ai: 'weakest', acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_lure' }, { w: 1, a: 'e_depths' }], steal: 'elixir', mat: ['deep_pearl', 0.35], rare: ['megalixir', 0.15] },
+  nereus: { name: 'Nereus, the Drowned King', fam: 'king', boss: true, pale: true, size: 0.95, c: ['#1a5a6a', '#0a2a34', '#5af0d0'], hp: 13000, atk: 225, def: 110, mag: 210, spd: 28, xp: 24000, gold: 14000, actions: 2, weak: ['bolt'], absorb: ['water'], ai: 'weakest', acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_whirl' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_slowall' }, { w: 1, a: 'e_doom' }], steal: 'megalixir', rare: ['siren_scale', 0.3], phases: [{ hp: 0.5, msg: 'Nereus calls the whole sea into his throne room!', acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_drain' }, { w: 1, a: 'e_slowall' }, { w: 1, a: 'e_doom' }] }] },
+  tide: { name: 'The Tide That Remembers', fam: 'tide', boss: true, size: 1.3, c: ['#2c6fc4', '#0a1a3a', '#e8f4ff'], hp: 22000, atk: 238, def: 120, mag: 240, spd: 34, xp: 60000, gold: 30000, actions: 2, absorb: ['water'], resist: ['dark', 'ice'], acts: [{ w: 3, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_undertow' }, { w: 1, a: 'e_forget' }, { w: 1, a: 'e_depths' }], steal: 'megalixir', rare: ['megalixir', 1], phases: [{ hp: 0.6, msg: 'The Tide remembers every storm it ever was.', acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_meteor' }, { w: 1, a: 'e_siren' }, { w: 1, a: 'e_depths' }] }, { hp: 0.25, msg: 'The Tide remembers you. It does not want you to leave.', acts: [{ w: 2, a: 'attack' }, { w: 2, a: 'e_maelstrom' }, { w: 1, a: 'e_remember' }, { w: 1, a: 'e_undertow' }, { w: 1, a: 'e_slowall' }] }] }
 };
+
 
 const ENCOUNTERS = {
   r1: [{ w: 3, g: ['slime', 'slime'] }, { w: 2, g: ['bat', 'bat', 'bat'] }, { w: 3, g: ['goblin'] }, { w: 2, g: ['goblin', 'slime'] }, { w: 2, g: ['wolf'] }, { w: 1, g: ['wolf', 'wolf'] }, { w: 1, g: ['slime', 'slime', 'slime'] }],
@@ -379,6 +430,9 @@ const ENCOUNTERS = {
   d7: [{ w: 3, g: ['crownshard', 'gloamknight'] }, { w: 2, g: ['nightmare'] }, { w: 2, g: ['abyssooze', 'abyssooze'] }, { w: 2, g: ['herald', 'crownshard'] }, { w: 1, g: ['gloamknight', 'herald'] }, { w: 1, g: ['nightmare', 'abyssooze'] }],
   d8: [{ w: 3, g: ['kilnimp', 'kilnimp'] }, { w: 2, g: ['cindersnake'] }, { w: 2, g: ['cinderwisp', 'kilnimp', 'cinderwisp'] }, { w: 2, g: ['ashgolem'] }, { w: 1, g: ['cindersnake', 'kilnimp'] }],
   d9: [{ w: 3, g: ['deepone'] }, { w: 2, g: ['pearlguard'] }, { w: 2, g: ['deepone', 'abyssooze'] }, { w: 1, g: ['pearlguard', 'deepone'] }, { w: 1, g: ['herald', 'deepone'] }],
+  u1: [{ w: 3, g: ['lanternjelly', 'lanternjelly'] }, { w: 3, g: ['angler'] }, { w: 2, g: ['kelphorror', 'lanternjelly'] }, { w: 2, g: ['trenchcrab'] }, { w: 2, g: ['sentinel'] }, { w: 1, g: ['angler', 'lanternjelly'] }, { w: 1, g: ['kelphorror', 'kelphorror'] }],
+  d11: [{ w: 3, g: ['courtier', 'courtier'] }, { w: 2, g: ['siren', 'courtier'] }, { w: 2, g: ['coralgolem'] }, { w: 2, g: ['tidewraith', 'tidewraith'] }, { w: 2, g: ['deepgazer', 'sentinel'] }, { w: 1, g: ['siren', 'coralgolem'] }],
+  d12: [{ w: 3, g: ['voidjelly', 'voidjelly'] }, { w: 3, g: ['hadalangler'] }, { w: 2, g: ['deepgazer', 'voidjelly'] }, { w: 2, g: ['sentinel', 'sentinel'] }, { w: 1, g: ['hadalangler', 'voidjelly'] }],
   d10: [{ w: 3, g: ['cutpurse', 'cutpurse'] }, { w: 2, g: ['enforcer'] }, { w: 2, g: ['sewerooze', 'sewerooze'] }, { w: 1, g: ['enforcer', 'cutpurse'] }, { w: 1, g: ['cutpurse', 'sewerooze', 'cutpurse'] }],
   d4: [{ w: 3, g: ['voidslime', 'wraith'] }, { w: 2, g: ['dreadknight'] }, { w: 2, g: ['nightgaze', 'nightgaze'] }, { w: 2, g: ['hollowknight', 'voidslime'] }, { w: 1, g: ['chimera', 'nightgaze'] }, { w: 1, g: ['dreadknight', 'wraith'] }]
 };
@@ -396,6 +450,10 @@ const SHOPS = {
   aerie_arms: ['moon_scepter', 'sunsteel_blade', 'sky_staff', 'scholar_lens', 'echo_bell', 'desert_veil', 'hourglass'],
   frostmere_items: ['hipotion', 'xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb'],
   frostmere_arms: ['swift_boots', 'echo_bell', 'wake_charm', 'scholar_lens', 'guard_ring', 'power_ring', 'eye_charm', 'hourglass'],
+  nerith_items: ['xpotion', 'hiether', 'remedy', 'plume', 'tent', 'star_bomb'],
+  nerith_arms: ['coral_blade', 'pearl_staff', 'reef_mace', 'eel_fang', 'abyss_orb', 'nacre_mail', 'kelp_robe', 'shark_garb', 'pressure_ring'],
+  // the Undermarket: Ironhold's black market (prices are not negotiable)
+  blackmarket: ['megalixir', 'elixir', 'star_bomb', 'ember_core', 'frost_crystal', 'sun_gold', 'star_shard', 'dusk_silk', 'abyss_ash', 'deep_pearl', 'thief_gloves'],
   lastlight_items: ['xpotion', 'hiether', 'remedy', 'plume', 'tent', 'bomb', 'star_bomb'],
   lastlight_arms: ['ashsteel_blade', 'cinder_staff', 'ash_mace', 'ash_kris', 'umbral_rod', 'ash_mail', 'ash_robe', 'ash_garb']
 };
@@ -419,8 +477,23 @@ const RECIPES = [
   { out: 'phoenix_staff', mats: { ember_core: 4, star_shard: 3, abyss_ash: 2 }, gold: 18000 },
   { out: 'tidecaller', mats: { frost_crystal: 3, sun_gold: 2, abyss_ash: 2 }, gold: 18000 },
   { out: 'gloamfang', mats: { dusk_silk: 4, abyss_ash: 3 }, gold: 18000 },
-  { out: 'evenstar', mats: { dusk_silk: 3, star_shard: 3, abyss_ash: 2 }, gold: 18000 }
+  { out: 'evenstar', mats: { dusk_silk: 3, star_shard: 3, abyss_ash: 2 }, gold: 18000 },
+  { out: 'abyssal_plate', mats: { deep_pearl: 4, abyss_ash: 2, sun_gold: 2 }, gold: 24000 },
+  { out: 'pearl_veil', mats: { deep_pearl: 4, dusk_silk: 3 }, gold: 22000 },
+  { out: 'marlin_garb', mats: { deep_pearl: 3, dusk_silk: 2, star_shard: 2 }, gold: 22000 }
 ];
+// The black market marks everything up; items with price 0 elsewhere get a price here
+const BLACKMARKET_PRICES = { megalixir: 20000, elixir: 6000, thief_gloves: 60000 };
+const BLACKMARKET_MARKUP = 3;
+
+// 1.7 Treasure maps: each map's dig spot is placed on the world map at load (see maps.js TREASURE_SPOTS)
+const TREASURES = {
+  1: { loot: ['gold:25000', 'megalixir', 'xpotion'], source: 'Whisper sells it in the Undermarket' },
+  2: { loot: ['frost_crystal', 'frost_crystal', 'frost_crystal', 'megalixir'], source: 'Dropped by Sand Bandits, Cutpurses and Abyssal Anglers' },
+  3: { loot: ['sun_gold', 'sun_gold', 'sun_gold', 'gold:30000'], source: 'Dropped by Sand Bandits, Cutpurses and Abyssal Anglers' },
+  4: { loot: ['lucky_coin', 'elixir', 'elixir'], source: 'Dropped by Sand Bandits, Cutpurses and Abyssal Anglers' },
+  5: { loot: ['admiral_hat', 'deep_pearl', 'deep_pearl', 'deep_pearl'], source: 'A wreck on the sea floor' }
+};
 
 // Fishing: where each fish bites. 'w' is weight; harder fish need more reel hits.
 const FISH = {

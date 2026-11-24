@@ -38,6 +38,18 @@ const WORLD_LOC = {
   9: { x: 42, y: 40, dungeon: 'grotto', name: 'Sea Mother\'s Grotto' }
 };
 // Arin's quest: twelve roadside lamps, each beside a road
+// 1.7 The Drowned Kingdom: locations on the sea floor ('deep' map), dive spots and dig spots
+const DEEP_LOC = {
+  H: { x: 24, y: 15, town: 'nerith', name: 'Nerith', map: 'deep' },
+  0: { x: 30, y: 12, dungeon: 'palace', name: 'The Drowned Palace', map: 'deep' },
+  I: { x: 40, y: 24, dungeon: 'hadal', name: 'The Hadal Rift', map: 'deep' }
+};
+// world coordinates of the four patches of black water; each is directly above (x/2, y/2) on the sea floor
+const DIVE_SPOTS = [{ x: 20, y: 22, name: 'the North Shallows' }, { x: 46, y: 48, name: 'the Shrine Deep' }, { x: 68, y: 26, name: 'the Open Sea' }, { x: 88, y: 50, name: 'the Far Reach' }];
+// treasure-map dig spots (world); genWorld nudges each onto the nearest walkable tile
+const TREASURE_SPOTS = { 1: [33, 49], 2: [33, 6], 3: [80, 43], 4: [12, 35], 5: [79, 11] };
+function locDef(ch) { return WORLD_LOC[ch] || DEEP_LOC[ch]; }
+function locMap(ch) { return (DEEP_LOC[ch] && !WORLD_LOC[ch]) ? 'deep' : 'world'; }
 const ROAD_LAMPS = [[13, 31], [15, 34], [17, 42], [26, 42], [33, 40], [37, 46], [46, 10], [43, 13], [33, 7], [79, 42], [56, 41], [83, 6]];
 const ISLE_LOCS = ['G', '7'];
 const SHIP_HOME = { x: 40, y: 38 };
@@ -198,8 +210,85 @@ function genWorld() {
     const d = Math.hypot(x - 50, y - 29);
     if (d < wd) { wd = d; whirl = { x, y }; }
   }
-  const m = new GameMap({ id: 'world', kind: 'world', w, h, tiles, region, name: 'World', whirl, isle });
+  // treasure dig spots: nearest plain walkable tile (the isle's spot is checked with the isle raised)
+  const isleAt = new Map(isle.map(([x, y, c]) => [x + ',' + y, c]));
+  const walk = (x, y) => { const c = isleAt.get(x + ',' + y) || at(x, y); return '.s*nqzd='.includes(c) && !isLoc(c); };
+  const digs = {};
+  for (const k in TREASURE_SPOTS) {
+    const [tx, ty] = TREASURE_SPOTS[k]; let best = null, bd = 1e9;
+    for (let y = ty - 4; y <= ty + 4; y++) for (let x = tx - 4; x <= tx + 4; x++) { const d = Math.abs(x - tx) + Math.abs(y - ty); if (walk(x, y) && d < bd) { bd = d; best = { x, y }; } }
+    digs[k] = best;
+  }
+  const m = new GameMap({ id: 'world', kind: 'world', w, h, tiles, region, name: 'World', whirl, isle, digs });
   return m;
+}
+
+// ------------ THE SEA FLOOR (1.7) ------------
+// Half the world's resolution: a seabed tile lies under four open-sea world tiles; everything else is rock.
+// Tunnels join the dive spots, Nerith, the Palace and the Rift, so every place is reachable.
+// Legend: # rock, . sand, k kelp (more encounters), o boulder, c coral, v vent, w wreck, u diving-bell line (surface), H I 0 locations
+const DEEP_SOLID = new Set(['#', 'o', 'c', 'w']);
+function genDeep() {
+  const world = genWorld();
+  for (const [x, y, c] of world.isle) world.tiles[y][x] = c;
+  const w = Math.floor(world.w / 2), h = Math.floor(world.h / 2);
+  const T = [];
+  for (let y = 0; y < h; y++) {
+    T.push([]);
+    for (let x = 0; x < w; x++) {
+      let sea = 0;
+      for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) if (world.at(x * 2 + dx, y * 2 + dy) === '~') sea++;
+      const edge = x === 0 || y === 0 || x === w - 1 || y === h - 1;
+      T[y].push(!edge && sea === 4 ? '.' : '#');
+    }
+  }
+  const at = (x, y) => (x < 0 || y < 0 || x >= w || y >= h) ? '#' : T[y][x];
+  const carve = (x0, y0, x1, y1) => {
+    let x = x0, y = y0, n = 0;
+    while ((x !== x1 || y !== y1) && n++ < 300) {
+      if (x !== x1 && (y === y1 || hash(x, y, 1701) < 0.5)) x += Math.sign(x1 - x); else y += Math.sign(y1 - y);
+      if (x > 0 && y > 0 && x < w - 1 && y < h - 1 && T[y][x] === '#') T[y][x] = '.';
+    }
+  };
+  const P = DIVE_SPOTS.map(s => ({ x: s.x / 2, y: s.y / 2 }));
+  const L = DEEP_LOC;
+  // the trench network
+  carve(P[0].x, P[0].y, L.H.x, L.H.y); carve(P[1].x, P[1].y, L.H.x, L.H.y); carve(P[2].x, P[2].y, L.H.x, L.H.y);
+  carve(L.H.x, L.H.y, L[0].x, L[0].y); carve(P[2].x, P[2].y, L[0].x, L[0].y);
+  carve(P[3].x, P[3].y, L.I.x, L.I.y); carve(P[3].x, P[3].y, P[2].x, P[2].y);
+  // features
+  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+    if (T[y][x] !== '.') continue;
+    const n = fbm(x * 0.21, y * 0.21, 4242), k = fbm(x * 0.3, y * 0.3, 77);
+    const nearRock = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => at(x + dx, y + dy) === '#');
+    if (k > 0.6) T[y][x] = 'k';
+    else if (n > 0.74 && !nearRock) T[y][x] = 'o';
+    else if (nearRock && hash(x, y, 31) < 0.1) T[y][x] = 'c';
+    else if (hash(x, y, 32) < 0.025) T[y][x] = 'v';
+  }
+  // keep the network open: clear features on every carved line and around key points
+  const keep = [...P, L.H, L[0], L.I];
+  for (const p of keep) for (let y = p.y - 1; y <= p.y + 1; y++) for (let x = p.x - 1; x <= p.x + 1; x++) if (x > 0 && y > 0 && x < w - 1 && y < h - 1) T[y][x] = '.';
+  const reachAll = () => {
+    const D = new Set([P[0].x + ',' + P[0].y]), q = [[P[0].x, P[0].y]];
+    while (q.length) { const [x, y] = q.shift(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, key = nx + ',' + ny; if (!D.has(key) && !DEEP_SOLID.has(at(nx, ny))) { D.add(key); q.push([nx, ny]); } } }
+    return keep.every(p => D.has(p.x + ',' + p.y));
+  };
+  // boulders and coral that cut the network are removed until everything connects
+  for (let pass = 0; pass < 40 && !reachAll(); pass++)
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) if ((T[y][x] === 'o' || T[y][x] === 'c') && hash(x, y, 900 + pass) < 0.3) T[y][x] = '.';
+  // wrecks (chests sit next to them)
+  const wrecks = [];
+  for (const [wx, wy] of [[16, 9], [36, 20], [8, 16]]) {
+    let best = null, bd = 1e9;
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 2; x++) if (T[y][x] === '.' && T[y][x + 1] === '.' && !keep.some(p => Math.abs(p.x - x) + Math.abs(p.y - y) < 3)) { const d = Math.abs(x - wx) + Math.abs(y - wy); if (d < bd) { bd = d; best = { x, y }; } }
+    if (best) { T[best.y][best.x] = 'w'; if (!reachAll()) T[best.y][best.x] = '.'; else wrecks.push({ x: best.x + 1, y: best.y }); }
+  }
+  for (const p of P) T[p.y][p.x] = 'u';
+  T[L.H.y][L.H.x] = 'H'; T[L[0].y][L[0].x] = '0';
+  // the Rift stays sealed rock until the Tide calls (applyDeepFlags opens it)
+  T[L.I.y][L.I.x] = '#';
+  return new GameMap({ id: 'deep', kind: 'deep', w, h, tiles: T, name: 'The Sea Floor', wrecks, enc: 'u1', bg: 'deep' });
 }
 function worldRegionAt(map, x, y) {
   const c = map.at(x, y);
@@ -329,6 +418,35 @@ TOWN_DEFS.lastlight = {
   water: [[8, 15, 3, 2]],
   decor: [[11, 9, 'b'], [12, 9, 'b'], [8, 9, 'l'], [15, 9, 'l'], [8, 12, 'g'], [9, 12, 'g'], [15, 12, 'g'], [20, 16, 'c'], [3, 16, 'c'], [14, 16, 'l']]
 };
+// 1.7: Nerith, the Sea Mother's sunken city (it keeps its own air), and the Undermarket beneath Ironhold
+TOWN_DEFS.nerith = {
+  name: 'Nerith', w: 24, h: 18, border: 'r', theme: 'stone', music: 'nerith', loc: 'H', underwater: true,
+  exits: [[11, 17], [12, 17]],
+  buildings: [
+    { x: 2, y: 2, w: 6, h: 4, kind: 'inn', roof: '#2a6a7a', sign: 'inn', id: 'inn', price: 500, wall: '#9ab8c0' },
+    { x: 9, y: 1, w: 6, h: 5, kind: 'chapel', roof: '#3a8a9a', id: 'temple', wall: '#b8d0d4' },
+    { x: 17, y: 2, w: 5, h: 4, kind: 'hall', roof: '#2a5a6a', sign: 'hall', id: 'archive', wall: '#9ab8c0' },
+    { x: 2, y: 10, w: 5, h: 4, kind: 'shop', roof: '#3a7a6a', sign: 'item', id: 'items', shop: 'nerith_items', wall: '#9ab8c0' },
+    { x: 17, y: 10, w: 5, h: 4, kind: 'shop', roof: '#2a4a6a', sign: 'arms', id: 'arms', shop: 'nerith_arms', wall: '#9ab8c0' }
+  ],
+  paths: [[11, 6, 12, 17], [3, 6, 20, 7], [4, 14, 19, 14]],
+  water: [[8, 15, 3, 2], [14, 15, 3, 2]],
+  decor: [[11, 9, 'w'], [8, 9, 'l'], [15, 9, 'l'], [8, 12, 'P'], [15, 12, 'P'], [20, 16, 'g'], [3, 16, 'g'], [5, 8, 'l'], [19, 8, 'l']]
+};
+TOWN_DEFS.undermarket = {
+  name: 'The Undermarket', w: 22, h: 16, border: 'r', theme: 'stone', music: 'undermarket', loc: 'C', underground: true,
+  exitTo: { map: 'in:ironhold:jail', x: 6, y: 6 },
+  exits: [[10, 15], [11, 15]],
+  buildings: [
+    { x: 2, y: 2, w: 6, h: 4, kind: 'inn', roof: '#4a3a2a', sign: 'inn', id: 'inn', price: 40, wall: '#7a746a' },
+    { x: 9, y: 1, w: 5, h: 5, kind: 'hall', roof: '#3a3a3a', sign: 'hall', id: 'guild', wall: '#6a645a' },
+    { x: 15, y: 2, w: 5, h: 4, kind: 'house', roof: '#5a3a4a', id: 'broker', wall: '#7a746a' },
+    { x: 8, y: 9, w: 6, h: 4, kind: 'shop', roof: '#2a2a2a', sign: 'item', id: 'market', shop: 'blackmarket', wall: '#6a645a' }
+  ],
+  paths: [[10, 6, 11, 15], [3, 6, 18, 7], [3, 13, 18, 13]],
+  water: [[1, 9, 3, 3]],
+  decor: [[5, 9, 'c'], [6, 10, 'c'], [16, 9, 'c'], [17, 10, 'l'], [4, 8, 'l'], [15, 12, 'b'], [18, 14, 'g']]
+};
 const TOWN_SOLID = new Set(['t', 'P', 'r', '~', 'F', 'w', 'c', 'a', 'g', 'l', 'm', 'b']);
 function buildTown(id) {
   const d = TOWN_DEFS[id];
@@ -347,7 +465,7 @@ function buildTown(id) {
   for (const [x, y] of d.exits) tiles[y][x] = ':';
   const buildings = d.buildings.map(b => ({ ...b, doorX: b.x + Math.floor(b.w / 2) }));
   if (d.theme === 'snow' || d.theme === 'sand' || d.theme === 'ash') for (let y = 0; y < d.h; y++) for (let x = 0; x < d.w; x++) if (tiles[y][x] === 'f') tiles[y][x] = '.';
-  const m = new GameMap({ id, kind: 'town', w: d.w, h: d.h, tiles, buildings, theme: d.theme, name: d.name, music: d.music, loc: d.loc });
+  const m = new GameMap({ id, kind: 'town', w: d.w, h: d.h, tiles, buildings, theme: d.theme, name: d.name, music: d.music, loc: d.loc, underwater: !!d.underwater, underground: !!d.underground });
   return m;
 }
 
@@ -372,6 +490,11 @@ const DUNGEONS = {
   undercity: { name: 'The Undercity', theme: 'undercity', floors: 2, w: 36, h: 26, seed: 1010, enc: 'd10', bg: 'mine', loc: 'C', deco: '~', deco2: 'o', noLantern: true,
     exitTo: { map: 'in:ironhold:jail', x: 6, y: 6 },
     loot: [['xpotion', 'dusk_silk', 'gold:9000', 'elixir'], ['megalixir', 'dusk_silk', 'gold:15000']], boss: 'vane' },
+  // 1.7 The Drowned Kingdom
+  palace: { name: 'The Drowned Palace', theme: 'palace', floors: 4, w: 38, h: 30, seed: 1111, enc: 'd11', bg: 'palace', loc: '0', deco: '~', deco2: 'k', noLantern: true,
+    loot: [['deep_pearl', 'xpotion', 'gold:14000', 'hiether'], ['kelp_robe', 'megalixir', 'deep_pearl', 'star_bomb'], ['pressure_ring', 'elixir', 'deep_pearl', 'megalixir'], ['megalixir', 'gold:25000', 'deep_pearl']], boss: 'nereus' },
+  hadal: { name: 'The Hadal Rift', theme: 'hadal', floors: 2, w: 36, h: 28, seed: 1212, enc: 'd12', bg: 'hadal', loc: 'I', deco: '~', deco2: 'k', noLantern: true,
+    loot: [['deep_pearl', 'megalixir', 'gold:30000', 'elixir'], ['megalixir', 'deep_pearl', 'megalixir']], boss: 'tide' },
   abyss: { name: 'Crownfall Abyss', theme: 'abyss', floors: 4, w: 38, h: 30, seed: 707, enc: 'd7', bg: 'abyss', loc: '7', deco: 'L', deco2: 'k',
     loot: [['abyss_ash', 'xpotion', 'gold:12000', 'hiether'], ['ash_robe', 'megalixir', 'abyss_ash', 'star_bomb'], ['ash_mail', 'elixir', 'abyss_ash', 'megalixir'], ['nightglass', 'megalixir', 'gold:20000', 'abyss_ash']], boss: 'crown', lantern: 'night', lanternCol: '#b8a8ff' }
 };

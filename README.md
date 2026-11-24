@@ -115,15 +115,16 @@ flowchart LR
 
 | | Count | | Count |
 | --- | --- | --- | --- |
-| Playable heroes | **5** (4 fight at once) | Monsters | **75** in 21 drawn families |
-| Towns | **7** | Boss battles | **15** |
-| Dungeons | **10** (26 floors) | Skills and spells | **39**, plus **35** enemy abilities |
-| Side quests | **17** | Combo techs and Limits | **12** and **5** |
-| Arena cups | **6** | Weapons, armour, accessories | **43**, **17**, **36** |
-| Fish | **13** | Forge recipes | **9** |
-| Music tracks | **18** | Image or audio files | **0** |
-| Level cap | **50**, then the Lantern Board | Source lines | ~7,450 across 12 files |
+| Playable heroes | **5** (4 fight at once) | Monsters | **89** in 24 drawn families |
+| Towns | **9** (one under the sea, one under Ironhold) | Boss battles | **17** |
+| Dungeons | **12** (32 floors) | Skills and spells | **39**, plus **43** enemy abilities |
+| Side quests | **21** | Combo techs and Limits | **12** and **5** |
+| Arena cups | **6** | Weapons, armour, accessories | **48**, **23**, **42** |
+| Fish | **13** | Forge recipes | **12** |
+| Music tracks | **21** | Image or audio files | **0** |
+| Level cap | **50**, then the Lantern Board | Source lines | ~8,350 across 14 files |
 | Lantern Board passives | **11** | Meals | **11** |
+| Ways to travel | **5**: foot, ship, airship, diving bell, lanternmoth | Treasure maps | **5** |
 
 ```mermaid
 mindmap
@@ -174,10 +175,11 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 
 **World**
 - A large overworld: three continents, the Sunscar Desert, a corrupted isle, a star-island, a mesa-walled valley you can only reach by air, and (after the ending) the Ashen Isle
-- Travel on foot, by **ship** and by **airship**
-- **7 towns** (Brightwater, Port Halden, Ironhold, Frostmere, desert Mirage, sky-valley Aerie and ash-bound Lastlight), with more than 60 NPCs whose dialogue changes as the story moves on
+- **The sea floor**: a second, dark world map under the sea, reached by diving bell, with the sunken city of Nerith at its heart
+- Travel on foot, by **ship**, by **airship**, by **diving bell** and on the back of a **lanternmoth**
+- **9 towns** (Brightwater, Port Halden, Ironhold, Frostmere, desert Mirage, sky-valley Aerie, ash-bound Lastlight, sunken Nerith and the Undermarket beneath Ironhold), with more than 70 NPCs whose dialogue changes as the story moves on
 - **Walk inside every building**: inns, shops and smithies with keepers behind counters, homes, chapels, a jail, a palace, an observatory hut. Search barrels, pots and crates for hidden items.
-- **10 dungeons, 26 floors**: Whisperwood Hollow, Sunken Shrine, Emberdeep Mines, Hollow Spire, the Tomb of the First King, the Starfall Observatory, the Crownfall Abyss, and the three hero-quest dungeons (the Ember Caves, the Sea Mother's Grotto and the Undercity). They have torchlight and treasure, and most have a Lantern at the heart.
+- **12 dungeons, 32 floors**: Whisperwood Hollow, Sunken Shrine, Emberdeep Mines, Hollow Spire, the Tomb of the First King, the Starfall Observatory, the Crownfall Abyss, the three hero-quest dungeons (the Ember Caves, the Sea Mother's Grotto and the Undercity), and under the sea the Drowned Palace and the Hadal Rift. They have torchlight and treasure, and most have a Lantern at the heart.
 
 **Battle**
 - Classic turn-based, side-view combat: Attack, Skill, **Combo**, Item, Defend, Run
@@ -185,18 +187,18 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 - Elemental weaknesses, **resistances and absorbs**, critical hits, stealing (with **rare steals**), buffs, poison, sleep, silence, **blind, slow, haste**, regen and auto-revive. The [formulas](docs/GAME_GUIDE.md#formulas) are all documented.
 - **Smarter enemies**: some hunt your weakest hero or your casters, healers mend their allies, and every boss **changes tactics when hurt**
 - **Limits**: a gauge that fills as each hero takes damage, unlocking a once-per-charge super move
-- **75 monsters** in 21 drawn families, including **15 boss battles**: two two-phase finales, a sea monster, the First King, an optional superboss dragon, and five personal nemeses (one a solo duel)
+- **89 monsters** in 24 drawn families, including **17 boss battles**: two two-phase finales, a sea monster, the First King, an optional superboss dragon, five personal nemeses (one a solo duel), a drowned king and a secret superboss at the bottom of the sea
 
 **Progression**
-- Levels up to **50**, learned skills, and weapon, armour and accessory slots, with **36 accessories**
+- Levels up to **50**, learned skills, and weapon, armour and accessory slots, with **42 accessories**
 - **The Lantern Board**: from level 30, Embers light nodes on each hero's board: stats, three passives (Counter, MP Saver, Auto-Haste, Ghost Step and more) and a capstone
 - **Formation** menu: four fight, and the reserve earns half EXP
-- **Orrin's Forge**: monsters drop materials (Ember Cores, Frost Crystals, Sun Gold, Star Shards, Dusk Silk, Abyss Ash). Orrin in Ironhold forges them into 9 pieces of gear, including each hero's best weapon. The bestiary shows who drops what.
+- **Orrin's Forge**: monsters drop materials (Ember Cores, Frost Crystals, Sun Gold, Star Shards, Dusk Silk, Abyss Ash, Deep Pearls). Orrin in Ironhold forges them into 12 pieces of gear, including each hero's best weapon. The bestiary shows who drops what.
 - **Fishing**: get a rod from the Ice Fisher in Frostmere, then fish any pond, river, harbour or sea. 13 kinds of fish, each with its own spots, and a timing mini-game that gets harder for rarer fish. One legend only rises once every Lantern burns. Innkeepers **cook** your catch into 11 meals that buff the next three battles.
 - **The Aerie Arena**: six cups of back-to-back battles with unique prizes, up to the Grand Champion gauntlet and the post-game Eclipse Cup
-- **17 side quests** in a quest log, including five personal hero quests and the Festival of Lanterns, with the main objective always shown
+- **21 side quests** in a quest log, including five personal hero quests, the Festival of Lanterns, the Drowned Kingdom and five buried treasures, with the main objective always shown
 - **Campfire talks** when you rest with a Tent
-- A **bestiary** with stats, weaknesses, resistances, AI, steals and drops (Sable rewards you at 45 and at all 75), and a **world map** with your next objective marked
+- A **bestiary** with stats, weaknesses, resistances, AI, steals and drops (Sable rewards you at 45 and for every creature), and a **world map** with your next objective marked
 - **New Game+**: finish the story to replay with your levels and gear against stronger enemies
 
 **Comfort**
@@ -206,7 +208,7 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 - **Equip → Optimise** puts on the best gear you own in one step
 
 **Sound**
-- An original chiptune soundtrack of 18 tracks (title, overworld, sea, sky, desert, towns, dungeons, the Spire, the Ashen Isle, the Abyss, battle, boss, two final battles, victory, ending, game over), sequenced live in Web Audio
+- An original chiptune soundtrack of 21 tracks (title, overworld, sea, sky, desert, towns, dungeons, the Spire, the Ashen Isle, the Abyss, the sea floor, Nerith, the Undermarket, battle, boss, two final battles, victory, ending, game over), sequenced live in Web Audio
 
 ---
 
@@ -327,8 +329,9 @@ flowchart LR
 | --- | --- |
 | `src/core.js` | Canvas scaling (sharp at any resolution), input and touch, UI windows, dialogue and menus, the async script runner, settings, and the chiptune sequencer and sound effects |
 | `src/data.js` | Heroes, skills, combo techs, items, equipment, monsters, encounter tables, shops, arena cups, forge recipes, fish, the EXP curve |
-| `src/art.js` | All vector art: world, town and dungeon tiles, buildings, characters, monsters, vehicles, battle backgrounds, the title screen |
-| `src/maps.js` | The seeded overworld generator (continents, river, desert, sky valley, roads, the hidden Ashen Isle), town layouts, dungeon floors with reachability checks |
+| `src/art.js` | All vector art: world, town and dungeon tiles, buildings, characters, monsters, vehicles, battle backgrounds, the title screen; plus the `MONSTER_ART` / `BATTLE_BGS` registries |
+| `src/deep_art.js` | 1.7 art: the sea floor, Nerith's mood, the diving bell, lanternmoths, the jelly / angler / Tide families and three battle backgrounds |
+| `src/maps.js` | The seeded overworld generator (continents, river, desert, sky valley, roads, the hidden Ashen Isle), the sea floor generated beneath it, town layouts, dungeon floors with reachability checks |
 | `src/party.js` | Party stats, levelling, inventory, save and load |
 | `src/field.js` | Exploration: movement, ship and airship, camera, NPCs, chests, stairs, random encounters, dungeon lighting, fishing spots |
 | `src/interior.js` | Building interiors: layouts, furniture, counters, searchable containers |
@@ -336,6 +339,7 @@ flowchart LR
 | `src/menu.js` | Field menu (items, magic, equip, status, formation, quests, bestiary, world map, save, config), shops, inns |
 | `src/crafts.js` | The fishing mini-game and Orrin's forge |
 | `src/hearts.js` | The five hero quests, Limits unlocking, campfire talks and the Festival of Lanterns |
+| `src/deep.js` | 1.7 The Drowned Kingdom: diving and surfacing, Nerith, the Palace and the Rift, treasure maps, lanternmoths and the Undermarket |
 | `src/story.js` | NPC dialogue, cutscenes, story flags, quests, the arena, boss events, the title screen, the endings, the main loop |
 | `tools/` | The play-test harness, the boss balance simulator, the guide-table generator and the diagram checker |
 

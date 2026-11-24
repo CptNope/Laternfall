@@ -41,7 +41,7 @@ How the engine works, for anyone reading or changing the code. It covers how the
 ```mermaid
 flowchart LR
     subgraph src/
-      core[core.js] --> data[data.js] --> art[art.js] --> maps[maps.js] --> party[party.js] --> field[field.js] --> interior[interior.js] --> battle[battle.js] --> menu[menu.js] --> crafts[crafts.js] --> hearts[hearts.js] --> story[story.js]
+      core[core.js] --> data[data.js] --> art[art.js] --> dart[deep_art.js] --> maps[maps.js] --> party[party.js] --> field[field.js] --> interior[interior.js] --> battle[battle.js] --> menu[menu.js] --> crafts[crafts.js] --> hearts[hearts.js] --> deep[deep.js] --> story[story.js]
     end
     story --> B[build.py<br/>concatenate in order]
     B --> H[index.html<br/>HTML + CSS + touch pad + one inline script]
@@ -72,6 +72,8 @@ python3 build.py   # prints the byte size of the new index.html
 | `menu.js` | The field menu and its pages, shops, inns, quest log, bestiary, world map, config | `openMainMenu` `openShop` `innStay` `questMenu` `configMenu` |
 | `crafts.js` | The fishing mini-game, Orrin's forge, the Lantern Board screen and cooking | `FishingUI` `goFishing` `forgeMenu` `lanternBoard` `cookMenu` |
 | `hearts.js` | The five hero quests, Limits unlocking, campfire talks, the Festival of Lanterns | `learnLimit` `worldQuestEntities` `interiorQuestEntities` `innDream` `campfireTalk` `heartsQuests` |
+| `deep_art.js` | 1.7 drawing: sea-floor tiles and light, town moods, the dive spot, bell and moth, three monster families and three battle backgrounds. Registers itself with `art.js` | `drawDeepTile` `drawDeepLight` `drawTownMood` `drawBell` `drawMoth` `drawDeepMap` |
+| `deep.js` | 1.7 The Drowned Kingdom: diving and surfacing, Nerith's people, the palace and Rift bosses, treasure maps, lanternmoths, the Undermarket, the 1.7 quest log | `diveDown` `surfacePrompt` `talkYsolde` `palaceBoss` `hadalBoss` `digTreasure` `treasureMapDrop` `lampMoth` `shopPrice` `deepQuests` `worldPos` |
 | `story.js` | NPCs and dialogue, doors, cutscenes, bosses, quests, the title screen, the ending, **and the main loop** | `townNpcs` `bossEncounter` `questList` `mainObjective` `worldEvents` `titleMenu` `frame` |
 
 ```mermaid
@@ -81,6 +83,8 @@ flowchart TB
     story --> menu[menu.js]
     story --> crafts[crafts.js]
     story --> hearts[hearts.js]
+    story --> deep[deep.js]
+    deep --> battle
     hearts --> battle
     crafts --> menu
     field --> maps[maps.js]
@@ -238,6 +242,21 @@ Every map is a `GameMap` with `tiles[y][x]` (one character per tile), a `kind`, 
 | `town` | town key | `buildTown(id)` from `TOWN_DEFS` | `lastlight` |
 | `interior` | `in:<town>:<building>` | `buildInterior(id)` from `INT_TEMPLATES` | `in:lastlight:wardhall` |
 | `dungeon` | `<dungeon>:<floor>` | `genDungeonFloor(did, f)` from `DUNGEONS` | `abyss:3` |
+| `deep` | `deep` | `genDeep()` from the world map | the sea floor, 49×28 |
+
+### The sea floor (1.7)
+
+`genDeep()` builds the world first (with the Ashen Isle raised), then makes one sea-floor tile for every 2×2 block of the world: sand where all four are open sea, rock otherwise. It carves trenches between the four dive spots, Nerith (`H`), the Drowned Palace (`0`) and the Hadal Rift (`I`), adds kelp, boulders, coral, vents and three wrecks with noise, and removes boulders and coral until a flood fill from the first dive spot reaches every key point. The Rift tile stays rock until `applyDeepFlags` opens it (`boss_palace`).
+
+```mermaid
+flowchart LR
+    S[Ship on a dive spot ◎<br/>world x, y] -- "Enter: diveDown" --> D[Sea floor<br/>x / 2, y / 2]
+    D -- "walk onto a bell line u: surfacePrompt" --> S2[Ship at that spot<br/>on the surface]
+    D -- "walk onto H / 0 / I" --> L[enterLocation<br/>town or dungeon]
+    L -- "leave: locDef / locMap" --> D
+```
+
+Locations on the sea floor live in `DEEP_LOC` instead of `WORLD_LOC`. `locDef(ch)` finds a location in either table and `locMap(ch)` says which map it is on; `enterLocation`, `leaveTown` and `stairs` use them. A town with `exitTo` (the Undermarket) leaves to that map instead.
 
 ### World generation
 

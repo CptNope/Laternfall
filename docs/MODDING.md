@@ -42,6 +42,7 @@ flowchart TD
 - [Add music or a sound effect](#add-music-or-a-sound-effect)
 - [Add a fish or a forge recipe](#add-a-fish-or-a-forge-recipe)
 - [Add an arena cup](#add-an-arena-cup)
+- [Add a place on the sea floor](#add-a-place-on-the-sea-floor)
 - [Change the Lantern Board](#change-the-lantern-board)
 - [Regenerating the guide tables](#regenerating-the-guide-tables)
 - [Pull request checklist](#pull-request-checklist)
@@ -107,28 +108,24 @@ Use a monster from the same area as a baseline. Final-area enemies sit at roughl
 
 ## Add a new monster art family
 
-**Files:** `src/art.js`
+**Files:** your own file (for example `src/deep_art.js`), or `src/art.js`
 
-1. Add a `case` to the `switch (def.fam)` in `drawMonster`. The origin `(0, 0)` is the monster's **feet**, it faces **right**, and `t` is time in seconds, for animation.
+Since 1.7, new families register themselves instead of growing the big `switch` in `art.js`. Put the drawing in a file that loads after `art.js` (add it to `order` in `build.py`), and register it:
 
 ```js
-case 'lantern': { // a hovering haunted lantern
-  const bob = Math.sin(t * 2) * 4;
-  ellipse(g, 0, -1, 20, 4, 'rgba(0,0,0,.3)');          // shadow
+// origin (0, 0) is the monster's feet; it faces right; t is time in seconds
+MONSTER_ART.lantern = (g, def, t, { shadow, eyes }) => {
+  const c = def.c, bob = Math.sin(t * 2) * 4;
+  shadow();                                             // the standard ground shadow
   g.translate(0, bob);
   rrect(g, -14, -60, 28, 36, 6, c[0], OUT, 2);          // body
   circle(g, 0, -42, 9, c[2] || '#ffd27a');              // flame
   line(g, 0, -60, 0, -72, '#333', 2);                   // handle
-  break;
-}
+};
+MONSTER_SIZE.lantern = [40, 80];   // unscaled [width, height]: drives battle layout and target arrows
 ```
 
-2. Give its size in `monsterHeight` and `monsterWidth` (unscaled pixels). These drive battle layout and target arrows.
-
-```js
-const base = { ..., lantern: 80 }[def.fam] || 60;   // monsterHeight
-const base = { ..., lantern: 40 }[def.fam] || 60;   // monsterWidth
-```
+Battle backgrounds work the same way: `BATTLE_BGS.reef = (g, t, { sky, ground, hills, stars }) => { ... }`, then use `bg: 'reef'` in a `startBattle` call or a dungeon definition. A dungeon theme is one more entry in `DTHEME` (`wall`, `top`, `floor`, `floor2`, `acc`, `light`, `bg`). The older families are still `case`s in `drawMonster`, and `monsterHeight` / `monsterWidth` hold their sizes.
 
 **Drawing helpers** (from `art.js`): `circle`, `ellipse`, `poly`, `line`, `rrect`, `shade(hex, ±amount)`, `rgba(hex, alpha)` and the outline colour `OUT`.
 
@@ -463,6 +460,17 @@ ARENA_CUPS.push({ id: 'tidal', name: 'Tidal Cup', level: 40, unlock: 'boss_reef'
 ```
 
 `unlock` hides the cup until that flag is set. *Arena Legend* only counts the first five cups.
+
+---
+
+## Add a place on the sea floor
+
+**Files:** `src/maps.js`, `src/deep.js`
+
+1. Add it to `DEEP_LOC` with a free location character (`LOC_RE` in `core.js` allows A–I and 0–9; letters and digits already used on the world can't be reused), its sea-floor position and either `town` or `dungeon`.
+2. Add a `carve(...)` line in `genDeep()` from an existing point to it, and add it to the `keep` list so the reachability pass keeps it connected. Run `tools/playtest.py index.html /tmp/x drowned` to check.
+3. Define the town in `TOWN_DEFS` (with `loc` set to the new character, and `underwater: true` for Nerith's blue tint) or the dungeon in `DUNGEONS` (with `loc`). Everything else (entering, leaving, the map screen) goes through `locDef` and `locMap`.
+4. To hide it until a story flag, keep the tile as rock in `applyDeepFlags` like the Hadal Rift.
 
 ---
 

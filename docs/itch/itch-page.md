@@ -32,13 +32,13 @@ You are Arin, the young lamplighter of Brightwater. When the Ember Lantern goes 
 ### Features
 - **5 playable heroes**: a lamplighter, a flamecaller, a tide priest, a rogue, and a duskmage with a story of her own
 - **Classic turn-based battles** with magic, elemental weaknesses and absorbs, rare steals, status effects, bosses that change tactics when hurt, and **12 combo techs** where two or three heroes attack together
-- **A big world to explore** on foot, by ship and by airship: 7 towns, 10 dungeons (26 floors), a desert continent, and a valley you can only reach by air
+- **A big world to explore** on foot, by ship, by airship, by diving bell and on lanternmoths: 9 towns, 12 dungeons (32 floors), a desert continent, a valley you can only reach by air, and a whole sea floor with a sunken city
 - **Chapter VI: The Crownless King**: a post-game story on an island that rises from the sea after the credits
 - **Hearts of the Lamplighters**: a personal quest for every hero, each ending in a **Limit** super move and an ultimate weapon
 - **Walk inside every building**: shopkeepers behind counters, inns, homes and a palace, plus barrels and pots to search for hidden treasure
 - **75 monsters** and **15 boss battles**, including two two-phase finales, a sea monster, a forgotten king, an optional superboss dragon and a solo duel
 - **Fishing** (13 fish) and **forging** (9 recipes from monster materials)
-- **17 side quests**, a **6-cup Arena**, a **bestiary**, a **world map**, 36 accessories, a **Lantern Board** for every hero, **cooking**, and **New Game+**
+- **21 side quests**, buried **treasure maps**, a **6-cup Arena**, a **bestiary**, a **world map**, 42 accessories, a **Lantern Board** for every hero, **cooking**, and **New Game+**
 - **Comfortable to play**: 3 save slots and auto-save, battle speed up to 4×, repeat-last-turn, gamepad support, rebindable keys, large text and high contrast, a dialogue log
 - An original chiptune soundtrack of 18 tracks and a full ending with an epilogue for every hero
 

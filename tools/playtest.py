@@ -7,7 +7,7 @@ Usage:
     python3 tools/playtest.py [index.html] [outdir] [scenario ...]
     python3 tools/playtest.py index.html /tmp/shots chapter systems
 
-Scenarios: chapter, orun, systems, newgame, comfort, hearts, depth, readme (default: all but readme).
+Scenarios: chapter, orun, systems, newgame, comfort, hearts, depth, drowned, readme (default: all but readme).
 Needs: pip install playwright && playwright install chromium
        (or set CHROME=/path/to/chrome to use an installed browser).
 See docs/TESTING.md for what each scenario covers."""
@@ -17,7 +17,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -435,7 +435,7 @@ async def main():
             await ev("for (const id in MONSTERS) G.seen[id] = true; G.flags.q_scholar = true; G.flags.scholar_done = true")
             await run("await talkSable()", 300); await until_idle()
             await run("await talkSable()", 300); await until_idle()
-            check(await ev("hasItem('scholar_monocle') && hasItem('bestiary_seal') && G.flags.codex_all"), 'Sable gives the Monocle at 45 and the Seal at all 75')
+            check(await ev("hasItem('scholar_monocle') && hasItem('bestiary_seal') && G.flags.codex_all"), 'Sable gives the Monocle at 45 and the Seal for every creature')
             # --- bestiary shows resists, absorbs, AI and rare steals ---
             n = await ev("Object.keys(MONSTERS).indexOf('vane')")
             await run("await bestiaryMenu()", 300); await press('ArrowDown', n, 40); await pg.wait_for_timeout(300); await shot('47_bestiary_vane')
@@ -443,6 +443,94 @@ async def main():
             # --- save round trip keeps the board and the meal ---
             await ev("saveGame('2'); G.party[0].board = []; G.meal = null; loadGame('2')")
             check(await ev("G.party[0].board.includes('p1') && G.meal && G.meal.id === 'grilled_trout'"), 'board and meal survive save/load')
+
+        if want('drowned'):
+            def check(ok, label):
+                print(('ok   ' if ok else 'FAIL ') + label)
+                if not ok: errs.append('check failed: ' + label)
+            s = json.loads(json.dumps(POST))
+            s['flags'].update({k: True for k in ['isle', 'q_grotto', 'grotto_done', 'q_road', 'road_done', 'q_debt', 'debt_done', 'q_crown', 'boss_abyss']})
+            s['party'][3]['weapon'] = 'abbots_bell'
+            s['mapId'] = 'halden'; s['x'] = 12; s['y'] = 12
+            await boot(s); await until_idle()
+            # --- the quest: Wenna, then Brann fits the bell ---
+            await run("await drownedQuestStart()"); await until_idle()
+            check(await ev("G.flags.q_drowned && hasItem('tide_chart')"), 'Wenna gives Tessaly\'s Chart')
+            await run("await talkBrann()"); await until_idle()
+            check(await ev("G.flags.bell && G.inv.frost_crystal === 4 && G.inv.sun_gold === 4"), 'Brann fits the bell for 2 Frost Crystals and 1 Sun Gold')
+            # --- dive from a black-water spot ---
+            await ev("G.onShip = true; G.ship = { x: 20, y: 22, dir: 'down' }; Field.enter('world', 20, 22, 'down')")
+            await pg.wait_for_timeout(500); await shot('48_dive_spot')
+            await press('Enter', 1, 300); await press('Enter', 1, 300); await until_idle()
+            check(await ev("Field.map.id === 'deep' && G.x === 10 && G.y === 11 && !G.onShip"), 'diving lands on the sea floor below the spot')
+            await pg.wait_for_timeout(600); await shot('49_sea_floor')
+            # --- Nerith ---
+            await ev("Field.enter('deep', 24, 14, 'down')"); await press('ArrowDown', 1, 400); await until_idle()
+            check(await ev("Field.map.id === 'nerith'"), 'walking onto the city enters Nerith')
+            await pg.wait_for_timeout(700); await shot('50_nerith')
+            await run("await enterLocation('0')"); await until_idle()
+            check(await ev("Field.map.id === 'nerith'"), 'the palace is shut until Ysolde is met')
+            await run("await talkYsolde()"); await until_idle()
+            # --- the Drowned Palace and King Nereus ---
+            await run("await enterLocation('0')"); await until_idle()
+            check(await ev("Field.map.id === 'palace:0'"), 'the Drowned Palace opens after Mother Ysolde')
+            await pg.wait_for_timeout(500); await shot('51_palace')
+            await ev("MONSTERS.nereus.hp = 60")
+            await run("await palaceBoss()", 400)
+            for i in range(60):
+                if await ev("G.scene !== Field && !!G.scene.enemies && !UI.stack.length && !G.scene.msg"): break
+                await press('Enter', 1, 150)
+            await pg.wait_for_timeout(900); await shot('52_nereus')
+            await until_idle(500, 'Enter', 110)
+            check(await ev("G.flags.boss_palace && hasItem('tidecrown')"), 'Nereus falls and gives the Crown of Nerith')
+            await ev("MONSTERS.nereus.hp = 16000")
+            check(await ev("(() => { const m = getMap('deep'); applyDeepFlags(m); return m.at(DEEP_LOC.I.x, DEEP_LOC.I.y) === 'I'; })()"), 'the Hadal Rift opens on the sea floor')
+            await run("await talkYsolde()"); await until_idle()
+            check(await ev("G.flags.ysolde_thanks && questList().some(q => q.title === 'The Tide That Remembers')"), 'Ysolde sends you to the Rift')
+            # --- the Hadal Rift and the Tide ---
+            await ev("Field.enter('deep', DEEP_LOC.I.x, DEEP_LOC.I.y - 1, 'down')"); await press('ArrowDown', 1, 400); await until_idle()
+            check(await ev("Field.map.id === 'hadal:0'"), 'stepping into the Rift enters the Hadal Rift')
+            await ev("MONSTERS.tide.hp = 60")
+            await run("await hadalBoss()", 400)
+            for i in range(60):
+                if await ev("G.scene !== Field && !!G.scene.enemies && !UI.stack.length && !G.scene.msg"): break
+                await press('Enter', 1, 150)
+            await pg.wait_for_timeout(900); await shot('53_tide')
+            await until_idle(500, 'Enter', 110)
+            check(await ev("G.flags.tide_done && hasItem('tidesong')"), 'the Tide That Remembers gives Tidesong')
+            await ev("MONSTERS.tide.hp = 30000")
+            # --- surfacing ---
+            await ev("Field.enter('deep', 23, 23, 'down')"); await press('ArrowDown', 1, 400); await press('Enter', 1, 300); await until_idle()
+            check(await ev("Field.map.id === 'world' && G.onShip && G.x === 46 && G.y === 48"), 'the bell line surfaces at the Shrine Deep')
+            # --- the map screen in both views ---
+            await ev("Field.enter('deep', 24, 14, 'down')")
+            await run("await worldMapView()", 400); await shot('54_map_sea_floor'); await press('Shift', 1, 300); await shot('55_map_world'); await press('Escape'); await until_idle(20, 'Escape')
+            # --- treasure maps ---
+            await ev("addItem('tmap1'); const d = getMap('world').digs[1]; G.onShip = false; Field.enter('world', d.x, d.y, 'down')")
+            g0 = await ev("G.gold")
+            await press('Enter', 1, 300); await until_idle()
+            check(await ev(f"G.flags.dug_1 && !hasItem('tmap1') && G.gold === {g0} + 25000"), 'digging at the spot finds map 1\'s treasure')
+            check(await ev("(() => { const r = Math.random; Math.random = () => 0.1; const a = treasureMapDrop([{ def: MONSTERS.bandit }]); const b = treasureMapDrop([{ def: MONSTERS.wolf }]); Math.random = r; return a === 'tmap2' && b === null; })()"), 'bandits drop the next map, wolves don\'t')
+            # --- lanternmoths ---
+            await run("await talkIvy()"); await until_idle()
+            check(await ev("hasItem('moth_whistle')"), 'Old Ivy gives the Moth Whistle once the roads are lit')
+            await ev("G.onShip = false; Field.enter('world', 14, 31, 'left')")
+            await press('Enter', 1, 300); await press('Enter', 1, 300); await until_idle()
+            check(await ev("G.onMoth === true"), 'a lit roadside lamp lends a lanternmoth')
+            await ev("G.encSteps = 1"); await press('ArrowUp', 4, 140); await pg.wait_for_timeout(300); await shot('56_lanternmoth')
+            check(await ev("G.scene === Field && G.onMoth"), 'no battles while riding a moth')
+            await press('Enter', 1, 300); await until_idle()
+            check(await ev("!G.onMoth"), 'Enter lands the moth')
+            # --- the Undermarket ---
+            await ev("Field.enter('in:ironhold:jail', 6, 6, 'down')"); await press('Enter', 1, 300); await press('Enter', 1, 400); await until_idle()
+            check(await ev("Field.map.id === 'undermarket'"), 'the jail hatch leads to the Undermarket')
+            await pg.wait_for_timeout(600); await shot('57_undermarket')
+            check(await ev("shopPrice('blackmarket', 'megalixir') === 20000 && shopPrice('blackmarket', 'sun_gold') === ITEMS.sun_gold.price * 3"), 'black-market prices')
+            await ev("Field.enter('undermarket', 10, 14, 'down')"); await press('ArrowDown', 2, 400); await until_idle()
+            check(await ev("Field.map.id === 'in:ironhold:jail'"), 'leaving the Undermarket returns to the jail')
+            # --- save on the sea floor and load it back ---
+            await ev("Field.enter('deep', 24, 14, 'down'); saveGame('3'); Field.enter('world', 40, 15, 'down'); loadGame('3')")
+            check(await ev("G.mapId === 'deep' && G.x === 24 && slotSummary('3').place === 'The Sea Floor'"), 'a save on the sea floor loads back on the sea floor')
 
         print('ERRORS:', len(errs))
         for e in errs[:30]: print('  ', e)

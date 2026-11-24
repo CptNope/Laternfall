@@ -20,6 +20,8 @@ function N(x, y, seed, o, talk, extra = {}) { return { x, y, look: o.skin && o.h
 
 function townNpcs(id) {
   const f = G.flags;
+  if (id === 'nerith') return nerithNpcs();
+  if (id === 'undermarket') return undermarketNpcs();
   if (id === 'brightwater') return [
     N(5, 8, 1, LOOKS.elder, talkElder, { mark: !f.q1 || (f.lantern1 && !f.bridge) || (f.ending && !f.q_road) || (f.q_road && !f.road_done && lampsLit() >= ROAD_LAMPS.length) || (HEROES_DONE() === 5 && !f.festival), name: 'Elder Maren' }),
     N(12, 8, 2, LOOKS.mother, talkMother, { name: 'Mira', mark: f.ending && ((!f.q_grimoire && inParty('lyra')) || (!f.q_echo && inParty('selene'))) }),
@@ -27,11 +29,12 @@ function townNpcs(id) {
     N(13, 16, 4, LOOKS.guard, talkTobin),
     N(18, 8, 5, { body: '#3a7a4a', hat: 'cap', accent: '#a07a3a' }, talkHob, { wander: true }),
     N(15, 10, 6, { hair: '#a0a0a0', style: 'bald', beard: true, body: '#7a6a5a' }, talkBram),
-    N(4, 16, 7, { style: 'bun', body: '#c05a7a' }, talkAda, { wander: true })
+    N(4, 16, 7, { style: 'bun', body: '#c05a7a' }, talkAda, { wander: true }),
+    N(20, 15, 8, { skin: '#e8c8a8', hair: '#d8d8d0', style: 'bun', body: '#6a5a8a', accent: '#ffe9a8', robe: true }, talkIvy, { name: 'Old Ivy', mark: f.road_done && !hasItem('moth_whistle') })
   ];
   if (id === 'halden') {
     const l = [
-      N(20, 10, 11, LOOKS.sailor, talkBrann, { mark: (f.lantern2 && !f.ship) || (f.ship && !f.bounty) || (f.leviathan && !f.bounty_done), name: 'Brann' }),
+      N(20, 10, 11, LOOKS.sailor, talkBrann, { mark: (f.lantern2 && !f.ship) || (f.ship && !f.bounty) || (f.leviathan && !f.bounty_done) || (f.q_drowned && !f.bell), name: 'Brann' }),
       N(17, 18, 12, { style: 'bun', body: '#3a8a8a' }, talkNell, { wander: true, mark: !f.q_locket || (hasItem('locket') && !f.locket_done) }),
       N(6, 10, 13, LOOKS.sailor, talkSailor, { wander: true }),
       N(12, 17, 14, { style: 'spiky', body: '#c05a3a' }, talkKid, { wander: true }),
@@ -186,6 +189,7 @@ async function joinOswin() {
 }
 async function talkBrann() {
   const f = G.flags;
+  if (await brannBell()) return;
   if (!f.lantern2) { await say('Brann', 'The sea\'s gone mad since the Tide Lantern dimmed. Waves like walls. No ship leaves this harbor, not even my Dawnrunner.'); return; }
   if (!f.ship) {
     await sayAll([
@@ -361,6 +365,7 @@ async function onEnterTown(id) {
   if (id === 'halden' && !f.seenHalden) { f.seenHalden = true; await say(LY, 'Port Halden! Smell that salt air. Elder Maren said to look for a priest named Oswin — he must be near the chapel.'); }
   if (id === 'frostmere' && !f.seenFrost) { f.seenFrost = true; await sayAll([[LY, 'A village up here? In all this snow?'], [OS, 'Frostmere. Star-watchers and trappers. They say the sky is clearer here than anywhere in the world.']]); }
   if (id === 'ironhold' && !f.seenIron) { f.seenIron = true; await say(OS, 'Ironhold. Mind your manners — dwarves remember every insult for three generations.'); }
+  if (id === 'nerith' && !f.seenNerith) { f.seenNerith = true; await sayAll([[LY, 'There\'s AIR down here. A whole city, inside a bubble.'], [KE, 'And people. Pale, see-through people. Waving at us.'], [OS, 'Nerith. The Sea Mother\'s first city. I\'m standing in a story my mother told me.'], [SE, 'They\'re not ghosts, exactly. They feel like... memories. Someone is remembering them very hard.']]); }
   if (id === 'lastlight' && !f.seenLast) { f.seenLast = true; await sayAll([[LY, 'People! Living on an island that was under the sea this morning?!'], [OS, 'And the streets are dry. And the fire is lit. I have officially stopped being surprised by anything.'], [KE, 'That old woman by the fire is staring at us like she\'s been expecting us for a thousand years.']]); }
 }
 
@@ -375,6 +380,7 @@ function applyWorldFlags(m) {
 // ------------- dungeons -------------
 async function canEnterDungeon(did) {
   const f = G.flags;
+  if (did === 'palace' && !f.ysolde) { await narrate('Great doors of black coral, shut tight. Faces are carved into them. All of them look afraid.'); await say(OS, 'Nerith\'s temple might know how to open these. The priestesses always knew where the keys were.'); return false; }
   if (did === 'hollow' && !f.q1) { await say(LY, 'Wait — shouldn\'t we talk to Elder Maren first? She\'ll want to know we\'re going in.'); return false; }
   if (did === 'shrine') {
     if (!f.oswin) { await narrate('A shimmering curtain of seawater seals the entrance. It pushes you back gently, like a tide.'); await say(LY, 'It\'s like the sea itself is holding the door shut. Maybe that priest in Port Halden knows something.'); return false; }
@@ -434,6 +440,8 @@ async function onEnterDungeon(did) {
   if (did === 'spire') await sayAll([[LY, 'I can feel him. Like cold water poured down my spine.'], [OS, 'Then we are close. Courage, children. Light is only ever a small thing, until it isn\'t.']]);
   if (did === 'embercave') await sayAll([[LY, 'It\'s warm. Like her kitchen.'], [A, 'Careful, Lyra. Warm can still bite.']]);
   if (did === 'grotto') await say(OS, 'I took my vows in this grotto. I was nineteen. The ceiling was taller then, or I was shorter.');
+  if (did === 'palace') await sayAll([[A, 'Four floors down to the throne, if it\'s built like a palace on land.'], [KE, 'Palaces are always built the same. Stairs, guards, a man on a chair who thinks he\'s important.']]);
+  if (did === 'hadal') await sayAll([[SE, 'Even the dark is darker here. I didn\'t think that was possible.'], [OS, 'Keep close. Whatever lives at the bottom of this has never seen a lamp.']]);
   if (did === 'abyss') await sayAll([[KE, 'Down we go. Into a hole. That a crown fell into. Put that on my grave, so people know I was brave.'], [OS, 'Keep the lamp high, children. Four floors down, the Warden said. My knees heard that and filed a complaint.']]);
 }
 async function examineLantern(e) {
@@ -593,6 +601,8 @@ async function bossEncounter(did) {
   if (did === 'embercave') return grimoireBoss();
   if (did === 'grotto') return grottoBoss();
   if (did === 'undercity') return vaneBoss();
+  if (did === 'palace') return palaceBoss();
+  if (did === 'hadal') return hadalBoss();
   if (did === 'spire') {
     Audio_.stopMusic();
     await sayAll([
@@ -919,7 +929,7 @@ function interiorNpcs(m) {
   if (m.ikind === 'inn') out.push({ x: 9, y: 2, look: keeperLook(t.length * 7 + 3), talk: () => innStay(t, b.price) });
   if (m.ikind === 'arena') out.push({ x: K.x, y: K.y, look: { skin: '#c98e62', hair: '#1f1b2e', style: 'short', body: '#a03a2a', accent: '#e8c24a', beard: true }, talk: arenaMenu, name: 'Arena Master' });
   if (m.ikind === 'chapel' && t === 'lastlight') out.push({ x: 6, y: 3, look: { skin: '#e2b48c', hair: '#5a4a3a', style: 'short', body: '#5a4a5a', accent: '#ff8a4a', robe: true, beard: true }, talk: async () => { await say('Brother Cael', 'We pray to no god here. Only to the fire, and the fire never answers. Still — sit. You look like people who have walked a long way.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
-  else if (m.ikind === 'chapel') out.push({ x: 6, y: 3, look: { skin: '#f1c9a0', hair: '#c8b8a0', style: 'bun', body: '#e9ecf2', accent: '#3a8fd0', robe: true }, mark: f.ending && !f.q_grotto && inParty('oswin'), talk: async () => { if (f.ending && !f.q_grotto && inParty('oswin')) return grottoQuestStart(); await say('Sister Wenna', 'May the tide carry your burdens. Rest a moment in the Sea Mother\'s house.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
+  else if (m.ikind === 'chapel') out.push({ x: 6, y: 3, look: { skin: '#f1c9a0', hair: '#c8b8a0', style: 'bun', body: '#e9ecf2', accent: '#3a8fd0', robe: true }, mark: (f.ending && !f.q_grotto && inParty('oswin')) || (f.grotto_done && !f.q_drowned && inParty('oswin')), talk: async () => { if (f.ending && !f.q_grotto && inParty('oswin')) return grottoQuestStart(); if (f.grotto_done && !f.q_drowned && inParty('oswin')) return drownedQuestStart(); await say('Sister Wenna', 'May the tide carry your burdens. Rest a moment in the Sea Mother\'s house.'); Audio_.sfx('heal'); for (const p of G.party) { if (!alive(p)) p.hp = 1; p.status = {}; } await narrate('Fallen allies were revived, and ailments washed away.'); } });
   if (m.ikind === 'jail' && t === 'ironhold') {
     if (!f.kestrel) out.push({ x: 3, y: 3, look: LOOKS.kestrel, talk: talkKestrelJail, mark: !f.metKestrel });
     out.push({ x: 8, y: 6, look: LOOKS.guard, talk: talkJailGuard, mark: f.ending && !f.q_debt && inParty('kestrel') });
@@ -944,6 +954,8 @@ function interiorNpcs(m) {
       out.push({ x: 5, y: 4, look: npcLook(t.length * 31 + b.x * 3), talk: async () => say('Resident', pick(lines)), wander: true });
     }
   }
+  // Nerith and the Undermarket have their own people in temples, halls and houses
+  if (DEEP_TOWNS.includes(t)) { const dn = deepInteriorNpcs(m); if (dn) { out.length = 0; out.push(...dn); } }
   return out.filter(n => n.look || n.cat).map((n, i) => n.cat ? { ...n, kind: 'npc', look: LOOKS.elder, catSprite: true } : (n.look.skin && n.look.hair ? n : { ...n, look: npcLook(t.length * 17 + i * 5 + b.x, n.look) }));
 }
 async function talkKestrelJail() {
@@ -993,6 +1005,7 @@ function questList() {
   if (f.q_fish) { const n = fishKinds(), tot = Object.keys(FISH).length; q.push({ title: 'The Ones That Got Away', giver: 'Ice Fisher, Frostmere', done: !!f.fish_r2, reward: 'Angler\'s Ring, Moonfin Charm', desc: f.fish_r2 ? 'Every kind of fish in the world, caught. The Ice Fisher needs to sit down.' : `Catch every kind of fish, then visit the Ice Fisher. Face water and press Enter to fish. (${n}/${tot} kinds)${f.fish_r1 ? '' : ' — 6 kinds earns the Angler\'s Ring.'}` }); }
   if (f.forgeMet) q.push({ title: 'Orrin\'s Forge', giver: 'Orrin, Ironhold', done: !!f.forge_done, reward: 'Orrin\'s Seal', desc: f.forge_done ? 'Orrin calls you family now. The forge is always hot for you.' : `Bring monster materials to Orrin and forge three pieces of gear. (${f.forged || 0}/3)` });
   q.push(...heartsQuests());
+  q.push(...deepQuests());
   if (f.arenaMet) { const n = ARENA_CUPS.slice(0, 5).filter(c => f['cup_' + c.id]).length; q.push({ title: 'Arena Legend', giver: 'Arena Master, Aerie', done: !!f.cup_champion, reward: 'Lantern Crown', desc: f.cup_champion ? 'Grand Champions of the Aerie Arena!' : `Win all five cups at the Aerie Arena. (${n}/5 won)` }); }
   if (f.q_scholar) q.push({ title: 'Monster Scholar', giver: 'Sable, Frostmere', done: !!f.scholar_done, reward: 'Silk Ribbon', desc: f.scholar_done ? 'Your notes are in Sable\'s bestiary.' : `Record 30 different creatures in your bestiary, then visit Sable. (${seenCount()}/30)` });
   if (f.scholar_done) { const tot = Object.keys(MONSTERS).length, goal = f.codex45 ? tot : 45; q.push({ title: 'The Complete Bestiary', giver: 'Sable, Frostmere', done: !!f.codex_all, reward: f.codex45 ? 'Bestiary Seal' : 'Scholar\'s Monocle', desc: f.codex_all ? 'Every creature is recorded. Sable\'s book is finished.' : `Record ${f.codex45 ? 'every creature' : '45 creatures'}, then visit Sable. (${seenCount()}/${goal})` }); }

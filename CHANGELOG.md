@@ -14,15 +14,16 @@ timeline
     2026-11-19 : 1.0.0 First playable : 1.1.0 Frostmere and side quests
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
     2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance : 1.5.0 Hearts of the Lamplighters : 1.6.0 Deeper systems
+    Next : 1.7.0 The Drowned Kingdom
 ```
 
 ```mermaid
 xychart-beta
     title "Towns (bars) and dungeons (line) by release"
-    x-axis ["1.0.0", "1.1.0", "1.2.0", "1.3.0"]
-    y-axis "Count" 0 --> 8
-    bar [3, 4, 6, 7]
-    line [4, 5, 6, 7]
+    x-axis ["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.5.0", "1.7.0"]
+    y-axis "Count" 0 --> 13
+    bar [3, 4, 6, 7, 7, 9]
+    line [4, 5, 6, 7, 10, 12]
 ```
 
 
@@ -37,12 +38,33 @@ xychart-beta
 | 1.4.0 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#6](https://github.com/CptNope/Laternfall/pull/6) |
 | 1.5.0 | 2026-11-23 | 7 | 10 (26) | 75 (15) | 16 | 5 | [#7](https://github.com/CptNope/Laternfall/pull/7) |
 | 1.6.0 | 2026-11-23 | 7 | 10 (26) | 75 (15) | 17 | 5 | [#8](https://github.com/CptNope/Laternfall/pull/8) |
+| 1.7.0 | next | 9 | 12 (32) | 89 (17) | 21 | 5 | this release |
 
 ---
 
 ## [Unreleased]
 
+Planned as **1.7.0 · *The Drowned Kingdom***. It delivers WD-1 to WD-6 from the [roadmap](ROADMAP.md#17--the-drowned-kingdom).
+
+### Added
+- **The diving bell and the sea floor.** After Oswin's quest, Sister Wenna finds Tessaly's Chart and Brann fits the *Dawnrunner* with a diving bell (2 Frost Crystals and 1 Sun Gold). Sail onto one of four patches of black water and press Enter to dive to a new map under the sea, lit only by the bell's lamp. Walk onto a bell line to surface. The Map screen gets a Sea Floor view (Shift).
+- **Nerith**, the Sea Mother's sunken city: a town of gentle memories with its own inn, temple, archive and the best shop gear in the game (five weapons, three armours, the Pressure Ring).
+- **The Drowned Palace** (4 floors) and its boss, **Nereus, the Drowned King**, who acts twice, absorbs water and changes tactics at half HP. He gives the **Crown of Nerith**.
+- **The Hadal Rift** (2 floors) and the secret superboss **The Tide That Remembers** (acts twice, two phases, heals itself), which gives **Tidesong**.
+- **The Undermarket** under Ironhold, reached through the jail trapdoor after Kestrel's quest: an inn, the Thieves' Guild, Whisper the map-seller, and a black market selling forge materials and rare goods at triple price.
+- **Treasure maps**: five maps, each marking a dig spot on the world map. Whisper sells the first, bandits and anglers drop the next three, and the last lies in a sunken wreck. All five earn 50,000 gold from Whisper.
+- **Lanternmoths**: after Arin's twelve roadside lamps are lit, Old Ivy in Brightwater gives you the Moth Whistle. Talk to any lit lamp to ride a moth: twice walking speed, no encounters, land only.
+- 14 monsters (3 new art families: the jelly, the angler and the Tide itself), 8 enemy moves, 3 forge recipes using the new **Deep Pearl** material, 7 accessories and 3 music tracks (the sea floor, Nerith and the Undermarket).
+- `drowned` play-test scenario: 22 checks covering the whole quest line, diving and surfacing, digging, map drops, moth riding, the Undermarket and saving on the sea floor. Added to CI.
+
+### Changed
+- Art registries (`MONSTER_ART`, `MONSTER_SIZE`, `BATTLE_BGS`) let new content draw itself from its own file. The 1.7 art lives in `src/deep_art.js` and its logic in `src/deep.js`, so `art.js` and `story.js` barely grew (a first step on EN-5).
+- The bestiary now has 89 creatures, so the Bestiary Seal asks for more. Saves that already earned it keep it.
+- The simulator has 1.7 scenarios: Nereus wins 92% at Lv 46 in Nerith's gear and 75% at Lv 48 in main-story gear; the Tide wins 42% at Lv 50 with the hero weapons (no Lantern Board or meal in the simulator) and almost never in shop gear.
+
 ### Fixed
+- The Map screen crashed when opened inside a building; it now finds the party's position from any map.
+- A save made on the sea floor shows "The Sea Floor" in the slot list.
 - Donation links now go to the game's itch.io donation page (`/donate`). They pointed at `/purchase`, which itch.io shows as page not found for a free game.
 
 ---

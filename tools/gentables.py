@@ -44,7 +44,8 @@ out['combos'] = tbl(['Combo', 'Members', 'MP each', 'Target', 'Element', 'Effect
 AREAS = [('r1', 'Brightwater plains (west of the river)'), ('d1', 'Whisperwood Hollow'), ('r2', 'Eastern lowlands (Port Halden)'), ('d2', 'Sunken Shrine'), ('sea', 'Open sea'),
          ('r3', 'Northern continent (Ironhold, Frostmere)'), ('d3', 'Emberdeep Mines'), ('r5', 'Sunscar Desert and the Aerie valley'), ('d6', 'Tomb of the First King'),
          ('r4', 'Isle of Dusk'), ('d4', 'Hollow Spire'), ('d5', 'Starfall Observatory'), ('r6', 'Ashen Isle'), ('d7', 'Crownfall Abyss'),
-         ('d8', 'Ember Caves (Lyra\'s quest)'), ('d9', 'Sea Mother\'s Grotto (Oswin\'s quest)'), ('d10', 'The Undercity (Kestrel\'s quest)')]
+         ('d8', 'Ember Caves (Lyra\'s quest)'), ('d9', 'Sea Mother\'s Grotto (Oswin\'s quest)'), ('d10', 'The Undercity (Kestrel\'s quest)'),
+         ('u1', 'The sea floor (1.7)'), ('d11', 'The Drowned Palace'), ('d12', 'The Hadal Rift')]
 parts = []
 for code, title in AREAS:
     ids = []
@@ -61,7 +62,8 @@ for code, title in AREAS:
 out['monsters'] = '\n'.join(parts)
 WHERE = {'gloomcap': 'Whisperwood Hollow 2F', 'warden': 'Sunken Shrine 2F', 'vesper': 'Emberdeep Mines 3F', 'leviathan': 'Whirlpool, open sea (bounty)', 'firstking': 'Tomb of the First King 3F',
          'wyrm': 'Starfall Observatory 3F (optional)', 'king': 'Hollow Spire 3F (phase 1)', 'king2': 'Hollow Spire 3F (phase 2)', 'crown': 'Crownfall Abyss 4F (phase 1)', 'orun': 'Crownfall Abyss 4F (phase 2)',
-         'lampeater': 'The last roadside lamp (Arin)', 'hearthwarden': 'Ember Caves 2F (Lyra)', 'abbot': "Sea Mother's Grotto 2F (Oswin)", 'vane': 'The Undercity 2F (Kestrel)', 'echo': "Selene's dream, solo (Selene)"}
+         'lampeater': 'The last roadside lamp (Arin)', 'hearthwarden': 'Ember Caves 2F (Lyra)', 'abbot': "Sea Mother's Grotto 2F (Oswin)", 'vane': 'The Undercity 2F (Kestrel)', 'echo': "Selene's dream, solo (Selene)",
+         'nereus': 'The Drowned Palace 4F (sea floor)', 'tide': 'The Hadal Rift 2F (secret superboss)'}
 def phase(d):
     if not d.get('phases'): return '—'
     out_ = []
@@ -122,11 +124,15 @@ out['items'] = tbl(['Item', 'Price', 'Effect'], rows)
 rows = [[f"**{it['name']}**", it['desc']] for ik, it in I.items() if it['kind'] == 'key']
 out['keys'] = tbl(['Key item', 'Description'], rows)
 # shops
-SHOPN = {'brightwater': 'Brightwater', 'halden': 'Port Halden', 'ironhold': 'Ironhold', 'mirage': 'Mirage', 'aerie': 'Aerie', 'frostmere': 'Frostmere', 'lastlight': 'Lastlight'}
+SHOPN = {'brightwater': 'Brightwater', 'halden': 'Port Halden', 'ironhold': 'Ironhold', 'mirage': 'Mirage', 'aerie': 'Aerie', 'frostmere': 'Frostmere', 'lastlight': 'Lastlight', 'nerith': 'Nerith'}
 rows = []
 for t, n in SHOPN.items():
     rows.append([f"**{n}**", ', '.join(nm(k) for k in D['SHOPS'][t + '_items']), ', '.join(nm(k) for k in D['SHOPS'][t + '_arms'])])
 out['shops'] = tbl(['Town', 'Item shop', 'Arms and trinkets'], rows)
+bm = lambda k: D['BLACKMARKET_PRICES'].get(k) or I[k]['price'] * D['BLACKMARKET_MARKUP']
+out['blackmarket'] = tbl(['Item', 'Black-market price', 'Normal price'], [[nm(k), bm(k), I[k]['price'] or '—'] for k in D['SHOPS']['blackmarket']])
+loot = lambda l: f"{int(l[5:]):,} gold" if l.startswith('gold:') else nm(l)
+out['treasures'] = tbl(['Map', 'Where it points', 'Where to get it', 'Treasure'], [[f"**{nm('tmap' + k)}**", I['tmap' + k]['desc'], t['source'], ', '.join(loot(l) for l in t['loot'])] for k, t in D['TREASURES'].items()])
 # forge
 rows = [[f"**{nm(r['out'])}**", I[r['out']]['kind'].replace('acc', 'accessory'), ', '.join(f"{nm(m)} ×{n}" for m, n in r['mats'].items()), f"{r['gold']} G", eqrow(r['out'], I[r['out']]) or I[r['out']]['desc']] for r in D['RECIPES']]
 out['forge'] = tbl(['Forges', 'Type', 'Materials', 'Gold', 'Stats'], rows)

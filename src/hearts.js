@@ -201,6 +201,7 @@ function interiorQuestEntities(m) {
       await changeMap(d.id, x, y, 'down');
       if (!f.seen_undercity) { f.seen_undercity = true; await say(KE, 'Two levels down to the Guild hall. The guards here are mine. Well — they were.'); }
     } });
+  if (m.town === 'ironhold' && m.ikind === 'jail' && f.debt_done) out.push(undermarketHatch());
   return out;
 }
 
