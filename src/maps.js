@@ -5,7 +5,8 @@
 class GameMap {
   constructor(o) { Object.assign(this, { entities: [], buildings: [] }, o); }
   at(x, y) { if (y < 0 || y >= this.h || x < 0 || x >= this.w) return undefined; return this.tiles[y][x]; }
-  set(x, y, c) { if (y >= 0 && y < this.h && x >= 0 && x < this.w) this.tiles[y][x] = c; }
+  // rev counts changes, so the tile cache knows to redraw (tilecache.js)
+  set(x, y, c) { if (y >= 0 && y < this.h && x >= 0 && x < this.w && this.tiles[y][x] !== c) { this.tiles[y][x] = c; this.rev = (this.rev || 0) + 1; } }
 }
 
 function vnoise(x, y, seed) {

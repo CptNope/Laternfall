@@ -73,6 +73,7 @@ The exit code is `0` when there were no errors and `1` otherwise, so it can gate
 | `drowned` | 1.7 from a post-game save in Port Halden (Oswin's quest done) | 22 named checks: Wenna's chart; Brann's bell and its cost; diving onto the sea floor below the spot; entering Nerith; the palace staying shut until Ysolde; Nereus, the Crown and the Rift opening; the Tide and Tidesong; surfacing at another spot; digging map 1; map drops; Old Ivy and a moth ride with no battles; the Undermarket in and out; black-market prices; a save on the sea floor | `48`–`57` |
 | `platform` | 1.8 from a fresh start and a post-game save | 13 named checks: trophies unlocking from flags and stored outside the slots; Light Fingers from a rare steal; pre-1.8 saves marking earlier splits unknown; a split's time and delta; play time counting in battle; the battery saver's frame rate; save export, import and refusing a foreign file; and, over a local web server, the service worker taking control, the manifest parsing and an offline reload | `58`–`62` |
 | `living` | 1.9 from a fresh start and a post-game save | 26 named checks: the clock running and saving; dusk and night; the inn's *Stay until night*; night encounters and night-only NPCs; weather rolling by region and changing fire and water damage in battle; Berserk and Stop on heroes and enemies, the charms preventing them and bosses ignoring Stop; Tess's starter deck, the deck screen and a full card game with a Lie; Mags's job, the night-only hatch, being caught by a guard, a search proving the vault has an unseen route in and out, the opal and the Night Cloak | `63`–`73` |
+| `tiles` | 1.10 tile cache, from a post-game save | 5 named checks: the field draws through the cache; cached tiles match tiles drawn one by one on 18 maps (world, sea floor, vault, towns of every theme, six dungeon floors, interiors) at scale 1, and on 8 of them at 2 and 1.37, comparing 4×4-pixel block averages (Chrome's antialiasing moves by a level or two when a shape moves, so exact pixels can't match); a changed tile rebuilding the cache; the cached world drawing faster | `74`–`75` |
 | `readme` | Takes clean screenshots for the README | — | Lastlight, Ashen Isle, Abyss, Hollow Crown, fishing |
 
 ```mermaid
@@ -193,6 +194,8 @@ Paste these into the browser console while playing.
 | Goal | Console |
 | --- | --- |
 | No encounters | Open `index.html?noenc`, or `G.flags.noEnc = true` |
+| Tiles without the cache | Open `index.html?nocache`, or `TileCache.enabled = false` |
+| What the tile cache is doing | `TileCache.stats` (chunks on screen, chunks built, moving squares redrawn) |
 | Teleport on the world map | `G.x = 79; G.y = 10` |
 | Go to a map | `runScript(() => changeMap('abyss:3', 18, 14, 'up'))` |
 | Enter a location | `runScript(() => enterLocation('G'))` |
@@ -224,16 +227,16 @@ tools/check_mermaid.sh README.md ROADMAP.md CHANGELOG.md docs/*.md
 
 `.github/workflows/playtest.yml` runs on every pull request and on pushes to `main`. It:
 
-1. builds the game and fails if `index.html` doesn't match `src/` (someone forgot to run `build.py`);
+1. builds the game, which also runs the load-order check (`tools/load_check.js`: the joined script must load in Node without an error), and fails if `index.html` doesn't match `src/` (someone forgot to run `build.py`);
 2. regenerates the game guide and fails if `docs/GAME_GUIDE.md` is out of date;
-3. also checks `manifest.webmanifest` and `sw.js` match the build, then runs the `chapter`, `systems`, `newgame`, `comfort`, `hearts`, `depth`, `drowned`, `platform` and `living` scenarios, failing on any JavaScript error or failed check;
+3. also checks `manifest.webmanifest` and `sw.js` match the build, then runs the `chapter`, `systems`, `newgame`, `comfort`, `hearts`, `depth`, `drowned`, `platform`, `living` and `tiles` scenarios, failing on any JavaScript error or failed check;
 4. uploads the screenshots as a `playtest-screenshots` artifact.
 
 ```mermaid
 flowchart LR
     PR[Pull request] --> B[python3 build.py<br/>git diff index.html]
     B --> GG[gentables.py<br/>git diff GAME_GUIDE.md]
-    GG --> PT[playtest.py<br/>9 scenarios]
+    GG --> PT[playtest.py<br/>10 scenarios]
     PT --> A[(screenshots artifact)]
     PT -->|any JS error| X[❌ fail]
     PT -->|ERRORS: 0| OK[✅ pass]

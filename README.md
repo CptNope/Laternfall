@@ -128,7 +128,7 @@ flowchart LR
 | Arena cups | **6** | Weapons, armour, accessories | **48**, **23**, **46** |
 | Fish | **13** | Forge recipes | **12** |
 | Music tracks | **21** | Image or audio files | **0** in the game (the app icons are drawn by a script) |
-| Level cap | **50**, then the Lantern Board | Source lines | ~9,200 across 18 files |
+| Level cap | **50**, then the Lantern Board | Source lines | ~9,550 across 55 files |
 | Trophies | **34** | Platforms | Browser, installable app (offline), Windows, macOS, Linux |
 | Lantern Board passives | **11** | Meals | **11** |
 | Ways to travel | **5**: foot, ship, airship, diving bell, lanternmoth | Treasure maps | **5** |
@@ -314,14 +314,14 @@ Every opponent, reward and requirement is in the [game guide](docs/GAME_GUIDE.md
 
 ## How it's made
 
-Lanternfall is plain JavaScript split across twelve source files. `build.py` joins them into one `index.html`.
+Lanternfall is plain JavaScript split across 55 source files: 19 modules, plus one file per monster family and per battle background. `build.py` joins them into one `index.html`, and checks that it loads.
 
 ```mermaid
 flowchart LR
     subgraph Source[src/]
       direction TB
       core[core.js<br/>engine, UI, audio] ~~~ data[data.js<br/>game data]
-      art[art.js<br/>all drawing] ~~~ maps[maps.js<br/>world and dungeons]
+      art[art.js, monsters/, backgrounds/<br/>all drawing] ~~~ maps[maps.js<br/>world and dungeons]
       field[field.js<br/>exploration] ~~~ battle[battle.js<br/>combat]
       story[story.js<br/>dialogue and events] ~~~ more[party, interior,<br/>menu, crafts]
     end
@@ -329,7 +329,7 @@ flowchart LR
     H --> W[Browser: Canvas 2D + Web Audio]
 ```
 
-- **Art:** every tile, character and monster is a function that draws Canvas paths. Monsters share 21 "families" and get their look from colour palettes, so one drawing serves many monsters.
+- **Art:** every tile, character and monster is a function that draws Canvas paths. Monsters share 24 "families" and get their look from colour palettes, so one drawing serves many monsters. The field's tiles are drawn once into chunks and only the moving ones are redrawn each frame.
 - **World:** the overworld comes from seeded noise and the dungeons from a seeded room-and-corridor generator, so layouts are the same for everyone and never need saving.
 - **Music:** tracks are written in a tiny text notation (`'E5:4 G5:4 C6:8'`) and played by a scheduler on Web Audio oscillators.
 - **Story:** events are plain `async` functions (`await say(...)`, `await startBattle(...)`), so adding a scene is mostly writing dialogue.
@@ -342,10 +342,13 @@ flowchart LR
 | --- | --- |
 | `src/core.js` | Canvas scaling (sharp at any resolution), input and touch, UI windows, dialogue and menus, the async script runner, settings, and the chiptune sequencer and sound effects |
 | `src/data.js` | Heroes, skills, combo techs, items, equipment, monsters, encounter tables, shops, arena cups, forge recipes, fish, the EXP curve |
-| `src/art.js` | All vector art: world, town and dungeon tiles, buildings, characters, monsters, vehicles, battle backgrounds, the title screen; plus the `MONSTER_ART` / `BATTLE_BGS` registries |
+| `src/art.js` | Vector art: world, town and dungeon tiles, buildings, characters, vehicles, the title screen; `drawMonster` and `drawBattleBG`, and the `MONSTER_ART` / `MONSTER_SIZE` / `BATTLE_BGS` registries |
+| `src/monsters/*.js` | One file per monster family (21), each registering its drawing and size (1.10) |
+| `src/backgrounds/*.js` | One file per battle background (15) (1.10) |
 | `src/deep_art.js` | 1.7 art: the sea floor, Nerith's mood, the diving bell, lanternmoths, the jelly / angler / Tide families and three battle backgrounds |
 | `src/maps.js` | The seeded overworld generator (continents, river, desert, sky valley, roads, the hidden Ashen Isle), the sea floor generated beneath it, town layouts, dungeon floors with reachability checks |
 | `src/party.js` | Party stats, levelling, inventory, save and load |
+| `src/tilecache.js` | 1.10: draws each map's tiles once into chunks and redraws only the moving squares each frame |
 | `src/field.js` | Exploration: movement, ship and airship, camera, NPCs, chests, stairs, random encounters, dungeon lighting, fishing spots |
 | `src/interior.js` | Building interiors: layouts, furniture, counters, searchable containers |
 | `src/battle.js` | Turn-based combat, targeting, combos, statuses, damage formulas, effects, rewards, New Game+ scaling |
@@ -360,7 +363,7 @@ flowchart LR
 | `src/story.js` | NPC dialogue, cutscenes, story flags, quests, the arena, boss events, the title screen, the endings, the main loop |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Generated: the installable-app files (`build.py`, `tools/make_icons.py`) |
 | `src-tauri/` | The desktop app (Tauri): a native window around `index.html`, built by CI |
-| `tools/` | The play-test harness, the boss balance simulator, the guide-table generator, the icon renderer and the diagram checker |
+| `tools/` | The play-test harness, the load-order check, the boss balance simulator, the guide-table generator, the icon renderer and the diagram checker |
 
 **Debug:** add `?noenc` to the URL to turn off random encounters. There are more tricks in [TESTING.md](docs/TESTING.md#debugging-tricks).
 

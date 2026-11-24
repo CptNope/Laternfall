@@ -17,7 +17,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -594,6 +594,63 @@ async def main():
             await ctx2.set_offline(True); await pg2.reload(); await pg2.wait_for_timeout(1500)
             check(await pg2.evaluate("typeof Trophies === 'object' && document.title.startsWith('Lanternfall')"), 'the game reloads offline')
             await ctx2.close(); srv.shutdown()
+
+        if want('tiles'):
+            # 1.10 tile cache: the cached tile layer must look like the tiles drawn one by one
+            def check(ok, label):
+                print(('ok   ' if ok else 'FAIL ') + label)
+                if not ok: errs.append('check failed: ' + label)
+            s = json.loads(json.dumps(POST)); s['flags'].update({'isle': True, 'q_drowned': True})
+            await boot(s); await until_idle()
+            check(await ev("TileCache.enabled && TileCache.map === Field.map && TileCache.stats.chunks > 0"), 'the field draws through the tile cache')
+            await shot('74_cached_world')
+            # Compare over maps and scales. Chrome's antialiasing shifts by a level or two when a shape
+            # moves, so compare 4×4-pixel block averages: noise stays under ~8, a missing or stale tile
+            # is 20+. Fractional scales also get hairline seams where squares meet (under ~20).
+            COMPARE = r"""((ids, k, step) => {
+              const mk = () => { const c = document.createElement('canvas'); c.width = Math.round(640 * k); c.height = Math.round(480 * k); return c.getContext('2d', { willReadFrequently: true }); };
+              const a = mk(), b = mk(), Wd = a.canvas.width, Hd = a.canvas.height;
+              TileCache.canvasOpts = { willReadFrequently: true };
+              const out = {};
+              for (const id of ids) {
+                const m = getMap(id); if (m.kind === 'world') applyWorldFlags(m); if (m.kind === 'deep') applyDeepFlags(m);
+                TileCache.reset(); let worst = 0, n = 0;
+                for (let cy0 = -64; cy0 < m.h * TS - 200; cy0 += step * 7 * TS) for (let cx0 = -64; cx0 < m.w * TS - 300; cx0 += step * 9 * TS) {
+                  const cx = (Math.round(cx0 * k) + n % 3) / k, cy = (Math.round(cy0 * k) + n % 5) / k; n++;
+                  for (const t of [3.1, 0.2]) {
+                    a.setTransform(k, 0, 0, k, 0, 0); b.setTransform(k, 0, 0, k, 0, 0);
+                    if (!TileCache.draw(a, m, cx, cy, t)) { worst = 999; break; }
+                    drawTilesDirect(b, m, cx, cy, t);
+                    const da = a.getImageData(0, 0, Wd, Hd).data, db = b.getImageData(0, 0, Wd, Hd).data;
+                    for (let by = 0; by + 4 <= Hd; by += 4) for (let bx = 0; bx + 4 <= Wd; bx += 4) {
+                      let d = 0;
+                      for (let yy = by; yy < by + 4; yy++) for (let xx = bx; xx < bx + 4; xx++) { const i = (yy * Wd + xx) * 4; d += Math.abs(da[i] - db[i]) + Math.abs(da[i + 1] - db[i + 1]) + Math.abs(da[i + 2] - db[i + 2]); }
+                      if (d / 48 > worst) worst = d / 48;
+                    }
+                  }
+                }
+                out[id] = +worst.toFixed(1);
+              }
+              TileCache.canvasOpts = undefined; TileCache.reset();
+              return out;
+            })"""
+            MAPS = ['world', 'deep', 'heist', 'brightwater', 'halden', 'frostmere', 'mirage', 'ironhold', 'lastlight', 'nerith',
+                    'hollow:1', 'mine:2', 'tomb:1', 'observatory:3', 'palace:2', 'abyss:1', 'in:brightwater:hall', 'in:halden:inn']
+            for k, step, limit in [(1, 2, 8), (2, 3, 12), (1.37, 3, 28)]:
+                res = await ev(f"{COMPARE}({json.dumps(MAPS if k == 1 else MAPS[:8])}, {k}, {step})")
+                bad = {m: v for m, v in res.items() if v > limit}
+                check(not bad, f'at scale {k}, cached tiles match tiles drawn one by one (worst 4x4 block {max(res.values())}, limit {limit}){" " + str(bad) if bad else ""}')
+            # a changed tile (the isle rising, a door opening) throws the chunks away
+            ch = await ev("(() => { const m = getMap('world'); const c = document.createElement('canvas').getContext('2d'); TileCache.draw(c, m, 0, 0, 1); const n = TileCache.chunks.size, old = m.at(3, 3); m.set(3, 3, old === '.' ? 'T' : '.'); TileCache.draw(c, m, 0, 0, 1); const after = [TileCache.rev === m.rev, TileCache.built]; m.set(3, 3, old); return n > 0 && after[0]; })()")
+            check(ch, 'changing a map tile rebuilds the cache')
+            # and it is faster: the world map's tiles, cached vs one by one
+            sp = await ev("""(() => { const c = document.createElement('canvas'); c.width = 640; c.height = 480; const g = c.getContext('2d');
+              Field.enter('world', 30, 20, 'down');
+              const run = on => { TileCache.enabled = on; TileCache.reset(); Field.draw(g); const t0 = performance.now(); for (let i = 0; i < 40; i++) { Field.t = i / 60; Field.draw(g); } g.getImageData(0, 0, 1, 1); return (performance.now() - t0) / 40; };
+              const d = run(false), k = run(true); return [d, k]; })()""")
+            print(f'     world frame: tiles one by one {sp[0]:.2f} ms, cached {sp[1]:.2f} ms')
+            check(sp[1] < sp[0] * 0.75, f'the cached world draws faster ({sp[1]:.2f} ms vs {sp[0]:.2f} ms)')
+            await shot('75_cached_world_walk')
 
         if want('living'):
             def check(ok, label):

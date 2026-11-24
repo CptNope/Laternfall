@@ -14,8 +14,8 @@ timeline
     2026-11-19 : 1.0.0 First playable : 1.1.0 Frostmere and side quests
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
     2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance : 1.5.0 Hearts of the Lamplighters : 1.6.0 Deeper systems
-    2026-11-24 : 1.7.0 The Drowned Kingdom : 1.8.0 Install anywhere
-    Next : 1.9.0 Living world
+    2026-11-24 : 1.7.0 The Drowned Kingdom : 1.8.0 Install anywhere : 1.9.0 Living world
+    Next : 1.10.0 Foundations
 ```
 
 ```mermaid
@@ -41,13 +41,34 @@ xychart-beta
 | 1.6.0 | 2026-11-23 | 7 | 10 (26) | 75 (15) | 17 | 5 | [#8](https://github.com/CptNope/Laternfall/pull/8) |
 | 1.7.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 89 (17) | 21 | 5 | [#13](https://github.com/CptNope/Laternfall/pull/13) |
 | 1.8.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 89 (17) | 21 | 5 | [#14](https://github.com/CptNope/Laternfall/pull/14) |
-| 1.9.0 | next | 9 | 12 (32) | 94 (17) | 23 | 5 | this release |
+| 1.9.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 94 (17) | 23 | 5 | [#15](https://github.com/CptNope/Laternfall/pull/15) |
+| 1.10.0 | next | 9 | 12 (32) | 94 (17) | 23 | 5 | this release |
 
 ---
 
 ## [Unreleased]
 
-Planned as **1.9.0 · *Living world***. It delivers the rest of the 1.6 *Deeper systems* list from the [roadmap](ROADMAP.md#16--deeper-systems): DS-4 (Berserk and Stop), DS-8 (day and night), DS-9 (weather), DS-10 (*Lanterns & Lies*) and DS-11 (stealth).
+Planned as **1.10.0 · *Foundations***: groundwork for 2.0 and for phones. It finishes EN-5 and TD-4 from the [roadmap](ROADMAP.md#20--lantern-engine), and TD-7. The game plays the same; it draws faster.
+
+### Added
+- **Tile cache** (`src/tilecache.js`). The field used to redraw every tile on screen every frame. Now each map is drawn once into 8×8-tile chunks, and each frame only the squares that move (water, lamps, braziers, kelp, palms) are redrawn. With the CPU slowed 4× to stand in for a phone, a frame on the world map takes about 4 ms instead of 17, a town 6.5 instead of 14, and a dungeon half as long. The sea floor, which is mostly moving kelp, gains little. Add `?nocache` to the URL to turn it off.
+- **Load-order check** (`tools/load_check.js`). `build.py` now runs the joined script once in Node and fails if it throws while loading, naming the file and line. It catches the bug class behind 1.9's `LOOKS` crash: a top-level value that reads a name declared in a later file. CI runs it with every build.
+- `tiles` play-test scenario: cached tiles compared with tiles drawn one by one, on 18 maps at scales 1, 2 and 1.37; a changed tile rebuilding the cache; and a speed check. Added to CI.
+
+### Changed
+- **Monster art and battle backgrounds have one file each**: 21 families in `src/monsters/` and 15 backgrounds in `src/backgrounds/`, each registering itself in `MONSTER_ART` / `MONSTER_SIZE` / `BATTLE_BGS`. `art.js` went from 1,520 lines to about 960. Every monster and background was checked to draw pixel for pixel as before. `build.py` takes every file in those folders.
+- The field camera snaps to whole screen pixels, so cached tiles line up exactly.
+- Desert palms and glowing ground follow the game's clock instead of the wall clock, so they hold still while the field is paused.
+
+### Fixed
+- Tiles no longer change slightly depending on which tile was drawn before them (some left a rounded line cap behind), so mountain outlines no longer shift as the camera moves.
+- The diving bell's line on the sea floor no longer pops in as you scroll down to it.
+
+---
+
+## [1.9.0] — 2026-11-24, merged (#15) but not yet tagged · *Living world*
+
+It delivers the rest of the 1.6 *Deeper systems* list from the [roadmap](ROADMAP.md#16--deeper-systems): DS-4 (Berserk and Stop), DS-8 (day and night), DS-9 (weather), DS-10 (*Lanterns & Lies*) and DS-11 (stealth).
 
 ### Added
 - **Day and night.** A clock runs while you explore (a full day is 24 minutes of play). Evenings turn the world amber, nights a moonlit blue, and windows, lamps and braziers glow in the dark. The time and day are shown in the field menu. An inn wakes you at 7:00, or at 21:00 with the new **Stay until night**, and a Tent passes eight hours.
@@ -321,6 +342,7 @@ Shipped together with 1.0.0 in pull request #1.
 - The full main story, with an ending.
 
 [Unreleased]: https://github.com/CptNope/Laternfall/compare/v1.6.0...HEAD
+[1.9.0]: https://github.com/CptNope/Laternfall/pull/15
 [1.8.0]: https://github.com/CptNope/Laternfall/pull/14
 [1.7.0]: https://github.com/CptNope/Laternfall/pull/13
 [1.6.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.6.0
