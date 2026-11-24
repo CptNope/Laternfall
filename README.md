@@ -1,7 +1,7 @@
 # Lanternfall — A Tale of the Four Flames
 
 [![Play on itch.io](https://img.shields.io/badge/play-itch.io-fa5c5c?logo=itchdotio&logoColor=white)](https://cptnope.itch.io/lanternfall)
-[![Donate on itch.io](https://img.shields.io/badge/donate-itch.io-e8a84a?logo=itchdotio&logoColor=white)](https://cptnope.itch.io/lanternfall/purchase)
+[![Donate on itch.io](https://img.shields.io/badge/donate-itch.io-e8a84a?logo=itchdotio&logoColor=white)](https://cptnope.itch.io/lanternfall/donate)
 [![Read the write-up](https://img.shields.io/badge/write--up-jeremyanderson.tech-2f6b4a)](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/)
 [![Latest release](https://img.shields.io/github/v/release/CptNope/Laternfall?color=e8c24a&label=release)](https://github.com/CptNope/Laternfall/releases/latest)
 [![Play-test](https://github.com/CptNope/Laternfall/actions/workflows/playtest.yml/badge.svg)](https://github.com/CptNope/Laternfall/actions/workflows/playtest.yml)
@@ -16,7 +16,7 @@ A classic 16-bit-style JRPG where **every pixel and every note is generated in c
 | | |
 | --- | --- |
 | 🎮 **[Play now](https://cptnope.itch.io/lanternfall)** | Free in your browser, on desktop or mobile |
-| 💛 **[Donate](https://cptnope.itch.io/lanternfall/purchase)** | Lanternfall is free; a donation helps more games get made |
+| 💛 **[Donate](https://cptnope.itch.io/lanternfall/donate)** | Lanternfall is free; a donation helps more games get made |
 | 📰 **[Read the write-up](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/)** | How it was made, on jeremyanderson.tech |
 | 📖 **[Game guide](docs/GAME_GUIDE.md)** | Walkthrough, every monster, item, quest, fish and recipe |
 | 🗺️ **[Roadmap](ROADMAP.md)** | What's planned next |
@@ -44,7 +44,7 @@ A classic 16-bit-style JRPG where **every pixel and every note is generated in c
 
 ## Play
 
-**[Play free on itch.io](https://cptnope.itch.io/lanternfall)** in your browser, on desktop or mobile. More about the game, plus help and support, is on the [Lanternfall project page](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/). If you enjoy it, you can [support it with a donation on itch.io](https://cptnope.itch.io/lanternfall/purchase).
+**[Play free on itch.io](https://cptnope.itch.io/lanternfall)** in your browser, on desktop or mobile. More about the game, plus help and support, is on the [Lanternfall project page](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/). If you enjoy it, you can [support it with a donation on itch.io](https://cptnope.itch.io/lanternfall/donate).
 
 **Run it locally:** open `index.html` in any modern browser. It's one self-contained file with no dependencies, and no build step is needed to play.
 
@@ -379,7 +379,7 @@ The full plan, with priorities and technical debt, is in [ROADMAP.md](ROADMAP.md
 
 Lanternfall is free, with **no ads and no purchases**, and it will stay that way. If you enjoy it, here's how you can help:
 
-- 💛 **[Donate on itch.io](https://cptnope.itch.io/lanternfall/purchase)**. Any amount helps more games get made. The **Sponsor** button at the top of this repository links there too.
+- 💛 **[Donate on itch.io](https://cptnope.itch.io/lanternfall/donate)**. Any amount helps more games get made. The **Sponsor** button at the top of this repository links there too.
 - ⭐ **Star this repository**, and rate or comment on the [itch.io page](https://cptnope.itch.io/lanternfall).
 - 📣 **Share it.** Send the game, or the [write-up on jeremyanderson.tech](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/), to someone who misses 16-bit RPGs.
 - 🐞 **Report bugs and suggest ideas** with the [issue forms](https://github.com/CptNope/Laternfall/issues/new/choose). See [getting help](.github/SUPPORT.md).
@@ -399,6 +399,6 @@ Ideas and bug reports are welcome as [issues](https://github.com/CptNope/Laternf
 
 ## Credits and license
 
-Made by **Jeremy Anderson** · [jeremyanderson.tech](https://jeremyanderson.tech) · [Lanternfall write-up](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/) · [itch.io](https://cptnope.itch.io/lanternfall) · [Donate](https://cptnope.itch.io/lanternfall/purchase)
+Made by **Jeremy Anderson** · [jeremyanderson.tech](https://jeremyanderson.tech) · [Lanternfall write-up](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/) · [itch.io](https://cptnope.itch.io/lanternfall) · [Donate](https://cptnope.itch.io/lanternfall/donate)
 
 MIT. See [LICENSE](LICENSE).
