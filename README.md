@@ -3,7 +3,7 @@
 [![Play on itch.io](https://img.shields.io/badge/play-itch.io-fa5c5c?logo=itchdotio&logoColor=white)](https://cptnope.itch.io/lanternfall)
 [![Donate on itch.io](https://img.shields.io/badge/donate-itch.io-e8a84a?logo=itchdotio&logoColor=white)](https://cptnope.itch.io/lanternfall/purchase)
 [![Read the write-up](https://img.shields.io/badge/write--up-jeremyanderson.tech-2f6b4a)](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/)
-[![Version](https://img.shields.io/badge/version-1.6.0-e8c24a)](CHANGELOG.md)
+[![Latest release](https://img.shields.io/github/v/release/CptNope/Laternfall?color=e8c24a&label=release)](https://github.com/CptNope/Laternfall/releases/latest)
 [![Play-test](https://github.com/CptNope/Laternfall/actions/workflows/playtest.yml/badge.svg)](https://github.com/CptNope/Laternfall/actions/workflows/playtest.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-3a8fd0)](LICENSE)
 ![No asset files](https://img.shields.io/badge/assets-0%20files-7b3fa8)
@@ -365,8 +365,8 @@ flowchart LR
 timeline
     title Planned milestones
     Nov 2026 : 1.4 Comfort ✓ : save slots, battle speed, gamepad, CI, boss balance
-    Dec 2026 : 1.5 Heroes ✓ : five hero quests, Limits, campfire talks
-    May 2027 : 1.6 Depth : Lantern Board, cooking, smarter enemies
+    Nov 2026 : 1.5 Heroes ✓ : five hero quests, Limits, campfire talks
+    Nov 2026 : 1.6 Depth ✓ : Lantern Board, cooking, smarter enemies
     Jul 2027 : 1.7 World : the Drowned Kingdom under the sea
     Later : 2.0 Lantern Engine : data-driven content, editor, mods
 ```

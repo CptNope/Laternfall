@@ -6,15 +6,14 @@ All notable changes to Lanternfall are recorded here. The format follows [Keep a
 - **Minor**: new content or systems (chapters, towns, dungeons, quests, mechanics).
 - **Patch**: fixes, balance, documentation and store assets.
 
-> Versions before 1.4.0 were assigned after the fact, from the merged pull requests. The repository had no tags when this file was written. [ROADMAP.md](ROADMAP.md#release-process) explains how to tag from now on.
+> Versions before 1.4.0 were assigned after the fact, from the merged pull requests. They were tagged afterwards, and every version from 1.0.0 on has a tag and a [GitHub Release](https://github.com/CptNope/Laternfall/releases) with its `index.html` attached. [ROADMAP.md](ROADMAP.md#release-process) explains how to tag from now on.
 
 ```mermaid
 timeline
     title Lanternfall releases
     2026-11-19 : 1.0.0 First playable : 1.1.0 Frostmere and side quests
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
-    2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance : 1.5.0 Hearts of the Lamplighters
-    Next : 1.6.0 Deeper systems
+    2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance : 1.5.0 Hearts of the Lamplighters : 1.6.0 Deeper systems
 ```
 
 ```mermaid
@@ -37,13 +36,19 @@ xychart-beta
 | 1.3.1 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#5](https://github.com/CptNope/Laternfall/pull/5) |
 | 1.4.0 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#6](https://github.com/CptNope/Laternfall/pull/6) |
 | 1.5.0 | 2026-11-23 | 7 | 10 (26) | 75 (15) | 16 | 5 | [#7](https://github.com/CptNope/Laternfall/pull/7) |
-| 1.6.0 | next | 7 | 10 (26) | 75 (15) | 17 | 5 | this release |
+| 1.6.0 | 2026-11-23 | 7 | 10 (26) | 75 (15) | 17 | 5 | [#8](https://github.com/CptNope/Laternfall/pull/8) |
 
 ---
 
 ## [Unreleased]
 
-Planned as **1.6.0 · *Deeper systems***. It delivers DS-1 to DS-7 from the [roadmap](ROADMAP.md#16--deeper-systems).
+Nothing yet.
+
+---
+
+## [1.6.0] — 2026-11-23 · *Deeper systems*
+
+It delivers DS-1 to DS-7 from the [roadmap](ROADMAP.md#16--deeper-systems).
 
 ### Added
 - **Support links across the repository**: a Sponsor button (`.github/FUNDING.yml`) and a README badge and section pointing to the [itch.io donation page](https://cptnope.itch.io/lanternfall/purchase), links to the [project write-up](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/), `.github/SUPPORT.md`, and issue forms for bug reports and ideas with links to play, donate and read more.
@@ -250,12 +255,13 @@ Shipped together with 1.0.0 in pull request #1.
 - Turn-based battles, shops, equipment, and saving and loading.
 - The full main story, with an ending.
 
-[Unreleased]: https://github.com/CptNope/Laternfall/compare/main...HEAD
-[1.5.0]: https://github.com/CptNope/Laternfall/pull/7
-[1.4.0]: https://github.com/CptNope/Laternfall/pull/6
-[1.3.1]: https://github.com/CptNope/Laternfall/pull/5
-[1.3.0]: https://github.com/CptNope/Laternfall/pull/4
-[1.2.1]: https://github.com/CptNope/Laternfall/pull/3
-[1.2.0]: https://github.com/CptNope/Laternfall/pull/2
-[1.1.0]: https://github.com/CptNope/Laternfall/pull/1
-[1.0.0]: https://github.com/CptNope/Laternfall/pull/1
+[Unreleased]: https://github.com/CptNope/Laternfall/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.6.0
+[1.5.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.5.0
+[1.4.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.4.0
+[1.3.1]: https://github.com/CptNope/Laternfall/releases/tag/v1.3.1
+[1.3.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.3.0
+[1.2.1]: https://github.com/CptNope/Laternfall/releases/tag/v1.2.1
+[1.2.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.2.0
+[1.1.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.1.0
+[1.0.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.0.0
