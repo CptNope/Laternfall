@@ -227,6 +227,7 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 - **Content as data**: items, monsters, shops, random battles and town layouts are JSON files with schemas ([content/README.md](content/README.md)), checked before every build
 - **A town editor** in the game itself: open `index.html?edit` to move buildings, paint paths, water and decorations, see where everyone stands, walk around in it, and save it as a mod
 - **Mods**: a folder of changes, built into a separate copy of the game with `python3 build.py --mod` ([mods/README.md](mods/README.md))
+- **Ready for translation**: every line goes through one function, a translation is one JSON file, and Settings has a Language option ([content/lang/README.md](content/lang/README.md)). No translation ships yet
 
 ---
 
@@ -365,6 +366,7 @@ flowchart LR
 | `src/living.js` | 1.9: the clock, day and night, the sky tint and glows, regional weather and its battle effects, night NPCs |
 | `src/cards.js` | 1.9: *Lanterns & Lies*: the cards, the players, the deck screen, the board and the AI |
 | `src/heist.js` | 1.9: *The Sunset Opal*: the vault map, guard patrols and sight lines |
+| `src/i18n.js` | 2.0: `tl()`, languages, the pseudo test language |
 | `src/editor.js` | 2.0: the town editor (`index.html?edit`) and the town walk check the build runs |
 | `src/story.js` | NPC dialogue, cutscenes, story flags, quests, the arena, boss events, the title screen, the endings, the main loop |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Generated: the installable-app files (`build.py`, `tools/make_icons.py`) |

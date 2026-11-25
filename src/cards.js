@@ -9,7 +9,7 @@
 //  everything around it. Most squares at the end wins.
 // ============================================================
 
-const FLAMES = { ember: { name: 'Ember', col: '#ff8a3a', beats: 'stone' }, stone: { name: 'Stone', col: '#c8a070', beats: 'tide' }, tide: { name: 'Tide', col: '#5ad0f0', beats: 'ember' }, dawn: { name: 'Dawn', col: '#ffe08a', beats: null } };
+const FLAMES = { ember: { name: tl('Ember'), col: '#ff8a3a', beats: 'stone' }, stone: { name: tl('Stone'), col: '#c8a070', beats: 'tide' }, tide: { name: tl('Tide'), col: '#5ad0f0', beats: 'ember' }, dawn: { name: tl('Dawn'), col: '#ffe08a', beats: null } };
 // value, flame, and the monster (m) or hero (h) drawn on the card
 const CARDS = {
   slime: { v: 1, f: 'tide', m: 'slime' }, bat: { v: 1, f: 'ember', m: 'bat' }, moonmoth: { v: 1, f: 'dawn', m: 'moonmoth' },
@@ -26,14 +26,14 @@ const cardName = id => CARDS[id].h ? HEROES[CARDS[id].h].name : MONSTERS[CARDS[i
 const STARTER_CARDS = ['slime', 'bat', 'goblin', 'wolf', 'wisp', 'blueslime', 'harpy'];
 // opponents: where they play (town, day or night, x, y), their deck and how carefully they think (0 = random, 1 = sharp)
 const CARD_FOES = {
-  tess: { name: 'Tess', town: 'brightwater', when: 'day', x: 10, y: 14, look: { style: 'bun', body: '#c8603a', accent: '#ffe9a8' }, deck: ['slime', 'bat', 'goblin', 'wolf', 'moonmoth'], skill: 0.2, line: 'Want a game of Lanterns & Lies? I never lie. Except when I do.' },
-  odo: { name: 'Sailor Odo', town: 'halden', when: 'night', x: 14, y: 12, look: 'sailor', deck: ['blueslime', 'harpy', 'sandcrab', 'seaserpent', 'frostwolf'], skill: 0.4, line: 'Cards by moonlight, eh? The sea\'s quiet. My wallet isn\'t.' },
-  gorrim: { name: 'Gorrim', town: 'ironhold', when: 'day', x: 7, y: 8, look: 'dwarf', deck: ['hobgoblin', 'sandcrab', 'scorpion', 'ogre', 'gloomcap'], skill: 0.5, line: 'Stone beats tide. Everyone knows that. Dwarves knew it first.' },
-  yuki: { name: 'Trapper Yuki', town: 'frostmere', when: 'night', x: 15, y: 12, look: { style: 'long', body: '#e8e8f0', accent: '#5a8ac0', hat: 'cap' }, deck: ['frostwolf', 'snowimp', 'wraith', 'warden', 'oswin'], skill: 0.6, line: 'Long nights up here. Long games. Sit.' },
-  nyx: { name: 'Madame Nyx', town: 'mirage', when: 'night', x: 14, y: 12, look: { skin: '#a8724a', hair: '#1a1020', style: 'long', body: '#4a1a5a', accent: '#e8c24a', robe: true }, deck: ['chimera', 'vesper', 'hollowknight', 'firstking', 'selene'], skill: 0.75, line: 'I read fortunes. With cards. Sometimes the fortune is that you lose.' },
-  lark: { name: 'Bookie Lark', town: 'aerie', when: 'day', x: 9, y: 12, look: { body: '#a03a2a', accent: '#e8c24a', hat: 'cap' }, deck: ['embergolem', 'kestrel', 'lyra', 'leviathan', 'arin'], skill: 0.8, line: 'Arena odds are boring. Cards — now cards are honest gambling.' },
-  dealer: { name: 'The Dealer', town: 'undermarket', when: 'any', x: 6, y: 9, look: { skin: '#c8a888', hair: '#e8e8e8', style: 'short', body: '#1a1a1a', accent: '#c83a3a' }, deck: ['wyrm', 'king', 'crown', 'firstking', 'vesper'], skill: 0.9, line: 'Everyone in the Undermarket lies. At least my table says so up front.' },
-  gambler: { name: 'Memory of a Gambler', town: 'nerith', when: 'any', x: 7, y: 12, look: { skin: '#c8e4ea', hair: '#e8f4ff', style: 'short', body: '#2a5a6a', accent: '#ffe9a8' }, deck: ['nereus', 'lampeater', 'leviathan', 'wyrm', 'selene'], skill: 1, line: 'I\'ve been dealt the same hand for a thousand years. Deal me a new one.' }
+  tess: { name: tl('Tess'), town: 'brightwater', when: 'day', x: 10, y: 14, look: { style: 'bun', body: '#c8603a', accent: '#ffe9a8' }, deck: ['slime', 'bat', 'goblin', 'wolf', 'moonmoth'], skill: 0.2, line: tl('Want a game of Lanterns & Lies? I never lie. Except when I do.') },
+  odo: { name: tl('Sailor Odo'), town: 'halden', when: 'night', x: 14, y: 12, look: 'sailor', deck: ['blueslime', 'harpy', 'sandcrab', 'seaserpent', 'frostwolf'], skill: 0.4, line: tl('Cards by moonlight, eh? The sea\'s quiet. My wallet isn\'t.') },
+  gorrim: { name: tl('Gorrim'), town: 'ironhold', when: 'day', x: 7, y: 8, look: 'dwarf', deck: ['hobgoblin', 'sandcrab', 'scorpion', 'ogre', 'gloomcap'], skill: 0.5, line: tl('Stone beats tide. Everyone knows that. Dwarves knew it first.') },
+  yuki: { name: tl('Trapper Yuki'), town: 'frostmere', when: 'night', x: 15, y: 12, look: { style: 'long', body: '#e8e8f0', accent: '#5a8ac0', hat: 'cap' }, deck: ['frostwolf', 'snowimp', 'wraith', 'warden', 'oswin'], skill: 0.6, line: tl('Long nights up here. Long games. Sit.') },
+  nyx: { name: tl('Madame Nyx'), town: 'mirage', when: 'night', x: 14, y: 12, look: { skin: '#a8724a', hair: '#1a1020', style: 'long', body: '#4a1a5a', accent: '#e8c24a', robe: true }, deck: ['chimera', 'vesper', 'hollowknight', 'firstking', 'selene'], skill: 0.75, line: tl('I read fortunes. With cards. Sometimes the fortune is that you lose.') },
+  lark: { name: tl('Bookie Lark'), town: 'aerie', when: 'day', x: 9, y: 12, look: { body: '#a03a2a', accent: '#e8c24a', hat: 'cap' }, deck: ['embergolem', 'kestrel', 'lyra', 'leviathan', 'arin'], skill: 0.8, line: tl('Arena odds are boring. Cards — now cards are honest gambling.') },
+  dealer: { name: tl('The Dealer'), town: 'undermarket', when: 'any', x: 6, y: 9, look: { skin: '#c8a888', hair: '#e8e8e8', style: 'short', body: '#1a1a1a', accent: '#c83a3a' }, deck: ['wyrm', 'king', 'crown', 'firstking', 'vesper'], skill: 0.9, line: tl('Everyone in the Undermarket lies. At least my table says so up front.') },
+  gambler: { name: tl('Memory of a Gambler'), town: 'nerith', when: 'any', x: 7, y: 12, look: { skin: '#c8e4ea', hair: '#e8f4ff', style: 'short', body: '#2a5a6a', accent: '#ffe9a8' }, deck: ['nereus', 'lampeater', 'leviathan', 'wyrm', 'selene'], skill: 1, line: tl('I\'ve been dealt the same hand for a thousand years. Deal me a new one.') }
 };
 function foeNpc(id) { const o = CARD_FOES[id]; return N(o.x, o.y, 200 + Object.keys(CARD_FOES).indexOf(id), typeof o.look === 'string' ? LOOKS[o.look] : o.look, () => talkCardFoe(id), { name: o.name, mark: !G.flags['cardwin_' + id] && !!G.flags.q_cards }); }
 function cardDayNpcs(town) { return Object.keys(CARD_FOES).filter(k => CARD_FOES[k].town === town && CARD_FOES[k].when !== 'night').map(foeNpc); }
@@ -44,20 +44,20 @@ function addCard(id) { G.cards = G.cards || {}; G.cards[id] = (G.cards[id] || 0)
 async function talkCardFoe(id) {
   const o = CARD_FOES[id], f = G.flags;
   if (!f.q_cards) {
-    if (id !== 'tess') { await say(o.name, 'Lanterns & Lies? You need cards first. Tess in Brightwater hands out starter decks.'); return; }
+    if (id !== 'tess') { await say(o.name, tl('Lanterns & Lies? You need cards first. Tess in Brightwater hands out starter decks.')); return; }
     await sayAll([
-      ['Tess', 'Ever played Lanterns & Lies? Everyone in the world plays it. Well — everyone who\'s bored.'],
-      ['Tess', 'Each of us lays down five cards on a 3-by-3 board. Lay a card next to mine with a bigger number and mine turns yours.'],
-      ['Tess', 'Flames matter: Ember beats Stone, Stone beats Tide, Tide beats Ember. That\'s +2 when you attack with the right flame.'],
-      ['Tess', 'And once a game you can tell a Lie: play a card face-down. It doesn\'t take anything when it lands, but at the end it flips over and takes everything weaker around it.'],
-      ['Tess', 'Here, a starter deck. Beat me, and the other players around the world will want a go. Win, and you take a card from their deck.']
+      [tl('Tess'), tl('Ever played Lanterns & Lies? Everyone in the world plays it. Well — everyone who\'s bored.')],
+      [tl('Tess'), tl('Each of us lays down five cards on a 3-by-3 board. Lay a card next to mine with a bigger number and mine turns yours.')],
+      [tl('Tess'), tl('Flames matter: Ember beats Stone, Stone beats Tide, Tide beats Ember. That\'s +2 when you attack with the right flame.')],
+      [tl('Tess'), tl('And once a game you can tell a Lie: play a card face-down. It doesn\'t take anything when it lands, but at the end it flips over and takes everything weaker around it.')],
+      [tl('Tess'), tl('Here, a starter deck. Beat me, and the other players around the world will want a go. Win, and you take a card from their deck.')]
     ]);
     for (const c of STARTER_CARDS) addCard(c);
-    f.q_cards = true; Audio_.sfx('chest'); toast('New quest: Lanterns & Lies');
-    await narrate(`Received ${STARTER_CARDS.length} Lanterns & Lies cards! Card players appear in towns, some only at night.`);
+    f.q_cards = true; Audio_.sfx('chest'); toast(tl('New quest: Lanterns & Lies'));
+    await narrate(tl`Received ${STARTER_CARDS.length} Lanterns & Lies cards! Card players appear in towns, some only at night.`);
     refreshEntities();
   }
-  const c = await choose(o.name, o.line, ['Play', 'Rules', 'Not now'], 2);
+  const c = await choose(o.name, o.line, [tl('Play'), tl('Rules'), tl('Not now')], 2);
   if (c === 1) { await cardRules(); return; }
   if (c !== 0) return;
   const deck = await pickDeck();
@@ -67,28 +67,28 @@ async function talkCardFoe(id) {
     const pool = o.deck.filter(k => !(G.cards[k] > 0));
     const prize = pool.length ? pick(pool) : null;
     const first = !f['cardwin_' + id]; f['cardwin_' + id] = true;
-    if (prize) { addCard(prize); Audio_.sfx('chest'); await say(o.name, `Well played. Take one of mine: ${cardName(prize)}.`); await narrate(`Received the ${cardName(prize)} card! (${CARDS[prize].v} · ${FLAMES[CARDS[prize].f].name})`); }
-    else { const g = 200 + CARDS[o.deck[0]].v * 150; G.gold += g; Audio_.sfx('item'); await say(o.name, `You've already got every card I own. Here, have some gold instead: ${g}.`); }
+    if (prize) { addCard(prize); Audio_.sfx('chest'); await say(o.name, tl`Well played. Take one of mine: ${cardName(prize)}.`); await narrate(tl`Received the ${cardName(prize)} card! (${CARDS[prize].v} · ${FLAMES[CARDS[prize].f].name})`); }
+    else { const g = 200 + CARDS[o.deck[0]].v * 150; G.gold += g; Audio_.sfx('item'); await say(o.name, tl`You've already got every card I own. Here, have some gold instead: ${g}.`); }
     if (first && Object.keys(CARD_FOES).every(k => f['cardwin_' + k]) && !f.cards_done) {
       f.cards_done = true; addItem('jokers_lantern'); Audio_.sfx('chest');
-      await narrate('You have beaten every Lanterns & Lies player in the world! Received the Joker\'s Lantern! (Accessory: all stats +10, rare steals twice as likely)');
+      await narrate(tl('You have beaten every Lanterns & Lies player in the world! Received the Joker\'s Lantern! (Accessory: all stats +10, rare steals twice as likely)'));
     }
-  } else if (r === 'lose') await say(o.name, 'Ha! Again whenever you like. I\'ll still be here. I\'m always here.');
+  } else if (r === 'lose') await say(o.name, tl('Ha! Again whenever you like. I\'ll still be here. I\'m always here.'));
   refreshEntities();
 }
 async function cardRules() {
   await sayAll([
-    ['Rules', 'Each player brings 5 cards and takes turns laying one on the 3×3 board.'],
-    ['Rules', 'When you lay a card, every touching enemy card with a lower value flips to you. Ties flip nothing.'],
-    ['Rules', 'Ember beats Stone, Stone beats Tide, Tide beats Ember: +2 to the attacking card. Dawn has no edge, and nothing has an edge over Dawn.'],
-    ['Rules', 'The Lie: once a game, press Shift on a card to lay it veiled. It flips nothing when laid, but it is revealed at the end and flips everything weaker around it. A card that attacks a veiled card has to beat its real value.'],
-    ['Rules', 'When the board is full, the player who owns more squares wins.']
+    [tl('Rules'), tl('Each player brings 5 cards and takes turns laying one on the 3×3 board.')],
+    [tl('Rules'), tl('When you lay a card, every touching enemy card with a lower value flips to you. Ties flip nothing.')],
+    [tl('Rules'), tl('Ember beats Stone, Stone beats Tide, Tide beats Ember: +2 to the attacking card. Dawn has no edge, and nothing has an edge over Dawn.')],
+    [tl('Rules'), tl('The Lie: once a game, press Shift on a card to lay it veiled. It flips nothing when laid, but it is revealed at the end and flips everything weaker around it. A card that attacks a veiled card has to beat its real value.')],
+    [tl('Rules'), tl('When the board is full, the player who owns more squares wins.')]
   ]);
 }
 // choose five cards from the collection (Enter toggles, the run key fills with the strongest)
 function pickDeck() {
   const ids = Object.keys(CARDS).filter(k => G.cards[k] > 0).sort((a, b) => CARDS[b].v - CARDS[a].v);
-  if (ids.length < 5) { narrate('You need at least five cards.'); return Promise.resolve(null); }
+  if (ids.length < 5) { narrate(tl('You need at least five cards.')); return Promise.resolve(null); }
   const sel = new Set(G.lastDeck ? G.lastDeck.filter(k => G.cards[k] > 0) : ids.slice(0, 5));
   let i = 0, top = 0, fresh = true;
   return UI.push({
@@ -109,7 +109,7 @@ function pickDeck() {
     draw(g) {
       g.fillStyle = 'rgba(4,6,20,.9)'; g.fillRect(0, 0, W, H);
       drawWindow(g, 30, 20, 300, 440);
-      text(g, `Your deck  ${sel.size}/5`, 46, 30, { size: 16, bold: true, color: '#ffe9a8' });
+      text(g, tl`Your deck  ${sel.size}/5`, 46, 30, { size: 16, bold: true, color: '#ffe9a8' });
       ids.slice(top, top + 10).forEach((k, n) => {
         const y = 62 + n * 36, on = sel.has(k), cur = top + n === i;
         if (cur) rrect(g, 40, y - 4, 280, 32, 6, 'rgba(255,233,168,.15)');
@@ -117,7 +117,7 @@ function pickDeck() {
         text(g, `${CARDS[k].v} · ${FLAMES[CARDS[k].f].name}${G.cards[k] > 1 ? ` ×${G.cards[k]}` : ''}`, 308, y + 4, { size: 13, align: 'right', color: FLAMES[CARDS[k].f].col });
       });
       drawCard(g, ids[i], 400, 120, 1.5, 'p');
-      text(g, 'Enter: pick · Shift: strongest five · Esc: ' + (sel.size === 5 ? 'play' : 'back'), 480, 420, { size: 12, align: 'center', color: '#b8c4ee' });
+      text(g, tl('Enter: pick · Shift: strongest five · Esc: ') + (sel.size === 5 ? 'play' : 'back'), 480, 420, { size: 12, align: 'center', color: '#b8c4ee' });
     }
   });
 }
@@ -190,10 +190,10 @@ function playCards(deck, foe) {
   const board = Array(9).fill(null); confirm_ = 0;
   const hands = { p: [...deck], o: [...foe.deck] };
   const veil = { p: true, o: true };
-  let turn = Math.random() < 0.5 ? 'p' : 'o', sel = 0, cell = 4, phase = 'card', veilOn = false, wait_ = 0.9, flash = [], msg = turn === 'p' ? 'You go first.' : `${foe.name} goes first.`, result = null, msgT = 2;
+  let turn = Math.random() < 0.5 ? 'p' : 'o', sel = 0, cell = 4, phase = 'card', veilOn = false, wait_ = 0.9, flash = [], msg = turn === 'p' ? tl('You go first.') : tl`${foe.name} goes first.`, result = null, msgT = 2;
   const score = who => board.filter(b => b && b.owner === who).length;
   CardGame.state = { board, hands, turn: () => turn, phase: () => phase, cell: () => cell, sel: () => sel };   // read-only view for the play-test
-  const finish = () => { flash = revealLies(board); result = score('p') > score('o') ? 'win' : 'lose'; msg = result === 'win' ? 'You win!' : `${foe.name} wins.`; msgT = 99; Audio_.sfx(result === 'win' ? 'levelup' : 'buzz'); phase = 'done'; };
+  const finish = () => { flash = revealLies(board); result = score('p') > score('o') ? 'win' : 'lose'; msg = result === 'win' ? tl('You win!') : tl`${foe.name} wins.`; msgT = 99; Audio_.sfx(result === 'win' ? 'levelup' : 'buzz'); phase = 'done'; };
   const next = () => { if (board.every(Boolean)) { finish(); return; } turn = turn === 'p' ? 'o' : 'p'; wait_ = 0.8; if (turn === 'p') { sel = Math.min(sel, hands.p.length - 1); phase = 'card'; } };
   let fresh = true;
   return UI.push({
@@ -207,7 +207,7 @@ function playCards(deck, foe) {
         if (mv.veil) veil.o = false;
         hands.o.splice(hands.o.indexOf(mv.id), 1);
         flash = layCard(board, mv.cell, mv.id, 'o', mv.veil); Audio_.sfx(flash.length ? 'hit' : 'cursor');
-        msg = mv.veil ? `${foe.name} lays a card face-down…` : flash.length ? `${foe.name} takes ${flash.length}!` : ''; msgT = 1.6;
+        msg = mv.veil ? tl`${foe.name} lays a card face-down…` : flash.length ? tl`${foe.name} takes ${flash.length}!` : ''; msgT = 1.6;
         next(); return;
       }
       if (phase === 'card') {
@@ -215,7 +215,7 @@ function playCards(deck, foe) {
         if (Input.p('right')) { sel = (sel + 1) % hands.p.length; Audio_.sfx('cursor'); }
         if (Input.p('run') && veil.p) { veilOn = !veilOn; Audio_.sfx('cursor'); }
         if (Input.p('ok')) { phase = 'cell'; cell = board[4] ? board.findIndex(b => !b) : 4; Audio_.sfx('ok'); }
-        if (Input.p('cancel')) { const c = confirm_ = (confirm_ || 0) + 1; if (c >= 2) { result = 'quit'; UI.close(this, 'quit'); } else { msg = 'Press Esc again to forfeit.'; msgT = 1.5; } }
+        if (Input.p('cancel')) { const c = confirm_ = (confirm_ || 0) + 1; if (c >= 2) { result = 'quit'; UI.close(this, 'quit'); } else { msg = tl('Press Esc again to forfeit.'); msgT = 1.5; } }
       } else if (phase === 'cell') {
         const r = Math.floor(cell / 3), c = cell % 3;
         if (Input.p('left') && c > 0) cell--; if (Input.p('right') && c < 2) cell++;
@@ -226,7 +226,7 @@ function playCards(deck, foe) {
           const id = hands.p.splice(sel, 1)[0];
           const veiled = veilOn && veil.p; if (veiled) veil.p = false; veilOn = false;
           flash = layCard(board, cell, id, 'p', veiled); Audio_.sfx(flash.length ? 'hit' : 'cursor');
-          msg = veiled ? 'You lay a card face-down. A Lie.' : flash.length ? `You take ${flash.length}!` : ''; msgT = 1.6;
+          msg = veiled ? tl('You lay a card face-down. A Lie.') : flash.length ? tl`You take ${flash.length}!` : ''; msgT = 1.6;
           next();
         }
       }
@@ -245,11 +245,11 @@ function playCards(deck, foe) {
       text(g, foe.name, 70, 24, { size: 14, align: 'center', color: '#ff9a9a' });
       hands.o.forEach((id, n) => drawCard(g, id, 34 + (n % 2) * 40, 48 + n * 46, 0.7, 'o', false, true));
       text(g, String(score('o')), 70, 420, { size: 28, bold: true, align: 'center', color: '#ff9a9a' });
-      text(g, 'You', 570, 24, { size: 14, align: 'center', color: '#9ab8ff' });
-      hands.p.forEach((id, n) => { const on = n === sel && turn === 'p' && phase !== 'done'; drawCard(g, id, 520 + (n % 2) * 44 - (on ? 10 : 0), 48 + n * 50, on ? 0.72 : 0.6, 'p', false); if (on && veilOn) text(g, 'LIE', 548, 46 + n * 50, { size: 12, bold: true, color: '#c070ff' }); });
+      text(g, tl('You'), 570, 24, { size: 14, align: 'center', color: '#9ab8ff' });
+      hands.p.forEach((id, n) => { const on = n === sel && turn === 'p' && phase !== 'done'; drawCard(g, id, 520 + (n % 2) * 44 - (on ? 10 : 0), 48 + n * 50, on ? 0.72 : 0.6, 'p', false); if (on && veilOn) text(g, tl('LIE'), 548, 46 + n * 50, { size: 12, bold: true, color: '#c070ff' }); });
       text(g, String(score('p')), 570, 420, { size: 28, bold: true, align: 'center', color: '#9ab8ff' });
       if (msg && msgT > 0) { g.font = font(16); const w = g.measureText(msg).width + 40; drawWindow(g, (W - w) / 2, 210, w, 40); text(g, msg, W / 2, 220, { size: 16, align: 'center' }); }
-      const help = phase === 'done' ? 'Enter to continue' : turn !== 'p' ? `${foe.name} is thinking…` : phase === 'card' ? `←→ choose a card · Enter: lay it${veil.p ? ' · Shift: Lie' + (veilOn ? ' (on)' : '') : ''} · Esc×2: forfeit` : 'Arrows: choose a square · Enter: lay · Esc: back';
+      const help = phase === 'done' ? tl('Enter to continue') : turn !== 'p' ? tl`${foe.name} is thinking…` : phase === 'card' ? tl`←→ choose a card · Enter: lay it${veil.p ? ' · Shift: Lie' + (veilOn ? ' (on)' : '') : ''} · Esc×2: forfeit` : tl('Arrows: choose a square · Enter: lay · Esc: back');
       text(g, help, W / 2, 462, { size: 11, align: 'center', color: '#b8c4ee' });
     }
   });
@@ -260,5 +260,5 @@ const CardGame = { state: null };
 function cardQuests() {
   const f = G.flags; if (!f.q_cards) return [];
   const n = Object.keys(CARD_FOES).filter(k => f['cardwin_' + k]).length, tot = Object.keys(CARD_FOES).length;
-  return [{ title: 'Lanterns & Lies', giver: 'Tess, Brightwater', done: !!f.cards_done, reward: 'Joker\'s Lantern', desc: f.cards_done ? 'Every card player in the world has lost to you at least once.' : `Beat every card player: Tess (Brightwater), Sailor Odo (Port Halden, night), Gorrim (Ironhold), Trapper Yuki (Frostmere, night), Madame Nyx (Mirage, night), Bookie Lark (Aerie), the Dealer (the Undermarket) and someone in Nerith. (${n}/${tot} beaten · ${cardCount()}/${Object.keys(CARDS).length} cards)` }];
+  return [{ title: tl('Lanterns & Lies'), giver: tl('Tess, Brightwater'), done: !!f.cards_done, reward: tl('Joker\'s Lantern'), desc: f.cards_done ? tl('Every card player in the world has lost to you at least once.') : tl`Beat every card player: Tess (Brightwater), Sailor Odo (Port Halden, night), Gorrim (Ironhold), Trapper Yuki (Frostmere, night), Madame Nyx (Mirage, night), Bookie Lark (Aerie), the Dealer (the Undermarket) and someone in Nerith. (${n}/${tot} beaten · ${cardCount()}/${Object.keys(CARDS).length} cards)` }];
 }

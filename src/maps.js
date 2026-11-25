@@ -19,34 +19,34 @@ function fbm(x, y, seed) { return (vnoise(x, y, seed) * 0.6 + vnoise(x * 2.1, y 
 
 // ------------ WORLD ------------
 const WORLD_LOC = {
-  A: { x: 14, y: 43, town: 'brightwater', name: 'Brightwater' },
-  B: { x: 38, y: 38, town: 'halden', name: 'Port Halden' },
-  C: { x: 40, y: 15, town: 'ironhold', name: 'Ironhold' },
-  D: { x: 28, y: 8, town: 'frostmere', name: 'Frostmere' },
-  E: { x: 79, y: 38, town: 'mirage', name: 'Mirage' },
-  F: { x: 87, y: 24, town: 'aerie', name: 'Aerie' },
-  1: { x: 8, y: 31, dungeon: 'hollow', name: 'Whisperwood Hollow' },
-  2: { x: 35, y: 50, dungeon: 'shrine', name: 'Sunken Shrine' },
-  3: { x: 52, y: 6, dungeon: 'mine', name: 'Emberdeep Mines' },
-  4: { x: 60, y: 40, dungeon: 'spire', name: 'Hollow Spire' },
-  5: { x: 9, y: 12, dungeon: 'observatory', name: 'Starfall Observatory' },
-  6: { x: 85, y: 45, dungeon: 'tomb', name: 'Tomb of the First King' },
+  A: { x: 14, y: 43, town: 'brightwater', name: tl('Brightwater') },
+  B: { x: 38, y: 38, town: 'halden', name: tl('Port Halden') },
+  C: { x: 40, y: 15, town: 'ironhold', name: tl('Ironhold') },
+  D: { x: 28, y: 8, town: 'frostmere', name: tl('Frostmere') },
+  E: { x: 79, y: 38, town: 'mirage', name: tl('Mirage') },
+  F: { x: 87, y: 24, town: 'aerie', name: tl('Aerie') },
+  1: { x: 8, y: 31, dungeon: 'hollow', name: tl('Whisperwood Hollow') },
+  2: { x: 35, y: 50, dungeon: 'shrine', name: tl('Sunken Shrine') },
+  3: { x: 52, y: 6, dungeon: 'mine', name: tl('Emberdeep Mines') },
+  4: { x: 60, y: 40, dungeon: 'spire', name: tl('Hollow Spire') },
+  5: { x: 9, y: 12, dungeon: 'observatory', name: tl('Starfall Observatory') },
+  6: { x: 85, y: 45, dungeon: 'tomb', name: tl('Tomb of the First King') },
   // Chapter VI — the Ashen Isle (hidden under the sea until G.flags.isle)
-  G: { x: 79, y: 9, town: 'lastlight', name: 'Lastlight' },
-  7: { x: 88, y: 7, dungeon: 'abyss', name: 'Crownfall Abyss' },
+  G: { x: 79, y: 9, town: 'lastlight', name: tl('Lastlight') },
+  7: { x: 88, y: 7, dungeon: 'abyss', name: tl('Crownfall Abyss') },
   // 1.5 Hearts of the Lamplighters
-  8: { x: 20, y: 40, dungeon: 'embercave', name: 'Ember Caves' },
-  9: { x: 42, y: 40, dungeon: 'grotto', name: 'Sea Mother\'s Grotto' }
+  8: { x: 20, y: 40, dungeon: 'embercave', name: tl('Ember Caves') },
+  9: { x: 42, y: 40, dungeon: 'grotto', name: tl('Sea Mother\'s Grotto') }
 };
 // Arin's quest: twelve roadside lamps, each beside a road
 // 1.7 The Drowned Kingdom: locations on the sea floor ('deep' map), dive spots and dig spots
 const DEEP_LOC = {
-  H: { x: 24, y: 15, town: 'nerith', name: 'Nerith', map: 'deep' },
-  0: { x: 30, y: 12, dungeon: 'palace', name: 'The Drowned Palace', map: 'deep' },
-  I: { x: 40, y: 24, dungeon: 'hadal', name: 'The Hadal Rift', map: 'deep' }
+  H: { x: 24, y: 15, town: 'nerith', name: tl('Nerith'), map: 'deep' },
+  0: { x: 30, y: 12, dungeon: 'palace', name: tl('The Drowned Palace'), map: 'deep' },
+  I: { x: 40, y: 24, dungeon: 'hadal', name: tl('The Hadal Rift'), map: 'deep' }
 };
 // world coordinates of the four patches of black water; each is directly above (x/2, y/2) on the sea floor
-const DIVE_SPOTS = [{ x: 20, y: 22, name: 'the North Shallows' }, { x: 46, y: 48, name: 'the Shrine Deep' }, { x: 68, y: 26, name: 'the Open Sea' }, { x: 88, y: 50, name: 'the Far Reach' }];
+const DIVE_SPOTS = [{ x: 20, y: 22, name: tl('the North Shallows') }, { x: 46, y: 48, name: tl('the Shrine Deep') }, { x: 68, y: 26, name: tl('the Open Sea') }, { x: 88, y: 50, name: tl('the Far Reach') }];
 // treasure-map dig spots (world); genWorld nudges each onto the nearest walkable tile
 const TREASURE_SPOTS = { 1: [33, 49], 2: [33, 6], 3: [80, 43], 4: [12, 35], 5: [79, 11] };
 function locDef(ch) { return WORLD_LOC[ch] || DEEP_LOC[ch]; }
@@ -220,7 +220,7 @@ function genWorld() {
     for (let y = ty - 4; y <= ty + 4; y++) for (let x = tx - 4; x <= tx + 4; x++) { const d = Math.abs(x - tx) + Math.abs(y - ty); if (walk(x, y) && d < bd) { bd = d; best = { x, y }; } }
     digs[k] = best;
   }
-  const m = new GameMap({ id: 'world', kind: 'world', w, h, tiles, region, name: 'World', whirl, isle, digs });
+  const m = new GameMap({ id: 'world', kind: 'world', w, h, tiles, region, name: tl('World'), whirl, isle, digs });
   return m;
 }
 
@@ -289,7 +289,7 @@ function genDeep() {
   T[L.H.y][L.H.x] = 'H'; T[L[0].y][L[0].x] = '0';
   // the Rift stays sealed rock until the Tide calls (applyDeepFlags opens it)
   T[L.I.y][L.I.x] = '#';
-  return new GameMap({ id: 'deep', kind: 'deep', w, h, tiles: T, name: 'The Sea Floor', wrecks, enc: 'u1', bg: 'deep' });
+  return new GameMap({ id: 'deep', kind: 'deep', w, h, tiles: T, name: tl('The Sea Floor'), wrecks, enc: 'u1', bg: 'deep' });
 }
 function worldRegionAt(map, x, y) {
   const c = map.at(x, y);
@@ -342,31 +342,31 @@ function buildTown(id, d = TOWN_DEFS[id]) {
 
 // ------------ DUNGEONS ------------
 const DUNGEONS = {
-  hollow: { name: 'Whisperwood Hollow', theme: 'hollow', floors: 2, w: 34, h: 26, seed: 101, enc: 'd1', bg: 'cave', loc: '1',
+  hollow: { name: tl('Whisperwood Hollow'), theme: 'hollow', floors: 2, w: 34, h: 26, seed: 101, enc: 'd1', bg: 'cave', loc: '1',
     loot: [['potion', 'potion', 'antidote', 'gold:120'], ['iron_sword', 'ether', 'plume']], boss: 'gloomcap', lantern: 'ember', lanternCol: '#ff9a3a' },
-  shrine: { name: 'Sunken Shrine', theme: 'shrine', floors: 2, w: 38, h: 28, seed: 202, enc: 'd2', bg: 'shrine', loc: '2', deco: '~', deco2: 'k',
+  shrine: { name: tl('Sunken Shrine'), theme: 'shrine', floors: 2, w: 38, h: 28, seed: 202, enc: 'd2', bg: 'shrine', loc: '2', deco: '~', deco2: 'k',
     loot: [['hipotion', 'silk_robe', 'gold:400', 'ether'], ['tide_mace', 'chain_mail', 'plume', 'hipotion']], boss: 'warden', lantern: 'tide', lanternCol: '#5af0d0' },
-  mine: { name: 'Emberdeep Mines', theme: 'mine', floors: 3, w: 38, h: 28, seed: 303, enc: 'd3', bg: 'mine', loc: '3', deco: 'L',
+  mine: { name: tl('Emberdeep Mines'), theme: 'mine', floors: 3, w: 38, h: 28, seed: 303, enc: 'd3', bg: 'mine', loc: '3', deco: 'L',
     loot: [['hipotion', 'hipotion', 'gold:900', 'bomb'], ['mythril_sword', 'star_rod', 'ether', 'plume'], ['mythril_mail', 'mythril_knife', 'elixir', 'star_robe']], boss: 'vesper', lantern: 'stone', lanternCol: '#ff6a2a' },
-  spire: { name: 'Hollow Spire', theme: 'spire', floors: 3, w: 36, h: 28, seed: 404, enc: 'd4', bg: 'spire', loc: '4', deco2: 'k',
+  spire: { name: tl('Hollow Spire'), theme: 'spire', floors: 3, w: 36, h: 28, seed: 404, enc: 'd4', bg: 'spire', loc: '4', deco2: 'k',
     loot: [['xpotion', 'hiether', 'shadow_garb', 'gold:3000'], ['dawn_plate', 'seraph_mace', 'ember_scepter', 'elixir'], ['dawnblade', 'shadow_fang', 'megalixir', 'xpotion']], boss: 'king', lantern: 'dawn', lanternCol: '#ffe08a' },
-  tomb: { name: 'Tomb of the First King', theme: 'tomb', floors: 3, w: 36, h: 28, seed: 606, enc: 'd6', bg: 'tomb', loc: '6', deco2: 'o',
+  tomb: { name: tl('Tomb of the First King'), theme: 'tomb', floors: 3, w: 36, h: 28, seed: 606, enc: 'd6', bg: 'tomb', loc: '6', deco2: 'o',
     loot: [['hiether', 'gold:5000', 'xpotion', 'desert_veil'], ['pharaoh_mace', 'sand_kris', 'elixir', 'megalixir'], ['nocturne', 'xpotion', 'hiether']], boss: 'firstking', lantern: 'sun', lanternCol: '#ffc04a' },
-  observatory: { name: 'Starfall Observatory', theme: 'astral', floors: 3, w: 36, h: 28, seed: 505, enc: 'd5', bg: 'astral', loc: '5', deco2: 'k',
+  observatory: { name: tl('Starfall Observatory'), theme: 'astral', floors: 3, w: 36, h: 28, seed: 505, enc: 'd5', bg: 'astral', loc: '5', deco2: 'k',
     loot: [['swift_boots', 'megalixir', 'gold:8000', 'xpotion'], ['ember_heart', 'celestia', 'astral_mace', 'elixir'], ['lightbringer', 'comet_edge', 'megalixir', 'hiether']], boss: 'wyrm', lantern: 'fifth', lanternCol: '#a8d8ff' },
-  embercave: { name: 'Ember Caves', theme: 'mine', floors: 2, w: 34, h: 26, seed: 808, enc: 'd8', bg: 'mine', loc: '8', deco: 'L', noLantern: true,
+  embercave: { name: tl('Ember Caves'), theme: 'mine', floors: 2, w: 34, h: 26, seed: 808, enc: 'd8', bg: 'mine', loc: '8', deco: 'L', noLantern: true,
     loot: [['xpotion', 'ember_core', 'gold:6000', 'hiether'], ['megalixir', 'ember_core', 'star_bomb']], boss: 'hearthwarden' },
-  grotto: { name: 'Sea Mother\'s Grotto', theme: 'shrine', floors: 2, w: 34, h: 26, seed: 909, enc: 'd9', bg: 'shrine', loc: '9', deco: '~', deco2: 'k', noLantern: true,
+  grotto: { name: tl('Sea Mother\'s Grotto'), theme: 'shrine', floors: 2, w: 34, h: 26, seed: 909, enc: 'd9', bg: 'shrine', loc: '9', deco: '~', deco2: 'k', noLantern: true,
     loot: [['xpotion', 'frost_crystal', 'gold:6000', 'hiether'], ['megalixir', 'sun_gold', 'elixir']], boss: 'abbot' },
-  undercity: { name: 'The Undercity', theme: 'undercity', floors: 2, w: 36, h: 26, seed: 1010, enc: 'd10', bg: 'mine', loc: 'C', deco: '~', deco2: 'o', noLantern: true,
+  undercity: { name: tl('The Undercity'), theme: 'undercity', floors: 2, w: 36, h: 26, seed: 1010, enc: 'd10', bg: 'mine', loc: 'C', deco: '~', deco2: 'o', noLantern: true,
     exitTo: { map: 'in:ironhold:jail', x: 6, y: 6 },
     loot: [['xpotion', 'dusk_silk', 'gold:9000', 'elixir'], ['megalixir', 'dusk_silk', 'gold:15000']], boss: 'vane' },
   // 1.7 The Drowned Kingdom
-  palace: { name: 'The Drowned Palace', theme: 'palace', floors: 4, w: 38, h: 30, seed: 1111, enc: 'd11', bg: 'palace', loc: '0', deco: '~', deco2: 'k', noLantern: true,
+  palace: { name: tl('The Drowned Palace'), theme: 'palace', floors: 4, w: 38, h: 30, seed: 1111, enc: 'd11', bg: 'palace', loc: '0', deco: '~', deco2: 'k', noLantern: true,
     loot: [['deep_pearl', 'xpotion', 'gold:14000', 'hiether'], ['kelp_robe', 'megalixir', 'deep_pearl', 'star_bomb'], ['pressure_ring', 'elixir', 'deep_pearl', 'megalixir'], ['megalixir', 'gold:25000', 'deep_pearl']], boss: 'nereus' },
-  hadal: { name: 'The Hadal Rift', theme: 'hadal', floors: 2, w: 36, h: 28, seed: 1212, enc: 'd12', bg: 'hadal', loc: 'I', deco: '~', deco2: 'k', noLantern: true,
+  hadal: { name: tl('The Hadal Rift'), theme: 'hadal', floors: 2, w: 36, h: 28, seed: 1212, enc: 'd12', bg: 'hadal', loc: 'I', deco: '~', deco2: 'k', noLantern: true,
     loot: [['deep_pearl', 'megalixir', 'gold:30000', 'elixir'], ['megalixir', 'deep_pearl', 'megalixir']], boss: 'tide' },
-  abyss: { name: 'Crownfall Abyss', theme: 'abyss', floors: 4, w: 38, h: 30, seed: 707, enc: 'd7', bg: 'abyss', loc: '7', deco: 'L', deco2: 'k',
+  abyss: { name: tl('Crownfall Abyss'), theme: 'abyss', floors: 4, w: 38, h: 30, seed: 707, enc: 'd7', bg: 'abyss', loc: '7', deco: 'L', deco2: 'k',
     loot: [['abyss_ash', 'xpotion', 'gold:12000', 'hiether'], ['ash_robe', 'megalixir', 'abyss_ash', 'star_bomb'], ['ash_mail', 'elixir', 'abyss_ash', 'megalixir'], ['nightglass', 'megalixir', 'gold:20000', 'abyss_ash']], boss: 'crown', lantern: 'night', lanternCol: '#b8a8ff' }
 };
 const DUNGEON_SOLID = new Set(['#', '~', 'L', 'o', 'k']);

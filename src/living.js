@@ -45,12 +45,12 @@ function underSky(m) { return m && (m.kind === 'world' || (m.kind === 'town' && 
 // ---------------- weather ----------------
 // Each region rolls its weather every six game hours from the clock, so it needs no saving.
 const WEATHER = {
-  clear: { name: 'Clear', icon: '☀' },
-  rain: { name: 'Rain', icon: '☂', battle: 'Rain: water and lightning hit 25% harder, fire 25% softer.', boost: ['water', 'bolt'], dampen: ['fire'] },
-  snow: { name: 'Snow', icon: '❄', battle: 'Snow: ice hits 25% harder, fire 25% softer.', boost: ['ice'], dampen: ['fire'] },
-  sand: { name: 'Sandstorm', icon: '≋', battle: 'Sandstorm: every physical attack misses 15% more often.', miss: 0.15 },
-  fog: { name: 'Fog', icon: '☁', battle: 'Fog: physical attacks miss 10% more often.', miss: 0.1 },
-  ash: { name: 'Ashfall', icon: '✶', battle: 'Ashfall: fire hits 25% harder, water 25% softer.', boost: ['fire'], dampen: ['water'] }
+  clear: { name: tl('Clear'), icon: '☀' },
+  rain: { name: tl('Rain'), icon: '☂', battle: tl('Rain: water and lightning hit 25% harder, fire 25% softer.'), boost: ['water', 'bolt'], dampen: ['fire'] },
+  snow: { name: tl('Snow'), icon: '❄', battle: tl('Snow: ice hits 25% harder, fire 25% softer.'), boost: ['ice'], dampen: ['fire'] },
+  sand: { name: tl('Sandstorm'), icon: '≋', battle: tl('Sandstorm: every physical attack misses 15% more often.'), miss: 0.15 },
+  fog: { name: tl('Fog'), icon: '☁', battle: tl('Fog: physical attacks miss 10% more often.'), miss: 0.1 },
+  ash: { name: tl('Ashfall'), icon: '✶', battle: tl('Ashfall: fire hits 25% harder, water 25% softer.'), boost: ['fire'], dampen: ['water'] }
 };
 function regionWeather(reg, y) {
   const block = Math.floor(clockNow() / 360), h = hash(block, (reg || 'S').charCodeAt(0), 77);
@@ -137,12 +137,12 @@ function drawWeather(g, w, t, strength = 1) {
 function nightNpcs(id) {
   const f = G.flags;
   const L = {
-    brightwater: [N(9, 13, 101, { hair: '#c8c0b0', style: 'bald', beard: true, body: '#3a3a5a', hat: 'cap' }, async () => say('Lamplighter\'s Watch', f.road_done ? 'Twelve lamps on the roads again. I walk out to the bridge each night just to look at them.' : 'Your father lit the roadside lamps every evening. Nobody\'s done it since. The roads are very dark, Arin.'), { name: 'Night watchman' })],
-    halden: [N(7, 15, 102, { style: 'long', body: '#2a3a5a', accent: '#c8a050' }, async () => say('Moonlit Fisher', hasItem('fishing_rod') ? 'The fish bite differently at night. Different fish, too, some say. I say: same fish, different mood.' : 'Night fishing is the only peace and quiet in this harbour.'), { name: 'Night fisher' })],
-    ironhold: [N(14, 9, 103, { ...LOOKS.guard, hat: 'cap' }, async () => say('Night Patrol', 'Mines run all night. Listen: hammers. The dwarves say the mountain sleeps better with someone tapping on it.'))],
-    frostmere: [N(10, 9, 104, { style: 'spiky', body: '#3a3a6a', accent: '#e8d070' }, async () => say('Stargazer Nils', f.lantern5 ? 'There — the Fifth Flame. You can see it with your bare eyes if you squint. I squint a lot.' : 'Clearest sky in the world, Frostmere. On a cloudless night you can count every star. I got to four thousand once.'))],
-    mirage: [N(8, 12, 105, { skin: '#a8724a', style: 'bun', body: '#3a2a5a', accent: '#e8c24a' }, async () => say('Night Market Vendor', 'The night market opens when the sand cools. Dates, lamps, stories. Mostly stories.'), { name: 'Night vendor' })],
-    aerie: [N(12, 12, 106, { body: '#5a6a8a', hat: 'cap' }, async () => say('Windwatcher', 'At night the wind sings in the mesas. Old Aerie folk say it\'s the Aurora, calling home.'))],
+    brightwater: [N(9, 13, 101, { hair: '#c8c0b0', style: 'bald', beard: true, body: '#3a3a5a', hat: 'cap' }, async () => say(tl('Lamplighter\'s Watch'), f.road_done ? tl('Twelve lamps on the roads again. I walk out to the bridge each night just to look at them.') : tl('Your father lit the roadside lamps every evening. Nobody\'s done it since. The roads are very dark, Arin.')), { name: tl('Night watchman') })],
+    halden: [N(7, 15, 102, { style: 'long', body: '#2a3a5a', accent: '#c8a050' }, async () => say(tl('Moonlit Fisher'), hasItem('fishing_rod') ? tl('The fish bite differently at night. Different fish, too, some say. I say: same fish, different mood.') : tl('Night fishing is the only peace and quiet in this harbour.')), { name: tl('Night fisher') })],
+    ironhold: [N(14, 9, 103, { ...LOOKS.guard, hat: 'cap' }, async () => say(tl('Night Patrol'), tl('Mines run all night. Listen: hammers. The dwarves say the mountain sleeps better with someone tapping on it.')))],
+    frostmere: [N(10, 9, 104, { style: 'spiky', body: '#3a3a6a', accent: '#e8d070' }, async () => say(tl('Stargazer Nils'), f.lantern5 ? tl('There — the Fifth Flame. You can see it with your bare eyes if you squint. I squint a lot.') : tl('Clearest sky in the world, Frostmere. On a cloudless night you can count every star. I got to four thousand once.')))],
+    mirage: [N(8, 12, 105, { skin: '#a8724a', style: 'bun', body: '#3a2a5a', accent: '#e8c24a' }, async () => say(tl('Night Market Vendor'), tl('The night market opens when the sand cools. Dates, lamps, stories. Mostly stories.')), { name: tl('Night vendor') })],
+    aerie: [N(12, 12, 106, { body: '#5a6a8a', hat: 'cap' }, async () => say(tl('Windwatcher'), tl('At night the wind sings in the mesas. Old Aerie folk say it\'s the Aurora, calling home.')))],
     lastlight: []
   };
   return (L[id] || []).concat(cardNightNpcs(id));

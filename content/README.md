@@ -9,6 +9,7 @@ Lanternfall's items, monsters, shops, random battles and town layouts are data f
 | [`shops.json`](shops.json) | What each shop sells. A town's map names its shops (`shop: 'halden_items'` in `src/maps.js`) | `SHOPS` |
 | [`towns.json`](towns.json) | Every town's layout: size, ground, buildings, paths, water, piers, decorations, exits. Easiest to change in the editor, `index.html?edit` | `TOWN_DEFS` |
 | [`encounters.json`](encounters.json) | Random battles: `day` tables for every region and dungeon, and `night` tables that replace half of a region's battles after dark | `ENCOUNTERS`, `NIGHT_ENC` |
+| [`lang/`](lang) | Translations, one file per language, and `template.json`: every line to translate. See [lang/README.md](lang/README.md) | `LANG_PACKS` |
 | [`schema/`](schema) | A [JSON Schema](https://json-schema.org/) for each file: every field, its type and what it means | |
 
 Moves (`SPELLS`), heroes, recipes, fish spots, meals and the arena stay in `src/data.js` for now; they can follow the same way.

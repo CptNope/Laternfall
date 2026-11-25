@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lang.schema.json",
+  "title": "A Lanternfall language",
+  "description": "content/lang/<code>.json, or a mod's lang/<code>.json. Start from content/lang/template.json.",
+  "type": "object",
+  "required": ["strings"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "name": { "type": "string", "description": "The language's own name, as Settings shows it: Español, Français, 日本語." },
+    "strings": {
+      "type": "object",
+      "description": "English line → translation. {0}, {1}, … are values (names, numbers) and must all be kept, in any order. An empty or missing translation keeps the English. A key starting with // is a comment.",
+      "additionalProperties": { "type": "string" }
+    }
+  },
+  "patternProperties": { "^//": { "type": "string" } },
+  "additionalProperties": false
+}

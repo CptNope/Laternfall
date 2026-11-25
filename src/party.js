@@ -85,7 +85,7 @@ function gainXp(m, n) {
     // past the cap, EXP turns into Embers for the Lantern Board
     m.capxp = (m.capxp || 0) + n; let got = 0;
     while (m.capxp >= EMBER_CAP_XP) { m.capxp -= EMBER_CAP_XP; m.embers = (m.embers || 0) + 1; got++; }
-    if (got) msgs.push(`${memberName(m)} gained ${got > 1 ? got + ' Embers' : 'an Ember'}!`);
+    if (got) msgs.push(tl`${memberName(m)} gained ${got > 1 ? got + ' Embers' : 'an Ember'}!`);
     return msgs;
   }
   m.xp += n;
@@ -94,9 +94,9 @@ function gainXp(m, n) {
     const before = new Set(spellsOf(m));
     m.level++;
     m.hp += maxHp(m) - oh; m.mp += maxMp(m) - om;
-    msgs.push(`${memberName(m)} reached level ${m.level}!`);
-    for (const s of spellsOf(m)) if (!before.has(s)) msgs.push(`${memberName(m)} learned ${SPELLS[s].name}!`);
-    if (m.level >= BOARD_LEVEL) { m.embers = (m.embers || 0) + 1; msgs.push(m.level === BOARD_LEVEL ? `${memberName(m)} gained an Ember! (The Lantern Board is open: see Status)` : `${memberName(m)} gained an Ember!`); }
+    msgs.push(tl`${memberName(m)} reached level ${m.level}!`);
+    for (const s of spellsOf(m)) if (!before.has(s)) msgs.push(tl`${memberName(m)} learned ${SPELLS[s].name}!`);
+    if (m.level >= BOARD_LEVEL) { m.embers = (m.embers || 0) + 1; msgs.push(m.level === BOARD_LEVEL ? tl`${memberName(m)} gained an Ember! (The Lantern Board is open: see Status)` : tl`${memberName(m)} gained an Ember!`); }
   }
   return msgs;
 }
@@ -157,7 +157,7 @@ function saveGame(slot = G.slot || '1') {
     return true;
   } catch (e) { return false; }
 }
-function autoSave() { if (CFG.autosave !== false && G.party.length) { if (saveGame('auto')) toast('Auto-saved'); } }
+function autoSave() { if (CFG.autosave !== false && G.party.length) { if (saveGame('auto')) toast(tl('Auto-saved')); } }
 function hasSave(slot) { return slot ? !!readSlot(slot) : ALL_SLOTS.some(s => readSlot(s)); }
 function latestSlot() {
   let best = null, t = -1;
@@ -190,15 +190,15 @@ function dropUnknownContent() {
     if (m.armor && !ITEMS[m.armor]) { m.armor = start ? start.armor : null; lost++; }
     if (m.acc && !ITEMS[m.acc]) { m.acc = null; lost++; }
   }
-  if (lost) setTimeout(() => toast(`This save had ${lost} item${lost > 1 ? 's' : ''} from a mod that isn't here. ${lost > 1 ? 'They were' : 'It was'} left out.`), 400);
+  if (lost) setTimeout(() => toast(tl`This save had ${lost} item${lost > 1 ? 's' : ''} from a mod that isn't here. ${lost > 1 ? 'They were' : 'It was'} left out.`), 400);
   return lost;
 }
 // A short description of a save, for the slot menus
 function placeName(mapId) {
-  if (!mapId || mapId === 'world') return 'World map';
-  if (mapId === 'deep') return 'The Sea Floor';
+  if (!mapId || mapId === 'world') return tl('World map');
+  if (mapId === 'deep') return tl('The Sea Floor');
   if (TOWN_DEFS[mapId]) return TOWN_DEFS[mapId].name;
-  if (mapId.startsWith('in:')) { const t = mapId.split(':')[1]; return TOWN_DEFS[t] ? TOWN_DEFS[t].name : 'Indoors'; }
+  if (mapId.startsWith('in:')) { const t = mapId.split(':')[1]; return TOWN_DEFS[t] ? TOWN_DEFS[t].name : tl('Indoors'); }
   const [did, f] = mapId.split(':'), D = DUNGEONS[did];
   return D ? `${D.name}${D.floors > 1 ? ' ' + (+f + 1) + 'F' : ''}` : mapId;
 }
@@ -206,8 +206,8 @@ function slotSummary(slot) {
   const d = readSlot(slot);
   if (!d) return null;
   const f = d.flags || {};
-  const chapter = f.chapter6 ? 'Chapter VI done' : f.isle ? 'Chapter VI' : f.ending ? 'Post-game' : f.lantern3 ? 'Act IV' : f.lantern2 ? 'Act III' : f.lantern1 ? 'Act II' : 'Act I';
+  const chapter = f.chapter6 ? tl('Chapter VI done') : f.isle ? tl('Chapter VI') : f.ending ? tl('Post-game') : f.lantern3 ? tl('Act IV') : f.lantern2 ? tl('Act III') : f.lantern1 ? tl('Act II') : tl('Act I');
   return { d, place: placeName(d.mapId), time: fmtTime(d.playTime || 0), lv: Math.max(...d.party.map(m => m.level)), chapter, ng: f.ngplus || 0,
-    when: d.savedAt ? new Date(d.savedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Before 1.4' };
+    when: d.savedAt ? new Date(d.savedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : tl('Before 1.4') };
 }
 function fmtTime(s) { s = Math.floor(s); const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60; return `${h}:${String(m).padStart(2, '0')}`; }
