@@ -11,13 +11,14 @@ Scenarios: chapter, orun, systems, newgame, comfort, hearts, depth, drowned, pla
 Needs: pip install playwright && playwright install chromium
        (or set CHROME=/path/to/chrome to use an installed browser).
 See docs/TESTING.md for what each scenario covers."""
+import re
 import sys, json, asyncio, os, pathlib
 from playwright.async_api import async_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods', 'editor']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods', 'editor', 'i18n']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -694,6 +695,78 @@ async def main():
             (md / 'mod.json').write_text(json.dumps({'name': 'A new inn', 'version': '1.0.0'})); (md / 'content' / 'towns.json').write_text(mod_town)
             r = subprocess.run([sys.executable, str(ROOT / 'build.py'), '--mod', str(md), '--out', str(md / 'out.html')], capture_output=True, text=True)
             check(r.returncode == 0 and 'every town can be walked' in r.stdout, 'the exported town builds as a mod and passes the town check' + ('' if r.returncode == 0 else ': ' + (r.stderr + r.stdout)[-300:]))
+
+        if want('i18n'):
+            # 2.0 EN-6: play in the pseudo language, which changes every translated line; any plain
+            # English drawn on screen is a line that tl() doesn't reach
+            def check(ok, label):
+                print(('ok   ' if ok else 'FAIL ') + label)
+                if not ok: errs.append('check failed: ' + label)
+            HOOK = """(() => { window.__drawn = new Set(); const f = CanvasRenderingContext2D.prototype.fillText;
+              CanvasRenderingContext2D.prototype.fillText = function (s, ...a) { window.__drawn.add(String(s)); return f.call(this, s, ...a); }; })()"""
+            ictx = await b.new_context(viewport={'width': 640, 'height': 480}); await ictx.add_init_script(HOOK)
+            ip = await ictx.new_page()
+            ip.on('pageerror', lambda e: errs.append('i18n pageerror: ' + str(e)))
+            ip.on('console', lambda m: errs.append('i18n console: ' + m.text) if m.type == 'error' else None)
+            I = ip.evaluate
+            async def ipress(key, n=1, d=150):
+                for _ in range(n): await ip.keyboard.press(key); await ip.wait_for_timeout(d)
+            async def idle(maxn=200, key='Enter'):
+                for _ in range(maxn):
+                    if await I('Script.running === 0 && UI.stack.length === 0'): return
+                    await ip.keyboard.press(key); await ip.wait_for_timeout(110)
+            s = json.loads(json.dumps(POST)); s['mapId'] = 'brightwater'; s['x'] = 11; s['y'] = 12; s['flags'].update({'isle': True, 'chapter6': True})
+            await ip.goto('file://' + PATH + '?lang=pseudo')
+            await I(f"localStorage.clear(); localStorage.setItem('lanternfall_save_v1', {json.dumps(json.dumps(s))})")
+            await ip.reload(); await ip.wait_for_timeout(1200)
+            check(await I("LANG === 'pseudo' && tl('New Game') !== 'New Game' && ITEMS.potion.name !== 'Potion'"), '?lang=pseudo switches the game, content names included')
+            await ip.screenshot(path=f'{OUT}/82_pseudo_title.png')
+            await ipress('Enter'); await ip.wait_for_timeout(1500); await idle()
+            await I("void runScript(talkElder)"); await ip.wait_for_timeout(400); await ip.screenshot(path=f'{OUT}/83_pseudo_dialogue.png'); await idle()
+            # every entry of the field menu, in and out
+            n = await I("(() => 0)()")
+            for i in range(12):
+                await ipress('Escape', 1, 300)
+                if not await I('UI.stack.length > 0'): break
+                await ipress('ArrowDown', i, 70); await ipress('Enter', 1, 400)
+                if i == 3: await ip.screenshot(path=f'{OUT}/84_pseudo_status.png')
+                await ipress('ArrowDown', 1, 120); await ipress('Enter', 1, 300)   # one level deeper where there is one
+                for _ in range(8):
+                    if await I('UI.stack.length === 0 && Script.running === 0'): break
+                    await ipress('Escape', 1, 120)
+            await I("void runScript(() => openShop('brightwater_items', tl('Shopkeeper')))"); await ip.wait_for_timeout(500); await ipress('Enter', 1, 300); await ipress('Escape', 4, 150); await idle(60, 'Escape')
+            await I("void runScript(async () => { await startBattle(['goblin', 'slime']); })"); await ip.wait_for_timeout(2500)
+            await ipress('ArrowDown', 1); await ipress('Enter', 1, 400); await ip.screenshot(path=f'{OUT}/85_pseudo_battle.png'); await ipress('Escape', 2)
+            await I("G.scene.enemies.forEach(e => e.hp = 1)"); await idle(300)
+            drawn = await I("[...window.__drawn]")
+            plain = lambda t: [w for w in re.findall(r"[A-Za-zÀ-ɏ']{2,}", t) if re.fullmatch(r"[A-Za-z']+", w) and len(w.strip("'")) > 1]
+            left = sorted({d for d in drawn if plain(d)})
+            check(len(drawn) > 150 and not left, f'every line drawn is translated ({len(drawn)} drawn{"; untranslated: " + "; ".join(left[:12]) if left else ""})')
+            seen = await I("[...T_SEEN]")
+            tmpl = json.load(open(ROOT / 'content' / 'lang' / 'template.json'))['strings']
+            missing = [k for k in seen if k not in tmpl]
+            check(len(seen) > 150 and not missing, f'content/lang/template.json has every line the game asked for ({len(seen)}){"; missing: " + "; ".join(missing[:6]) if missing else ""}')
+            # the saved choice, without ?lang
+            await ip.goto('file://' + PATH); await I("localStorage.setItem('lanternfall_lang', 'pseudo')"); await ip.reload(); await ip.wait_for_timeout(900)
+            check(await I("LANG === 'pseudo'"), 'the chosen language is remembered')
+            await I("localStorage.setItem('lanternfall_lang', 'en')"); await ip.reload(); await ip.wait_for_timeout(900)
+            check(await I("LANG === 'en' && tl('New Game') === 'New Game'"), 'and English comes back')
+            await ictx.close()
+            # a real language, from a mod: a translated line, values in a new order, English where it's missing
+            import subprocess, tempfile
+            md = pathlib.Path(tempfile.mkdtemp()) / 'french'; (md / 'lang').mkdir(parents=True)
+            (md / 'mod.json').write_text(json.dumps({'name': 'Français (test)', 'version': '1.0.0'}))
+            (md / 'lang' / 'fr.json').write_text(json.dumps({'name': 'Français', 'strings': {'New Game': 'Nouvelle partie', 'Potion': 'Potion de soin', '{0} reached level {1}!': 'Niveau {1} pour {0} !'}}))
+            out = md / 'out.html'
+            r = subprocess.run([sys.executable, str(ROOT / 'build.py'), '--mod', str(md), '--out', str(out)], capture_output=True, text=True)
+            check(r.returncode == 0, 'a language mod builds' + ('' if r.returncode == 0 else ': ' + (r.stderr + r.stdout)[-300:]))
+            fp = await (await b.new_context()).new_page()
+            await fp.goto('file://' + str(out) + '?lang=fr'); await fp.wait_for_timeout(900)
+            got = await fp.evaluate("[LANG, tl('New Game'), ITEMS.potion.name, tl`${'Lyra'} reached level ${12}!`, tl('Load Game'), languages().map(l => l[1]).join(',')]")
+            check(got == ['fr', 'Nouvelle partie', 'Potion de soin', 'Niveau 12 pour Lyra !', 'Load Game', 'English,Français'], f'the French line, the values reordered, English where untranslated, and French in Settings ({got})')
+            (md / 'lang' / 'fr.json').write_text(json.dumps({'name': 'Français', 'strings': {'{0} reached level {1}!': 'Niveau {1} !'}}))
+            r = subprocess.run([sys.executable, str(ROOT / 'build.py'), '--mod', str(md), '--out', str(out)], capture_output=True, text=True)
+            check(r.returncode != 0 and 'needs the values {0},{1}' in r.stdout + r.stderr, 'a translation that drops a value stops the build')
 
         if want('tiles'):
             # 1.10 tile cache: the cached tile layer must look like the tiles drawn one by one

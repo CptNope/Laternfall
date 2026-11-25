@@ -33,7 +33,7 @@ const HEIST_GUARDS = [
 const HEIST_SOLID = new Set(['#', 'o']);
 function buildHeist() {
   const tiles = HEIST_MAP.map(r => r.split(''));
-  return new GameMap({ id: 'heist', kind: 'heist', w: tiles[0].length, h: tiles.length, tiles, theme: 'tomb', name: 'The Palace Vaults', torches: new Set(['4,0', '15,0', '2,6', '17,6', '5,13', '14,13']) });
+  return new GameMap({ id: 'heist', kind: 'heist', w: tiles[0].length, h: tiles.length, tiles, theme: 'tomb', name: tl('The Palace Vaults'), torches: new Set(['4,0', '15,0', '2,6', '17,6', '5,13', '14,13']) });
 }
 // expand a patrol into the square it stands on at each step
 function patrolPath(wp) {
@@ -97,21 +97,21 @@ const Heist = {
 async function heistCaught() {
   const f = G.flags;
   Audio_.sfx('buzz');
-  await say('Palace Guard', 'THIEF! In the vaults!');
+  await say(tl('Palace Guard'), tl('THIEF! In the vaults!'));
   f.heist_caught = (f.heist_caught || 0) + 1;
   if (hasItem('sunset_opal')) addItem('sunset_opal', -1);
-  await narrate('The guards march you out through the servants\' gate and dump you in the street.');
+  await narrate(tl('The guards march you out through the servants\' gate and dump you in the street.'));
   await changeMap('mirage', HEIST_GATE.x, HEIST_GATE.y + 1, 'down');
-  if (inParty('kestrel')) await say(KE, f.heist_caught > 2 ? 'Third time\'s the charm. Or the fourth. Watch which way they\'re facing, and wait behind the pillars.' : 'Rule one: they only see what\'s in front of them. Rule two: pillars are your friends.');
+  if (inParty('kestrel')) await say(KE, f.heist_caught > 2 ? tl('Third time\'s the charm. Or the fourth. Watch which way they\'re facing, and wait behind the pillars.') : tl('Rule one: they only see what\'s in front of them. Rule two: pillars are your friends.'));
 }
 async function heistExit() {
   const f = G.flags;
-  if (!hasItem('sunset_opal')) { const c = await choose(null, 'The cellar grate. Leave the vaults empty-handed?', ['Leave', 'Stay'], 1); if (c !== 0) return; await changeMap('mirage', HEIST_GATE.x, HEIST_GATE.y + 1, 'down'); return; }
+  if (!hasItem('sunset_opal')) { const c = await choose(null, tl('The cellar grate. Leave the vaults empty-handed?'), [tl('Leave'), tl('Stay')], 1); if (c !== 0) return; await changeMap('mirage', HEIST_GATE.x, HEIST_GATE.y + 1, 'down'); return; }
   f.heist_out = true;
   await changeMap('mirage', HEIST_GATE.x, HEIST_GATE.y + 1, 'down');
   Audio_.sfx('chest');
-  await sayAll(inParty('kestrel') ? [[KE, 'In, out, not a single shout. Mags is going to cry.'], [OS, 'I would like it noted that I was against this.'], [KE, 'Noted, Father. Duly noted.']] : [['', 'You slip out through the cellar grate with the Sunset Opal under your coat.']]);
-  await narrate('Bring the Sunset Opal to Mags in the Undermarket.');
+  await sayAll(inParty('kestrel') ? [[KE, tl('In, out, not a single shout. Mags is going to cry.')], [OS, tl('I would like it noted that I was against this.')], [KE, tl('Noted, Father. Duly noted.')]] : [['', tl('You slip out through the cellar grate with the Sunset Opal under your coat.')]]);
+  await narrate(tl('Bring the Sunset Opal to Mags in the Undermarket.'));
 }
 // the grate into the palace cellars, in Mirage (shown at night once Mags has asked)
 const HEIST_GATE = { x: 16, y: 6 };
@@ -119,32 +119,32 @@ function heistTownEntities(m) {
   const f = G.flags;
   if (m.id !== 'mirage' || !f.q_heist || f.heist_done) return [];
   return [{ kind: 'hatch', x: HEIST_GATE.x, y: HEIST_GATE.y, talk: async () => {
-    if (!isNight()) { await narrate('A grate into the palace cellars, right under a guard tower. Not in broad daylight. Come back after dark.'); return; }
-    if (hasItem('sunset_opal')) { await narrate('You already have the Opal. Take it to Mags.'); return; }
-    const c = await choose(null, 'The cellar grate is loose. Slip into the palace vaults?', ['Go in', 'Not yet'], 1);
+    if (!isNight()) { await narrate(tl('A grate into the palace cellars, right under a guard tower. Not in broad daylight. Come back after dark.')); return; }
+    if (hasItem('sunset_opal')) { await narrate(tl('You already have the Opal. Take it to Mags.')); return; }
+    const c = await choose(null, tl('The cellar grate is loose. Slip into the palace vaults?'), [tl('Go in'), tl('Not yet')], 1);
     if (c !== 0) return;
     await changeMap('heist', 1, 2, 'down');
-    if (!f.heist_seen) { f.heist_seen = true; await sayAll([[KE, 'Four guards. Each one sees four steps ahead, wider the farther it goes. Walls and pillars block them.'], [KE, 'The vault is in the far corner. Grab the opal, come back to this grate. Don\'t get seen. Easy.'], [A, 'You said "easy" about the Undercity too.']]); toast('Red squares: what the guards can see'); }
+    if (!f.heist_seen) { f.heist_seen = true; await sayAll([[KE, tl('Four guards. Each one sees four steps ahead, wider the farther it goes. Walls and pillars block them.')], [KE, tl('The vault is in the far corner. Grab the opal, come back to this grate. Don\'t get seen. Easy.')], [A, tl('You said "easy" about the Undercity too.')]]); toast(tl('Red squares: what the guards can see')); }
   } }];
 }
 async function heistStart() {
   await sayAll([
-    ['Mags', 'Kes. A job, for old times. The Sultana\'s vault holds the Sunset Opal. The Guild\'s, a hundred years ago, before a sultan "borrowed" it.'],
-    [KE, 'You want me to rob a palace. With a priest in tow.'],
-    ['Mags', 'I want you to return stolen property to its rightful thieves. There\'s a loose cellar grate east of the palace in Mirage. Only at night.'],
-    [OS, 'I am going to pretend I did not hear any of this.']
+    [tl('Mags'), tl('Kes. A job, for old times. The Sultana\'s vault holds the Sunset Opal. The Guild\'s, a hundred years ago, before a sultan "borrowed" it.')],
+    [KE, tl('You want me to rob a palace. With a priest in tow.')],
+    [tl('Mags'), tl('I want you to return stolen property to its rightful thieves. There\'s a loose cellar grate east of the palace in Mirage. Only at night.')],
+    [OS, tl('I am going to pretend I did not hear any of this.')]
   ]);
-  G.flags.q_heist = true; toast('New quest: The Sunset Opal');
-  await narrate('Go to Mirage at night and find the loose cellar grate east of the palace.');
+  G.flags.q_heist = true; toast(tl('New quest: The Sunset Opal'));
+  await narrate(tl('Go to Mirage at night and find the loose cellar grate east of the palace.'));
 }
 async function heistTurnIn() {
-  await sayAll([['Mags', 'Is that... it IS. Look at it. A century of Guild members cried over a painting of this rock.'], ['Mags', 'Take this. The Guild\'s finest cloak. Nobody\'s worn it since Vane got fat.']]);
+  await sayAll([[tl('Mags'), tl('Is that... it IS. Look at it. A century of Guild members cried over a painting of this rock.')], [tl('Mags'), tl('Take this. The Guild\'s finest cloak. Nobody\'s worn it since Vane got fat.')]]);
   addItem('sunset_opal', -1); addItem('night_cloak'); G.flags.heist_done = true; Audio_.sfx('chest');
-  await narrate('Received the Night Cloak! (Accessory: ATK +10, SPD +16, prevents blind and stop)');
+  await narrate(tl('Received the Night Cloak! (Accessory: ATK +10, SPD +16, prevents blind and stop)'));
 }
 function heistQuests() {
   const f = G.flags; if (!f.q_heist) return [];
-  return [{ title: 'The Sunset Opal', giver: 'Mags, the Undermarket', done: !!f.heist_done, reward: 'Night Cloak', desc: f.heist_done ? 'The Opal is back with the Guild, and the palace never noticed.' : hasItem('sunset_opal') ? 'Bring the Sunset Opal to Mags in the Undermarket.' : 'At night, slip through the cellar grate east of the Mirage palace and steal the Sunset Opal without being seen.' + (f.heist_caught ? ` (caught ${f.heist_caught}×)` : '') }];
+  return [{ title: tl('The Sunset Opal'), giver: tl('Mags, the Undermarket'), done: !!f.heist_done, reward: tl('Night Cloak'), desc: f.heist_done ? tl('The Opal is back with the Guild, and the palace never noticed.') : hasItem('sunset_opal') ? tl('Bring the Sunset Opal to Mags in the Undermarket.') : tl('At night, slip through the cellar grate east of the Mirage palace and steal the Sunset Opal without being seen.') + (f.heist_caught ? tl` (caught ${f.heist_caught}×)` : '') }];
 }
 
 // ---------------- drawing ----------------

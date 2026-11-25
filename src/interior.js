@@ -35,7 +35,7 @@ function buildInterior(id) {
   let keeper = null;
   tiles.forEach((r, y) => r.forEach((c, x) => { if (c === 'k') { keeper = { x, y }; r[x] = '.'; } }));
   const theme = TOWN_DEFS[town].theme === 'stone' || TOWN_DEFS[town].theme === 'ash' || kind === 'jail' || kind === 'chapel' ? 'stone' : TOWN_DEFS[town].theme === 'sand' ? 'sand' : 'wood';
-  const names = { inn: 'Inn', shop: b.sign === 'arms' ? 'Armory' : 'Item Shop', chapel: 'Chapel', jail: 'Jail', arena: 'The Arena', hall: 'Hall', study: 'Observatory Hut', forge: 'Smithy', house: 'House' };
+  const names = { inn: tl('Inn'), shop: b.sign === 'arms' ? tl('Armory') : tl('Item Shop'), chapel: tl('Chapel'), jail: tl('Jail'), arena: tl('The Arena'), hall: tl('Hall'), study: tl('Observatory Hut'), forge: tl('Smithy'), house: tl('House') };
   return new GameMap({ id, kind: 'interior', town, bid, building: b, ikind: kind, keeper, w: tiles[0].length, h: tiles.length, tiles, theme, name: names[kind] });
 }
 async function enterInterior(town, b) {
@@ -63,36 +63,36 @@ async function interiorInteract(tx, ty, dx, dy) {
   if (c === 'K' || c === 'I' || c === 'T') {
     const e = Field.entityAt(tx + dx, ty + dy);
     if (e && e.talk) { e.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[G.dir]; await e.talk(e); refreshEntities(); return; }
-    if (c !== 'T') { await narrate(c === 'K' ? 'A polished counter.' : 'Cold iron bars.'); return; }
-    await narrate('A sturdy table, set with plates and candles.'); return;
+    if (c !== 'T') { await narrate(c === 'K' ? tl('A polished counter.') : tl('Cold iron bars.')); return; }
+    await narrate(tl('A sturdy table, set with plates and candles.')); return;
   }
   if (c === 'b' || c === 'p' || c === 'x') {
     const key = `srch:${m.id}:${tx},${ty}`;
     const what = { b: 'barrel', p: 'pot', x: 'crate' }[c];
-    if (G.flags[key] || hash(tx, ty, m.id.length * 7 + m.town.length) > 0.55) { G.flags[key] = true; await narrate(`You search the ${what}... nothing but dust.`); return; }
+    if (G.flags[key] || hash(tx, ty, m.id.length * 7 + m.town.length) > 0.55) { G.flags[key] = true; await narrate(tl`You search the ${what}... nothing but dust.`); return; }
     G.flags[key] = true;
     const pool = SEARCH_POOLS[m.town] || SEARCH_POOLS.brightwater;
     const loot = pool[Math.floor(hash(tx * 3, ty * 5, m.id.length) * pool.length)];
     Audio_.sfx('chest');
-    if (loot.startsWith('gold:')) { const n = parseInt(loot.slice(5)); G.gold += n; await narrate(`You search the ${what}... found ${n} gold!`); }
-    else { addItem(loot); await narrate(`You search the ${what}... found ${ITEMS[loot].name}!`); }
+    if (loot.startsWith('gold:')) { const n = parseInt(loot.slice(5)); G.gold += n; await narrate(tl`You search the ${what}... found ${n} gold!`); }
+    else { addItem(loot); await narrate(tl`You search the ${what}... found ${ITEMS[loot].name}!`); }
     return;
   }
   if (c === 'B') {
     if (m.town === 'brightwater' && m.bid === 'arinhouse') {
-      const k = await choose(null, 'Your own bed. Rest a while?', ['Rest', 'Not now'], 1);
-      if (k === 0) { await fadeTo(1, 500); Audio_.sfx('inn'); healAll(); G.lastInn = { town: 'brightwater' }; await wait(1200); await fadeTo(0, 500); await narrate('You slept in your own bed. HP and MP restored.'); }
+      const k = await choose(null, tl('Your own bed. Rest a while?'), [tl('Rest'), tl('Not now')], 1);
+      if (k === 0) { await fadeTo(1, 500); Audio_.sfx('inn'); healAll(); G.lastInn = { town: 'brightwater' }; await wait(1200); await fadeTo(0, 500); await narrate(tl('You slept in your own bed. HP and MP restored.')); }
       return;
     }
-    await narrate(m.ikind === 'jail' ? 'A lumpy prison cot.' : 'A neatly made bed. It isn\'t yours.'); return;
+    await narrate(m.ikind === 'jail' ? tl('A lumpy prison cot.') : tl('A neatly made bed. It isn\'t yours.')); return;
   }
-  if (c === 'O') { await narrate(G.flags.lantern3 ? 'Through the brass telescope the sky is crowded with stars. One constellation, the Lamplighter, has a gap where a fifth star should be.' + (G.flags.lantern5 ? ' ...No — it\'s there now, burning bright.' : '') : 'You peer through the telescope. Darkness. Wren has scribbled "TOO DARK!!" on a note beside it.'); return; }
-  if (c === 'X') { await narrate(pick(['Dusty books: "A History of the Four Flames", "Lamplighting for Beginners", "101 Uses for Goblin Teeth".', 'A shelf of jars, labels faded.', 'Old ledgers. Someone owes someone else a goat.'])); return; }
-  if (c === 'F') { await narrate('The fire crackles warmly.'); return; }
-  if (c === 'A') { await narrate('An altar to the Sea Mother, strewn with shells.'); return; }
-  if (c === 'a') { await narrate('A heavy anvil, still warm.'); return; }
-  if (c === 'M') { await narrate('A faded tapestry of four flames around a fifth.'); return; }
-  if (c === 'w') { await narrate('Through the window you can see the street outside.'); return; }
+  if (c === 'O') { await narrate(G.flags.lantern3 ? tl('Through the brass telescope the sky is crowded with stars. One constellation, the Lamplighter, has a gap where a fifth star should be.') + (G.flags.lantern5 ? tl(' ...No — it\'s there now, burning bright.') : '') : tl('You peer through the telescope. Darkness. Wren has scribbled "TOO DARK!!" on a note beside it.')); return; }
+  if (c === 'X') { await narrate(pick([tl('Dusty books: "A History of the Four Flames", "Lamplighting for Beginners", "101 Uses for Goblin Teeth".'), tl('A shelf of jars, labels faded.'), tl('Old ledgers. Someone owes someone else a goat.')])); return; }
+  if (c === 'F') { await narrate(tl('The fire crackles warmly.')); return; }
+  if (c === 'A') { await narrate(tl('An altar to the Sea Mother, strewn with shells.')); return; }
+  if (c === 'a') { await narrate(tl('A heavy anvil, still warm.')); return; }
+  if (c === 'M') { await narrate(tl('A faded tapestry of four flames around a fifth.')); return; }
+  if (c === 'w') { await narrate(tl('Through the window you can see the street outside.')); return; }
 }
 // ---------- drawing ----------
 const IPAL = {

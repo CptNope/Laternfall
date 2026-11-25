@@ -124,7 +124,7 @@ const Field = {
     if (this.map.kind === 'town') {
       const b = this.buildingAt(tx, ty);
       if (b && tx === b.doorX && ty === b.y + b.h - 1) runScript(() => doorEvent(this.map.id, b));
-      else if (b) runScript(() => narrate('A sturdy wall.'));
+      else if (b) runScript(() => narrate(tl('A sturdy wall.')));
     }
   },
   tryMove(d) {
@@ -153,7 +153,7 @@ const Field = {
         G.onShip = true; Audio_.play('sea');
         return this.startMove(nx, ny, true);
       }
-      if (c === 'x') { runScript(() => narrate('The old bridge has collapsed into the river. There is no way across... yet.')); return this.bump(); }
+      if (c === 'x') { runScript(() => narrate(tl('The old bridge has collapsed into the river. There is no way across... yet.'))); return this.bump(); }
       if (this.entityAt(nx, ny)) return this.bump();
       if (!this.walkable(nx, ny)) return this.bump();
       return this.startMove(nx, ny);
@@ -447,18 +447,18 @@ async function stairs(d) {
   await changeMap(nm.id, x, y, d > 0 ? 'down' : 'up');
 }
 async function openChest(e) {
-  if (e.opened) { await narrate('The chest is empty.'); return; }
+  if (e.opened) { await narrate(tl('The chest is empty.')); return; }
   e.opened = true; G.flags[e.key] = true;
   Audio_.sfx('chest');
-  if (e.loot.startsWith('gold:')) { const n = parseInt(e.loot.slice(5)); G.gold += n; await narrate(`Found ${n} gold!`); }
-  else { addItem(e.loot); await narrate(`Found ${ITEMS[e.loot].name}!`); }
+  if (e.loot.startsWith('gold:')) { const n = parseInt(e.loot.slice(5)); G.gold += n; await narrate(tl`Found ${n} gold!`); }
+  else { addItem(e.loot); await narrate(tl`Found ${ITEMS[e.loot].name}!`); }
 }
 async function gameOver() {
   Audio_.play('gameover');
   G.scene = GameOverScene; GameOverScene.t = 0;
   await fadeTo(0, 400);
   await wait(1800);
-  await narrate('...A warm light finds you in the dark.');
+  await narrate(tl('...A warm light finds you in the dark.'));
   await fadeTo(1, 600);
   const inn = G.lastInn || { town: 'brightwater' };
   const d = TOWN_DEFS[inn.town];
@@ -468,7 +468,7 @@ async function gameOver() {
   G.onShip = false;
   Field.enter(inn.town, b.x + Math.floor(b.w / 2), b.y + b.h, 'down');
   await fadeTo(0, 600);
-  await narrate('You wake at the inn, battered but alive. Half your gold is gone.');
+  await narrate(tl('You wake at the inn, battered but alive. Half your gold is gone.'));
 }
 const GameOverScene = {
   t: 0,
@@ -476,7 +476,7 @@ const GameOverScene = {
   draw(g) {
     g.fillStyle = '#05030a'; g.fillRect(0, 0, W, H);
     g.save(); g.globalAlpha = clamp(this.t / 1.5, 0, 1);
-    text(g, 'The lantern-light fades...', W / 2, H / 2 - 20, { size: 28, fam: SERIF, align: 'center', color: '#c8b8e8' });
+    text(g, tl('The lantern-light fades...'), W / 2, H / 2 - 20, { size: 28, fam: SERIF, align: 'center', color: '#c8b8e8' });
     g.restore();
   }
 };
@@ -485,12 +485,12 @@ const GameOverScene = {
 function boardAirship() {
   G.inAir = true; G.onShip = false;
   Audio_.sfx('buff'); Audio_.play('sky');
-  toast('Press Enter to land');
+  toast(tl('Press Enter to land'));
 }
 async function landAirship() {
   const m = Field.map, c = m.at(G.x, G.y);
   const okLand = Field.walkable(G.x, G.y) && c !== 'T' && c !== 'P' && c !== 'd';
-  if (!okLand) { Audio_.sfx('buzz'); toast(Field.walkable(G.x, G.y) ? "Can't land in a forest" : "Can't land here"); return; }
+  if (!okLand) { Audio_.sfx('buzz'); toast(Field.walkable(G.x, G.y) ? tl("Can't land in a forest") : tl("Can't land here")); return; }
   G.inAir = false; G.airship = { x: G.x, y: G.y, dir: G.dir };
   Audio_.sfx('stairs');
   Field.playMusic();

@@ -2,8 +2,8 @@
 
 Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
 
-- **Current release:** 1.6.0 *Deeper systems*. **Merged, not yet tagged:** 1.7.0 *The Drowned Kingdom* and 1.8.0 *Install anywhere*. **Merged, not yet tagged:** 1.9.0 *Living world* and 1.10.0 *Foundations*. **Merged:** 2.0 EN-1 (#17). **In review:** EN-4 (mods, #19) and EN-3 (the town editor). See [CHANGELOG.md](CHANGELOG.md#unreleased).
-- **Next up:** EN-6 (string table: dialogue as data, which also lets mods change it), then EN-7 (the *Lanternfall II* design document). ST-2 (a real phone test) still needs a person with a phone, and matters more now that TD-4 is meant for phones.
+- **Current release:** 1.6.0 *Deeper systems*. **Merged, not yet tagged:** 1.7.0 *The Drowned Kingdom* and 1.8.0 *Install anywhere*. **Merged, not yet tagged:** 1.9.0 *Living world* and 1.10.0 *Foundations*. **Merged:** 2.0 EN-1 (#17). **Also merged:** EN-4 (mods, #19) and EN-3 (the town editor, #20). **In review:** EN-6 (languages). See [CHANGELOG.md](CHANGELOG.md#unreleased).
+- **Next up:** EN-7 (the *Lanternfall II* design document), the last 2.0 item; and a first real translation, if there's a translator. ST-2 (a real phone test) still needs a person with a phone, and matters more now that TD-4 is meant for phones.
 - ✅ marks items that are done.
 
 ## Contents
@@ -130,7 +130,7 @@ gantt
 | **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ✅ Done (1.7.0, merged in #13) |
 | **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ✅ Done (1.8.0, merged in #14; PL-5 not started) |
 | **1.10** | Foundations | Per-family art files, a tile cache for phones, a load-order check | Nov 2026 | ✅ Done (1.10.0, merged in #16) |
-| **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 🟡 Started (EN-1 done; EN-3 and EN-4 in review; EN-2 and EN-5 done) |
+| **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 🟡 Nearly done (EN-1 to EN-5 done; EN-6 in review; EN-7 open) |
 
 ```mermaid
 flowchart LR
@@ -330,7 +330,7 @@ flowchart TB
 | ✅ EN-3 | **In-browser map editor** for towns and fixed dungeon floors. **Done for towns:** `index.html?edit`, towns in `content/towns.json`, a walk check shared with the build, export as a mod. Dungeon floors are generated from a seed, so there are no fixed floors to edit | L |
 | ✅ EN-4 | **Mod loader**: content folders merged at build time. **Done:** `mods/<id>/` with `mod.json`, content patches (add, patch, remove; list `add` / `remove`) and code; `build.py --mod`; checked like the game's content; saves survive a missing mod | M |
 | ✅ EN-5 | Split `art.js` into per-family files with a registry (`registerMonsterArt('crown', fn)`). **Done in 1.10:** one file per monster family in `src/monsters/` and per battle background in `src/backgrounds/`, registering in `MONSTER_ART`, `MONSTER_SIZE` and `BATTLE_BGS`; checked pixel for pixel | M |
-| EN-6 | **Localisation**: move every dialogue line into a string table keyed by ID | L |
+| ✅ EN-6 | **Localisation**: move every dialogue line into a string table keyed by ID. **Done, keyed by the English instead of IDs** (readable code, English fallback): `tl()`, `content/lang/`, a template for translators, a pseudo language and a play-test | L |
 | EN-7 | *Lanternfall II* design document (the Sixth Flame?) | M |
 
 ---
@@ -411,7 +411,7 @@ Things in the code today that will slow future work down.
 | ✅ TD-5 | **The music scheduler uses `setInterval`**, which background tabs throttle | `core.js` | Stutter when switching tabs | Pause on `visibilitychange`; schedule further ahead | 1.4 |
 | ✅ TD-6 | **Balance is checked by ad hoc simulation** | none | Regressions when stats change | Commit a battle simulator under `tools/` | 1.3.x |
 | ✅ TD-7 | **`art.js` is about 1,480 lines** | `art.js` | Hard to navigate | Split by family (EN-5). **Done in 1.10:** about 960 lines, mostly tiles and characters | 1.10 |
-| TD-8 | **Strings are inline in code** | `story.js` and others | Blocks localisation | String table (EN-6) | 2.0 |
+| ✅ TD-8 | **Strings are inline in code** | `story.js` and others | Blocks localisation | String table (EN-6). **Done:** still inline, but every one goes through `tl()` | 2.0 |
 | ✅ TD-9 | **Bosses fight with fixed weighted moves** | `battle.js` | Late bosses feel flat | Phase scripts (DS-3): `phases` on each boss | 1.6 |
 | ✅ TD-10 | **Load-order bugs** | all of `src/` | A top-level value reading a name from a later file crashes the game on load (1.9's `LOOKS`) | `tools/load_check.js`, run by `build.py` and CI. **Done in 1.10** | 1.10 |
 

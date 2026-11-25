@@ -83,7 +83,7 @@ class Battle {
       g.restore();
       if (e.status.sleep && e.alive) { const c = this.enemyCenter(e); text(g, 'z', c.x + 20 + Math.sin(this.t * 3) * 4, c.y - 40 - (this.t * 14 % 14), { size: 18, bold: true, color: '#c8b8ff' }); }
       if (e.status.silence && e.alive) { const c = this.enemyCenter(e); text(g, '…', c.x - 24, c.y - 40, { size: 18, bold: true, color: '#c8b8ff' }); }
-      if ((e.status.blind || e.status.slow || e.status.berserk || e.status.stop) && e.alive) { const c = this.enemyCenter(e); text(g, [e.status.blind && 'BLD', e.status.slow && 'SLW', e.status.berserk && 'BSK', e.status.stop && 'STP'].filter(Boolean).join(' '), c.x, c.y + 44, { size: 11, bold: true, color: '#e8e0a0', align: 'center' }); }
+      if ((e.status.blind || e.status.slow || e.status.berserk || e.status.stop) && e.alive) { const c = this.enemyCenter(e); text(g, [e.status.blind && tl('BLD'), e.status.slow && tl('SLW'), e.status.berserk && tl('BSK'), e.status.stop && tl('STP')].filter(Boolean).join(' '), c.x, c.y + 44, { size: 11, bold: true, color: '#e8e0a0', align: 'center' }); }
       if (e.status.poison && e.alive) { const c = this.enemyCenter(e); circle(g, c.x + 18 + Math.sin(this.t * 4) * 3, c.y - 20 - (this.t * 20 % 20), 3, 'rgba(140,255,120,.8)'); }
     }
     // party
@@ -114,8 +114,8 @@ class Battle {
     });
     if (this.buffs.rally > 0 || this.buffs.barrier > 0) {
       let bx = 440;
-      if (this.buffs.rally > 0) { text(g, `▲ATK ${this.buffs.rally}`, bx, 10, { size: 13, bold: true, color: '#ffb86a' }); bx += 76; }
-      if (this.buffs.barrier > 0) text(g, `◆DEF ${this.buffs.barrier}`, bx, 10, { size: 13, bold: true, color: '#9ad8ff' });
+      if (this.buffs.rally > 0) { text(g, tl`▲ATK ${this.buffs.rally}`, bx, 10, { size: 13, bold: true, color: '#ffb86a' }); bx += 76; }
+      if (this.buffs.barrier > 0) text(g, tl`◆DEF ${this.buffs.barrier}`, bx, 10, { size: 13, bold: true, color: '#9ad8ff' });
     }
     // fx
     for (const f of this.fx) f.draw(g, f.t / f.life);
@@ -142,17 +142,17 @@ class Battle {
       if (i === this.active) { g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(222, y - 2, 402, 27); }
       text(g, memberName(m), 230, y + 3, { size: 15, bold: true, color: col });
       if (limitUnlocked(m)) { const full = (m.limit || 0) >= 100; bar(g, 230, y + 22, 62, 3, (m.limit || 0) / 100, full ? (Math.sin(this.t * 10) > 0 ? '#ffd23a' : '#fff4c0') : '#e8a84a'); }
-      const tags = [m.status.poison && ['PSN', '#8aff7a'], m.status.sleep && ['SLP', '#c8b8ff'], m.status.silence && ['SIL', '#ffb0d0'], m.status.blind && ['BLD', '#e8e0a0'], m.status.slow && ['SLW', '#a0a8ff'], m.status.haste && ['HST', '#ffd27a'], m.status.berserk && ['BSK', '#ff7a5a'], m.status.stop && ['STP', '#d0d0d0'], m.status.regen && ['RGN', '#9ad8ff']].filter(Boolean);
+      const tags = [m.status.poison && [tl('PSN'), '#8aff7a'], m.status.sleep && [tl('SLP'), '#c8b8ff'], m.status.silence && [tl('SIL'), '#ffb0d0'], m.status.blind && [tl('BLD'), '#e8e0a0'], m.status.slow && [tl('SLW'), '#a0a8ff'], m.status.haste && [tl('HST'), '#ffd27a'], m.status.berserk && [tl('BSK'), '#ff7a5a'], m.status.stop && [tl('STP'), '#d0d0d0'], m.status.regen && [tl('RGN'), '#9ad8ff']].filter(Boolean);
       tags.slice(0, 2).forEach(([tg, c], k) => text(g, tg, 302 + k * 24, y + 5, { size: 10, bold: true, color: c }));
       text(g, `${m.hp}`, 420, y + 3, { size: 15, color: col, align: 'right' });
       text(g, `/${maxHp(m)}`, 470, y + 5, { size: 12, color: '#b8c4ee', align: 'right' });
       bar(g, 350, y + 20, 120, 3, m.hp / maxHp(m), '#6ae07a');
-      text(g, 'MP', 484, y + 5, { size: 11, color: '#9ab0ff' });
+      text(g, tl('MP'), 484, y + 5, { size: 11, color: '#9ab0ff' });
       text(g, `${m.mp}`, 540, y + 3, { size: 15, align: 'right' });
       bar(g, 506, y + 20, 34, 3, m.mp / Math.max(1, maxMp(m)), '#6aa8ff');
-      text(g, `Lv${m.level}`, 618, y + 5, { size: 12, color: '#ffe9a8', align: 'right' });
+      text(g, tl`Lv${m.level}`, 618, y + 5, { size: 12, color: '#ffe9a8', align: 'right' });
     });
-    if (this.active >= 0 && this.prevCmds && !this.prevCmds.some(c => c && c.type === 'run')) text(g, 'Shift / R / X: repeat last turn', 12, 312, { size: 12, color: 'rgba(220,228,255,.85)' });
+    if (this.active >= 0 && this.prevCmds && !this.prevCmds.some(c => c && c.type === 'run')) text(g, tl('Shift / R / X: repeat last turn'), 12, 312, { size: 12, color: 'rgba(220,228,255,.85)' });
     if (this.msg) {
       g.font = font(17, true);
       const w = Math.max(220, g.measureText(this.msg).width + 50);
@@ -376,13 +376,13 @@ class Battle {
     await fadeTo(0, 200);
     await wait(350);
     const first = this.enemies[0];
-    this.msg = this.opts.boss ? `${first.name} stands in your way!` : (this.enemies.length > 1 ? 'Monsters appear!' : `${first.name} appears!`);
+    this.msg = this.opts.boss ? tl`${first.name} stands in your way!` : (this.enemies.length > 1 ? tl('Monsters appear!') : tl`${first.name} appears!`);
     BP().forEach(m => {
       if (!alive(m)) return;
       if (hasPassive(m, 'auto_regen') || mealIs('regen')) m.status.regen = 5;
       if (hasPassive(m, 'auto_haste') || mealIs('haste')) m.status.haste = 4;
     });
-    if (!this.opts.boss && Math.random() < (BP().some(m => alive(m) && hasPassive(m, 'first_strike')) ? 0.25 : 0.08)) { this.msg = 'Ambushed... no, you got the jump on them!'; this.preempt = true; }
+    if (!this.opts.boss && Math.random() < (BP().some(m => alive(m) && hasPassive(m, 'first_strike')) ? 0.25 : 0.08)) { this.msg = tl('Ambushed... no, you got the jump on them!'); this.preempt = true; }
     await wait(900); this.msg = null;
     let result = null;
     while (!result) {
@@ -391,7 +391,7 @@ class Battle {
       this.active = -1;
       let party = cmds;
       if (cmds.run) {
-        this.msg = 'Attempting to flee...'; await wait(500);
+        this.msg = tl('Attempting to flee...'); await wait(500);
         const can = !this.opts.boss && this.opts.canRun !== false;
         const ps = this.liveParty().reduce((a, m) => a + stat(m, 'spd'), 0) / Math.max(1, this.liveParty().length);
         const es = this.liveEnemies().reduce((a, e) => a + e.def.spd, 0) / Math.max(1, this.liveEnemies().length);
@@ -400,7 +400,7 @@ class Battle {
           for (let k = 0; k < 12; k++) { this.pa.forEach(p => p.dx += 12); await wait(30); }
           this.msg = null; result = 'run'; break;
         }
-        this.msg = can ? "Couldn't escape!" : 'There is no escape!'; Audio_.sfx('buzz'); await wait(800); this.msg = null;
+        this.msg = can ? tl("Couldn't escape!") : tl('There is no escape!'); Audio_.sfx('buzz'); await wait(800); this.msg = null;
         party = [];
       }
       // build order
@@ -449,7 +449,7 @@ class Battle {
     if (result === 'win' && this.opts.noVictory) await wait(900);
     if (result === 'lose') { this.msg = null; await wait(600); }
     for (const m of BP()) m.status = {};
-    if (G.meal && G.meal.left > 0 && !this.opts.noMeal) { G.meal.left--; if (G.meal.left <= 0) { G.meal = null; toast('Your meal has worn off'); } }
+    if (G.meal && G.meal.left > 0 && !this.opts.noMeal) { G.meal.left--; if (G.meal.left <= 0) { G.meal = null; toast(tl('Your meal has worn off')); } }
     return result;
   }
   async commandPhase() {
@@ -496,12 +496,12 @@ class Battle {
       const lim = limitReady(m);
       const items = [
         ...(lim ? [{ label: '★ ' + LIMITS[m.id].name, color: '#ffd23a' }] : []),
-        { label: 'Attack' },
+        { label: tl('Attack') },
         { label: m.status.silence ? d.skill + ' (silenced)' : d.skill, disabled: !spells.length || !!m.status.silence },
-        { label: 'Combo', disabled: !this.combosFor(m).length },
-        { label: 'Item', disabled: !usable.length },
-        { label: 'Defend' },
-        { label: 'Run', disabled: !!this.opts.boss }
+        { label: tl('Combo'), disabled: !this.combosFor(m).length },
+        { label: tl('Item'), disabled: !usable.length },
+        { label: tl('Defend') },
+        { label: tl('Run'), disabled: !!this.opts.boss }
       ];
       const canRepeat = this.prevCmds && !this.prevCmds.some(c => c && c.type === 'run');
       const k0 = await listMenu({ x: 8, y: lim ? 314 : 330, w: 200, rows: items.length, rowH: lim ? 19 : 21, items, index: lim ? 0 : this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: lim ? 14 : 15, hotkeys: canRepeat ? { run: -10 } : null,
@@ -519,7 +519,7 @@ class Battle {
       if (k === 1) {
         const sp = await listMenu({
           x: 8, y: 150, w: 290, rows: 7, rowH: 24, title: d.skill,
-          items: spells.map(s => ({ label: SPELLS[s].name, right: SPELLS[s].mp ? spellCost(m, s) + ' MP' : '—', disabled: m.mp < spellCost(m, s) })),
+          items: spells.map(s => ({ label: SPELLS[s].name, right: SPELLS[s].mp ? tl`${spellCost(m, s)} MP` : '—', disabled: m.mp < spellCost(m, s) })),
           help: i => SPELLS[spells[i]].desc
         });
         if (sp < 0) continue;
@@ -531,9 +531,9 @@ class Battle {
       if (k === 2) {
         const cs = this.combosFor(m);
         const ci = await listMenu({
-          x: 8, y: 150, w: 330, rows: 7, rowH: 24, title: 'Combo Techs',
+          x: 8, y: 150, w: 330, rows: 7, rowH: 24, title: tl('Combo Techs'),
           items: cs.map(c => ({ label: c.name, right: c.members.map(id => HEROES[id].name[0]).join('+') })),
-          help: i => `${cs[i].desc}  (MP: ${cs[i].members.map((id, j) => HEROES[id].name + ' ' + cs[i].mp[j]).join(', ')})`
+          help: i => tl`${cs[i].desc}  (MP: ${cs[i].members.map((id, j) => HEROES[id].name + ' ' + cs[i].mp[j]).join(', ')})`
         });
         if (ci < 0) continue;
         const c = cs[ci];
@@ -543,7 +543,7 @@ class Battle {
       }
       if (k === 3) {
         const it = await listMenu({
-          x: 8, y: 150, w: 290, rows: 7, rowH: 24, title: 'Items',
+          x: 8, y: 150, w: 290, rows: 7, rowH: 24, title: tl('Items'),
           items: usable.map(u => ({ label: ITEMS[u].name, right: '×' + G.inv[u] })),
           help: i => ITEMS[usable[i]].desc
         });
@@ -590,7 +590,7 @@ class Battle {
           poly(g, [-14, -8, 0, 0, -14, 8, -11, 0], '#fff', '#223', 1.5);
           g.restore();
         }
-        const label = kind === 'enemies' ? 'All enemies' : kind === 'allies' ? 'All allies' : (pts[0] && pts[0].name) || '';
+        const label = kind === 'enemies' ? tl('All enemies') : kind === 'allies' ? tl('All allies') : (pts[0] && pts[0].name) || '';
         g.font = font(16, true);
         const w = g.measureText(label).width + 40;
         drawWindow(g, (W - w) / 2, 12, w, 38);
@@ -629,7 +629,7 @@ class Battle {
     const c = this.enemyCenter(e);
     if (elem && this.weakMult(e.def, elem) < 0) {   // absorbed: the hit heals instead
       const h = Math.min(e.maxhp - e.hp, dmg); e.hp += h;
-      this.num(c.x + rnd(-8, 8), c.y, h, '#7aff9a'); this.num(c.x, c.y - 26, 'Absorb', '#9ad8ff');
+      this.num(c.x + rnd(-8, 8), c.y, h, '#7aff9a'); this.num(c.x, c.y - 26, tl('Absorb'), '#9ad8ff');
       return;
     }
     e.hp -= dmg; e.flash = 0.4; e.shake = 0.3; if (e.status.sleep) e.status.sleep = 0;
@@ -648,7 +648,7 @@ class Battle {
     if (limitUnlocked(m) && alive(m)) m.limit = Math.min(100, (m.limit || 0) + dmg / maxHp(m) * 140 * (hasPassive(m, 'limit_charge') ? 1.5 : 1));
     if (dmg >= m.hp && m.hp > 1 && hasPassive(m, 'resolve') && !this.resolved.has(m.id)) {
       this.resolved.add(m.id); dmg = m.hp - 1;
-      const q = this.memberCenter(i); setTimeout(() => this.num(q.x, q.y - 22, 'Resolve!', '#ffd23a', true), 250);
+      const q = this.memberCenter(i); setTimeout(() => this.num(q.x, q.y - 22, tl('Resolve!'), '#ffd23a', true), 250);
     }
     m.hp = Math.max(0, m.hp - dmg);
     if (m.status.sleep && Math.random() < 0.6) m.status.sleep = 0;
@@ -658,7 +658,7 @@ class Battle {
     if (m.hp <= 0) {
       m.status = {}; Audio_.sfx('ko');
       const a = accOf(m);
-      if (a && a.reraise && !this.reraised.has(m.id)) { this.reraised.add(m.id); m.hp = Math.floor(maxHp(m) * 0.3); setTimeout(() => this.num(c.x, c.y - 20, 'Phoenix!', '#ffb86a', true), 300); Audio_.sfx('holy'); }
+      if (a && a.reraise && !this.reraised.has(m.id)) { this.reraised.add(m.id); m.hp = Math.floor(maxHp(m) * 0.3); setTimeout(() => this.num(c.x, c.y - 20, tl('Phoenix!'), '#ffb86a', true), 300); Audio_.sfx('holy'); }
     }
   }
   healMember(i, n) {
@@ -679,7 +679,7 @@ class Battle {
     const cb = COMBOS.find(x => x.id === c.combo), P = BP();
     const idx = cb.members.map(id => P.findIndex(p => p.id === id));
     if (idx.some(j => j < 0 || !alive(P[j]) || P[j].status.sleep || P[j].status.silence || P[j].mp < cb.mp[cb.members.indexOf(P[j].id)])) {
-      this.msg = 'The combo falls apart!'; Audio_.sfx('buzz'); await wait(800); this.msg = null; return;
+      this.msg = tl('The combo falls apart!'); Audio_.sfx('buzz'); await wait(800); this.msg = null; return;
     }
     idx.forEach((j, k) => P[j].mp -= cb.mp[k]);
     this.msg = cb.name;
@@ -720,11 +720,11 @@ class Battle {
       const tg = this.resolveTargets('enemy', c.target)[0];
       if (tg) { await this.playFx('holy', [this.enemyCenter(tg)]); this.damageEnemy(tg, this.physDamage(this.memberAtk(i) * (1 + stat(m, 'mag') / 200), tg.def.def, 5 * this.elemMult(tg.def, 'holy')), '#ffd27a', true, 'holy'); }
       await this.playFx('heal', P.map((_, k) => this.memberCenter(k)));
-      P.forEach((p, k) => { if (!alive(p)) { p.hp = Math.floor(maxHp(p) * 0.4); const q = this.memberCenter(k); this.num(q.x, q.y, 'Revived', '#7aff9a'); } else this.healMember(k, Math.round(maxHp(p) * 0.3)); });
+      P.forEach((p, k) => { if (!alive(p)) { p.hp = Math.floor(maxHp(p) * 0.4); const q = this.memberCenter(k); this.num(q.x, q.y, tl('Revived'), '#7aff9a'); } else this.healMember(k, Math.round(maxHp(p) * 0.3)); });
     } else if (m.id === 'lyra') {
       const ts = foes(); await this.playFx('fire', ts.map(e => this.enemyCenter(e))); await this.playFx('flare', ts.map(e => this.enemyCenter(e)));
       for (const e of ts) this.damageEnemy(e, magHit(e, 300, 'fire'), '#ffd27a', true, 'fire');
-      for (const k of party()) { P[k].status.regen = 5; const q = this.memberCenter(k); this.num(q.x, q.y, 'Regen', '#9ad8ff'); }
+      for (const k of party()) { P[k].status.regen = 5; const q = this.memberCenter(k); this.num(q.x, q.y, tl('Regen'), '#9ad8ff'); }
     } else if (m.id === 'oswin') {
       const ts = foes(); await this.playFx('water', ts.map(e => this.enemyCenter(e)));
       for (const e of ts) this.damageEnemy(e, magHit(e, 180, 'water'), '#ffd27a', true, 'water');
@@ -750,8 +750,8 @@ class Battle {
   }
   async partyAct(i, c) {
     const m = BP()[i], a = this.pa[i];
-    if (m.status.sleep) { const p = this.memberCenter(i); this.num(p.x, p.y, 'Asleep', '#c8b8ff'); await wait(300); return; }
-    if (m.status.stop) { const p = this.memberCenter(i); this.num(p.x, p.y, 'Stopped', '#c0c0c0'); await wait(300); return; }
+    if (m.status.sleep) { const p = this.memberCenter(i); this.num(p.x, p.y, tl('Asleep'), '#c8b8ff'); await wait(300); return; }
+    if (m.status.stop) { const p = this.memberCenter(i); this.num(p.x, p.y, tl('Stopped'), '#c0c0c0'); await wait(300); return; }
     if (m.status.berserk && c.type !== 'attack') c = { type: 'attack', target: null };
     if (c.type === 'defend') return;
     if (c.type === 'combo') return this.doCombo(i, c);
@@ -765,7 +765,7 @@ class Battle {
         for (let k = 0; k < 6; k++) { a.swing = k / 5; await wait(16); }
         const p = this.enemyCenter(tg);
         await this.playFx('slash', [p]);
-        if (Math.random() < (m.status.blind ? 0.5 : 0.03) + weatherMiss(this.weather)) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); return; }
+        if (Math.random() < (m.status.blind ? 0.5 : 0.03) + weatherMiss(this.weather)) { this.num(p.x, p.y, tl('Miss'), '#cfd8ff'); Audio_.sfx('miss'); return; }
         const crit = Math.random() < 0.06 + stat(m, 'spd') * 0.001;
         const dmg = this.physDamage(this.memberAtk(i), tg.def.def, crit ? 1.7 : 1);
         if (crit) { Audio_.sfx('crit'); this.shake = 0.15; }
@@ -775,7 +775,7 @@ class Battle {
       return;
     }
     if (c.type === 'item') {
-      if (!hasItem(c.item)) { this.msg = 'Out of that item!'; await wait(600); this.msg = null; return; }
+      if (!hasItem(c.item)) { this.msg = tl('Out of that item!'); await wait(600); this.msg = null; return; }
       const it = ITEMS[c.item];
       addItem(c.item, -1);
       this.msg = it.name;
@@ -794,9 +794,9 @@ class Battle {
     }
     if (c.type === 'spell') {
       const s = SPELLS[c.spell];
-      if (m.status.silence) { this.msg = `${memberName(m)} is silenced!`; Audio_.sfx('buzz'); await wait(700); this.msg = null; return; }
+      if (m.status.silence) { this.msg = tl`${memberName(m)} is silenced!`; Audio_.sfx('buzz'); await wait(700); this.msg = null; return; }
       const cost = spellCost(m, c.spell);
-      if (m.mp < cost) { this.msg = 'Not enough MP!'; Audio_.sfx('buzz'); await wait(700); this.msg = null; return; }
+      if (m.mp < cost) { this.msg = tl('Not enough MP!'); Audio_.sfx('buzz'); await wait(700); this.msg = null; return; }
       m.mp -= cost;
       this.msg = s.name;
       if (s.type === 'phys') {
@@ -809,7 +809,7 @@ class Battle {
             for (let k = 0; k < 5; k++) { a.swing = k / 4; await wait(14); }
             const p = this.enemyCenter(tg);
             await this.playFx(s.fx === 'holy' ? 'holy' : s.fx === 'poison' ? 'slash' : 'slash', [p]);
-            if (m.status.blind && Math.random() < 0.5) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); a.pose = null; await wait(120); continue; }
+            if (m.status.blind && Math.random() < 0.5) { this.num(p.x, p.y, tl('Miss'), '#cfd8ff'); Audio_.sfx('miss'); a.pose = null; await wait(120); continue; }
             const mult = s.power * this.elemMult(tg.def, s.elem);
             const dmg = this.physDamage(this.memberAtk(i) * (s.elem === 'holy' ? 1 + stat(m, 'mag') / 200 : 1), tg.def.def, mult);
             this.damageEnemy(tg, dmg, this.elemCol(tg.def, s.elem), false, s.elem);
@@ -827,10 +827,10 @@ class Battle {
         await this.stepForward(i, async () => {
           for (let k = 0; k < 8; k++) { a.dx -= 10; await wait(14); }
           let got = null;
-          if (!this.canSteal(tg)) { this.msg = 'Nothing to steal!'; }
+          if (!this.canSteal(tg)) { this.msg = tl('Nothing to steal!'); }
           else if (Math.random() < clamp(0.55 + (stat(m, 'spd') - tg.def.spd) * 0.02, 0.25, 0.92) && (got = this.takeSteal(tg, null))) {
-            this.msg = got.rare ? `Stole a rare ${ITEMS[got.id].name}!` : `Stole ${ITEMS[got.id].name}!`;
-          } else { this.msg = "Couldn't steal!"; Audio_.sfx('miss'); }
+            this.msg = got.rare ? tl`Stole a rare ${ITEMS[got.id].name}!` : tl`Stole ${ITEMS[got.id].name}!`;
+          } else { this.msg = tl("Couldn't steal!"); Audio_.sfx('miss'); }
           await wait(700);
           for (let k = 0; k < 8; k++) { a.dx += 10; await wait(14); }
         });
@@ -838,7 +838,7 @@ class Battle {
       }
       if (s.type === 'escape') {
         a.pose = 'cast'; await wait(300);
-        if (this.opts.boss || this.opts.canRun === false) { this.msg = 'There is no escape!'; Audio_.sfx('buzz'); await wait(700); this.msg = null; a.pose = null; return; }
+        if (this.opts.boss || this.opts.canRun === false) { this.msg = tl('There is no escape!'); Audio_.sfx('buzz'); await wait(700); this.msg = null; a.pose = null; return; }
         this.addFx(0.8, (g, k) => { g.save(); g.globalAlpha = Math.sin(k * Math.PI) * 0.9; g.fillStyle = '#d8d8e0'; g.fillRect(380, 100, 260, 300); g.restore(); });
         Audio_.sfx('run'); await wait(800);
         return 'escape';
@@ -869,7 +869,7 @@ class Battle {
         await this.playFx('holy', ts.map(k => this.memberCenter(k)));
         for (const k of ts) {
           const t = BP()[k], p = this.memberCenter(k);
-          if (!alive(t)) { t.hp = Math.floor(maxHp(t) * 0.5); this.num(p.x, p.y, 'Revived', '#7aff9a'); }
+          if (!alive(t)) { t.hp = Math.floor(maxHp(t) * 0.5); this.num(p.x, p.y, tl('Revived'), '#7aff9a'); }
           else this.healMember(k, Math.round((s.power + stat(m, 'mag') * 1.5) * s.scale * this.healBoost(m) * rnd(0.95, 1.05)));
           cureAll(t);
         }
@@ -877,8 +877,8 @@ class Battle {
         const k = c.target;
         await this.playFx('holy', [this.memberCenter(k)]);
         const t = BP()[k];
-        if (!alive(t)) { t.hp = Math.floor(maxHp(t) * 0.35); const p = this.memberCenter(k); this.num(p.x, p.y, 'Revived', '#7aff9a'); }
-        else { const p = this.memberCenter(k); this.num(p.x, p.y, 'No effect', '#cfd8ff'); }
+        if (!alive(t)) { t.hp = Math.floor(maxHp(t) * 0.35); const p = this.memberCenter(k); this.num(p.x, p.y, tl('Revived'), '#7aff9a'); }
+        else { const p = this.memberCenter(k); this.num(p.x, p.y, tl('No effect'), '#cfd8ff'); }
       } else if (s.type === 'cure') {
         const k = c.target;
         await this.playFx('heal', [this.memberCenter(k)]);
@@ -886,20 +886,20 @@ class Battle {
       } else if (s.type === 'haste') {
         const k = c.target;
         await this.playFx('buff', [this.memberCenter(k)]);
-        if (alive(BP()[k])) { BP()[k].status.haste = 4; BP()[k].status.slow = 0; const p = this.memberCenter(k); this.num(p.x, p.y, 'Haste', '#ffd27a'); }
+        if (alive(BP()[k])) { BP()[k].status.haste = 4; BP()[k].status.slow = 0; const p = this.memberCenter(k); this.num(p.x, p.y, tl('Haste'), '#ffd27a'); }
       } else if (s.type === 'regen') {
         const k = c.target;
         await this.playFx('heal', [this.memberCenter(k)]);
-        if (alive(BP()[k])) { BP()[k].status.regen = 5; const p = this.memberCenter(k); this.num(p.x, p.y, 'Regen', '#9ad8ff'); }
+        if (alive(BP()[k])) { BP()[k].status.regen = 5; const p = this.memberCenter(k); this.num(p.x, p.y, tl('Regen'), '#9ad8ff'); }
       } else if (s.type === 'status') {
         const ts = this.resolveTargets('enemy', c.target);
         await this.playFx(s.fx, ts.map(e => this.enemyCenter(e)));
         for (const e of ts) {
           const p = this.enemyCenter(e);
           const st = s.status, boss = e.def.boss;
-          if (boss && (st === 'sleep' || st === 'silence' || st === 'stop')) this.num(p.x, p.y, 'Immune', '#cfd8ff');
+          if (boss && (st === 'sleep' || st === 'silence' || st === 'stop')) this.num(p.x, p.y, tl('Immune'), '#cfd8ff');
           else if (Math.random() < s.chance * (boss ? (st === 'slow' ? 0.5 : 0.3) : 1)) { e.status[st] = STATUS_TURNS[st][1]; this.num(p.x, p.y, STATUS_LABEL[st], '#c8b8ff'); }
-          else this.num(p.x, p.y, 'Miss', '#cfd8ff');
+          else this.num(p.x, p.y, tl('Miss'), '#cfd8ff');
         }
       } else if (s.type === 'buff') {
         const ts = this.resolveTargets('ally', 'all');
@@ -921,7 +921,7 @@ class Battle {
   async counterAttack(i, e) {
     const m = BP()[i];
     if (!alive(m) || !e.alive || m.status.sleep || m.status.stop || !hasPassive(m, 'counter') || Math.random() >= 0.2) return;
-    const p = this.memberCenter(i); this.num(p.x, p.y - 24, 'Counter!', '#ffd27a');
+    const p = this.memberCenter(i); this.num(p.x, p.y - 24, tl('Counter!'), '#ffd27a');
     this.pa[i].pose = 'attack'; await this.playFx('slash', [this.enemyCenter(e)]);
     this.damageEnemy(e, this.physDamage(this.memberAtk(i), e.def.def, 1));
     this.pa[i].pose = null; await wait(150);
@@ -931,8 +931,8 @@ class Battle {
       e.phaseNew = false; e.flash = 0.6; this.shake = 0.2; Audio_.sfx('boom');
       this.msg = e.phase.msg; await wait(1300); this.msg = null;
     }
-    if (e.status.sleep) { const c = this.enemyCenter(e); this.num(c.x, c.y, 'Zzz', '#c8b8ff'); await wait(350); return; }
-    if (e.status.stop) { const c = this.enemyCenter(e); this.num(c.x, c.y, 'Stopped', '#d0d0d0'); await wait(350); return; }
+    if (e.status.sleep) { const c = this.enemyCenter(e); this.num(c.x, c.y, tl('Zzz'), '#c8b8ff'); await wait(350); return; }
+    if (e.status.stop) { const c = this.enemyCenter(e); this.num(c.x, c.y, tl('Stopped'), '#d0d0d0'); await wait(350); return; }
     const acts = (e.phase && e.phase.acts) || e.def.acts || [{ w: 1, a: 'attack' }];
     let act = weighted(acts).a;
     // healers mend a hurt ally before anything else
@@ -949,8 +949,8 @@ class Battle {
       const p = this.memberCenter(i);
       await this.playFx('hit', [p]);
       const ms = stat(BP()[i], 'spd');
-      if (blindMiss() || Math.random() < clamp(0.03 + (ms - e.def.spd) * 0.004, 0.02, 0.12) + weatherMiss(this.weather)) { this.num(p.x, p.y, 'Miss', '#cfd8ff'); Audio_.sfx('miss'); }
-      else if (this.dodges(i)) { this.num(p.x, p.y, 'Dodge', '#cfd8ff'); Audio_.sfx('miss'); }
+      if (blindMiss() || Math.random() < clamp(0.03 + (ms - e.def.spd) * 0.004, 0.02, 0.12) + weatherMiss(this.weather)) { this.num(p.x, p.y, tl('Miss'), '#cfd8ff'); Audio_.sfx('miss'); }
+      else if (this.dodges(i)) { this.num(p.x, p.y, tl('Dodge'), '#cfd8ff'); Audio_.sfx('miss'); }
       else {
         let dmg = this.physDamage(e.def.atk * (e.status.berserk ? 1.5 : 1), this.memberDef(i), this.pa[i].defend ? 0.5 : 1);
         this.damageMember(i, dmg);
@@ -977,9 +977,9 @@ class Battle {
       await this.playFx(s.fx, ts.map(i => this.memberCenter(i)));
       for (const i of ts) {
         const m = BP()[i], p = this.memberCenter(i);
-        if (immune(m, s.status)) this.num(p.x, p.y, 'Immune', '#cfd8ff');
+        if (immune(m, s.status)) this.num(p.x, p.y, tl('Immune'), '#cfd8ff');
         else if (Math.random() < s.chance) { m.status[s.status] = STATUS_TURNS[s.status][0]; if (s.status === 'slow') m.status.haste = 0; this.num(p.x, p.y, STATUS_LABEL[s.status], '#c8b8ff'); }
-        else this.num(p.x, p.y, 'Miss', '#cfd8ff');
+        else this.num(p.x, p.y, tl('Miss'), '#cfd8ff');
       }
       await wait(250); this.msg = null; return;
     }
@@ -988,7 +988,7 @@ class Battle {
       await this.playFx(s.fx === 'slash' ? 'slash' : 'hit', ts.map(i => this.memberCenter(i)));
       this.shake = 0.12;
       for (const i of ts) {
-        if (blindMiss() || this.dodges(i)) { const p = this.memberCenter(i); this.num(p.x, p.y, 'Miss', '#cfd8ff'); continue; }
+        if (blindMiss() || this.dodges(i)) { const p = this.memberCenter(i); this.num(p.x, p.y, tl('Miss'), '#cfd8ff'); continue; }
         const dmg = this.physDamage(e.def.atk, this.memberDef(i), s.power * (this.pa[i].defend ? 0.5 : 1));
         this.damageMember(i, dmg);
         if (s.poison && alive(BP()[i]) && !immune(BP()[i], 'poison') && Math.random() < s.poison) BP()[i].status.poison = true;
@@ -1032,9 +1032,9 @@ class Battle {
     const msgs = [];
     for (const m of BP()) if (alive(m)) { const a = accOf(m); msgs.push(...gainXp(m, Math.round(xp * (a && a.xp ? a.xp : 1)))); }
     for (const m of G.party.slice(4)) msgs.push(...gainXp(m, Math.round(xp * 0.5)));
-    if (xp || gold) await narrate(`Victory! Gained ${xp} EXP and ${gold} gold.`);
+    if (xp || gold) await narrate(tl`Victory! Gained ${xp} EXP and ${gold} gold.`);
     else await wait(2200);
-    for (const d of drops) { addItem(d); Audio_.sfx('item'); await narrate(`Found ${ITEMS[d].name}!`); }
+    for (const d of drops) { addItem(d); Audio_.sfx('item'); await narrate(tl`Found ${ITEMS[d].name}!`); }
     for (const s of msgs) { Audio_.sfx(s.includes('learned') ? 'item' : 'levelup'); await narrate(s); }
     this.pa.forEach(p => { p.jump = 0; });
   }
@@ -1057,12 +1057,12 @@ function applyItemEffect(id, m, battle, idx) {
   switch (it.effect) {
     case 'hp': if (alive(m)) { const b = m.hp; m.hp = Math.min(maxHp(m), m.hp + it.amount); show(m.hp - b, '#7aff9a'); return true; } return false;
     case 'mp': if (alive(m)) { const b = m.mp; m.mp = Math.min(maxMp(m), m.mp + it.amount); show(m.mp - b, '#7ab8ff'); return true; } return false;
-    case 'cure': if (alive(m)) { m.status.poison = false; show('Cured', '#7aff9a'); return true; } return false;
-    case 'remedy': if (alive(m)) { cureAll(m); show('Cured', '#7aff9a'); return true; } return false;
-    case 'berserk': if (alive(m) && battle && !immune(m, 'berserk')) { m.status.berserk = STATUS_TURNS.berserk[0]; show('Berserk', '#ff7a5a'); return true; } return false;
-    case 'revive': if (!alive(m)) { m.hp = Math.floor(maxHp(m) * 0.3); show('Revived', '#7aff9a'); return true; } return false;
-    case 'elixir': if (alive(m)) { m.hp = maxHp(m); m.mp = maxMp(m); show('Full', '#7aff9a'); return true; } return false;
-    case 'megalixir': if (alive(m)) { m.hp = maxHp(m); m.mp = maxMp(m); show('Full', '#7aff9a'); } return true;
+    case 'cure': if (alive(m)) { m.status.poison = false; show(tl('Cured'), '#7aff9a'); return true; } return false;
+    case 'remedy': if (alive(m)) { cureAll(m); show(tl('Cured'), '#7aff9a'); return true; } return false;
+    case 'berserk': if (alive(m) && battle && !immune(m, 'berserk')) { m.status.berserk = STATUS_TURNS.berserk[0]; show(tl('Berserk'), '#ff7a5a'); return true; } return false;
+    case 'revive': if (!alive(m)) { m.hp = Math.floor(maxHp(m) * 0.3); show(tl('Revived'), '#7aff9a'); return true; } return false;
+    case 'elixir': if (alive(m)) { m.hp = maxHp(m); m.mp = maxMp(m); show(tl('Full'), '#7aff9a'); return true; } return false;
+    case 'megalixir': if (alive(m)) { m.hp = maxHp(m); m.mp = maxMp(m); show(tl('Full'), '#7aff9a'); } return true;
   }
   return false;
 }

@@ -179,7 +179,7 @@ function drawDeepMap(g, ox, oy, ow, oh, wsc) {
   const sc = wsc * 2, t = performance.now() / 1000;
   g.fillStyle = 'rgba(2,8,18,.94)'; g.fillRect(0, 0, W, H);
   drawWindow(g, ox - 10, oy - 34, ow + 20, oh + 58);
-  text(g, 'The Sea Floor', ox, oy - 26, { size: 15, bold: true, color: '#9ad8ff' });
+  text(g, tl('The Sea Floor'), ox, oy - 26, { size: 15, bold: true, color: '#9ad8ff' });
   for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
     const c = m.at(x, y);
     g.fillStyle = { '#': '#0a1620', k: '#1e5a3a', o: '#1a2e3c', c: '#7a3a5a', w: '#5a3a24' }[c] || '#1e4a5a';
@@ -193,7 +193,7 @@ function drawDeepMap(g, ox, oy, ow, oh, wsc) {
     if (G.flags['visit_' + k] || k === 'H') text(g, L.name, x + 8, y - 7, { size: 11, bold: true });
   }
   if (onSeaFloor() && Math.sin(t * 8) > -0.3) { const p = Field.map.kind === 'deep' ? { x: G.x, y: G.y } : (() => { const q = worldPos(); return { x: q.x / 2, y: q.y / 2 }; })(); circle(g, ox + p.x * sc + sc / 2, oy + p.y * sc + sc / 2, 4, '#ff3a3a', '#fff', 1.5); }
-  text(g, 'Red: you   ▲ bell lines (surface)   Shift: world map   Enter/Esc to close', W / 2, oy + oh + 5, { size: 11, align: 'center', color: '#b8c4ee' });
+  text(g, tl('Red: you   ▲ bell lines (surface)   Shift: world map   Enter/Esc to close'), W / 2, oy + oh + 5, { size: 11, align: 'center', color: '#b8c4ee' });
 }
 
 // ---------- monsters ----------

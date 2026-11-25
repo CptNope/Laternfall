@@ -23,6 +23,7 @@ mods/ember-fox/                  the folder's name is the mod's id: lower case, 
   content/encounters.json        optional: changes to content/encounters.json
   content/towns.json             optional: changes to town layouts (make one in the editor, index.html?edit)
   src/*.js                       optional: code, loaded after the whole game (new monster drawings)
+  lang/<code>.json               optional: a language, or lang/en.json to reword the English (content/lang/README.md)
 ```
 
 A town a mod changes goes through the same walk check as the game's own towns: every door and townsperson reachable. A mod's content files look like the game's own ([content/README.md](../content/README.md)), but only list what changes.
@@ -74,4 +75,4 @@ A save remembers the mods it was made with. Loading it in a game without them is
 
 ## What mods can't do yet
 
-Mods change items, monsters, shops, encounter tables and town layouts, and add code. The world map, dungeons (generated from a seed), dialogue and moves are still code in `src/` (dialogue is next on the [roadmap](../ROADMAP.md#20--lantern-engine): the string table), so changing those means editing the game itself. A mod can't add a new town to the world map yet: the world's letters are code.
+Mods change items, monsters, shops, encounter tables and town layouts, and add code. The world map, dungeons (generated from a seed), dialogue and moves are still code in `src/` (dialogue can be reworded or translated with a `lang/` file, but not rewritten as new scenes), so changing those means editing the game itself. A mod can't add a new town to the world map yet: the world's letters are code.

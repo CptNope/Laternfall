@@ -17,7 +17,7 @@ MODDED=bool(ARGS.mod)
 # Source files in load order. They share one global scope, so a file may only use, at load time,
 # names declared in files before it (tools/load_check.js checks this). 'folder/*' takes every
 # .js file in that folder, sorted: each one registers itself (a monster family, a battle background).
-order=['core','content','data','art','monsters/*','backgrounds/*','deep_art','maps','party','field','tilecache','interior','battle','menu','crafts','hearts','deep','platform','living','cards','heist','editor','story']
+order=['lang','i18n','core','content','data','art','monsters/*','backgrounds/*','deep_art','maps','party','field','tilecache','interior','battle','menu','crafts','hearts','deep','platform','living','cards','heist','editor','story']
 
 # ---- content/*.json (2.0, EN-1): checked by tools/content.js, then written into the game as JS ----
 import tempfile
@@ -31,6 +31,9 @@ def check_content():
     cmd=['node',str(root/'tools'/'content.js')]+[a for m in ARGS.mod for a in ('--mod',m)]+(['--emit',str(emit)] if MODDED else [])
     r=subprocess.run(cmd,cwd=root)
     if r.returncode: sys.exit('build.py: fix the content problems above; nothing was built')
+    # languages: a translation must keep the English line's {0}, {1}, … (tools/strings.js)
+    r=subprocess.run(['node',str(root/'tools'/'strings.js'),'--check']+[a for m in ARGS.mod for a in ('--mod',m)],cwd=root,capture_output=True,text=True)
+    if r.returncode: sys.exit(r.stdout+r.stderr+'build.py: fix the language problems above; nothing was built')
     return json.loads(emit.read_text()) if MODDED else None
 def content_js(merged=None):
     if merged:
@@ -50,15 +53,35 @@ def content_js(merged=None):
         body=json.dumps(t, ensure_ascii=False, separators=(',', ':'))
         body=body.replace('</', '<\\/').replace('\u2028', '\\u2028').replace('\u2029', '\\u2029')   # safe inside <script>
         out.append(f'const {name} = {body};')
+    out.append('translateContent();   // names and descriptions into the chosen language (i18n.js)')
     return '\n'.join(out)+'\n'
+# ---- languages (2.0, EN-6): content/lang/<code>.json, plus any mod's lang/<code>.json ----
+def lang_js():
+    packs={}
+    def merge(f, who):
+        code=f.stem
+        if code=='template': return   # the list of lines to translate, made by tools/strings.js
+        try: d=json.loads(f.read_text())
+        except Exception as e: sys.exit(f'build.py: {who}/{f.name}: {e}')
+        p=packs.setdefault(code, {'name': code, 'strings': {}})
+        if d.get('name'): p['name']=d['name']
+        p['strings'].update({k: v for k, v in (d.get('strings') or {}).items() if not k.startswith('//') and isinstance(v, str) and v})
+    for f in sorted((root/'content'/'lang').glob('*.json')): merge(f, 'content/lang')
+    for m in ARGS.mod:
+        for f in sorted((pathlib.Path(m)/'lang').glob('*.json')): merge(f, f'{m}/lang')
+    body=json.dumps(packs, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
+    return f'// LANGUAGES: written by build.py from content/lang/*.json (and mods). Edit those files, not this.\nconst LANG_PACKS = {body};\n'
 merged=check_content()
 if merged: MOD_SRC=[pathlib.Path(f) for f in merged['src']]; MODS=merged['mods']
 CONTENT=pathlib.Path(tempfile.gettempdir())/'lanternfall_content.js'
 CONTENT.write_text(content_js(merged))
+LANGJS=pathlib.Path(tempfile.gettempdir())/'lanternfall_lang.js'
+LANGJS.write_text(lang_js())
 def sources():
     out=[]
     for n in order:
         if n=='content': out.append(CONTENT); continue
+        if n=='lang': out.append(LANGJS); continue
         out += sorted((root/'src').glob(n+'.js')) if n.endswith('*') else [root/'src'/f'{n}.js']
     return out+MOD_SRC   # a mod's code loads last: it can use anything the game defines
 js='\n'.join(p.read_text() for p in sources())

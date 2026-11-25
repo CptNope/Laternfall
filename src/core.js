@@ -65,7 +65,7 @@ const isLoc = c => typeof c === 'string' && LOC_RE.test(c);
 // ---------- settings (persist separately from the save file) ----------
 const CFG_KEY = 'lanternfall_cfg_v1';
 const BATTLE_SPEEDS = [{ label: '1×', v: 1 }, { label: '2×', v: 2 }, { label: '4×', v: 4 }];
-const TEXT_SPEEDS = [{ label: 'Normal', v: 55 }, { label: 'Fast', v: 120 }, { label: 'Instant', v: 99999 }];
+const TEXT_SPEEDS = [{ label: tl('Normal'), v: 55 }, { label: tl('Fast'), v: 120 }, { label: tl('Instant'), v: 99999 }];
 const CFG = { dash: false, textSpeed: 0, muted: false, autosave: true, battleSpeed: 0, noEnc: false, bigText: false, contrast: false, keys: null, speedrun: false, battery: false };
 function loadCfg() { try { Object.assign(CFG, JSON.parse(localStorage.getItem(CFG_KEY)) || {}); } catch (e) { } }
 loadCfg();
@@ -597,7 +597,7 @@ const Audio_ = {
     } catch (e) { console.warn(e); }
   },
   setMuted(m) { this.muted = m; CFG.muted = m; saveCfg(); if (this.master) this.master.gain.value = m ? 0 : 0.9; },
-  toggleMute() { this.setMuted(!this.muted); toast(this.muted ? 'Sound off (M)' : 'Sound on (M)'); },
+  toggleMute() { this.setMuted(!this.muted); toast(this.muted ? tl('Sound off (M)') : tl('Sound on (M)')); },
   play(name, force) {
     if (!force && this.curName === name) return;
     this.curName = name;

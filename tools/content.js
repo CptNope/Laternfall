@@ -161,8 +161,10 @@ function validate(v, s, at, doc, errs) {
 
 // ---------- references ----------
 // data.js runs with the content tables defined first, the way the game loads them
+// tl() as in src/i18n.js, in English: data.js wraps its text in it
+const tEnglish = (s, ...v) => Array.isArray(s) && s.raw ? s.reduce((a, p, i) => a + (i ? String(v[i - 1]) : '') + p, '') : s;
 function gameData(T) {
-  const ctx = { console, Math, ...T };
+  const ctx = { console, Math, tl: tEnglish, ...T };
   vm.createContext(ctx);
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'src', 'data.js'), 'utf8') +
     '\n;this.D = { HEROES, SPELLS, RECIPES, TREASURES, FISH, FISH_SPOTS, MEALS, ARENA_CUPS, BLACKMARKET_PRICES };', ctx);
@@ -330,4 +332,4 @@ if (require.main === module) {
   if (emit) fs.writeFileSync(emit, JSON.stringify({ tables: T, mods, src: got.mods.flatMap(m => m.src.map(f => path.resolve(f))) }));
   console.log(`content: ${Object.keys(T.ITEMS).length} items, ${Object.keys(T.MONSTERS).length} monsters, ${Object.keys(T.SHOPS).length} shops, ${Object.keys(T.ENCOUNTERS).length}+${Object.keys(T.NIGHT_ENC).length} encounter tables check out` + (mods.length ? `, with ${mods.map(m => m.name + ' ' + m.version).join(', ')}` : ''));
 }
-module.exports = { load, readFiles, readWithMods, tables, check, validate };
+module.exports = { load, readFiles, readWithMods, tables, check, validate, tEnglish };

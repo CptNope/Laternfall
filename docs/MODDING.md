@@ -8,6 +8,23 @@ Step-by-step recipes for adding things to Lanternfall: monsters, items, quests, 
 > 3. Draw it in code. No image or audio files.
 > 4. Run the [play-test harness](TESTING.md) before opening a pull request, and add a line to [CHANGELOG.md](../CHANGELOG.md) under `[Unreleased]`.
 
+## Writing text
+
+Every line a player reads goes through `tl()` (`src/i18n.js`), so it can be translated:
+
+```js
+await say(tl('Elder Maren'), tl('The lanterns are going out.'));
+toast(tl`${memberName(m)} reached level ${m.level}!`);   // values: the key is "{0} reached level {1}!"
+```
+
+- Write whole sentences, with values in a `tl` template, rather than gluing pieces with `+`: a translator may need the words in another order.
+- Ids, flags, colours and keys stay plain strings: only what's shown is wrapped.
+- Names and descriptions in `content/*.json` are translated as the game loads; nothing to wrap there.
+- Run `node tools/strings.js` afterwards: it refreshes `content/lang/template.json`, which CI checks. `python3 tools/wrap_strings.py src/new.js` wraps a new file's text for you (check what it did).
+- The `i18n` play-test fails on any English it sees on screen in the pseudo language.
+
+---
+
 ## Make a mod instead?
 
 To add or change items, monsters, shops or random battles **without editing the game's files**, make a mod: a folder in `mods/` with only your changes, built with `python3 build.py --mod mods/yours` into a separate copy of the game. See [mods/README.md](../mods/README.md) and the example mod. The walk-throughs below edit the game itself.
@@ -615,6 +632,7 @@ To add a table, write a function in `gentables.py` that stores markdown in `out[
 - [ ] Save shape changed? Bump `SAVE_VERSION` and add a migration ([ARCHITECTURE.md](ARCHITECTURE.md#versioning-and-migrations))
 - [ ] `python3 tools/playtest.py` reports `ERRORS: 0` (add a scenario for big features; see [TESTING.md](TESTING.md))
 - [ ] `python3 tools/gentables.py` re-run if `content/` or `data.js` changed
+- [ ] New text wrapped in `tl()`, and `node tools/strings.js` re-run
 - [ ] `tools/check_mermaid.sh` passes if you touched diagrams
 - [ ] [CHANGELOG.md](../CHANGELOG.md) has a line under `[Unreleased]`
 - [ ] README feature counts updated if they changed
