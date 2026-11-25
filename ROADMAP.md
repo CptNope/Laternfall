@@ -120,7 +120,8 @@ gantt
     section Engine
     2.0 Lantern Engine               :done, m20, 2026-11-24, 2d
     section Replay
-    2.1 Endless Lantern              :active, m21, 2026-11-25, 1d
+    2.1 Endless Lantern              :done, m21, 2026-11-25, 1d
+    2.2 Home and companions          :active, m22, 2026-11-25, 1d
 ```
 
 | Milestone | Theme | Headline | Target | Status |
@@ -133,7 +134,8 @@ gantt
 | **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ✅ Done (1.8.0, merged in #14; PL-5 not started) |
 | **1.10** | Foundations | Per-family art files, a tile cache for phones, a load-order check | Nov 2026 | ✅ Done (1.10.0, merged in #16) |
 | **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | ✅ Done (EN-1 to EN-6, merged in #17, #19, #20, #21; EN-7 open) |
-| **2.1** | Replay | The Endless Lantern post-game dungeon and Hollow mode | Nov 2026 | 🟡 In review |
+| **2.1** | Replay | The Endless Lantern post-game dungeon and Hollow mode | Nov 2026 | ✅ Done (#22) |
+| **2.2** | Home | Arin's house upgrades, the music box, Mittens following you, compass hints | Nov 2026 | 🟡 In review |
 
 ```mermaid
 flowchart LR
@@ -359,6 +361,28 @@ flowchart LR
 
 Not in 2.1: new monsters or art for the Endless Lantern (it reuses the old dungeons on purpose), and a leaderboard (there is no server).
 
+### 2.2 · Home and companions
+
+Four ideas from the parking lot, each paying off something the game already has: trophies, fish, songs, Mittens and the Sailor's Compass.
+
+```mermaid
+flowchart LR
+    T[Corwin, beside Arin's house] -->|gold + something to show| U{Upgrade}
+    U --> B[Mittens' bed]
+    U --> S[Trophy shelf<br/>opens the trophy list]
+    U --> Q[Fish tank<br/>every kind caught]
+    U --> J[Music box<br/>any song heard]
+    M[Mittens] -->|take her for a walk| F[Follows you in Brightwater]
+    C[Sailor's Compass] --> N[Needle to the nearest<br/>unopened chest]
+```
+
+| ID | Item | Size |
+| --- | --- | --- |
+| HM-1 | **House upgrades**: Corwin builds Mittens' bed, a trophy shelf and a fish tank into Arin's house | M |
+| HM-2 | **Music box**: plays any song you've heard, whenever you're home | S |
+| HM-3 | **Mittens follows you** in Brightwater after The Lost Cat | S |
+| HM-4 | **Compass hints**: the Sailor's Compass points to the nearest unopened chest in dungeons | S |
+
 ---
 
 ## Prioritised backlog
@@ -447,11 +471,11 @@ Things in the code today that will slow future work down.
 
 Not scheduled. Each needs a reason to exist (see [Guiding principles](#guiding-principles)).
 
-- 🎵 **Music box** in Brightwater that plays any track you've heard.
-- 🏠 **Arin's house upgrades**: trophies, a fish tank for caught fish, Mittens' bed.
-- 🐈 **Mittens follows you** in Brightwater after The Lost Cat.
+- ✅ ~~🎵 **Music box**~~: in [2.2](#22--home-and-companions) (HM-2).
+- ✅ ~~🏠 **Arin's house upgrades**~~: in [2.2](#22--home-and-companions) (HM-1).
+- ✅ ~~🐈 **Mittens follows you**~~: in [2.2](#22--home-and-companions) (HM-3).
 - ✅ ~~🌙 **A "Hollow" hard mode**~~: in [2.1](#21--endless-lantern) (RP-4).
-- 🧭 **Compass hints**: the Sailor's Compass points toward unopened chests.
+- ✅ ~~🧭 **Compass hints**~~: in [2.2](#22--home-and-companions) (HM-4).
 - 📜 **Old Bram's verses**: collect verse fragments to complete the Lantern rhyme. The reward is a new title-screen song.
 - 🤝 **Guest party members** for single quests: Brann at sea, Wren in the Observatory, Ione in the Abyss.
 - 🎨 **Photo mode**: hide the UI and pan the camera.

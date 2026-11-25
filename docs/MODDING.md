@@ -68,6 +68,7 @@ flowchart TD
 - [Add a place on the sea floor](#add-a-place-on-the-sea-floor)
 - [Change the Lantern Board](#change-the-lantern-board)
 - [Add a trophy](#add-a-trophy)
+- [Add something to Arin's house](#add-something-to-arins-house)
 - [Draw a new tile](#draw-a-new-tile)
 - [Add a card or a card player](#add-a-card-or-a-card-player)
 - [Add a night NPC or night monsters](#add-a-night-npc-or-night-monsters)
@@ -562,6 +563,26 @@ Add an entry to `TROPHIES`. `test(flags)` runs twice a second during play; when 
 ```
 
 Keep `id` stable: it's the key in the player's stored trophies. Keep each entry on one line in the `{ id: …, name: …, desc: … }` order shown, because `tools/extract.js` reads the names for the game guide with a pattern.
+
+---
+
+## Add something to Arin's house
+
+**File:** `src/home.js` (2.2)
+
+```js
+// HOME_UPGRADES: Corwin lists these in order
+{ id: 'rack', name: tl('Weapon rack'), price: 800, tile: 'V', x: 3, y: 1, need: f => f.lantern2, why: tl('Light the second Lantern first.'),
+  desc: tl('A rack on the wall for your old blades.') }
+```
+
+| Step | Where | What |
+| --- | --- | --- |
+| 1 | `home.js` | Add the entry. `x, y` is a cell of the `house` template in `interior.js`; pick a floor cell for a standing thing or a wall-face cell (row 1) for something hung on the wall |
+| 2 | `interior.js` | Add the tile letter to `INT_SOLID`. If it hangs on the wall, also add it to the two `'=wFXMS'` strings |
+| 3 | `home.js` | Draw it in `drawHomeTile`, and give it something to say in `homeInteract` |
+
+The flag `home_<id>` is set when Corwin builds it, and `homeTiles` puts the tile in the house from then on. Keep a path from the door to every upgrade: the town check in `build.py` doesn't walk interiors.
 
 ---
 

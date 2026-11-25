@@ -5,7 +5,8 @@
 // Legend: # wall top, = wall face, w window, F fireplace, X shelf, M banner/painting
 //         . floor, R rug, K counter, B bed, T table, c chair, b barrel, p pot, P plant,
 //         x crate, A altar, W pew, I bars, O telescope, a anvil, E exit door
-const INT_SOLID = new Set(['#', '=', 'w', 'F', 'X', 'M', 'K', 'B', 'T', 'b', 'p', 'P', 'x', 'A', 'W', 'I', 'O', 'a']);
+//         2.2, Arin's house only (home.js): S trophy shelf, Q fish tank, J music box, Z Mittens' bed
+const INT_SOLID = new Set(['#', '=', 'w', 'F', 'X', 'M', 'K', 'B', 'T', 'b', 'p', 'P', 'x', 'A', 'W', 'I', 'O', 'a', 'S', 'Q', 'J', 'Z']);
 const INT_TEMPLATES = {
   inn: ['#############', '#X=w=F=w=X=M#', '#B.B........#', '#.......KKKK#', '#...........#', '#.TT....b..p#', '#.TT........#', '#.....RRR...#', '#.P...RRR..P#', '######E######'],
   shop: ['#############', '#X=X=w=X=X=X#', '#x....k....x#', '#KKKKKKKKKKK#', '#...........#', '#.b.......x.#', '#...RRRRR...#', '#.p.RRRRR.P.#', '#...........#', '######E######'],
@@ -32,6 +33,7 @@ function buildInterior(id) {
   const b = TOWN_DEFS[town].buildings.find(x => x.id === bid);
   const kind = interiorKind(town, b);
   const tiles = INT_TEMPLATES[kind].map(r => r.split(''));
+  if (town === 'brightwater' && bid === 'arinhouse') homeTiles(tiles);
   let keeper = null;
   tiles.forEach((r, y) => r.forEach((c, x) => { if (c === 'k') { keeper = { x, y }; r[x] = '.'; } }));
   const theme = TOWN_DEFS[town].theme === 'stone' || TOWN_DEFS[town].theme === 'ash' || kind === 'jail' || kind === 'chapel' ? 'stone' : TOWN_DEFS[town].theme === 'sand' ? 'sand' : 'wood';
@@ -59,6 +61,7 @@ const SEARCH_POOLS = {
 };
 async function interiorInteract(tx, ty, dx, dy) {
   const m = Field.map, c = m.at(tx, ty);
+  if (await homeInteract(m, c)) return;
   // talk across counters and bars
   if (c === 'K' || c === 'I' || c === 'T') {
     const e = Field.entityAt(tx + dx, ty + dy);
@@ -107,25 +110,27 @@ function drawInteriorTile(g, m, x, y, px, py, t) {
     g.strokeStyle = P.line; g.lineWidth = 1;
     if (m.theme === 'wood') { g.beginPath(); g.moveTo(px, py + 0.5); g.lineTo(px + TS, py + 0.5); const o = (y % 2) * 16 + 8; g.moveTo(px + o, py); g.lineTo(px + o, py + TS); g.stroke(); }
     else g.strokeRect(px + 0.5, py + 0.5, TS - 1, TS - 1);
-    if (m.at(x, y - 1) && '#=wFXM'.includes(m.at(x, y - 1))) { g.fillStyle = 'rgba(0,0,0,.22)'; g.fillRect(px, py, TS, 6); }
+    if (m.at(x, y - 1) && '#=wFXMS'.includes(m.at(x, y - 1))) { g.fillStyle = 'rgba(0,0,0,.22)'; g.fillRect(px, py, TS, 6); }
   };
   if (c === '#') {
     g.fillStyle = P.top; g.fillRect(px, py, TS, TS);
     if (y === m.h - 1 || x === 0 || x === m.w - 1) { g.fillStyle = 'rgba(255,255,255,.05)'; g.fillRect(px, py, TS, 3); }
     return;
   }
-  if ('=wFXM'.includes(c)) {
+  if ('=wFXMS'.includes(c)) {
     g.fillStyle = P.face; g.fillRect(px, py, TS, TS);
     g.fillStyle = P.trim; g.fillRect(px, py + TS - 9, TS, 9); g.fillRect(px, py, TS, 3);
     if (m.theme === 'wood') { g.strokeStyle = 'rgba(120,80,40,.25)'; g.lineWidth = 1; for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(px + i * 8, py + 3); g.lineTo(px + i * 8, py + TS - 9); g.stroke(); } }
     if (c === 'w') { rrect(g, px + 6, py + 4, 20, 15, 2, '#9ad0ff', P.trim, 2.5); line(g, px + 16, py + 4, px + 16, py + 19, P.trim, 1.5); line(g, px + 6, py + 11, px + 26, py + 11, P.trim, 1.5); }
     if (c === 'X') { rrect(g, px + 2, py + 2, 28, 24, 1, '#6a4422', OUT, 1); for (let r = 0; r < 3; r++) { g.fillStyle = '#4a2a12'; g.fillRect(px + 3, py + 9 + r * 7, 26, 1.5); for (let k = 0; k < 6; k++) { g.fillStyle = ['#a03a2a', '#3a6aa0', '#3a8a4a', '#c0a040'][(k + r + x) % 4]; g.fillRect(px + 4 + k * 4, py + 3 + r * 7, 3, 6); } } }
     if (c === 'F') { rrect(g, px + 2, py + 6, 28, 22, 2, '#8a7a6a', OUT, 1.2); rrect(g, px + 7, py + 12, 18, 16, 6, '#1a0c06'); const f = Math.sin(t * 12 + x) * 1.5; poly(g, [px + 10, py + 27, px + 16 + f, py + 14 - f, px + 22, py + 27], '#ff8a2a'); poly(g, [px + 13, py + 27, px + 16, py + 19, px + 19, py + 27], '#ffe08a'); g.save(); g.globalAlpha = 0.18; circle(g, px + 16, py + 22, 20, '#ffb04a'); g.restore(); }
+    if (c === 'S') drawHomeTile(g, m, c, x, y, px, py, t);
     if (c === 'M') { rrect(g, px + 6, py + 3, 20, 20, 1, '#8a3a3a', '#e8c24a', 1.5); for (let i = 0; i < 4; i++) circle(g, px + 10 + (i % 2) * 12, py + 8 + Math.floor(i / 2) * 10, 2, '#ffb04a'); circle(g, px + 16, py + 13, 2.4, '#a8d8ff'); }
     return;
   }
   if (c === 'E') { g.fillStyle = P.top; g.fillRect(px, py, TS, TS); rrect(g, px + 4, py, TS - 8, TS - 2, 2, '#e8d8a8', null); g.fillStyle = 'rgba(255,240,200,.5)'; g.fillRect(px + 6, py + 2, TS - 12, TS - 6); poly(g, [px + 11, py + 12, px + 21, py + 12, px + 16, py + 20], '#8a6038'); return; }
   floor();
+  if ('QJZ'.includes(c)) { drawHomeTile(g, m, c, x, y, px, py, t); return; }
   switch (c) {
     case 'R': { g.fillStyle = '#a03a3a'; g.fillRect(px, py, TS, TS); g.strokeStyle = '#e8c24a'; g.lineWidth = 1.5; const L = m.at(x - 1, y) !== 'R', Rr = m.at(x + 1, y) !== 'R', U = m.at(x, y - 1) !== 'R', D = m.at(x, y + 1) !== 'R'; g.beginPath(); if (L) { g.moveTo(px + 3, py); g.lineTo(px + 3, py + TS); } if (Rr) { g.moveTo(px + TS - 3, py); g.lineTo(px + TS - 3, py + TS); } if (U) { g.moveTo(px, py + 3); g.lineTo(px + TS, py + 3); } if (D) { g.moveTo(px, py + TS - 3); g.lineTo(px + TS, py + TS - 3); } g.stroke(); break; }
     case 'K': { rrect(g, px, py + 6, TS, 24, 1, '#8a5a2a', OUT, 1); g.fillStyle = '#b07a3a'; g.fillRect(px, py + 6, TS, 7); if (hash(x, y, 2) < 0.4) { rrect(g, px + 8, py - 2, 8, 9, 3, '#3ab0e0', OUT, 1); } break; }

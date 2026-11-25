@@ -35,6 +35,7 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 - [New Game+](#new-game)
 - [The Endless Lantern](#the-endless-lantern)
 - [Hollow mode](#hollow-mode)
+- [Arin's house](#arins-house)
 - [Trophies](#trophies)
 - [Speedrun mode](#speedrun-mode)
 
@@ -782,6 +783,25 @@ Added in 2.1. When you start a **New Game** or **New Game+**, you choose **Norma
 - **Bosses rise a third time.** When a boss is nearly beaten (below 20% of its HP, or half of its last phase's threshold if that is lower) it rises again and acts **one extra time each turn**.
 
 Save slots show "Hollow" beside the chapter. Finishing the story in Hollow mode earns **Hollow Walker**.
+
+---
+
+## Arin's house
+
+Added in 2.2. **Corwin**, a carpenter, works beside Arin's house in Brightwater. Bring him gold and something to show off, and he builds it into the house:
+
+| Upgrade | Cost | Needs | What it does |
+| --- | --- | --- | --- |
+| A bed for Mittens | 250 G | The Lost Cat | A basket by your bed. Mittens sleeps in it |
+| Trophy shelf | 400 G | A trophy | Shows your trophies; examine it to open the trophy list |
+| Fish tank | 1,200 G | A caught fish | One of every kind of fish you've caught swims in it |
+| Music box | 1,500 G | The first Lantern | Plays any song you've heard, whenever you're home |
+
+**Mittens comes along.** After The Lost Cat, talk to Mittens at home and choose *Take her for a walk*. She follows one step behind you anywhere in Brightwater, never blocks your way, and goes home when you talk to her again.
+
+**The music box** lists the songs you've heard on your travels. Saves from before 2.2 count the songs your progress means you must have heard.
+
+**The Sailor's Compass**, Brann's reward for the whirlpool bounty, now does more than halve encounters. While you carry or wear it, a needle in the top right corner of every dungeon points to the nearest unopened chest on the floor. When none are left it spins and says *none*. Switch it off in Config → *Compass hints*.
 
 ---
 

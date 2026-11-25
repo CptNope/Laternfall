@@ -42,6 +42,8 @@ function populate(map) {
     for (const q of questEntities(map)) map.entities.push(q);
     if (map.extras.boss && !G.flags[bossFlag(map)]) map.entities.push({ kind: 'boss', x: map.extras.boss.x, y: map.extras.boss.y, did, def: MONSTERS[def.boss] });
   }
+  const cat = catFollower(map);   // 2.2: Mittens walks with you in Brightwater
+  if (cat) map.entities.push(cat);
 }
 function refreshEntities() { if (Field.map) populate(Field.map); }
 function worldTrack() {
@@ -74,11 +76,11 @@ const Field = {
     if (m.kind === 'world') Audio_.play(worldTrack());
     else if (m.kind === 'deep') Audio_.play('deep');
     else if (m.kind === 'heist') Audio_.play('undermarket');
-    else if (m.kind === 'interior') Audio_.play((TOWN_DEFS[m.town] && TOWN_DEFS[m.town].music) || 'town');
+    else if (m.kind === 'interior') Audio_.play(homeSong(m) || (TOWN_DEFS[m.town] && TOWN_DEFS[m.town].music) || 'town');
     else if (m.kind === 'town') Audio_.play(m.id === 'mirage' ? 'desert' : m.music || 'town');
     else Audio_.play(m.dungeon === 'spire' ? 'spire' : m.dungeon === 'abyss' || m.dungeon === 'hadal' ? 'abyss' : m.dungeon === 'palace' ? 'deep' : 'dungeon');
   },
-  entityAt(x, y) { return this.map.entities.find(e => e.x === x && e.y === y && e.kind !== 'ghost'); },
+  entityAt(x, y) { return this.map.entities.find(e => e.x === x && e.y === y && e.kind !== 'ghost' && !e.follow); },   // a follower never blocks the way
   buildingAt(x, y) { return (this.map.buildings || []).find(b => x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h); },
   walkable(x, y) {
     const m = this.map, c = m.at(x, y);
@@ -108,7 +110,7 @@ const Field = {
     }
     const [dx, dy] = DIRS[G.dir];
     const tx = G.x + dx, ty = G.y + dy;
-    const e = this.entityAt(tx, ty);
+    const e = this.entityAt(tx, ty) || this.map.entities.find(f => f.follow && f.x === tx && f.y === ty && !f.mv);
     if (e) {
       if (e.talk) {
         if (e.kind === 'npc') e.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[G.dir];
@@ -171,6 +173,7 @@ const Field = {
   startMove(nx, ny, ship = false) {
     const run = Input.h('run') !== !!CFG.dash;
     this.anim = { fx: G.x, fy: G.y, tx: nx, ty: ny, t: 0, dur: ship === 'air' ? 0.075 : ship === 'moth' ? 0.08 : ship ? 0.11 : run ? 0.1 : 0.16 };
+    followStep(this.map, this.anim);
   },
   tick(dt) {
     this.t += dt;
@@ -195,7 +198,7 @@ const Field = {
       for (const e of this.map.entities) {
         if (e.kind !== 'npc') continue;
         if (e.mv) {
-          e.mv.t += dt / 0.3;
+          e.mv.t += dt / (e.mv.dur || 0.3);
           if (e.mv.t >= 1) { e.x = e.mv.tx; e.y = e.mv.ty; e.mv = null; }
           continue;
         }
@@ -345,6 +348,7 @@ const Field = {
     // the sky and the weather (1.9)
     drawSky(g, m, cx, cy, t);
     if (underSky(m)) drawWeather(g, currentWeather(), t);
+    drawCompassHint(g, m, t);   // 2.2: the Sailor's Compass
     if (this.banner) {
       g.save(); g.globalAlpha = clamp(this.banner.t, 0, 1);
       g.font = font(20, true, SERIF);
