@@ -75,6 +75,7 @@ The exit code is `0` when there were no errors and `1` otherwise, so it can gate
 | `living` | 1.9 from a fresh start and a post-game save | 26 named checks: the clock running and saving; dusk and night; the inn's *Stay until night*; night encounters and night-only NPCs; weather rolling by region and changing fire and water damage in battle; Berserk and Stop on heroes and enemies, the charms preventing them and bosses ignoring Stop; Tess's starter deck, the deck screen and a full card game with a Lie; Mags's job, the night-only hatch, being caught by a guard, a search proving the vault has an unseen route in and out, the opal and the Night Cloak | `63`–`73` |
 | `tiles` | 1.10 tile cache, from a post-game save | 5 named checks: the field draws through the cache; cached tiles match tiles drawn one by one on 18 maps (world, sea floor, vault, towns of every theme, six dungeon floors, interiors) at scale 1, and on 8 of them at 2 and 1.37, comparing 4×4-pixel block averages (Chrome's antialiasing moves by a level or two when a shape moves, so exact pixels can't match); a changed tile rebuilding the cache; the cached world drawing faster | `74`–`75` |
 | `mods` | 2.0 mods: builds `mods/example` with `build.py --mod`, plays it, then takes its save to the real game | 11 named checks: the build succeeds; the title knows the mod; the Ember Fox, its drawing, the Ember Tail in Lastlight's shop and the Ashen Isle's day and night tables; a one-field patch leaving the rest; a battle with two Ember Foxes; a save recording its mods; that save loading in the real game with the mod's items left out, the player told, and the field carrying on | `76`–`78` |
+| `editor` | 2.0 town editor, in a wide browser window | 14 named checks: `?edit` opens the editor with the town's people; every town passes the walk check in the browser; a fence across the way in, crates on a doorstep and a fenced-in townsperson are each caught; dragging a shop onto the Elder flags him and undo puts it back; painting a row of lamp posts; a too-small building refused and a house added; turning it into an inn; Walk around and Esc back; edits surviving a reload; the exported file building as a mod and passing the check | `79`–`81` |
 | `readme` | Takes clean screenshots for the README | — | Lastlight, Ashen Isle, Abyss, Hollow Crown, fishing |
 
 ```mermaid
@@ -196,6 +197,7 @@ Paste these into the browser console while playing.
 | --- | --- |
 | No encounters | Open `index.html?noenc`, or `G.flags.noEnc = true` |
 | Tiles without the cache | Open `index.html?nocache`, or `TileCache.enabled = false` |
+| A town's problems | `townProblems('brightwater')`, or open `index.html?edit` |
 | What the tile cache is doing | `TileCache.stats` (chunks on screen, chunks built, moving squares redrawn) |
 | Teleport on the world map | `G.x = 79; G.y = 10` |
 | Go to a map | `runScript(() => changeMap('abyss:3', 18, 14, 'up'))` |
@@ -228,17 +230,17 @@ tools/check_mermaid.sh README.md ROADMAP.md CHANGELOG.md docs/*.md
 
 `.github/workflows/playtest.yml` runs on every pull request and on pushes to `main`. It:
 
-1. runs `node tools/content.js --selftest`, which plants 21 typical content and mod mistakes and fails unless the content checker catches each one, then checks a good mod merges;
+1. runs `node tools/content.js --selftest`, which plants 24 typical content and mod mistakes and fails unless the content checker catches each one, then checks a good mod merges;
 1. builds the game, which first checks `content/` (schemas and references, `tools/content.js`) and then runs the load-order check (`tools/load_check.js`: the joined script must load in Node without an error), and fails if `index.html` doesn't match `src/` (someone forgot to run `build.py`);
 2. regenerates the game guide and fails if `docs/GAME_GUIDE.md` is out of date;
-3. also checks `manifest.webmanifest` and `sw.js` match the build, then runs the `chapter`, `systems`, `newgame`, `comfort`, `hearts`, `depth`, `drowned`, `platform`, `living`, `tiles` and `mods` scenarios, failing on any JavaScript error or failed check;
+3. also checks `manifest.webmanifest` and `sw.js` match the build, then runs the `chapter`, `systems`, `newgame`, `comfort`, `hearts`, `depth`, `drowned`, `platform`, `living`, `tiles`, `mods` and `editor` scenarios, failing on any JavaScript error or failed check;
 4. uploads the screenshots as a `playtest-screenshots` artifact.
 
 ```mermaid
 flowchart LR
     PR[Pull request] --> CS[content.js --selftest] --> B[python3 build.py<br/>checks content/<br/>git diff index.html]
     B --> GG[gentables.py<br/>git diff GAME_GUIDE.md]
-    GG --> PT[playtest.py<br/>11 scenarios]
+    GG --> PT[playtest.py<br/>12 scenarios]
     PT --> A[(screenshots artifact)]
     PT -->|any JS error| X[❌ fail]
     PT -->|ERRORS: 0| OK[✅ pass]

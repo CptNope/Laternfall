@@ -17,7 +17,7 @@ MODDED=bool(ARGS.mod)
 # Source files in load order. They share one global scope, so a file may only use, at load time,
 # names declared in files before it (tools/load_check.js checks this). 'folder/*' takes every
 # .js file in that folder, sorted: each one registers itself (a monster family, a battle background).
-order=['core','content','data','art','monsters/*','backgrounds/*','deep_art','maps','party','field','tilecache','interior','battle','menu','crafts','hearts','deep','platform','living','cards','heist','story']
+order=['core','content','data','art','monsters/*','backgrounds/*','deep_art','maps','party','field','tilecache','interior','battle','menu','crafts','hearts','deep','platform','living','cards','heist','editor','story']
 
 # ---- content/*.json (2.0, EN-1): checked by tools/content.js, then written into the game as JS ----
 import tempfile
@@ -34,13 +34,14 @@ def check_content():
     return json.loads(emit.read_text()) if MODDED else None
 def content_js(merged=None):
     if merged:
-        T=merged['tables']; tables={k: T[k] for k in ('ITEMS','MONSTERS','NIGHT_ENC','ENCOUNTERS','SHOPS')}
+        T=merged['tables']; tables={k: T[k] for k in ('ITEMS','MONSTERS','NIGHT_ENC','ENCOUNTERS','SHOPS','TOWN_DEFS')}
     else:
         load=lambda f: json.loads((root/'content'/f).read_text())
         strip=lambda o: {k: v for k, v in o.items() if not k.startswith('//')}   # '// …' keys are comments
         enc=load('encounters.json')
         tables={'ITEMS': strip(load('items.json')['items']), 'MONSTERS': strip(load('monsters.json')['monsters']),
-                'NIGHT_ENC': strip(enc['night']), 'ENCOUNTERS': strip(enc['day']), 'SHOPS': strip(load('shops.json')['shops'])}
+                'NIGHT_ENC': strip(enc['night']), 'ENCOUNTERS': strip(enc['day']), 'SHOPS': strip(load('shops.json')['shops']),
+                'TOWN_DEFS': strip(load('towns.json')['towns'])}
     tables['MODS']=merged['mods'] if merged else []   # the mods built in: shown on the title screen, kept in saves
     out=['// ============================================================',
          '//  CONTENT: written by build.py from content/*.json'+(' and mods' if merged else '')+'. Edit those files, not this.',
@@ -115,7 +116,7 @@ else: (root/'index.html').write_text(html)
 # ---- load-order check: run the joined script once in node, as a browser would on page load ----
 if shutil.which('node'):
     r=subprocess.run(['node',str(root/'tools'/'load_check.js'),*map(str,sources())],cwd=root)
-    if r.returncode: sys.exit(f'build.py: {OUT if MODDED else "index.html"} was written, but it fails to load (see above)')
+    if r.returncode: sys.exit(f'build.py: {OUT if MODDED else "index.html"} was written, but it fails to load or a town check (see above)')
 else:
     print('build.py: node not found, skipping the load-order check', file=sys.stderr)
 if MODDED:   # the installable-app files belong to the real game only

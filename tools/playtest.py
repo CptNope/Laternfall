@@ -17,7 +17,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods', 'editor']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -630,6 +630,70 @@ async def main():
             await run("await changeMap(G.mapId, G.x, G.y, 'down')", 1500)
             check(await ev("G.scene === Field && Field.map.id === 'lastlight'"), 'and the field carries on from it')
             await shot('78_save_without_mod')
+
+        if want('editor'):
+            # 2.0 EN-3: the town editor (index.html?edit) and the town check it shares with the build
+            def check(ok, label):
+                print(('ok   ' if ok else 'FAIL ') + label)
+                if not ok: errs.append('check failed: ' + label)
+            ectx = await b.new_context(viewport={'width': 1340, 'height': 800}, accept_downloads=True)
+            ep = await ectx.new_page()
+            ep.on('pageerror', lambda e: errs.append('editor pageerror: ' + str(e)))
+            ep.on('console', lambda m: errs.append('editor console: ' + m.text) if m.type == 'error' else None)
+            await ep.goto('file://' + PATH + '?edit'); await ep.wait_for_timeout(1500)
+            E = ep.evaluate
+            check(await E("G.scene === EditorScene && Editor.id === Object.keys(TOWN_DEFS)[0] && Editor.map.entities.length > 3"), 'index.html?edit opens the editor on the first town, with its people')
+            await ep.screenshot(path=f'{OUT}/79_editor.png')
+            check(await E("townReport().length === 0"), "every town in the game passes the town check (in the browser too)")
+            broken = await E("""(() => {
+              const d = JSON.parse(JSON.stringify(TOWN_DEFS.brightwater));
+              d.decor.push(...d.exits.map(([x, y]) => [x, y - 1, 'F']));                       // a fence across the way in
+              const a = townProblems('brightwater', d).map(p => p.msg);
+              const d2 = JSON.parse(JSON.stringify(TOWN_DEFS.brightwater)), inn = d2.buildings.find(b => b.id === 'inn');
+              d2.decor.push([inn.x + Math.floor(inn.w / 2), inn.y + inn.h, 'c']);                  // crates on the inn's doorstep
+              d2.decor.push([5, 7, 'F'], [4, 8, 'F'], [6, 8, 'F'], [5, 9, 'F']);                   // the Elder fenced in
+              return [a, townProblems('brightwater', d2).map(p => p.msg)]; })()""")
+            check(any('door of "inn"' in m for m in broken[0]) and any('can\'t be reached' in m for m in broken[0]), f'a fence across the way in cuts off every door ({len(broken[0])} problems)')
+            check(any('door of "inn"' in m for m in broken[1]), 'crates on a doorstep are caught')
+            check(any("Elder Maren can't be reached" in m for m in broken[1]), 'a townsperson fenced in is caught')
+            async def at(tx, ty):
+                return await E(f"(() => {{ const r = cv.getBoundingClientRect(); return [r.left + ({tx} * TS + 16 - Editor.cam.x) * r.width / W, r.top + ({ty} * TS + 16 - Editor.cam.y) * r.height / H]; }})()")
+            async def drag(a, b2):
+                x0, y0 = await at(*a); x1, y1 = await at(*b2)
+                await ep.mouse.move(x0, y0); await ep.mouse.down(); await ep.mouse.move((x0 + x1) / 2, (y0 + y1) / 2); await ep.mouse.move(x1, y1); await ep.mouse.up(); await ep.wait_for_timeout(150)
+            await drag((3, 11), (3, 8))
+            r = await E("[Editor.def.buildings.find(b => b.id === 'items').y, Editor.problems.map(p => p.msg)]")
+            check(r[0] == 7 and any('Elder Maren stands where nobody can walk' in m for m in r[1]), f'dragging the item shop onto the Elder moves it and flags him ({r})')
+            await ep.screenshot(path=f'{OUT}/80_editor_problem.png')
+            await ep.keyboard.press('Control+z'); await ep.wait_for_timeout(150)
+            check(await E("TOWN_DEFS.brightwater.buildings.find(b => b.id === 'items').y === 10 && Editor.problems.length === 0"), 'undo puts it back')
+            await ep.click('button[data-tool=decor]'); await ep.click('button[data-decor=l]'); await drag((9, 12), (11, 12))
+            check(await E("[9, 10, 11].every(x => Editor.def.decor.some(d => d[0] === x && d[1] === 12 && d[2] === 'l'))"), 'dragging with a decoration paints a row of lamp posts')
+            await ep.click('button[data-tool=building]'); await drag((19, 15), (21, 16))
+            # a free 3 × 3 spot: the first where a house breaks nothing
+            spot = await E("""(() => { for (let y = 1; y < 15; y++) for (let x = 1; x < 21; x++) { const d = JSON.parse(JSON.stringify(Editor.def)); d.buildings.push({ x, y, w: 3, h: 3, kind: 'house', roof: '#7a5a9a', id: 'probe' }); if (!townProblems('brightwater', d).length) return [x, y]; } return null; })()""")
+            await ep.click('button[data-tool=building]'); await drag((spot[0], spot[1]), (spot[0] + 2, spot[1] + 2))
+            check(await E("Editor.def.buildings.at(-1).id === 'house1' && Editor.def.buildings.length === 6"), 'a building needs 3 × 3; dragging one adds a house')
+            await ep.click('button[data-tool=select]')
+            await ep.select_option('select[data-b=kind]', 'inn'); await ep.wait_for_timeout(150)
+            check(await E("Editor.def.buildings.at(-1).kind === 'inn' && Editor.def.buildings.at(-1).price === 50"), 'the panel turns it into an inn, with a price')
+            await ep.click('button[data-act=walk]'); await ep.wait_for_timeout(1500)
+            await ep.keyboard.press('ArrowLeft'); await ep.wait_for_timeout(400)
+            check(await E("Editor.walking && G.scene === Field && Field.map.buildings.length === 6"), 'Walk around plays the edited town')
+            await ep.screenshot(path=f'{OUT}/81_editor_walk.png')
+            await ep.keyboard.press('Escape'); await ep.wait_for_timeout(300)
+            check(await E("!Editor.walking && G.scene === EditorScene"), 'Esc goes back to editing')
+            async with ep.expect_download() as dl: await ep.click('button[data-act=mod]')
+            mod_town = open(await (await dl.value).path()).read()
+            await ep.reload(); await ep.wait_for_timeout(1200)
+            check(await E("Editor.def.buildings.length === 6 && !!Editor.drafts.brightwater"), 'edits survive a reload')
+            await ectx.close()
+            # the exported file is a working mod
+            import subprocess, tempfile
+            md = pathlib.Path(tempfile.mkdtemp()) / 'newinn'; (md / 'content').mkdir(parents=True)
+            (md / 'mod.json').write_text(json.dumps({'name': 'A new inn', 'version': '1.0.0'})); (md / 'content' / 'towns.json').write_text(mod_town)
+            r = subprocess.run([sys.executable, str(ROOT / 'build.py'), '--mod', str(md), '--out', str(md / 'out.html')], capture_output=True, text=True)
+            check(r.returncode == 0 and 'every town can be walked' in r.stdout, 'the exported town builds as a mod and passes the town check' + ('' if r.returncode == 0 else ': ' + (r.stderr + r.stdout)[-300:]))
 
         if want('tiles'):
             # 1.10 tile cache: the cached tile layer must look like the tiles drawn one by one

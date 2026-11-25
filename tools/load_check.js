@@ -9,6 +9,8 @@
 // Browser APIs are replaced by a stand-in that accepts any use, so only the game's own code is
 // tested. Code inside functions that run later (events, the main loop) isn't reached.
 //
+// It then checks every town's layout (see the end of this file).
+//
 // Usage: node tools/load_check.js src/core.js src/data.js ...   (build.py passes its order)
 'use strict';
 const fs = require('fs'), vm = require('vm'), path = require('path');
@@ -65,3 +67,11 @@ try {
   process.exit(1);
 }
 console.log(`load_check: ${files.length} files load cleanly in build order`);
+
+// Then walk every town with the game's own rules (townProblems in src/editor.js): every door and
+// every townsperson, by day and night, early and late in the story, must be reachable from the way in.
+let towns;
+try { towns = vm.runInContext('typeof townReport === "function" ? townReport() : null', ctx, { timeout: 20000 }); }
+catch (e) { console.error(`load_check: checking the towns threw ${e.name}: ${e.message}`); process.exit(1); }
+if (towns && towns.length) { console.error(`load_check: ${towns.length} town problem(s)\n  ` + towns.join('\n  ') + '\n  Open index.html?edit to see them on the map.'); process.exit(1); }
+if (towns) console.log('load_check: every town can be walked: all doors and townspeople reachable');

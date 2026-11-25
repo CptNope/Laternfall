@@ -1214,4 +1214,4 @@ function frameInner(now) {
 Fade.v = 1;
 G.scene = TitleScene;
 requestAnimationFrame(frame);
-runScript(titleMenu);
+if (EDIT_MODE) Editor.start(); else runScript(titleMenu);   // index.html?edit opens the town editor (editor.js)

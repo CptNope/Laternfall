@@ -21,7 +21,8 @@ flowchart TD
     Q -->|Other numbers: moves, heroes, recipes, meals| D[src/data.js]
     Q -->|A drawing| A[src/monsters/, src/backgrounds/, src/art.js]
     Q -->|Dialogue, cutscene, quest logic| S[src/story.js]
-    Q -->|A town layout or dungeon definition| M[src/maps.js]
+    Q -->|A town's layout| TE[the editor: index.html?edit,<br/>or content/towns.json]
+    Q -->|A dungeon definition or the world map| M[src/maps.js]
     Q -->|A building's inside| I[src/interior.js]
     Q -->|A battle rule or skill type| B[src/battle.js]
     Q -->|A menu screen| MN[src/menu.js]
@@ -311,32 +312,58 @@ if (f.q_scarf) q.push({ title: 'The Red Scarf', giver: 'Marta, Frostmere', done:
 
 ---
 
+## Edit a town in the editor
+
+Open **`index.html?edit`**. The editor draws a town with the game's own art and puts its people where the game would; pick the town at the top of the panel.
+
+| Tool (key) | Does |
+| --- | --- |
+| Select / move (1) | Click a building, decoration or exit; drag to move it; Delete removes it. A selected building's kind, id, size, colours, sign, shop or inn price are in the panel |
+| Building (2), Path (3), Water (4), Pier (5) | Drag a rectangle |
+| Decoration (6) | Pick one, then click or drag to paint it |
+| Exit (7) | Click an edge tile to add or remove a way in |
+| Erase (8) | Click to remove the top thing on a tile |
+
+Right-drag, the mouse wheel or the arrow keys move the view; Ctrl+Z and Ctrl+Y undo and redo. **At night** and **After the ending** show who's in town then. **Walk around** drops you into the edited town to try it (Esc comes back). Edits are kept in your browser until you reset the town.
+
+The **Check** list (red circles on the map) walks the town with the game's own rules: every door and every townsperson must be reachable from the way in, by day and night, early and late in the story; buildings mustn't overlap or touch the edge. The build runs the same check on every town, so a broken layout can't ship.
+
+**Save as a mod file** downloads `towns.json` for `mods/<your-mod>/content/` ([mods/README.md](../mods/README.md)). **Copy for content/towns.json** gives the town's entry, to paste over the game's own.
+
+Townspeople stand where `townNpcs()` in `story.js` puts them, so moving a building can leave someone inside it: the check says who, and you move the building or edit `townNpcs`.
+
+---
+
 ## Add a town
 
-**Files:** `src/maps.js`, `src/story.js`, `content/shops.json`, optionally `src/art.js` (an icon or theme) and `src/interior.js`
+**Files:** `content/towns.json` (or the editor), `src/maps.js`, `src/story.js`, `content/shops.json`, optionally `src/art.js` (an icon or theme) and `src/interior.js`
 
 ```mermaid
 flowchart TD
-    T1[TOWN_DEFS entry: size, border, theme,<br/>buildings, paths, water, decor, exits, loc] --> T2[WORLD_LOC entry with a free letter]
+    T1[content/towns.json entry: size, border, theme,<br/>buildings, paths, water, decor, exits, loc] --> T2[WORLD_LOC entry with a free letter]
     T2 --> T3[drawLocationIcon case for the letter]
     T3 --> T4[content/shops.json lists for any shop buildings]
     T4 --> T5[townNpcs and interiorNpcs]
     T5 --> T6[onEnterTown first-visit lines<br/>mainObjective / worldMapView if gated]
 ```
 
-```js
-TOWN_DEFS.saltmarsh = {
-  name: 'Saltmarsh', w: 24, h: 18, border: 't', theme: 'grass', music: 'town', loc: 'H',
-  exits: [[11, 17], [12, 17]],                       // edge tiles that lead back to the world
-  buildings: [
-    { x: 2, y: 2, w: 6, h: 4, kind: 'inn', roof: '#3a6ad0', sign: 'inn', id: 'inn', price: 90 },
-    { x: 17, y: 10, w: 5, h: 4, kind: 'shop', roof: '#3a8a4a', sign: 'item', id: 'items', shop: 'saltmarsh_items' }
+The quickest start: in the editor, lay out a copy of a similar town and **Copy for content/towns.json**, then rename it. By hand, in `content/towns.json`:
+
+```json
+"saltmarsh": {
+  "name": "Saltmarsh", "w": 24, "h": 18, "border": "t", "theme": "grass", "music": "town", "loc": "H",
+  "exits": [[11, 17], [12, 17]],
+  "buildings": [
+    {"x": 2, "y": 2, "w": 6, "h": 4, "kind": "inn", "roof": "#3a6ad0", "sign": "inn", "id": "inn", "price": 90},
+    {"x": 17, "y": 10, "w": 5, "h": 4, "kind": "shop", "roof": "#3a8a4a", "sign": "item", "id": "items", "shop": "saltmarsh_items"}
   ],
-  paths: [[11, 6, 12, 17], [3, 6, 20, 7]],           // [x0, y0, x1, y1] rectangles of path
-  water: [[15, 15, 4, 2]],                           // [x, y, w, h]; also a fishing spot if FISH_SPOTS.saltmarsh exists
-  decor: [[9, 9, 'l'], [14, 9, 'w']]                 // l lamp, w well, f flowers, c crates, g grave, b brazier, t tree, P pine
-};
+  "paths": [[11, 6, 12, 17], [3, 6, 20, 7]],
+  "water": [[15, 15, 4, 2]],
+  "decor": [[9, 9, "l"], [14, 9, "w"]]
+}
 ```
+
+`exits` are edge tiles that lead back to the world; `paths` are `[x0, y0, x1, y1]` corners; `water` and `piers` are `[x, y, w, h]` (water is also a fishing spot if `FISH_SPOTS.saltmarsh` exists); `decor` tiles are listed in [`content/schema/towns.schema.json`](../content/schema/towns.schema.json).
 
 - **Themes:** `grass`, `stone`, `snow`, `sand`, `ash`. A theme sets the ground, path colour and interior palette.
 - **Building kinds** (and their interiors): `inn`, `shop`, `hall`, `house`, `chapel`, `jail`, `arena`. The door is always at the bottom-centre of the building.

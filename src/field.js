@@ -263,6 +263,7 @@ const Field = {
   // -------- drawing --------
   camera() {
     let px = G.x * TS, py = G.y * TS;
+    if (this.camAt) return { cx: this.camAt.x, cy: this.camAt.y, px, py };   // the editor moves the camera itself
     if (this.anim) { const k = this.anim.t; px = lerp(this.anim.fx, this.anim.tx, k) * TS; py = lerp(this.anim.fy, this.anim.ty, k) * TS; }
     const m = this.map;
     let cx = px - W / 2 + TS / 2, cy = py - H / 2 + TS / 2;
@@ -299,7 +300,7 @@ const Field = {
     }
     const step = this.anim ? (Math.floor(this.walkT * 8) % 2 ? 1 : 2) : 0;
     const psx = px - cx + TS / 2, psy = py - cy + TS - 2;
-    list.push({
+    if (!this.noPlayer) list.push({   // the editor hides the hero
       y: py + TS / 2 + 0.5, draw: () => {
         if (G.inAir) { ellipse(g, psx, psy, 16, 5, 'rgba(0,0,0,.25)'); drawAirship(g, psx, psy - 26, t, G.dir, true); }
         else if (G.onMoth) { ellipse(g, psx, psy, 14, 4, 'rgba(0,0,0,.25)'); drawMoth(g, psx, psy - 14, t, G.dir, HEROES[G.party[0].id].look); }

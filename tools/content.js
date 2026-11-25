@@ -17,7 +17,7 @@ const fs = require('fs'), path = require('path'), vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
 let MOD_SRC = [];   // .js files of the mods being checked (they can add monster families)
-const FILES = { items: 'items.json', monsters: 'monsters.json', shops: 'shops.json', encounters: 'encounters.json' };
+const FILES = { items: 'items.json', monsters: 'monsters.json', shops: 'shops.json', encounters: 'encounters.json', towns: 'towns.json' };
 
 // ---------- loading ----------
 const isComment = k => k.startsWith('//');
@@ -34,11 +34,11 @@ function readFiles(dir = path.join(ROOT, 'content')) {
 // ---------- mods (2.0, EN-4) ----------
 // A mod is a folder: mod.json, optional content/*.json patches, optional src/*.js.
 // Patches merge into the base, in the order the mods are given:
-//  - items, monsters: a new id is added at the end; an existing one is patched field by field
+//  - items, monsters, towns: a new id is added at the end; an existing one is patched field by field
 //    ({"hp": 30} changes only hp); null removes it.
 //  - shops, encounter tables: a list replaces the whole list; {"add": [...], "remove": [...]}
 //    edits it (remove takes item ids, or for encounters the index of a group); null removes it.
-const MOD_FIELDS = { items: ['items'], monsters: ['monsters'], shops: ['shops'], encounters: ['day', 'night'] };
+const MOD_FIELDS = { items: ['items'], monsters: ['monsters'], shops: ['shops'], encounters: ['day', 'night'], towns: ['towns'] };
 function readMod(dir) {
   const id = path.basename(path.resolve(dir));
   const at = `mods/${id}`;
@@ -68,7 +68,7 @@ function mergeMod(raw, mod, origin) {
       if (isComment(id)) continue;
       note(k, t, id);
       if (v === null) { if (!(id in base)) mod.errs.push(`${mod.at}/content/${k}.json: ${t}.${id}: can't remove "${id}", it doesn't exist`); delete base[id]; continue; }
-      if (k === 'items' || k === 'monsters') {
+      if (k === 'items' || k === 'monsters' || k === 'towns') {
         if (id in base && typeof v === 'object' && !Array.isArray(v)) base[id] = { ...base[id], ...v };
         else base[id] = v;
       } else if (Array.isArray(v)) base[id] = v;
@@ -95,7 +95,7 @@ function readWithMods(dirs = []) {
 // The tables the game uses, under the names it uses
 function tables(raw) {
   return { ITEMS: strip(raw.items.items), MONSTERS: strip(raw.monsters.monsters), SHOPS: strip(raw.shops.shops),
-    ENCOUNTERS: strip(raw.encounters.day), NIGHT_ENC: strip(raw.encounters.night) };
+    ENCOUNTERS: strip(raw.encounters.day), NIGHT_ENC: strip(raw.encounters.night), TOWN_DEFS: strip(raw.towns.towns) };
 }
 const load = dir => tables(readFiles(dir));
 
@@ -200,6 +200,18 @@ function references(T, errs) {
     for (const [id, groups] of Object.entries(T2)) groups.forEach((g, i) => g.g.forEach((x, j) => monster(x, `encounters.json: ${name}.${id}[${i}].g[${j}]`)));
   for (const id of Object.keys(NIGHT_ENC)) if (!(id in ENCOUNTERS)) errs.push(`encounters.json: night.${id}: no day table "${id}" (night tables replace half of a day table's battles)`);
 
+  // towns: shops exist, the music exists, building ids are unique
+  const core = fs.readFileSync(path.join(ROOT, 'src', 'core.js'), 'utf8'), tracks = core.slice(core.indexOf('const TRACKS = {'));
+  for (const [id, t] of Object.entries(T.TOWN_DEFS)) {
+    const at = `towns.json: towns.${id}`;
+    if (!new RegExp(`\\n  ${t.music}: `).test(tracks)) errs.push(`${at}.music: "${t.music}" isn't a track in TRACKS (src/core.js)`);
+    const seen = new Set();
+    t.buildings.forEach((b, i) => {
+      if (seen.has(b.id)) errs.push(`${at}.buildings[${i}].id: "${b.id}" is used twice in this town`); seen.add(b.id);
+      if (b.shop && !(b.shop in SHOPS)) errs.push(`${at}.buildings[${i}].shop: "${b.shop}" isn't a shop in content/shops.json`);
+    });
+  }
+
   // what data.js names
   D.RECIPES.forEach((r, i) => { item(r.out, `data.js RECIPES[${i}].out`); for (const m of Object.keys(r.mats)) item(m, `data.js RECIPES[${i}].mats`); });
   for (const [n, t] of Object.entries(D.TREASURES)) for (const l of t.loot) if (!l.startsWith('gold:')) item(l, `data.js TREASURES[${n}].loot`);
@@ -247,9 +259,11 @@ function selftest() {
     ['an encounter with a typo', r => { r.encounters.day.r1[0].g[0] = 'slim'; }, /"slim" isn't a monster/],
     ['a night table with no day table', r => { r.encounters.night.r9 = [{ w: 1, g: ['slime'] }]; }, /night\.r9: no day table/],
     ['a removed item still in a recipe', r => { delete r.items.items.forge_ring; }, /RECIPES\[0\]\.out: "forge_ring"/],
-    ['a removed shop a town uses', r => { delete r.shops.shops.halden_items; }, /shop "halden_items" isn't in/],
+    ['a removed shop a town uses', r => { delete r.shops.shops.halden_items; }, /"halden_items" isn't a shop/],
     ['a removed monster a script fights', r => { delete r.monsters.monsters.crown; }, /startBattle: "crown" isn't a monster/],
     ['a bad id', r => { r.items.items['Big Potion'] = r.items.items.potion; }, /unknown field "Big Potion"/],
+    ['a town shop that sells from a list that doesn\'t exist', r => { r.towns.towns.brightwater.buildings[3].shop = 'brightwater_itemz'; }, /buildings\[3\]\.shop: "brightwater_itemz" isn't a shop/],
+    ['a town with music that doesn\'t exist', r => { r.towns.towns.halden.music = 'harbour'; }, /halden\.music: "harbour" isn't a track/],
   ];
   let bad = 0;
   if (check(base).length) { console.log('FAIL the real content has problems: run node tools/content.js'); return 1; }
@@ -268,6 +282,7 @@ function selftest() {
     ['a mod removing an encounter group that isn\'t there', { 'content/encounters.json': { day: { r1: { remove: [40] } } } }, /isn't a group number/],
     ['a mod with a misnamed content file', { 'content/item.json': { items: {} } }, /content\/item\.json: not a content file/],
     ['a mod without a version', { 'mod.json': { name: 'T' } }, /mod\.json: missing "version"/],
+    ['a mod moving a town\'s shop to a list that doesn\'t exist', { 'content/towns.json': { towns: { brightwater: { buildings: [{ x: 2, y: 10, w: 5, h: 4, kind: 'shop', roof: '#3a8a4a', id: 'items', shop: 'nowhere' }] } } } }, /shop: "nowhere" isn't a shop.*from mod "t"/],
   ];
   for (const [what, files, expect] of modCases) {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lfmod-')), md = path.join(dir, 't');

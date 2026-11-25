@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "towns.schema.json",
+  "title": "Lanternfall towns",
+  "description": "Every town's layout. Coordinates are tiles, from (0, 0) at the top left. Later layers paint over earlier ones: ground, water, paths, piers, decorations, then exits. Easiest to edit in the editor: open index.html?edit.",
+  "type": "object",
+  "required": ["towns"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "towns": {
+      "type": "object",
+      "patternProperties": { "^//": { "$ref": "common.schema.json#/$defs/comment" }, "^[a-z][a-z0-9_]*$": { "$ref": "#/$defs/town" } },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "xy": { "type": "array", "prefixItems": [{ "type": "integer", "minimum": 0 }, { "type": "integer", "minimum": 0 }], "minItems": 2, "maxItems": 2, "description": "[x, y]" },
+    "rect": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "minItems": 4, "maxItems": 4, "description": "[x, y, width, height]" },
+    "town": {
+      "type": "object",
+      "required": ["name", "w", "h", "border", "theme", "music", "loc", "exits", "buildings", "paths"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "w": { "type": "integer", "minimum": 10, "maximum": 40, "description": "Width in tiles, border included." },
+        "h": { "type": "integer", "minimum": 10, "maximum": 40, "description": "Height in tiles, border included." },
+        "border": { "enum": ["t", "P", "r", "m"], "description": "The tile around the edge: t trees (palms in sand), P pines, r rocks, m cliffs." },
+        "theme": { "enum": ["grass", "snow", "sand", "stone", "ash"], "description": "Ground and look. Flowers only grow on grass." },
+        "music": { "type": "string", "description": "A track in TRACKS (src/core.js)." },
+        "loc": { "type": "string", "pattern": "^[A-Z0-9]$", "description": "The world-map letter that leads here." },
+        "underwater": { "const": true, "description": "On the sea floor (Nerith): no night, no weather." },
+        "underground": { "const": true, "description": "Below ground (the Undermarket): no night, no weather." },
+        "exitTo": { "type": "object", "required": ["map", "x", "y"], "additionalProperties": false, "properties": { "map": { "type": "string" }, "x": { "type": "integer" }, "y": { "type": "integer" } }, "description": "Where the exits lead, if not the world map." },
+        "exits": { "type": "array", "items": { "$ref": "#/$defs/xy" }, "minItems": 1, "description": "Tiles on the edge that lead out." },
+        "buildings": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "required": ["x", "y", "w", "h", "kind", "roof", "id"], "additionalProperties": false,
+            "properties": {
+              "x": { "type": "integer", "minimum": 1 }, "y": { "type": "integer", "minimum": 1 },
+              "w": { "type": "integer", "minimum": 3, "maximum": 9 }, "h": { "type": "integer", "minimum": 3, "maximum": 6 },
+              "kind": { "enum": ["house", "inn", "shop", "hall", "chapel", "jail", "arena"], "description": "Decides the inside, and what the door does." },
+              "id": { "$ref": "common.schema.json#/$defs/id", "description": "Unique in the town; the inside is the map in:<town>:<id>." },
+              "roof": { "type": "string", "pattern": "^#[0-9a-f]{6}$" },
+              "wall": { "type": "string", "pattern": "^#[0-9a-f]{6}$", "description": "Wall colour; the theme's if left out." },
+              "sign": { "enum": ["inn", "item", "arms", "hall", "anchor", "arena", "jail"], "description": "The sign over the door." },
+              "chimney": { "const": true },
+              "shop": { "$ref": "common.schema.json#/$defs/id", "description": "For kind shop: the list in content/shops.json." },
+              "price": { "type": "integer", "minimum": 0, "description": "For kind inn: the price of a night." }
+            },
+            "allOf": [
+              { "if": { "properties": { "kind": { "const": "shop" } } }, "then": { "required": ["shop"] } },
+              { "if": { "properties": { "kind": { "const": "inn" } } }, "then": { "required": ["price"] } }
+            ]
+          },
+          "description": "The door is in the middle of the bottom row; the tile below it must be reachable."
+        },
+        "paths": { "type": "array", "items": { "$ref": "#/$defs/rect", "description": "[x0, y0, x1, y1]: a path filling the rectangle between two corners." } },
+        "water": { "type": "array", "items": { "$ref": "#/$defs/rect" } },
+        "piers": { "type": "array", "items": { "$ref": "#/$defs/rect" }, "description": "Wooden piers, walkable, usually over water." },
+        "decor": {
+          "type": "array",
+          "items": { "type": "array", "prefixItems": [{ "type": "integer", "minimum": 0 }, { "type": "integer", "minimum": 0 }, { "enum": ["t", "P", "m", "r", "f", "F", "w", "l", "c", "a", "b", "g"] }], "minItems": 3, "maxItems": 3 },
+          "description": "[x, y, tile]: t tree, P pine, m cliff, r rock, f flowers, F fence, w well, l lamp post, c crates, a anvil, b brazier, g gravestone. All but f block the way."
+        }
+      }
+    }
+  }
+}

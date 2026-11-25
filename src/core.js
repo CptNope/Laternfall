@@ -5,10 +5,10 @@
 const W = 640, H = 480, TS = 32, VW = 20, VH = 15;
 const cv = document.getElementById('game');
 const ctx = cv.getContext('2d');
-let SCALE = 1, DPR = 1;
+let SCALE = 1, DPR = 1, SIDE_PANEL = 0;   // the editor's panel takes SIDE_PANEL pixels on the right
 function resize() {
   DPR = Math.min(window.devicePixelRatio || 1, 2);
-  const s = Math.min(window.innerWidth / W, window.innerHeight / H);
+  const s = Math.min((window.innerWidth - SIDE_PANEL) / W, window.innerHeight / H);
   SCALE = s;
   cv.style.width = Math.floor(W * s) + 'px';
   cv.style.height = Math.floor(H * s) + 'px';
