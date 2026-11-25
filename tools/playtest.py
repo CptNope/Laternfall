@@ -18,7 +18,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods', 'editor', 'i18n']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods', 'editor', 'i18n', 'endless']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -172,6 +172,7 @@ async def main():
         if want('newgame'):
             await pg.goto('file://' + PATH); await ev("localStorage.clear()"); await pg.reload(); await pg.wait_for_timeout(900)
             await press('Enter')  # New Game
+            await press('Enter', 1, 400)  # Normal mode (2.1)
             await pg.wait_for_timeout(15000)
             n = await until_idle(60, 'Enter', 200)
             await shot('20_newgame_brightwater')
@@ -193,6 +194,72 @@ async def main():
             await ev("G.encSteps = 0"); await ev("Field.encounterCheck(1)"); await pg.wait_for_timeout(2500)
             print('isle enemies', await ev("G.scene.enemies && G.scene.enemies.map(e=>e.id)"), 'bg', await ev("G.scene.bg"))
             await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110)
+
+        if want('endless'):
+            def check(ok, label):
+                print(('ok   ' if ok else 'FAIL ') + label)
+                if not ok: errs.append('check failed: ' + label)
+            s = json.loads(json.dumps(POST))
+            s['mapId'] = 'brightwater'; s['x'] = 13; s['y'] = 11; s['dir'] = 'up'
+            await boot(s); await until_idle()
+            # --- every floor is sound: stairs both ways, a boss and a way on every fifth floor ---
+            bad = await ev("(() => { const bad = []; for (let f = 0; f < 120; f++) { const m = genDungeonFloor('endless', f); const D = m.down && m.at(m.down.x, m.down.y) === '>' && m.at(m.up.x, m.up.y) === '<'; if (!D || !!m.extras.boss !== endlessBossFloor(f) || (m.extras.boss && !MONSTERS[endlessDef(f).boss])) bad.push(f); } return bad; })()")
+            check(bad == [], f'120 floors generate with stairs down and up, a boss on every fifth (bad: {bad})')
+            check(await ev("genDungeonFloor('endless', 7).tiles.join() === genDungeonFloor('endless', 7).tiles.join() && endlessDef(0).theme === 'hollow' && endlessDef(5).theme === 'shrine' && endlessDef(50).theme === 'hollow'"), 'floors are seeded and the look cycles through the old dungeons')
+            # --- the keeper only appears after the ending ---
+            check(await ev("Field.map.entities.some(e => e.name === KEEPER)"), 'Hesper stands by the well after the ending')
+            check(await ev("(() => { const f = G.flags.ending; G.flags.ending = false; const n = endlessNpcs().length; G.flags.ending = f; return n === 0; })()"), 'and not before it')
+            await run("await talkKeeper()", 400); await shot('80_endless_keeper')
+            await press('Enter', 3, 350); await press('Enter', 1, 300); await until_idle(); await pg.wait_for_timeout(900)
+            check(await ev("G.mapId === 'endless:0' && G.flags.endless_best === 1 && G.flags.seen_endless"), f'talking to her and picking 1F sends the party down (map {await ev("G.mapId")})')
+            await shot('81_endless_1f')
+            # --- foes are rescaled to the depth ---
+            hp = await ev("(() => { const b = new Battle(['sporecap'], {}); return [b.enemies[0].maxhp, MONSTERS.sporecap.hp, endlessScale(MONSTERS.sporecap, 0).hp]; })()")
+            check(hp[0] == hp[2] and hp[0] > hp[1] * 3, f'a Spore Cap down here has Abyss-level HP ({hp})')
+            check(await ev("endlessScale(MONSTERS.shadebat, 3).hp > endlessScale(MONSTERS.shadebat, 0).hp && endlessScale(MONSTERS.crown, 0).hp === MONSTERS.crown.hp"), 'foes grow with depth; bosses are matched to the Hollow Crown')
+            # --- stairs down: the record goes up and floors behind are dropped ---
+            await ev("const m = Field.map; G.x = m.down.x; G.y = m.down.y")
+            await run("await stairs(1)", 900); await until_idle()
+            check(await ev("G.mapId === 'endless:1' && G.flags.endless_best === 2 && !G.maps['endless:0']"), 'going down records the depth and forgets the floor above')
+            # --- a boss floor: an echo, gold, a checkpoint ---
+            await run("await startEndless(4)", 900); await until_idle()
+            check(await ev("G.mapId === 'endless:4' && Field.map.entities.some(e => e.kind === 'boss') && Field.map.at(Field.map.down.x, Field.map.down.y) === '>'"), '5F has a boss, with the way down behind it')
+            gold = await ev("G.gold")
+            await run("await endlessBoss()", 600); await press('Enter', 2, 400); await pg.wait_for_timeout(2600)
+            check(await ev("G.scene.enemies && G.scene.enemies[0].id === 'gloomcap' && G.scene.enemies[0].maxhp === endlessScale(MONSTERS.gloomcap, 4).hp"), 'the 5F echo is a scaled Gloomcap')
+            await shot('82_endless_boss')
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110)
+            check(await ev(f"G.flags.boss_endless_4 && G.flags.endless_ck === 5 && G.gold >= {gold} + 2000 && !Field.map.entities.some(e => e.kind === 'boss')"), 'beating it pays out and unlocks a checkpoint at 6F')
+            # --- climbing out ends the descent ---
+            await ev("const m = Field.map; G.x = m.up.x; G.y = m.up.y")
+            await run("await stairs(-1)", 400); await press('Enter', 1, 300); await until_idle(); await pg.wait_for_timeout(700)
+            check(await ev("G.mapId === 'brightwater' && !Object.keys(G.maps).some(k => k.startsWith('endless:'))"), 'the stairs up lead back to the well')
+            await run("await talkKeeper()", 400); await press('Enter', 1, 300); await shot('83_endless_checkpoint')
+            check(await ev("UI.top() && (UI.top().opts.choices || []).includes(tl`Descend from ${6}F`)"), 'next time Hesper offers 6F')
+            await press('ArrowDown', 1, 150); await press('Enter', 1, 300); await until_idle(); await pg.wait_for_timeout(900)
+            check(await ev("G.mapId === 'endless:5' && !G.flags.boss_endless_4"), 'starting from the checkpoint begins a fresh descent')
+            # --- trophies ---
+            await ev("G.flags.endless_best = 10; Trophies.check()")
+            check(await ev("!!Trophies.got.endless10 && !Trophies.got.endless30"), 'reaching 10F earns Down the Well')
+            # --- Hollow mode ---
+            await ev("G.flags.hollow = true; Field.enter('in:brightwater:inn', 9, 4, 'up')"); await pg.wait_for_timeout(500)
+            await ev("G.party.forEach(m => m.hp = 1)"); gold = await ev("G.gold")
+            await run("await innStay('brightwater', 10)", 400); await press('Enter', 6, 350); await until_idle(); await pg.wait_for_timeout(800)
+            check(await ev(f"G.party.every(m => m.hp === 1) && G.gold === {gold}"), 'in Hollow mode the inn passes the night but heals nobody (and is free)')
+            await ev("healAll()")
+            await run("await startBattle(['slime'])", 2400); await shot('84_hollow_no_run')
+            check(await ev("G.scene.enemies && isHollow()"), 'a battle in Hollow mode')
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110)
+            ph = await ev("(() => { const b = new Battle(['crown'], { boss: true }); const P = b.enemies[0].def.phases; return [P.length, MONSTERS.crown.phases.length, P[P.length - 1].hp, P[P.length - 1].actions]; })()")
+            check(ph[0] == ph[1] + 1 and ph[2] <= 0.2 and ph[3] == 3, f'bosses get a third phase that acts once more a turn ({ph})')
+            check(await ev("(() => { const f = G.flags.hollow; G.flags.hollow = false; const n = new Battle(['crown'], { boss: true }).enemies[0].def.phases.length; G.flags.hollow = f; return n === MONSTERS.crown.phases.length; })()"), 'and not in Normal mode')
+            await ev("saveGame('3')")
+            check(await ev("slotSummary('3').hollow === true"), 'save slots show Hollow')
+            # --- the mode is picked when a journey starts ---
+            await pg.goto('file://' + PATH); await ev("localStorage.clear()"); await pg.reload(); await pg.wait_for_timeout(900)
+            await press('Enter', 1, 400); await shot('85_mode_menu')
+            await press('ArrowDown', 1, 200); await press('Enter', 1, 300); await pg.wait_for_timeout(1500)
+            check(await ev("G.flags.hollow === true && G.party.length === 2"), 'New Game → Hollow starts a Hollow journey')
 
         if want('readme'):
             s2 = json.loads(json.dumps(POST)); s2['flags'].update({'isle': True, 'q_crown': True, 'abyssOpen': True, 'visit_G': True, 'visit_7': True, 'q_fish': True}); s2['inv']['fishing_rod'] = 1

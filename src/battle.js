@@ -17,7 +17,7 @@ class Battle {
     ids.forEach(id => counts[id] = (counts[id] || 0) + 1);
     const seen = {};
     this.enemies = ids.map(id => {
-      const d = ngScale(MONSTERS[id]);
+      const d = foeScale(MONSTERS[id], opts);   // endless.js: depth, New Game+ and Hollow mode
       seen[id] = (seen[id] || 0) + 1;
       const name = counts[id] > 1 ? `${d.name} ${String.fromCharCode(64 + seen[id])}` : d.name;
       return { id, def: d, name, bs: d.boss ? (d.fam === 'king' || d.fam === 'king2' || d.fam === 'crown' ? 1 : 1.15) : 1.35, hp: d.hp, maxhp: d.hp, alive: true, flash: 0, shake: 0, alpha: 1, dying: 0, status: {}, lunge: 0, stolen: false };
@@ -392,7 +392,7 @@ class Battle {
       let party = cmds;
       if (cmds.run) {
         this.msg = tl('Attempting to flee...'); await wait(500);
-        const can = !this.opts.boss && this.opts.canRun !== false;
+        const can = !this.opts.boss && this.opts.canRun !== false && !isHollow();
         const ps = this.liveParty().reduce((a, m) => a + stat(m, 'spd'), 0) / Math.max(1, this.liveParty().length);
         const es = this.liveEnemies().reduce((a, e) => a + e.def.spd, 0) / Math.max(1, this.liveEnemies().length);
         if (can && Math.random() < clamp(0.6 + (ps - es) * 0.03, 0.3, 0.95)) {
@@ -501,7 +501,7 @@ class Battle {
         { label: tl('Combo'), disabled: !this.combosFor(m).length },
         { label: tl('Item'), disabled: !usable.length },
         { label: tl('Defend') },
-        { label: tl('Run'), disabled: !!this.opts.boss }
+        { label: tl('Run'), disabled: !!this.opts.boss || isHollow() }
       ];
       const canRepeat = this.prevCmds && !this.prevCmds.some(c => c && c.type === 'run');
       const k0 = await listMenu({ x: 8, y: lim ? 314 : 330, w: 200, rows: items.length, rowH: lim ? 19 : 21, items, index: lim ? 0 : this.lastCmd ? this.lastCmd[idx] || 0 : 0, size: lim ? 14 : 15, hotkeys: canRepeat ? { run: -10 } : null,
@@ -838,7 +838,7 @@ class Battle {
       }
       if (s.type === 'escape') {
         a.pose = 'cast'; await wait(300);
-        if (this.opts.boss || this.opts.canRun === false) { this.msg = tl('There is no escape!'); Audio_.sfx('buzz'); await wait(700); this.msg = null; a.pose = null; return; }
+        if (this.opts.boss || this.opts.canRun === false || isHollow()) { this.msg = tl('There is no escape!'); Audio_.sfx('buzz'); await wait(700); this.msg = null; a.pose = null; return; }
         this.addFx(0.8, (g, k) => { g.save(); g.globalAlpha = Math.sin(k * Math.PI) * 0.9; g.fillStyle = '#d8d8e0'; g.fillRect(380, 100, 260, 300); g.restore(); });
         Audio_.sfx('run'); await wait(800);
         return 'escape';

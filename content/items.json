@@ -114,6 +114,7 @@
     "night_cloak": {"name": "Night Cloak", "price": 0, "kind": "acc", "atk": 10, "spd": 16, "immune": ["blind", "stop"], "desc": "ATK +10, SPD +16. Prevents blind and stop. The Guild's finest."},
     "sunset_opal": {"name": "Sunset Opal", "price": 0, "kind": "key", "desc": "A fist-sized opal the colour of a desert evening. The Guild says it was theirs first."},
     "heartlight": {"name": "Heartlight", "price": 0, "kind": "acc", "all": 20, "reraise": true, "immune": ["poison", "sleep", "silence", "blind", "slow", "berserk", "stop"], "desc": "All +20. Revives once per battle. No ailments. Five lights, one lantern."},
+    "endless_wick": {"name": "Endless Wick", "price": 0, "kind": "acc", "all": 14, "hp": 400, "regen": true, "desc": "All +14, HP +400, slowly heals in battle. It has burned at the bottom of the well for a thousand years."},
     "twin_crown": {"name": "Crown of Dusk & Dawn", "price": 0, "kind": "acc", "all": 25, "regen": true, "immune": ["poison", "sleep", "silence", "blind", "slow", "berserk", "stop"], "desc": "All +25. Regen. No ailments. Both halves of the first crown, at peace."},
     "// weapons": "",
     "bronze_sword": {"name": "Bronze Sword", "price": 60, "kind": "weapon", "who": ["arin"], "atk": 5, "desc": "A village blade."},

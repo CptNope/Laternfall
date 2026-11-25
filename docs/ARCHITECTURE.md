@@ -104,6 +104,7 @@ python3 build.py   # prints the byte size of the new index.html
 | `heist.js` | 1.9: *The Sunset Opal*. The vault map (map kind `heist`), guard patrols on a fixed loop, sight cones blocked by walls, getting caught, the Mirage hatch (night only) and Mags | `HEIST_MAP` `HEIST_GUARDS` `guardAt` `guardSight` `Heist` `heistStart` `heistTurnIn` `heistQuests` |
 | `deep.js` | 1.7 The Drowned Kingdom: diving and surfacing, Nerith's people, the palace and Rift bosses, treasure maps, lanternmoths, the Undermarket, the 1.7 quest log | `diveDown` `surfacePrompt` `talkYsolde` `palaceBoss` `hadalBoss` `digTreasure` `treasureMapDrop` `lampMoth` `shopPrice` `deepQuests` `worldPos` |
 | `story.js` | NPCs and dialogue, doors, cutscenes, bosses, quests, the title screen, the ending, **and the main loop** | `townNpcs` `bossEncounter` `questList` `mainObjective` `worldEvents` `titleMenu` `frame` |
+| `endless.js` | 2.1: the Endless Lantern (Hesper and her menu, starting and leaving a descent, echo bosses and checkpoints), `foeScale()` (every foe in every battle: depth scaling, then New Game+, then Hollow mode's third phase) and Hollow mode's rules. Last in the build | `endlessNpcs` `startEndless` `leaveEndless` `endlessBoss` `foeScale` `endlessScale` `hollowPhase` `isHollow` `pickMode` |
 
 ```mermaid
 flowchart TB
@@ -346,6 +347,8 @@ flowchart TD
     Q --> T[Torches on wall faces]
 ```
 
+**The Endless Lantern (2.1)** uses the same generator. `genDungeonFloor(did, f)` reads its definition from `dungeonDef(did, f)`, which for `endless` is `endlessDef(f)`: the band's borrowed theme, decorations and encounter table, a seed per floor, generated loot, and `floors` set so that every fifth floor is a "last" floor with a boss room. On those floors the way down (`>`) goes where the lantern would stand, behind the boss. `DUNGEONS.endless` is added after the `DUNGEONS` literal, so the guide's dungeon table (which reads the literal) leaves it out. Map ids are `endless:<f>`, floors behind the party are dropped from `G.maps`, and the stairs up on any floor end the descent.
+
 | Char | Dungeon tile | Char | Interior tile |
 | --- | --- | --- | --- |
 | `#` | Wall | `#` `=` | Wall top, wall face |
@@ -368,7 +371,7 @@ flowchart TD
 | `npc` | `townNpcs(id)`, `interiorNpcs(m)` | `talk()`; NPCs with `wander: true` drift up to 2 tiles from home; `mark: true` shows "!" |
 | `chest` | `DUNGEONS[did].loot` | Opens once; remembered as `G.flags['chest:<map>:<x>,<y>']` |
 | `lantern` | The boss room | Examine; glows once `G.flags['lantern_<did>']` is set |
-| `boss` | The boss room, until `G.flags['boss_<did>']` | Starts `bossEncounter(did)` when you get within 2 tiles |
+| `boss` | The boss room, until `G.flags[bossFlag(map)]` (`boss_<did>`, or `boss_endless_<f>`) | Starts `bossEncounter(did)` when you get within 2 tiles |
 | `glint`, `cat` | `questEntities(map)` at `extras.spot` | Quest pick-ups and memories |
 | `riddle` | `questEntities` in the Ember Caves | Lyra's riddle braziers |
 | `roadlamp` | `worldQuestEntities(map)` on the world | Arin's 12 roadside lamps; they block movement like posts |
@@ -601,7 +604,8 @@ flowchart LR
 | Forge | `forgeMet` `forged` (count) `forge_done` | Forging |
 | First visits | `seenHalden` `seenFrost` `seenIron` `seenAerie` `seen_<dungeon>`, `visit_<locationChar>` | Arrival lines; world map labels |
 | Containers | `chest:<mapId>:<x>,<y>`, `srch:<mapId>:<x>,<y>` | A chest opened or a container searched |
-| Meta | `ngplus` (cycle number), `noEnc` | New Game+, debugging |
+| Endless Lantern (2.1) | `seen_endless`, `endless_best` (deepest floor, from 1F), `endless_ck` (checkpoint floor, from 0), `endless_wick`; per descent `boss_endless_<f>` and `chest:endless:<f>:<x>,<y>`, cleared when a descent starts | Kept through New Game+ (except the per-descent ones) |
+| Meta | `ngplus` (cycle number), `hollow` (Hollow mode), `noEnc` | New Game+, Hollow mode, debugging |
 
 ---
 

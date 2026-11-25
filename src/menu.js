@@ -110,7 +110,7 @@ function drawSlotPanel(g, slot) {
   if (!s) { text(g, tl('Empty'), 462, 180, { size: 18, align: 'center', color: '#8792b8' }); return; }
   text(g, s.when, 608, 74, { size: 12, align: 'right', color: '#b8c4ee' });
   text(g, s.place, 316, 100, { size: 16 });
-  text(g, s.chapter + (s.ng ? tl`  ·  NG+${s.ng}` : ''), 316, 124, { size: 13, color: '#9ad8ff' });
+  text(g, s.chapter + (s.ng ? tl`  ·  NG+${s.ng}` : '') + (s.hollow ? tl('  ·  Hollow') : ''), 316, 124, { size: 13, color: '#9ad8ff' });
   s.d.party.slice(0, 5).forEach((m, i) => { drawChar(g, HEROES[m.id].look, 340 + i * 56, 210, 'down', 0, 1.3); text(g, tl`Lv${m.level}`, 340 + i * 56, 216, { size: 12, align: 'center', color: '#ffe9a8' }); });
   text(g, tl('Time'), 316, 248, { size: 13, color: '#b8c4ee' }); text(g, s.time, 420, 248, { size: 14, align: 'right' });
   text(g, tl('Gold'), 440, 248, { size: 13, color: '#b8c4ee' }); text(g, String(s.d.gold || 0), 608, 248, { size: 14, align: 'right', color: '#ffe9a8' });
@@ -473,12 +473,14 @@ async function innStay(townId, price, keeper = tl('Innkeeper')) {
   if (opts[c] === tl('Cook a meal')) { if (await cookMenu(keeper)) await say(keeper, tl('Eat up! That\'ll keep you going for a few fights.')); return; }
   const tillNight = opts[c] === tl('Stay until night');
   if (c !== 0 && !tillNight) { await say(keeper, tl('Another time, then.')); return; }
-  if (G.gold < price) { await say(keeper, tl("Ah... you're a bit short on coin, I'm afraid.")); return; }
-  G.gold -= price;
+  const hollow = isHollow();   // Hollow mode: the hours pass, but nobody heals
+  if (hollow) await say(keeper, tl('In the Hollow? Then a chair by the fire is all I can give you, and it\'s free. The hours will pass. Your wounds won\'t.'));
+  else if (G.gold < price) { await say(keeper, tl("Ah... you're a bit short on coin, I'm afraid.")); return; }
+  else G.gold -= price;
   await fadeTo(1, 500);
   Audio_.stopMusic();
   Audio_.sfx('inn');
-  healAll();
+  if (!hollow) healAll();
   G.lastInn = { town: townId };
   sleepUntil(tillNight ? 21 : 7);
   await wait(1600);
@@ -487,7 +489,7 @@ async function innStay(townId, price, keeper = tl('Innkeeper')) {
   Audio_.play(Audio_.curName, true);
   await fadeTo(0, 500);
   await innDream();
-  await say(keeper, tillNight ? tl('Good evening! The night folk are out, if that\'s your business.') : tl('Good morning! You look well rested.'));
+  await say(keeper, tillNight ? tl('Good evening! The night folk are out, if that\'s your business.') : hollow ? tl('Morning. You look about as tired as you did last night.') : tl('Good morning! You look well rested.'));
   await promptSave();
 }
 

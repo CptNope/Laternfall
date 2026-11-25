@@ -15,7 +15,8 @@ timeline
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
     2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance : 1.5.0 Hearts of the Lamplighters : 1.6.0 Deeper systems
     2026-11-24 : 1.7.0 The Drowned Kingdom : 1.8.0 Install anywhere : 1.9.0 Living world : 1.10.0 Foundations
-    Next : 2.0.0 Lantern Engine
+    2026-11-25 : 2.0.0 Lantern Engine
+    Next : 2.1.0 Endless Lantern
 ```
 
 ```mermaid
@@ -43,13 +44,31 @@ xychart-beta
 | 1.8.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 89 (17) | 21 | 5 | [#14](https://github.com/CptNope/Laternfall/pull/14) |
 | 1.9.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 94 (17) | 23 | 5 | [#15](https://github.com/CptNope/Laternfall/pull/15) |
 | 1.10.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 94 (17) | 23 | 5 | [#16](https://github.com/CptNope/Laternfall/pull/16) |
-| 2.0.0 | next | 9 | 12 (32) | 94 (17) | 23 | 5 | in progress |
+| 2.0.0 | 2026-11-25 (not yet tagged) | 9 | 12 (32) | 94 (17) | 23 | 5 | [#17](https://github.com/CptNope/Laternfall/pull/17), [#19](https://github.com/CptNope/Laternfall/pull/19), [#20](https://github.com/CptNope/Laternfall/pull/20), [#21](https://github.com/CptNope/Laternfall/pull/21) |
+| 2.1.0 | next | 9 | 13 (32 + endless) | 94 (17) | 23 | 5 | in progress |
 
 ---
 
 ## [Unreleased]
 
-Planned as **2.0.0 · *Lantern Engine***: separating the engine from Lanternfall's content (see the [roadmap](ROADMAP.md#20--lantern-engine)). It arrives in parts: EN-1 (content as data, #17), EN-4 (mods, #19), EN-3 (the town editor, #20) and EN-6 (languages). The game plays exactly the same.
+Planned as **2.1.0 · *Endless Lantern***: something to come back to after the ending (see the [roadmap](ROADMAP.md#21--endless-lantern)).
+
+### Added
+- **The Endless Lantern**, a post-game dungeon with no bottom. After the ending, Hesper waits by the well in Brightwater. Each floor is built by the existing floor generator from a seed, and each band of five floors borrows the look and monsters of an old dungeon (Whisperwood Hollow first, the Crownfall Abyss tenth, then round again).
+- **Foes scaled to the depth** (`foeScale()` in the new `src/endless.js`). On 1F a band's monsters are rescaled so their average matches the Crownfall Abyss; then HP and EXP/gold grow 6% a floor, ATK and MAG 1.2%, DEF 1%. Every fifth floor holds an echo of an old boss, rescaled to the Hollow Crown and growing the same way.
+- **Checkpoints and a record.** Beating an echo pays gold and lets you start the next descent from the floor after it. The deepest floor you've reached is saved and carries into New Game+. There is no way back up: the stairs up end the descent.
+- **Rewards that rise**: chests hold more gold and better items the deeper you go, and the first echo beaten on 25F or deeper leaves the **Endless Wick** (All +14, HP +400, regen).
+- **Hollow mode**, chosen when a New Game or New Game+ starts. Inns let the night pass but heal nobody, and neither does your bed at home. You can't run, and every boss rises a third time below 20% HP, acting once more each turn. Save slots show "Hollow".
+- Three trophies: *Down the Well* (10F), *The Long Dark* (30F) and *Hollow Walker* (finish the story in Hollow mode).
+- `endless` play-test scenario (22 checks), in CI: 120 floors generated and walked for stairs and bosses, the keeper, scaling, a boss and its checkpoint, climbing out, Hollow inns, battles and boss phases, and the New Game mode menu.
+- Balance-sim scenarios for the Endless Lantern and Hollow mode. A scenario can now pass battle options and flags.
+- The guide has sections for both, with a generated table of the floor cycle.
+
+---
+
+## [2.0.0] — 2026-11-25, merged (#17, #19, #20, #21) but not yet tagged · *Lantern Engine*
+
+Separating the engine from Lanternfall's content (see the [roadmap](ROADMAP.md#20--lantern-engine)). It arrived in parts: EN-1 (content as data, #17), EN-4 (mods, #19), EN-3 (the town editor, #20) and EN-6 (languages, #21). The game plays exactly the same.
 
 ### Added
 - **Languages** (EN-6). Every line a player reads goes through `tl()`, with the English as the key: the code stays readable, an untranslated line falls back to English, and ``tl`${name} reached level ${n}!` `` becomes `{0} reached level {1}!`, so a translation can put the values in any order. A language is one file, `content/lang/<code>.json`; Settings → **Language** switches (the game restarts). `tools/strings.js` writes `content/lang/template.json`, about 2,200 lines for translators, and its check stops a translation that drops a value. Mods can add a language, or reword the English with `lang/en.json`. No translation ships yet; `content/lang/README.md` says how to make one.

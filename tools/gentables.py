@@ -1,3 +1,4 @@
+import re
 """Regenerates docs/GAME_GUIDE.md from tools/game_guide.tpl.md and the game data.
 
 Usage:  python3 tools/gentables.py
@@ -179,6 +180,13 @@ for k, d in DN.items():
     gold = sum(int(x[5:]) for fl in d['loot'] for x in fl if x.startswith('gold:'))
     rows.append([f"**{d['name']}**", d['floors'], M[d['boss']]['name'], cap(d['lantern']) + ' Lantern' if d.get('lantern') else '— (hero quest)', ', '.join(nm(x) for x in loot) + (f", {gold} gold" if gold else '')])
 out['dungeons'] = tbl(['Dungeon', 'Floors', 'Boss', 'Lantern', 'Treasure'], rows)
+# 2.1 the Endless Lantern: which dungeon each band of floors borrows, and the echo at its end
+src_maps = (ROOT / 'src' / 'maps.js').read_text()
+lst = lambda name: re.findall(r"'(\w+)'", re.search(rf"const {name} = \[([^\]]*)\]", src_maps).group(1))
+every = int(re.search(r'const ENDLESS_EVERY = (\d+);', src_maps).group(1))
+bands, ebosses = lst('ENDLESS_BANDS'), lst('ENDLESS_BOSSES')
+rows = [[f"{k * every + 1}F–{k * every + every}F", DN[bands[k % len(bands)]]['name'], M[ebosses[k % len(ebosses)]]['name']] for k in range(len(ebosses))]
+out['endless'] = tbl(['Floors', 'Looks and foes like', f'Echo on the {every}th floor'], rows)
 # xp
 xp = D['xp']
 out['xp'] = tbl(['Level', *[str(l) for l in (5, 10, 15, 20, 25, 30, 35, 40, 45, 50)]], [['Total EXP', *[f"{xp[l-1]:,}" for l in (5, 10, 15, 20, 25, 30, 35, 40, 45, 50)]]])

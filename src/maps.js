@@ -370,8 +370,36 @@ const DUNGEONS = {
     loot: [['abyss_ash', 'xpotion', 'gold:12000', 'hiether'], ['ash_robe', 'megalixir', 'abyss_ash', 'star_bomb'], ['ash_mail', 'elixir', 'abyss_ash', 'megalixir'], ['nightglass', 'megalixir', 'gold:20000', 'abyss_ash']], boss: 'crown', lantern: 'night', lanternCol: '#b8a8ff' }
 };
 const DUNGEON_SOLID = new Set(['#', '~', 'L', 'o', 'k']);
+// 2.1 — The Endless Lantern: a post-game dungeon that goes down forever. It is not in the
+// DUNGEONS literal above (the guide's dungeon table reads that), and each floor's look, foes and
+// treasure come from endlessDef(f). Every ENDLESS_EVERY floors there is an echo of an old boss,
+// and beating it makes the next floor a checkpoint you can start from. Floors count from 0 here
+// and are shown from 1F.
+const ENDLESS_EVERY = 5;
+const ENDLESS_BANDS = ['hollow', 'shrine', 'mine', 'spire', 'tomb', 'observatory', 'undercity', 'palace', 'hadal', 'abyss'];
+const ENDLESS_BOSSES = ['gloomcap', 'warden', 'vesper', 'firstking', 'king', 'wyrm', 'abbot', 'vane', 'hearthwarden', 'nereus', 'crown', 'tide'];
+DUNGEONS.endless = { name: tl('The Endless Lantern'), endless: true, theme: 'hollow', floors: 1e9, w: 34, h: 26, seed: 2101, enc: 'd7', bg: 'cave', loc: 'A', noLantern: true, loot: [],
+  exitTo: { map: 'brightwater', x: 13, y: 10 } };
+function endlessBand(f) { return DUNGEONS[ENDLESS_BANDS[Math.floor(f / ENDLESS_EVERY) % ENDLESS_BANDS.length]]; }
+function endlessBossFloor(f) { return f % ENDLESS_EVERY === ENDLESS_EVERY - 1; }
+function endlessLoot(f) {
+  const r = mulberry(4242 + f * 131), pick = a => a[Math.floor(r() * a.length)];
+  const tier = Math.min(3, Math.floor(f / 10));
+  const pools = [['hipotion', 'ether', 'plume', 'remedy'], ['xpotion', 'hiether', 'plume', 'star_bomb'], ['elixir', 'xpotion', 'hiether', 'star_shard', 'abyss_ash'], ['megalixir', 'elixir', 'abyss_ash', 'deep_pearl']];
+  const loot = ['gold:' + Math.round((400 + f * 150) / 10) * 10, pick(pools[tier])];
+  if (f % ENDLESS_EVERY === ENDLESS_EVERY - 2) loot.push(pick(pools[Math.min(3, tier + 1)]));   // the floor before a boss is generous
+  return loot;
+}
+function endlessDef(f) {
+  const E = DUNGEONS.endless, src = endlessBand(f), boss = endlessBossFloor(f);
+  return { ...E, theme: src.theme, enc: src.enc, bg: src.bg, deco: src.deco, deco2: src.deco2, seed: E.seed + f * 31,
+    floors: boss ? f + 1 : f + 2, loot: { [f]: endlessLoot(f) }, boss: boss ? ENDLESS_BOSSES[Math.floor(f / ENDLESS_EVERY) % ENDLESS_BOSSES.length] : null };
+}
+// the definition one floor of a dungeon is built from
+function dungeonDef(did, f) { return did === 'endless' ? endlessDef(f) : DUNGEONS[did]; }
+
 function genDungeonFloor(did, f) {
-  const def = DUNGEONS[did];
+  const def = dungeonDef(did, f);
   const rng = mulberry(def.seed + f * 977);
   const ri = (a, b) => a + Math.floor(rng() * (b - a + 1));
   const w = def.w, h = def.h;
@@ -459,6 +487,8 @@ function genDungeonFloor(did, f) {
     const [cx] = ctr(bossRoom);
     extras.lantern = { x: cx, y: bossRoom.y + 1 };
     extras.boss = { x: cx, y: bossRoom.y + 4 };
+    // the Endless Lantern keeps going: the way down waits behind its boss
+    if (def.endless) { T[bossRoom.y + 1][cx] = '>'; down = { x: cx, y: bossRoom.y + 1 }; extras.lantern = null; }
     for (const py of [bossRoom.y + 1, bossRoom.y + 5]) { tryPlace([[bossRoom.x + 1, py]], 'o'); tryPlace([[bossRoom.x + bossRoom.w - 2, py]], 'o'); }
   }
   // decorations

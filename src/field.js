@@ -33,14 +33,14 @@ function populate(map) {
     const folk = isNight() && !map.underwater && !map.underground ? [...townNpcs(map.id).filter(n => !n.wander), ...nightNpcs(map.id)] : [...townNpcs(map.id), ...cardDayNpcs(map.id)];
     for (const n of folk) map.entities.push({ kind: 'npc', dir: 'down', home: { x: n.x, y: n.y }, ox: 0, oy: 0, mt: 0, wt: 1 + Math.random() * 3, ...n });
   } else if (map.kind === 'dungeon') {
-    const did = map.dungeon, def = DUNGEONS[did];
+    const did = map.dungeon, def = dungeonDef(did, map.floor);
     for (const c of map.extras.chests) {
       const key = `chest:${map.id}:${c.x},${c.y}`;
       map.entities.push({ kind: 'chest', x: c.x, y: c.y, key, loot: c.loot, opened: !!G.flags[key] });
     }
     if (map.extras.lantern && !def.noLantern) map.entities.push({ kind: 'lantern', x: map.extras.lantern.x, y: map.extras.lantern.y, did, lit: !!G.flags['lantern_' + did], col: def.lanternCol });
     for (const q of questEntities(map)) map.entities.push(q);
-    if (map.extras.boss && !G.flags['boss_' + did]) map.entities.push({ kind: 'boss', x: map.extras.boss.x, y: map.extras.boss.y, did, def: MONSTERS[def.boss] });
+    if (map.extras.boss && !G.flags[bossFlag(map)]) map.entities.push({ kind: 'boss', x: map.extras.boss.x, y: map.extras.boss.y, did, def: MONSTERS[def.boss] });
   }
 }
 function refreshEntities() { if (Field.map) populate(Field.map); }
@@ -432,8 +432,15 @@ async function leaveTown() {
   const loc = locDef(Field.map.loc);
   await changeMap(locMap(Field.map.loc), loc.x, loc.y, G.dir);
 }
+// the flag a dungeon floor's boss sets when beaten (the Endless Lantern has one per boss floor)
+function bossFlag(m) { return m.dungeon === 'endless' ? 'boss_endless_' + m.floor : 'boss_' + m.dungeon; }
 async function stairs(d) {
   const m = Field.map, did = m.dungeon, f = m.floor + d;
+  if (did === 'endless') {
+    if (d < 0) { await leaveEndless(); return; }
+    endlessReached(f);
+    for (const k in G.maps) if (k.startsWith('endless:') && k !== did + ':' + f) delete G.maps[k];   // floors behind you are gone
+  }
   Audio_.sfx('stairs');
   if (f < 0 && DUNGEONS[did].exitTo) { const e = DUNGEONS[did].exitTo; await changeMap(e.map, e.x, e.y, 'down'); return; }
   if (f < 0) {

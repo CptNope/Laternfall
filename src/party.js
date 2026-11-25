@@ -207,7 +207,7 @@ function slotSummary(slot) {
   if (!d) return null;
   const f = d.flags || {};
   const chapter = f.chapter6 ? tl('Chapter VI done') : f.isle ? tl('Chapter VI') : f.ending ? tl('Post-game') : f.lantern3 ? tl('Act IV') : f.lantern2 ? tl('Act III') : f.lantern1 ? tl('Act II') : tl('Act I');
-  return { d, place: placeName(d.mapId), time: fmtTime(d.playTime || 0), lv: Math.max(...d.party.map(m => m.level)), chapter, ng: f.ngplus || 0,
+  return { d, place: placeName(d.mapId), time: fmtTime(d.playTime || 0), lv: Math.max(...d.party.map(m => m.level)), chapter, ng: f.ngplus || 0, hollow: !!f.hollow,
     when: d.savedAt ? new Date(d.savedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : tl('Before 1.4') };
 }
 function fmtTime(s) { s = Math.floor(s); const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60; return `${h}:${String(m).padStart(2, '0')}`; }
