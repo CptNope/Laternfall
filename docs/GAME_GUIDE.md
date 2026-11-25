@@ -33,6 +33,8 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 - [Items](#items)
 - [Levels and EXP](#levels-and-exp)
 - [New Game+](#new-game)
+- [The Endless Lantern](#the-endless-lantern)
+- [Hollow mode](#hollow-mode)
 - [Trophies](#trophies)
 - [Speedrun mode](#speedrun-mode)
 
@@ -1256,6 +1258,7 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **Joker's Lantern** | All +10. Rare steals twice as likely. Every card player in the world, beaten. | — | Quest, chest or prize |
 | **Night Cloak** | ATK +10, SPD +16. Prevents blind and stop. The Guild's finest. | — | Quest, chest or prize |
 | **Heartlight** | All +20. Revives once per battle. No ailments. Five lights, one lantern. | — | Quest, chest or prize |
+| **Endless Wick** | All +14, HP +400, slowly heals in battle. It has burned at the bottom of the well for a thousand years. | — | Quest, chest or prize |
 | **Crown of Dusk & Dawn** | All +25. Regen. No ailments. Both halves of the first crown, at peace. | — | Quest, chest or prize |
 
 ---
@@ -1336,6 +1339,48 @@ After the ending, the title screen offers **New Game+**. You keep your levels, e
 
 ---
 
+## The Endless Lantern
+
+Added in 2.1. After the ending, **Hesper** waits by the well in Brightwater. Talk to her to go down to the Endless Lantern: a dungeon with no bottom.
+
+- **Every floor is new and the same.** Floors are built from a seed, so 7F is always the same 7F, but each band of five floors borrows the look and the monsters of an old dungeon.
+- **The monsters are not the ones you remember.** On 1F every band's monsters are rescaled to match the Crownfall Abyss, and they grow with every floor: HP +6%, ATK and MAG +1.2%, DEF +1%, and EXP and gold +6% per floor. New Game+ stacks on top.
+- **Every fifth floor has an echo of an old boss**, rescaled to match the Hollow Crown and growing the same way. Beating it pays gold (2,000 + 400 per floor), opens the way down, and makes the next floor a **checkpoint**: from then on Hesper can send you straight there.
+- **Chests** hold gold and items that get better the deeper you go. The floor before each boss has an extra one. The first time you beat the echo on 25F or deeper, it leaves the **Endless Wick**.
+- **There is no way back up.** The stairs up on any floor take you out, and ending a descent forgets its chests and bosses. The next one starts fresh, from 1F or your checkpoint.
+- **Your deepest floor is kept** in the save and carries into New Game+. Two trophies wait at 10F and 30F.
+
+| Floors | Looks and foes like | Echo on the 5th floor |
+| --- | --- | --- |
+| 1F–5F | Whisperwood Hollow | Gloomcap |
+| 6F–10F | Sunken Shrine | Drowned Warden |
+| 11F–15F | Emberdeep Mines | Vesper |
+| 16F–20F | Hollow Spire | Ozymar, the First King |
+| 21F–25F | Tomb of the First King | The Hollow King |
+| 26F–30F | Starfall Observatory | Astral Wyrm |
+| 31F–35F | The Undercity | The Drowned Abbot |
+| 36F–40F | The Drowned Palace | Guildmaster Vane |
+| 41F–45F | The Hadal Rift | Hearth Warden |
+| 46F–50F | Crownfall Abyss | Nereus, the Drowned King |
+| 51F–55F | Whisperwood Hollow | The Hollow Crown |
+| 56F–60F | Sunken Shrine | The Tide That Remembers |
+
+After the last row the cycle starts again from the top, deeper and stronger.
+
+---
+
+## Hollow mode
+
+Added in 2.1. When you start a **New Game** or **New Game+**, you choose **Normal** or **Hollow**. Hollow is for a second journey:
+
+- **No rest.** Inns still let you pass the night (for free), but nobody heals. Your own bed in Brightwater won't let you sleep either. Potions, tents, spells and the inn after a defeat still work.
+- **No running.** The Run command and escape skills fail in every battle.
+- **Bosses rise a third time.** When a boss is nearly beaten (below 20% of its HP, or half of its last phase's threshold if that is lower) it rises again and acts **one extra time each turn**.
+
+Save slots show "Hollow" beside the chapter. Finishing the story in Hollow mode earns **Hollow Walker**.
+
+---
+
 ## Trophies
 
 Trophies (added in 1.8) belong to you, not to a save: earn one once and it stays, whichever slot you play and through New Game+. A toast appears when you earn one. See them from **Trophies** on the title screen, or ask **Scribe Tam** in Elder Maren's hall in Brightwater.
@@ -1357,6 +1402,9 @@ Trophies (added in 1.8) belong to you, not to a save: earn one once and it stays
 | 🏆 **Unforgettable** | Defeat the Tide That Remembers. *(hidden in the game until earned)* |
 | 🏆 **Grand Champion** | Win the first five cups at the Aerie Arena. |
 | 🏆 **Eclipse** | Win the Eclipse Cup. |
+| 🏆 **Down the Well** | Reach 10F in the Endless Lantern. |
+| 🏆 **The Long Dark** | Reach 30F in the Endless Lantern. |
+| 🏆 **Hollow Walker** | Finish the story in Hollow mode. |
 | 🏆 **The One That Didn't Get Away** | Catch every kind of fish. |
 | 🏆 **Family of the Forge** | Forge three pieces of gear with Orrin. |
 | 🏆 **Natural Historian** | Record every creature in the bestiary. |

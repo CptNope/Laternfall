@@ -87,6 +87,8 @@ Beyond the main quest, the desert holds the tomb of the king who lit the first L
 
 **Hearts of the Lamplighters** (post-game). Each hero has one thing left unfinished: Arin's father's roadside lamps, Lyra's mother's grimoire, Oswin's drowned teacher, Kestrel's debt to the thieves' guild, and the voice that still talks to Selene in her sleep. Each quest ends in a **Limit** and an ultimate weapon, and all five together end in the Festival of Lanterns.
 
+**The Endless Lantern** (post-game, 2.1). Something has burned at the bottom of Brightwater's well since before the first king. Hesper will send you down: floor after floor, borrowed from every dungeon you've cleared, with an echo of an old boss every fifth floor and no bottom. How deep can you go? And when you start again, try **Hollow mode**: no inns, no running, and bosses that rise a third time.
+
 ```mermaid
 flowchart LR
     E((Ember)) --> T((Tide)) --> S((Stone)) --> D((Dawn)) --> N((Night))
@@ -123,13 +125,13 @@ flowchart LR
 | --- | --- | --- | --- |
 | Playable heroes | **5** (4 fight at once) | Monsters | **94** in 24 drawn families (5 only at night) |
 | Towns | **9** (one under the sea, one under Ironhold) | Boss battles | **17** |
-| Dungeons | **12** (32 floors) | Skills and spells | **40**, plus **45** enemy abilities |
+| Dungeons | **12** (32 floors), plus the Endless Lantern | Skills and spells | **40**, plus **45** enemy abilities |
 | Side quests | **23** | Combo techs and Limits | **12** and **5** |
 | Arena cups | **6** | Weapons, armour, accessories | **48**, **23**, **46** |
 | Fish | **13** | Forge recipes | **12** |
 | Music tracks | **21** | Image or audio files | **0** in the game (the app icons are drawn by a script) |
-| Level cap | **50**, then the Lantern Board | Source lines | ~9,550 across 55 files |
-| Trophies | **34** | Platforms | Browser, installable app (offline), Windows, macOS, Linux |
+| Level cap | **50**, then the Lantern Board | Source lines | ~9,750 across 58 files |
+| Trophies | **37** | Platforms | Browser, installable app (offline), Windows, macOS, Linux |
 | Lantern Board passives | **11** | Meals | **11** |
 | Ways to travel | **5**: foot, ship, airship, diving bell, lanternmoth | Treasure maps | **5** |
 | Cards | **36**, against **8** players | Weather | **6** kinds, by region |
@@ -153,7 +155,8 @@ mindmap
       The Lantern Board
       Gear and accessories
       Forge with materials
-      New Game+
+      New Game+ and Hollow mode
+      The Endless Lantern
     Relax
       Fishing mini-game
       Cooking at inns
@@ -189,7 +192,7 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 - Travel on foot, by **ship**, by **airship**, by **diving bell** and on the back of a **lanternmoth**
 - **9 towns** (Brightwater, Port Halden, Ironhold, Frostmere, desert Mirage, sky-valley Aerie, ash-bound Lastlight, sunken Nerith and the Undermarket beneath Ironhold), with more than 70 NPCs whose dialogue changes as the story moves on
 - **Walk inside every building**: inns, shops and smithies with keepers behind counters, homes, chapels, a jail, a palace, an observatory hut. Search barrels, pots and crates for hidden items.
-- **12 dungeons, 32 floors**: Whisperwood Hollow, Sunken Shrine, Emberdeep Mines, Hollow Spire, the Tomb of the First King, the Starfall Observatory, the Crownfall Abyss, the three hero-quest dungeons (the Ember Caves, the Sea Mother's Grotto and the Undercity), and under the sea the Drowned Palace and the Hadal Rift. They have torchlight and treasure, and most have a Lantern at the heart.
+- **12 dungeons, 32 floors**: Whisperwood Hollow, Sunken Shrine, Emberdeep Mines, Hollow Spire, the Tomb of the First King, the Starfall Observatory, the Crownfall Abyss, the three hero-quest dungeons (the Ember Caves, the Sea Mother's Grotto and the Undercity), and under the sea the Drowned Palace and the Hadal Rift. They have torchlight and treasure, and most have a Lantern at the heart. After the ending, the **Endless Lantern** goes down forever.
 
 **Battle**
 - Classic turn-based, side-view combat: Attack, Skill, **Combo**, Item, Defend, Run
@@ -218,7 +221,7 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 - **Gamepad** support, a touch **R** button, auto-dash, **rebindable keys**, adjustable text speed, **large text** and **high-contrast** windows
 - **Equip → Optimise** puts on the best gear you own in one step
 - **Installable and offline** (1.8): install from GitHub Pages as an app, or download the Windows, macOS and Linux builds
-- **34 trophies** shared by every save, a **speedrun timer** with splits at each Lantern, and **Transfer saves** to move between devices
+- **37 trophies** shared by every save, a **speedrun timer** with splits at each Lantern, and **Transfer saves** to move between devices
 
 **Sound**
 - An original chiptune soundtrack of 21 tracks (title, overworld, sea, sky, desert, towns, dungeons, the Spire, the Ashen Isle, the Abyss, the sea floor, Nerith, the Undermarket, battle, boss, two final battles, victory, ending, game over), sequenced live in Web Audio
@@ -369,6 +372,7 @@ flowchart LR
 | `src/i18n.js` | 2.0: `tl()`, languages, the pseudo test language |
 | `src/editor.js` | 2.0: the town editor (`index.html?edit`) and the town walk check the build runs |
 | `src/story.js` | NPC dialogue, cutscenes, story flags, quests, the arena, boss events, the title screen, the endings, the main loop |
+| `src/endless.js` | 2.1: the Endless Lantern (the keeper, descents, echoes, checkpoints), foe scaling by depth, and Hollow mode |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Generated: the installable-app files (`build.py`, `tools/make_icons.py`) |
 | `src-tauri/` | The desktop app (Tauri): a native window around `index.html`, built by CI |
 | `content/` | 2.0: items, monsters, shops and encounter tables as JSON, with a schema for each ([content/README.md](content/README.md)) |
@@ -388,7 +392,7 @@ flowchart LR
 | [Modding guide](docs/MODDING.md) | Contributors | Step-by-step recipes for monsters, art, items, skills, combos, NPCs, quests, towns, dungeons, bosses, music, fish, recipes and cups |
 | [Making a mod](mods/README.md) | Modders | Change items, monsters, shops, battles and towns in a mod folder, without editing the game; the town editor is `index.html?edit` |
 | [Testing guide](docs/TESTING.md) | Contributors | The headless play-test harness and its scenarios, the boss balance simulator, CI, debugging tricks |
-| [Roadmap](ROADMAP.md) | Everyone | Milestones 1.3.x to 2.0, the backlog, technical debt, the release process |
+| [Roadmap](ROADMAP.md) | Everyone | Milestones 1.3.x to 2.1, the backlog, technical debt, the release process |
 | [Changelog](CHANGELOG.md) | Everyone | Every version since 1.0.0 |
 | [itch.io page copy](docs/itch/itch-page.md) | Store | Store text and assets |
 | [Project write-up](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/) | Everyone | How the game was made, screenshots and help, on jeremyanderson.tech |
@@ -405,7 +409,8 @@ timeline
     Nov 2026 : 1.5 Heroes ✓ : five hero quests, Limits, campfire talks
     Nov 2026 : 1.6 Depth ✓ : Lantern Board, cooking, smarter enemies
     Jul 2027 : 1.7 World : the Drowned Kingdom under the sea
-    Later : 2.0 Lantern Engine : data-driven content, editor, mods
+    Nov 2026 : 2.0 Lantern Engine ✓ : content as data, mods, town editor, languages
+    Nov 2026 : 2.1 Endless Lantern : a dungeon with no bottom, Hollow mode
 ```
 
 The full plan, with priorities and technical debt, is in [ROADMAP.md](ROADMAP.md).

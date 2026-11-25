@@ -118,7 +118,9 @@ gantt
     section Foundations
     1.10 Foundations                 :done, m110, 2026-11-24, 1d
     section Engine
-    2.0 Lantern Engine               :active, m20, 2026-11-24, 12w
+    2.0 Lantern Engine               :done, m20, 2026-11-24, 2d
+    section Replay
+    2.1 Endless Lantern              :active, m21, 2026-11-25, 1d
 ```
 
 | Milestone | Theme | Headline | Target | Status |
@@ -130,7 +132,8 @@ gantt
 | **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ✅ Done (1.7.0, merged in #13) |
 | **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ✅ Done (1.8.0, merged in #14; PL-5 not started) |
 | **1.10** | Foundations | Per-family art files, a tile cache for phones, a load-order check | Nov 2026 | ✅ Done (1.10.0, merged in #16) |
-| **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 🟡 Nearly done (EN-1 to EN-5 done; EN-6 in review; EN-7 open) |
+| **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | ✅ Done (EN-1 to EN-6, merged in #17, #19, #20, #21; EN-7 open) |
+| **2.1** | Replay | The Endless Lantern post-game dungeon and Hollow mode | Nov 2026 | 🟡 In review |
 
 ```mermaid
 flowchart LR
@@ -333,6 +336,29 @@ flowchart TB
 | ✅ EN-6 | **Localisation**: move every dialogue line into a string table keyed by ID. **Done, keyed by the English instead of IDs** (readable code, English fallback): `tl()`, `content/lang/`, a template for translators, a pseudo language and a play-test | L |
 | EN-7 | *Lanternfall II* design document (the Sixth Flame?) | M |
 
+### 2.1 · Endless Lantern
+
+Something to come back to after the ending. Both ideas come from the parking lot.
+
+```mermaid
+flowchart LR
+    W[Hesper at the well<br/>after the ending] --> F[Floor N<br/>seeded, borrowed look]
+    F -->|stairs down| F
+    F -->|every 5th floor| B[Echo of an old boss]
+    B -->|win| C[Checkpoint at N+1<br/>gold, record]
+    C --> F
+    F -->|stairs up| W
+```
+
+| ID | Item | Size |
+| --- | --- | --- |
+| RP-1 | **The Endless Lantern**: floors from the existing generator, one seed per floor; bands of five borrow an old dungeon's look and monsters | M |
+| RP-2 | **Depth scaling**: each band's monsters matched to the Crownfall Abyss on 1F, then stronger every floor; echoes of old bosses matched to the Hollow Crown | M |
+| RP-3 | **Checkpoints, a record and rising rewards**: start from the floor after the last echo you beat; the Endless Wick; two trophies | S |
+| RP-4 | **Hollow mode**: picked at New Game; inns don't heal, no running, a third boss phase; a trophy for finishing it | M |
+
+Not in 2.1: new monsters or art for the Endless Lantern (it reuses the old dungeons on purpose), and a leaderboard (there is no server).
+
 ---
 
 ## Prioritised backlog
@@ -424,13 +450,13 @@ Not scheduled. Each needs a reason to exist (see [Guiding principles](#guiding-p
 - 🎵 **Music box** in Brightwater that plays any track you've heard.
 - 🏠 **Arin's house upgrades**: trophies, a fish tank for caught fish, Mittens' bed.
 - 🐈 **Mittens follows you** in Brightwater after The Lost Cat.
-- 🌙 **A "Hollow" hard mode**: no inns, no running, bosses get a third phase.
+- ✅ ~~🌙 **A "Hollow" hard mode**~~: in [2.1](#21--endless-lantern) (RP-4).
 - 🧭 **Compass hints**: the Sailor's Compass points toward unopened chests.
 - 📜 **Old Bram's verses**: collect verse fragments to complete the Lantern rhyme. The reward is a new title-screen song.
 - 🤝 **Guest party members** for single quests: Brann at sea, Wren in the Observatory, Ione in the Abyss.
 - 🎨 **Photo mode**: hide the UI and pan the camera.
 - 🧪 **Alchemy**: turn spare materials into consumables.
-- 🗺️ **Procedural "Endless Lantern"** dungeon for the post-game, using the existing floor generator with rising floor numbers.
+- ✅ ~~🗺️ **Procedural "Endless Lantern"**~~: in [2.1](#21--endless-lantern) (RP-1 to RP-3).
 
 ---
 

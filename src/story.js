@@ -30,7 +30,8 @@ function townNpcs(id) {
     N(18, 8, 5, { body: '#3a7a4a', hat: 'cap', accent: '#a07a3a' }, talkHob, { wander: true }),
     N(15, 10, 6, { hair: '#a0a0a0', style: 'bald', beard: true, body: '#7a6a5a' }, talkBram),
     N(4, 16, 7, { style: 'bun', body: '#c05a7a' }, talkAda, { wander: true }),
-    N(20, 15, 8, { skin: '#e8c8a8', hair: '#d8d8d0', style: 'bun', body: '#6a5a8a', accent: '#ffe9a8', robe: true }, talkIvy, { name: tl('Old Ivy'), mark: f.road_done && !hasItem('moth_whistle') })
+    N(20, 15, 8, { skin: '#e8c8a8', hair: '#d8d8d0', style: 'bun', body: '#6a5a8a', accent: '#ffe9a8', robe: true }, talkIvy, { name: tl('Old Ivy'), mark: f.road_done && !hasItem('moth_whistle') }),
+    ...endlessNpcs()
   ];
   if (id === 'halden') {
     const l = [
@@ -328,7 +329,7 @@ async function oldDoorEvent(townId, b) {
   if (b.shop) return openShop(b.shop, b.sign === 'arms' ? (townId === 'ironhold' ? tl('Hilda the Smith') : tl('Armorer')) : tl('Shopkeeper'));
   if (townId === 'brightwater' && b.id === 'arinhouse') {
     const c = await choose(null, tl('Your home. The hearth is still warm. Rest a while?'), [tl('Rest'), tl('Leave')], 1);
-    if (c === 0) {
+    if (c === 0 && !(await hollowNoRest())) {
       await fadeTo(1, 500); Audio_.sfx('inn'); healAll(); G.lastInn = { town: 'brightwater' }; await wait(1200); await fadeTo(0, 500);
       await narrate(tl('You slept in your own bed. HP and MP restored.'));
     }
@@ -462,6 +463,7 @@ async function relightLantern(did) {
 }
 async function bossEncounter(did) {
   const f = G.flags;
+  if (did === 'endless') return endlessBoss();
   if (f['boss_' + did]) return;
   if (did === 'hollow') {
     await sayAll([
@@ -1065,10 +1067,10 @@ async function titleMenu() {
       tl('Achievements, shared by every save.'), tl('Move your saves to another browser or device.'), isInstalled() ? tl('Already running as an app.') : tl('Install Lanternfall as an app that plays offline.')];
     const k = await listMenu({ x: W / 2 - 100, y: 176, w: 200, rows: 8, items, cancel: false, index: idx, help: i => helps[i], helpY: H - 44 });
     idx = k;
-    if (k === 0) { await newGame(); return; }
+    if (k === 0) { const hollow = await pickMode(); if (hollow !== null) { await newGame(null, hollow); return; } }
     if (k === 1 && await resumeFrom(latest)) return;
     if (k === 2) { const s = await pickSlot('load'); if (s && await resumeFrom(s)) return; }
-    if (k === 3) { const s = ngSlots.length === 1 ? ngSlots[0] : await pickSlot('load', tl('New Game+ from…'), d => d.flags && d.flags.ending); if (s && readSlot(s).flags.ending) { await newGamePlus(s); return; } }
+    if (k === 3) { const s = ngSlots.length === 1 ? ngSlots[0] : await pickSlot('load', tl('New Game+ from…'), d => d.flags && d.flags.ending); if (s && readSlot(s).flags.ending) { const hollow = await pickMode(); if (hollow !== null) { await newGamePlus(s, hollow); return; } } }
     if (k === 4) Audio_.toggleMute();
     if (k === 5) await trophyRoom();
     if (k === 6) await transferMenu();
@@ -1085,14 +1087,15 @@ async function resumeFrom(slot) {
   return true;
 }
 const BlackScene = { lines: [], t: 0, tick(dt) { this.t += dt; }, update() { }, draw(g) { g.fillStyle = '#05040c'; g.fillRect(0, 0, W, H); this.lines.forEach((l, i) => { g.save(); g.globalAlpha = clamp((this.t - l.at) / 1.2, 0, 1); text(g, l.s, W / 2, 130 + i * 44, { size: 20, fam: SERIF, align: 'center', color: '#e8dcc8' }); g.restore(); }); } };
-async function newGamePlus(slot) {
+async function newGamePlus(slot, hollow = false) {
   if (!loadGame(slot)) return newGame();
   const carry = {}; G.party.forEach(m => carry[m.id] = { ...m, status: {} });
   const inv = {}; for (const k in G.inv) if (ITEMS[k] && ITEMS[k].kind !== 'key') inv[k] = G.inv[k];
   for (const m of G.party) for (const sl of ['weapon', 'armor', 'acc']) if (m[sl]) { /* equipped gear stays on the carried member */ }
-  await newGame({ carry, inv, gold: G.gold, seen: G.seen, killed: G.killed, ng: (G.flags.ngplus || 0) + 1 });
+  const keep = {}; for (const k of ['endless_best', 'endless_ck', 'endless_wick']) if (G.flags[k]) keep[k] = G.flags[k];   // the Endless Lantern remembers you
+  await newGame({ carry, inv, gold: G.gold, seen: G.seen, killed: G.killed, ng: (G.flags.ngplus || 0) + 1, keep }, hollow);
 }
-async function newGame(plus) {
+async function newGame(plus, hollow = false) {
   await fadeTo(1, 700);
   Object.keys(G.flags).forEach(k => delete G.flags[k]);
   G.carry = plus ? plus.carry : null;
@@ -1101,7 +1104,8 @@ async function newGame(plus) {
   else G.party = [makeMember('arin', 1), makeMember('lyra', 1)];
   G.inv = plus ? plus.inv : { potion: 2 }; G.gold = plus ? plus.gold : 80; G.playTime = 0; G.splits = {}; G.clock = CLOCK_START; if (!plus) { G.cards = {}; G.lastDeck = null; } G.maps = {}; G.ship = null; G.onShip = false; G.airship = null; G.inAir = false; G.lastInn = { town: 'brightwater' };
   G.seen = plus ? plus.seen : {}; G.killed = plus ? plus.killed : {};
-  if (plus) G.flags.ngplus = plus.ng;
+  if (plus) { G.flags.ngplus = plus.ng; Object.assign(G.flags, plus.keep || {}); }
+  if (hollow) G.flags.hollow = true;
   if (!plus) G.slot = SAVE_SLOTS.find(s => !hasSave(s)) || '1';
   G.scene = BlackScene; BlackScene.lines = []; BlackScene.t = 0;
   await fadeTo(0, 400);

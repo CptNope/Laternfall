@@ -81,7 +81,7 @@ async function interiorInteract(tx, ty, dx, dy) {
   if (c === 'B') {
     if (m.town === 'brightwater' && m.bid === 'arinhouse') {
       const k = await choose(null, tl('Your own bed. Rest a while?'), [tl('Rest'), tl('Not now')], 1);
-      if (k === 0) { await fadeTo(1, 500); Audio_.sfx('inn'); healAll(); G.lastInn = { town: 'brightwater' }; await wait(1200); await fadeTo(0, 500); await narrate(tl('You slept in your own bed. HP and MP restored.')); }
+      if (k === 0 && !(await hollowNoRest())) { await fadeTo(1, 500); Audio_.sfx('inn'); healAll(); G.lastInn = { town: 'brightwater' }; await wait(1200); await fadeTo(0, 500); await narrate(tl('You slept in your own bed. HP and MP restored.')); }
       return;
     }
     await narrate(m.ikind === 'jail' ? tl('A lumpy prison cot.') : tl('A neatly made bed. It isn\'t yours.')); return;

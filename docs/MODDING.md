@@ -415,6 +415,8 @@ DUNGEONS.reef = { name: 'Coral Labyrinth', theme: 'reef', floors: 3, w: 36, h: 2
 
 `seed` fixes the layout. Change it to reroll the floors; the generator guarantees every room stays reachable.
 
+**The Endless Lantern (2.1)** borrows its floors from other dungeons: add yours to `ENDLESS_BANDS` in `maps.js` and five floors of every cycle will look like it and use its encounter table (rescaled to the depth, so its monsters' strength doesn't matter). Add a boss to `ENDLESS_BOSSES` to have it echo on a fifth floor. `python3 tools/gentables.py` updates the guide's floor table.
+
 ---
 
 ## Add a boss
@@ -440,6 +442,8 @@ For **two phases**, start the first battle with `{ keepScene: true, noVictory: t
 ```
 
 Swap moves rather than stacking damage: run `tools/balance_sim.py` afterwards and keep the win rates where they were.
+
+**Hollow mode** adds one more phase to every boss fought with `{ boss: true }` (`hollowPhase()` in `endless.js`): at 20% HP, or half the lowest `hp` among its phases if that is lower, it keeps the last phase's `acts` and acts once more each turn. You don't write it; check a new boss with `SIM_ONLY` and a `{'flags': {'hollow': True}}` scenario.
 
 ---
 

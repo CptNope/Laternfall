@@ -78,6 +78,18 @@ SCENARIOS = [
     ('Nereus Lv48 mid', P4(48), MID, [['nereus']], False),
     ('The Tide Lv50 nerith', P4(50), NERITH, [['tide']], False),
     ('The Tide Lv50 hero weapons', P4(50), HEARTS, [['tide']], False),
+    # 2.1 The Endless Lantern: foes rescaled to the Abyss on 1F, then stronger every floor
+    # (an optional sixth field holds battle opts and flags: depth counts floors from 0)
+    ('Endless 1F trash Lv46 shop', P4(46), SHOP, [['sporecap', 'shadebat']], False, {'opts': {'depth': 0}}),
+    ('Endless 5F Gloomcap echo Lv46 mid', P4(46), MID, [['gloomcap']], False, {'opts': {'depth': 4}}),
+    ('Endless 10F trash Lv50 mid', P4(50), MID, [['drowned', 'drowned']], False, {'opts': {'depth': 9}}),
+    ('Endless 25F Hollow King echo Lv50 hero weapons', P4(50), HEARTS, [['king']], False, {'opts': {'depth': 24}}),
+    ('Endless 40F trash Lv50 hero weapons', P4(50), HEARTS, [['courtier', 'courtier']], False, {'opts': {'depth': 39}}),
+    ('Endless 50F Nereus echo Lv50 hero weapons', P4(50), HEARTS, [['nereus']], False, {'opts': {'depth': 49}}),
+    # Hollow mode: the same fights as above, with a third boss phase
+    ('Hollow: Chapter VI finale Lv45 mid', P4(45), MID, [['crown'], ['orun']], True, {'flags': {'hollow': True}}),
+    ('Hollow: Chapter VI finale Lv50 best', P4(50), BEST, [['crown'], ['orun']], True, {'flags': {'hollow': True}}),
+    ('Hollow: Nereus Lv48 mid', P4(48), MID, [['nereus']], False, {'flags': {'hollow': True}}),
 ]
 
 async def main():
@@ -89,13 +101,13 @@ async def main():
         pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file://' + str(ROOT / 'index.html')); await pg.wait_for_timeout(600)
         await pg.add_script_tag(content=(ROOT / 'tools' / 'balance_sim.js').read_text())
-        print(f'{"scenario":38} {"win":>5} {"rounds (min-max)":>17} {"KOs":>5}  items used per fight')
+        print(f'{"scenario":46} {"win":>5} {"rounds (min-max)":>17} {"KOs":>5}  items used per fight')
         only = os.environ.get('SIM_ONLY', '').lower()   # e.g. SIM_ONLY=nereus to run matching scenarios only
-        for name, party, gear, bosses, heal in SCENARIOS:
+        for name, party, gear, bosses, heal, *extra in SCENARIOS:
             if only and only not in name.lower(): continue
-            cfg = {'party': party, 'gear': gear, 'items': ITEMS, 'bosses': bosses, 'runs': RUNS, 'healBetween': heal}
+            cfg = {'party': party, 'gear': gear, 'items': ITEMS, 'bosses': bosses, 'runs': RUNS, 'healBetween': heal, **(extra[0] if extra else {})}
             r = await pg.evaluate('cfg => SIM.fight(cfg)', cfg)
-            print(f'{name:38} {r["winRate"]*100:4.0f}% {r["medianRounds"]:>6} ({r["minRounds"]}-{r["maxRounds"]}) {r["kos"]:>8}   {r["avgItems"]}')
+            print(f'{name:46} {r["winRate"]*100:4.0f}% {r["medianRounds"]:>6} ({r["minRounds"]}-{r["maxRounds"]}) {r["kos"]:>8}   {r["avgItems"]}')
         if errs: print('ERRORS', errs[:5])
         await b.close()
 asyncio.run(main())
