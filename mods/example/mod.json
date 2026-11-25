@@ -1,0 +1,7 @@
+{
+  "$schema": "../../content/schema/mod.schema.json",
+  "name": "The Ember Fox",
+  "version": "1.0.0",
+  "description": "An example mod: a new monster with its own drawing on the Ashen Isle, a new accessory in Lastlight, and Goblins carrying something better to steal.",
+  "author": "Lanternfall"
+}

@@ -10,7 +10,7 @@
 // build.py writes manifest.webmanifest, sw.js and icons/ beside index.html. The service worker only
 // registers when the game is served over http(s); opened as a file, the game simply runs as before.
 const PWA = { prompt: null };
-if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && !MODS.length) {   // a modded build isn't the installable game
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => { }); });
 }
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); PWA.prompt = e; });

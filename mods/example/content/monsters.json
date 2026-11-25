@@ -1,0 +1,8 @@
+{
+  "monsters": {
+    "// a new monster, with its own drawing (src/emberfox.js)": "",
+    "emberfox": {"name": "Ember Fox", "fam": "emberfox", "c": ["#e8602a", "#7a2a10", "#ffd27a"], "hp": 1400, "atk": 190, "def": 80, "mag": 110, "spd": 34, "xp": 620, "gold": 430, "weak": ["ice", "water"], "absorb": ["fire"], "ai": "weakest", "acts": [{"w": 3, "a": "attack"}, {"w": 2, "a": "e_blaze"}], "drop": ["hipotion", 0.2], "mat": ["ember_core", 0.15], "steal": "xpotion", "rare": ["ember_tail", 0.05]},
+    "// a patch: only the fields given change": "",
+    "goblin": {"steal": "hipotion"}
+  }
+}

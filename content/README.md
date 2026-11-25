@@ -46,10 +46,10 @@ Run the check alone with `node tools/content.js`. It needs [Node](https://nodejs
 1. **Shape**, against the schemas: required fields, types, known field names, allowed values (elements, statuses, AI styles), colours as `#rrggbb`, chances between 0 and 1, a weapon naming who can wield it.
 2. **References**: every item a monster drops or a shop sells exists, every monster in an encounter group exists, every move is in `SPELLS`, every hero in `who` exists, every monster family has a drawing, and every night table has a day table. It also checks what code names: a town's `shop`, a dungeon's `enc`, the monsters in a `startBattle([...])`, items in `addItem('…')` / `hasItem('…')`, and the items in recipes, treasure maps, fish, meals, the arena and the black market.
 
-`node tools/content.js --selftest` plants 15 typical mistakes (a misspelt drop, a removed item still in a recipe, a shop a town uses deleted, …) and fails unless each is caught. CI runs it too.
+`node tools/content.js --selftest` plants 21 typical mistakes (a misspelt drop, a removed item still in a recipe, a shop a town uses deleted, a broken mod, …) and fails unless each is caught, then merges a good mod and checks the result. CI runs it too.
 
 ## Adding a field
 
 A field the schema doesn't list is an error, so a typo can't slip through. To add a real one, add it to the schema with a `description`, then read it in the code (`src/battle.js` for monsters, `src/menu.js` and `src/party.js` for items).
 
-See [docs/MODDING.md](../docs/MODDING.md) for walk-throughs: adding a monster, an item, a shop or a dungeon.
+See [docs/MODDING.md](../docs/MODDING.md) for walk-throughs: adding a monster, an item, a shop or a dungeon. To change content without editing these files, make a mod: [mods/README.md](../mods/README.md).

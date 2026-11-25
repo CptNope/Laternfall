@@ -1046,6 +1046,7 @@ const TitleScene = {
     g.fillStyle = 'rgba(0,0,0,.5)'; g.fillText('LANTERNFALL', W / 2 + 3, 83);
     g.fillStyle = gr; g.fillText('LANTERNFALL', W / 2, 80);
     text(g, 'A Tale of the Four Flames', W / 2, 152, { size: 18, fam: SERIF, align: 'center', color: '#e8dcc8' });
+    if (MODS.length) text(g, 'Modded: ' + MODS.map(m => `${m.name} ${m.version}`).join(' · '), W / 2, 16, { size: 13, align: 'center', color: '#9fd8ff' });
     g.restore();
     text(g, 'Arrows/WASD move · Enter/Z confirm · Esc/X menu & back · M sound', W / 2, H - 22, { size: 12, align: 'center', color: 'rgba(220,220,255,.6)' });
   }

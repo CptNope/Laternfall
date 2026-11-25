@@ -364,6 +364,7 @@ flowchart LR
 | `manifest.webmanifest`, `sw.js`, `icons/` | Generated: the installable-app files (`build.py`, `tools/make_icons.py`) |
 | `src-tauri/` | The desktop app (Tauri): a native window around `index.html`, built by CI |
 | `content/` | 2.0: items, monsters, shops and encounter tables as JSON, with a schema for each ([content/README.md](content/README.md)) |
+| `mods/` | 2.0: mods, built in with `build.py --mod`, and an example mod ([mods/README.md](mods/README.md)) |
 | `tools/` | The play-test harness, the content checker, the load-order check, the boss balance simulator, the guide-table generator, the icon renderer and the diagram checker |
 
 **Debug:** add `?noenc` to the URL to turn off random encounters. There are more tricks in [TESTING.md](docs/TESTING.md#debugging-tricks).
@@ -377,6 +378,7 @@ flowchart LR
 | [Game guide](docs/GAME_GUIDE.md) | Players | Walkthrough, world, towns and shops, dungeons, every skill, combo, monster, boss, item, fish and recipe, battle formulas |
 | [Architecture](docs/ARCHITECTURE.md) | Developers | Build pipeline, modules, main loop, scenes, the script runner, maps and generation, rendering, battles, audio, save format, story flags |
 | [Modding guide](docs/MODDING.md) | Contributors | Step-by-step recipes for monsters, art, items, skills, combos, NPCs, quests, towns, dungeons, bosses, music, fish, recipes and cups |
+| [Making a mod](mods/README.md) | Modders | Change items, monsters, shops and battles in a mod folder, without editing the game |
 | [Testing guide](docs/TESTING.md) | Contributors | The headless play-test harness and its scenarios, the boss balance simulator, CI, debugging tricks |
 | [Roadmap](ROADMAP.md) | Everyone | Milestones 1.3.x to 2.0, the backlog, technical debt, the release process |
 | [Changelog](CHANGELOG.md) | Everyone | Every version since 1.0.0 |
