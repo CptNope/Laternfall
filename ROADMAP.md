@@ -2,8 +2,8 @@
 
 Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
 
-- **Current release:** 1.6.0 *Deeper systems*. **Merged, not yet tagged:** 1.7.0 *The Drowned Kingdom* and 1.8.0 *Install anywhere*. **Merged, not yet tagged:** 1.9.0 *Living world* and 1.10.0 *Foundations*. **In review:** 2.0 EN-1 (content as JSON, #17) and EN-4 (mods). See [CHANGELOG.md](CHANGELOG.md#unreleased).
-- **Next up:** the rest of 2.0: EN-3 (map editor) and EN-6 (string table). Both also widen what a mod can change. ST-2 (a real phone test) still needs a person with a phone, and matters more now that TD-4 is meant for phones.
+- **Current release:** 1.6.0 *Deeper systems*. **Merged, not yet tagged:** 1.7.0 *The Drowned Kingdom* and 1.8.0 *Install anywhere*. **Merged, not yet tagged:** 1.9.0 *Living world* and 1.10.0 *Foundations*. **Merged:** 2.0 EN-1 (#17). **In review:** EN-4 (mods, #19) and EN-3 (the town editor). See [CHANGELOG.md](CHANGELOG.md#unreleased).
+- **Next up:** EN-6 (string table: dialogue as data, which also lets mods change it), then EN-7 (the *Lanternfall II* design document). ST-2 (a real phone test) still needs a person with a phone, and matters more now that TD-4 is meant for phones.
 - ✅ marks items that are done.
 
 ## Contents
@@ -130,7 +130,7 @@ gantt
 | **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ✅ Done (1.7.0, merged in #13) |
 | **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ✅ Done (1.8.0, merged in #14; PL-5 not started) |
 | **1.10** | Foundations | Per-family art files, a tile cache for phones, a load-order check | Nov 2026 | ✅ Done (1.10.0, merged in #16) |
-| **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 🟡 Started (EN-1 and EN-4 in review; EN-2 and EN-5 done) |
+| **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 🟡 Started (EN-1 done; EN-3 and EN-4 in review; EN-2 and EN-5 done) |
 
 ```mermaid
 flowchart LR
@@ -327,7 +327,7 @@ flowchart TB
 | --- | --- | --- |
 | ✅ EN-1 | Move monsters, items, shops and encounters to JSON with a schema and a validator. **Done:** `content/*.json`, a JSON Schema each, and `tools/content.js` checking shape and every reference before each build | L |
 | ✅ EN-2 | **Save versioning** (done early, in 1.4): `version` in the save, plus an ordered list of migrations | M |
-| EN-3 | **In-browser map editor** for towns and fixed dungeon floors | L |
+| ✅ EN-3 | **In-browser map editor** for towns and fixed dungeon floors. **Done for towns:** `index.html?edit`, towns in `content/towns.json`, a walk check shared with the build, export as a mod. Dungeon floors are generated from a seed, so there are no fixed floors to edit | L |
 | ✅ EN-4 | **Mod loader**: content folders merged at build time. **Done:** `mods/<id>/` with `mod.json`, content patches (add, patch, remove; list `add` / `remove`) and code; `build.py --mod`; checked like the game's content; saves survive a missing mod | M |
 | ✅ EN-5 | Split `art.js` into per-family files with a registry (`registerMonsterArt('crown', fn)`). **Done in 1.10:** one file per monster family in `src/monsters/` and per battle background in `src/backgrounds/`, registering in `MONSTER_ART`, `MONSTER_SIZE` and `BATTLE_BGS`; checked pixel for pixel | M |
 | EN-6 | **Localisation**: move every dialogue line into a string table keyed by ID | L |

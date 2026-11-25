@@ -21,10 +21,11 @@ mods/ember-fox/                  the folder's name is the mod's id: lower case, 
   content/monsters.json          optional: changes to content/monsters.json
   content/shops.json             optional: changes to content/shops.json
   content/encounters.json        optional: changes to content/encounters.json
+  content/towns.json             optional: changes to town layouts (make one in the editor, index.html?edit)
   src/*.js                       optional: code, loaded after the whole game (new monster drawings)
 ```
 
-A mod's content files look like the game's own ([content/README.md](../content/README.md)), but only list what changes.
+A town a mod changes goes through the same walk check as the game's own towns: every door and townsperson reachable. A mod's content files look like the game's own ([content/README.md](../content/README.md)), but only list what changes.
 
 ## How changes merge
 
@@ -33,6 +34,7 @@ A mod's content files look like the game's own ([content/README.md](../content/R
 | A new item or monster id | Adds it, after the game's own |
 | An existing item or monster with some fields: `"goblin": {"steal": "hipotion"}` | Changes only those fields |
 | `"goblin": null` | Removes it (the checker complains if anything still uses it) |
+| A town, with some fields: `"brightwater": {"decor": [...]}` | Replaces those fields of the town's layout. The editor's **Save as a mod file** writes the whole town |
 | A shop or encounter table given as a list | Replaces the whole list |
 | `"lastlight_arms": {"add": ["ember_tail"], "remove": ["ash_kris"]}` | Edits a shop's list |
 | `"r6": {"add": [{"w": 2, "g": ["emberfox"]}], "remove": [0]}` | Edits an encounter table; `remove` takes group numbers, counting from 0 |
@@ -72,4 +74,4 @@ A save remembers the mods it was made with. Loading it in a game without them is
 
 ## What mods can't do yet
 
-Mods change items, monsters, shops and encounter tables, and add code. Maps, dialogue and moves are still code in `src/` (see the [roadmap](../ROADMAP.md#20--lantern-engine): the map editor and the string table are next), so changing those means editing the game itself.
+Mods change items, monsters, shops, encounter tables and town layouts, and add code. The world map, dungeons (generated from a seed), dialogue and moves are still code in `src/` (dialogue is next on the [roadmap](../ROADMAP.md#20--lantern-engine): the string table), so changing those means editing the game itself. A mod can't add a new town to the world map yet: the world's letters are code.

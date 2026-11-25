@@ -223,6 +223,11 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 **Sound**
 - An original chiptune soundtrack of 21 tracks (title, overworld, sea, sky, desert, towns, dungeons, the Spire, the Ashen Isle, the Abyss, the sea floor, Nerith, the Undermarket, battle, boss, two final battles, victory, ending, game over), sequenced live in Web Audio
 
+**Make your own**
+- **Content as data**: items, monsters, shops, random battles and town layouts are JSON files with schemas ([content/README.md](content/README.md)), checked before every build
+- **A town editor** in the game itself: open `index.html?edit` to move buildings, paint paths, water and decorations, see where everyone stands, walk around in it, and save it as a mod
+- **Mods**: a folder of changes, built into a separate copy of the game with `python3 build.py --mod` ([mods/README.md](mods/README.md))
+
 ---
 
 ## The world
@@ -360,6 +365,7 @@ flowchart LR
 | `src/living.js` | 1.9: the clock, day and night, the sky tint and glows, regional weather and its battle effects, night NPCs |
 | `src/cards.js` | 1.9: *Lanterns & Lies*: the cards, the players, the deck screen, the board and the AI |
 | `src/heist.js` | 1.9: *The Sunset Opal*: the vault map, guard patrols and sight lines |
+| `src/editor.js` | 2.0: the town editor (`index.html?edit`) and the town walk check the build runs |
 | `src/story.js` | NPC dialogue, cutscenes, story flags, quests, the arena, boss events, the title screen, the endings, the main loop |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Generated: the installable-app files (`build.py`, `tools/make_icons.py`) |
 | `src-tauri/` | The desktop app (Tauri): a native window around `index.html`, built by CI |
@@ -367,7 +373,7 @@ flowchart LR
 | `mods/` | 2.0: mods, built in with `build.py --mod`, and an example mod ([mods/README.md](mods/README.md)) |
 | `tools/` | The play-test harness, the content checker, the load-order check, the boss balance simulator, the guide-table generator, the icon renderer and the diagram checker |
 
-**Debug:** add `?noenc` to the URL to turn off random encounters. There are more tricks in [TESTING.md](docs/TESTING.md#debugging-tricks).
+**Debug:** add `?noenc` to the URL to turn off random encounters, or `?edit` for the town editor. There are more tricks in [TESTING.md](docs/TESTING.md#debugging-tricks).
 
 ---
 
@@ -378,7 +384,7 @@ flowchart LR
 | [Game guide](docs/GAME_GUIDE.md) | Players | Walkthrough, world, towns and shops, dungeons, every skill, combo, monster, boss, item, fish and recipe, battle formulas |
 | [Architecture](docs/ARCHITECTURE.md) | Developers | Build pipeline, modules, main loop, scenes, the script runner, maps and generation, rendering, battles, audio, save format, story flags |
 | [Modding guide](docs/MODDING.md) | Contributors | Step-by-step recipes for monsters, art, items, skills, combos, NPCs, quests, towns, dungeons, bosses, music, fish, recipes and cups |
-| [Making a mod](mods/README.md) | Modders | Change items, monsters, shops and battles in a mod folder, without editing the game |
+| [Making a mod](mods/README.md) | Modders | Change items, monsters, shops, battles and towns in a mod folder, without editing the game; the town editor is `index.html?edit` |
 | [Testing guide](docs/TESTING.md) | Contributors | The headless play-test harness and its scenarios, the boss balance simulator, CI, debugging tricks |
 | [Roadmap](ROADMAP.md) | Everyone | Milestones 1.3.x to 2.0, the backlog, technical debt, the release process |
 | [Changelog](CHANGELOG.md) | Everyone | Every version since 1.0.0 |
