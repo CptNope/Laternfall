@@ -17,7 +17,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -594,6 +594,42 @@ async def main():
             await ctx2.set_offline(True); await pg2.reload(); await pg2.wait_for_timeout(1500)
             check(await pg2.evaluate("typeof Trophies === 'object' && document.title.startsWith('Lanternfall')"), 'the game reloads offline')
             await ctx2.close(); srv.shutdown()
+
+        if want('mods'):
+            # 2.0 EN-4: build the example mod, play it, then carry its save back to the real game
+            def check(ok, label):
+                print(('ok   ' if ok else 'FAIL ') + label)
+                if not ok: errs.append('check failed: ' + label)
+            import subprocess
+            MODDED = '/tmp/lanternfall-playtest-modded.html'
+            r = subprocess.run([sys.executable, str(ROOT / 'build.py'), '--mod', str(ROOT / 'mods' / 'example'), '--out', MODDED], capture_output=True, text=True)
+            check(r.returncode == 0, 'build.py --mod mods/example builds' + ('' if r.returncode == 0 else ': ' + (r.stderr or r.stdout)[-400:]))
+            s = json.loads(json.dumps(POST)); s['mapId'] = 'lastlight'; s['x'] = 11; s['y'] = 12
+            await pg.goto('file://' + MODDED)
+            await ev(f"localStorage.clear(); localStorage.setItem('lanternfall_save_v1', {json.dumps(json.dumps(s))})")
+            await pg.reload(); await pg.wait_for_timeout(1500)
+            await shot('76_modded_title')
+            check(await ev("MODS.length === 1 && MODS[0].id === 'example' && MODS[0].name === 'The Ember Fox'"), 'the modded game knows its mod (shown on the title screen)')
+            check(await ev("!!MONSTERS.emberfox && MONSTERS.emberfox.fam === 'emberfox' && !!MONSTER_ART.emberfox"), 'the mod adds the Ember Fox, with its own drawing')
+            check(await ev("!!ITEMS.ember_tail && SHOPS.lastlight_arms.includes('ember_tail')"), "the mod's Ember Tail is sold in Lastlight")
+            check(await ev("ENCOUNTERS.r6.some(e => e.g.includes('emberfox')) && NIGHT_ENC.r6.some(e => e.g.includes('emberfox'))"), 'Ember Foxes roam the Ashen Isle by day and night')
+            check(await ev("MONSTERS.goblin.steal === 'hipotion' && MONSTERS.goblin.hp === 34"), 'a patch changes one field and keeps the rest (Goblins carry a Hi-Potion)')
+            await press('Enter'); await pg.wait_for_timeout(1300)
+            await run("await startBattle(['emberfox', 'emberfox'])", 2500)
+            await shot('77_modded_battle')
+            check(await ev("G.scene && G.scene.enemies && G.scene.enemies.filter(e => e.def.fam === 'emberfox').length === 2"), 'a battle with the Ember Fox draws (no errors)')
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110); await pg.wait_for_timeout(500)
+            await ev("addItem('ember_tail', 2); G.party[0].acc = 'ember_tail'; saveGame('1')")
+            check(await ev("JSON.stringify(readSlot('1').mods) === '[\"example\"]'"), 'a save remembers the mods it was made with')
+            # the same save in the game without the mod: the mod's items go, nothing breaks
+            await pg.goto('file://' + PATH); await pg.wait_for_timeout(1200)
+            gone = await ev("(() => { const ok = loadGame('1'); return [ok, MODS.length, !!G.inv.ember_tail, G.party[0].acc]; })()")
+            await pg.wait_for_timeout(700)
+            check(gone == [True, 0, False, None], f"the save loads in the game without the mod; its items are left out ({gone})")
+            check(await ev("Toasts.some(t => /from a mod that isn't here/.test(t.msg))"), 'the player is told why')
+            await run("await changeMap(G.mapId, G.x, G.y, 'down')", 1500)
+            check(await ev("G.scene === Field && Field.map.id === 'lastlight'"), 'and the field carries on from it')
+            await shot('78_save_without_mod')
 
         if want('tiles'):
             # 1.10 tile cache: the cached tile layer must look like the tiles drawn one by one

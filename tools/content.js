@@ -1,8 +1,10 @@
 'use strict';
 // Lanternfall's content files (content/*.json, 2.0 EN-1): load them, check them, report problems.
 //
-//   node tools/content.js            check content/ and print every problem (exit 1 if any)
-//   node tools/content.js --selftest plant known mistakes and confirm each one is caught
+//   node tools/content.js                       check content/ and print every problem (exit 1 if any)
+//   node tools/content.js --mod mods/x [--mod …]  the same, with mods merged in (2.0, EN-4)
+//   node tools/content.js --mod mods/x --emit f   …and write the merged tables to f (build.py uses this)
+//   node tools/content.js --selftest              plant known mistakes and confirm each one is caught
 //
 // build.py runs the check before it builds; tools/extract.js uses load() for the guide tables.
 // Checks, in order:
@@ -14,6 +16,7 @@
 const fs = require('fs'), path = require('path'), vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
+let MOD_SRC = [];   // .js files of the mods being checked (they can add monster families)
 const FILES = { items: 'items.json', monsters: 'monsters.json', shops: 'shops.json', encounters: 'encounters.json' };
 
 // ---------- loading ----------
@@ -28,6 +31,67 @@ function readFiles(dir = path.join(ROOT, 'content')) {
   }
   return raw;
 }
+// ---------- mods (2.0, EN-4) ----------
+// A mod is a folder: mod.json, optional content/*.json patches, optional src/*.js.
+// Patches merge into the base, in the order the mods are given:
+//  - items, monsters: a new id is added at the end; an existing one is patched field by field
+//    ({"hp": 30} changes only hp); null removes it.
+//  - shops, encounter tables: a list replaces the whole list; {"add": [...], "remove": [...]}
+//    edits it (remove takes item ids, or for encounters the index of a group); null removes it.
+const MOD_FIELDS = { items: ['items'], monsters: ['monsters'], shops: ['shops'], encounters: ['day', 'night'] };
+function readMod(dir) {
+  const id = path.basename(path.resolve(dir));
+  const at = `mods/${id}`;
+  let info;
+  try { info = JSON.parse(fs.readFileSync(path.join(dir, 'mod.json'), 'utf8')); }
+  catch (e) { throw new Error(`${at}/mod.json: ${e.code === 'ENOENT' ? 'missing (every mod needs one)' : e.message}`); }
+  const errs = [], sch = schemaFile('mod.schema.json');
+  validate(info, sch, `${at}/mod.json`, sch, errs);
+  if (!/^[a-z][a-z0-9_-]*$/.test(id)) errs.push(`${at}: a mod's folder name is its id: lower case letters, digits, - and _`);
+  const patches = {}, cdir = path.join(dir, 'content');
+  if (fs.existsSync(cdir)) for (const f of fs.readdirSync(cdir)) {
+    const k = f.replace(/\.json$/, '');
+    if (!f.endsWith('.json') || !MOD_FIELDS[k]) { errs.push(`${at}/content/${f}: not a content file (use ${Object.values(FILES).join(', ')})`); continue; }
+    try { patches[k] = JSON.parse(fs.readFileSync(path.join(cdir, f), 'utf8')); } catch (e) { errs.push(`${at}/content/${f}: ${e.message}`); continue; }
+    for (const top of Object.keys(patches[k])) if (top !== '$schema' && !MOD_FIELDS[k].includes(top)) errs.push(`${at}/content/${f}: unknown section "${top}" (use ${MOD_FIELDS[k].join(', ')})`);
+  }
+  const sdir = path.join(dir, 'src');
+  const src = fs.existsSync(sdir) ? fs.readdirSync(sdir).filter(f => f.endsWith('.js')).sort().map(f => path.join(sdir, f)) : [];
+  return { id, at, info, patches, src, errs };
+}
+function mergeMod(raw, mod, origin) {
+  const note = (k, t, id) => { origin[`${k}.${t}.${id}`] = mod.id; };
+  for (const [k, p] of Object.entries(mod.patches)) for (const t of MOD_FIELDS[k]) {
+    if (!p[t]) continue;
+    const base = raw[k][t];
+    for (const [id, v] of Object.entries(p[t])) {
+      if (isComment(id)) continue;
+      note(k, t, id);
+      if (v === null) { if (!(id in base)) mod.errs.push(`${mod.at}/content/${k}.json: ${t}.${id}: can't remove "${id}", it doesn't exist`); delete base[id]; continue; }
+      if (k === 'items' || k === 'monsters') {
+        if (id in base && typeof v === 'object' && !Array.isArray(v)) base[id] = { ...base[id], ...v };
+        else base[id] = v;
+      } else if (Array.isArray(v)) base[id] = v;
+      else if (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).every(x => x === 'add' || x === 'remove')) {
+        if (!(id in base)) { mod.errs.push(`${mod.at}/content/${k}.json: ${t}.${id}: can't edit "${id}", it doesn't exist (give a list to create it)`); continue; }
+        let list = base[id].slice();
+        for (const r of v.remove || []) {
+          if (k === 'encounters') { if (!Number.isInteger(r) || !list[r]) mod.errs.push(`${mod.at}/content/${k}.json: ${t}.${id}.remove: ${JSON.stringify(r)} isn't a group number (0–${list.length - 1})`); }
+          else if (!list.includes(r)) mod.errs.push(`${mod.at}/content/${k}.json: ${t}.${id}.remove: "${r}" isn't in the list`);
+        }
+        if (k === 'encounters') { const drop = new Set(v.remove || []); list = list.filter((_, i) => !drop.has(i)); } else list = list.filter(x => !(v.remove || []).includes(x));
+        base[id] = list.concat(v.add || []);
+      } else mod.errs.push(`${mod.at}/content/${k}.json: ${t}.${id}: give a list, {"add": [...], "remove": [...]}, or null`);
+    }
+  }
+}
+// Base content with mods merged in. Returns the raw files, the mods, and which mod touched what.
+function readWithMods(dirs = []) {
+  const raw = readFiles(), mods = dirs.map(readMod), origin = {};
+  for (const m of mods) mergeMod(raw, m, origin);
+  return { raw, mods, origin };
+}
+
 // The tables the game uses, under the names it uses
 function tables(raw) {
   return { ITEMS: strip(raw.items.items), MONSTERS: strip(raw.monsters.monsters), SHOPS: strip(raw.shops.shops),
@@ -112,7 +176,7 @@ function srcFiles() {
 }
 function references(T, errs) {
   const D = gameData(T), { ITEMS, MONSTERS, SHOPS, ENCOUNTERS, NIGHT_ENC } = T;
-  const code = srcFiles().map(f => [path.relative(ROOT, f), fs.readFileSync(f, 'utf8')]);
+  const code = srcFiles().concat(MOD_SRC).map(f => [path.relative(ROOT, f), fs.readFileSync(f, 'utf8')]);
   const families = new Set();
   for (const [f, s] of code) for (const m of s.matchAll(/MONSTER_ART\.(\w+) = /g)) families.add(m[1]);
   const item = (id, at) => { if (!(id in ITEMS)) errs.push(`${at}: "${id}" isn't an item in content/items.json`); };
@@ -156,12 +220,16 @@ function references(T, errs) {
 }
 
 // ---------- check ----------
-function check(raw) {
-  const errs = [];
+function check(raw, mods = [], origin = {}) {
+  const errs = mods.flatMap(m => m.errs);
+  MOD_SRC = mods.flatMap(m => m.src);
   for (const [k, f] of Object.entries(FILES)) { const sch = schemaFile(f.replace('.json', '.schema.json')); validate(raw[k], sch, f, sch, errs); }
-  if (errs.length) return errs;   // references assume the shapes are right
-  references(tables(raw), errs);
-  return errs;
+  if (errs.length === mods.reduce((n, m) => n + m.errs.length, 0)) references(tables(raw), errs);   // references assume the shapes are right
+  // say which mod brought in an entry that has a problem
+  return errs.map(e => {
+    const m = /^(\w+)\.json: (\w+)\.(\w+)/.exec(e), who = m && origin[`${m[1]}.${m[2]}.${m[3]}`];
+    return who ? `${e}  (from mod "${who}")` : e;
+  });
 }
 
 function selftest() {
@@ -191,16 +259,60 @@ function selftest() {
     console.log((ok ? 'ok   ' : 'FAIL ') + 'catches ' + what + (ok ? '' : ': got ' + JSON.stringify(errs.slice(0, 3))));
     if (!ok) bad++;
   }
-  console.log(bad ? `${bad} self-test case(s) failed` : `content self-test: all ${cases.length} planted mistakes caught`);
+  // mods: build a throwaway mod folder for each case
+  const os = require('os');
+  const modCases = [
+    ['a mod adding a monster with a misspelt drop', { 'content/monsters.json': { monsters: { foxling: { ...base.monsters.monsters.wolf, name: 'Foxling', drop: ['ehter', 0.1] } } } }, /monsters\.foxling\.drop: "ehter" isn't an item.*from mod "t"/],
+    ['a mod removing an item a shop still sells', { 'content/items.json': { items: { potion: null } } }, /"potion" isn't an item/],
+    ['a mod editing a shop that doesn\'t exist', { 'content/shops.json': { shops: { nowhere: { add: ['potion'] } } } }, /can't edit "nowhere"/],
+    ['a mod removing an encounter group that isn\'t there', { 'content/encounters.json': { day: { r1: { remove: [40] } } } }, /isn't a group number/],
+    ['a mod with a misnamed content file', { 'content/item.json': { items: {} } }, /content\/item\.json: not a content file/],
+    ['a mod without a version', { 'mod.json': { name: 'T' } }, /mod\.json: missing "version"/],
+  ];
+  for (const [what, files, expect] of modCases) {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lfmod-')), md = path.join(dir, 't');
+    fs.mkdirSync(path.join(md, 'content'), { recursive: true });
+    const all = { 'mod.json': { name: 'Test', version: '1.0.0' }, ...files };
+    for (const [f, v] of Object.entries(all)) fs.writeFileSync(path.join(md, f), JSON.stringify(v));
+    let errs;
+    try { const { raw, mods, origin } = readWithMods([md]); errs = check(raw, mods, origin); } catch (e) { errs = [e.message]; }
+    const ok = errs.some(e => expect.test(e));
+    console.log((ok ? 'ok   ' : 'FAIL ') + 'catches ' + what + (ok ? '' : ': got ' + JSON.stringify(errs.slice(0, 3))));
+    if (!ok) bad++;
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+  // and a good mod merges: add, patch, shop and encounter edits
+  {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lfmod-')), md = path.join(dir, 'good');
+    fs.mkdirSync(path.join(md, 'content'), { recursive: true });
+    fs.writeFileSync(path.join(md, 'mod.json'), JSON.stringify({ name: 'Good', version: '1.0.0' }));
+    fs.writeFileSync(path.join(md, 'content', 'items.json'), JSON.stringify({ items: { tonic: { name: 'Tonic', price: 10, kind: 'use', effect: 'hp', amount: 20, target: 'ally', desc: 'A little.' } } }));
+    fs.writeFileSync(path.join(md, 'content', 'monsters.json'), JSON.stringify({ monsters: { slime: { hp: 30 } } }));
+    fs.writeFileSync(path.join(md, 'content', 'shops.json'), JSON.stringify({ shops: { brightwater_items: { add: ['tonic'], remove: ['tent'] } } }));
+    fs.writeFileSync(path.join(md, 'content', 'encounters.json'), JSON.stringify({ day: { r1: { add: [{ w: 1, g: ['bat'] }], remove: [0] } } }));
+    const { raw, mods, origin } = readWithMods([md]), errs = check(raw, mods, origin), T = tables(raw), B = load();
+    const ok = !errs.length && T.ITEMS.tonic && T.MONSTERS.slime.hp === 30 && T.MONSTERS.slime.atk === B.MONSTERS.slime.atk &&
+      T.SHOPS.brightwater_items.join() === 'potion,antidote,plume,tonic' && T.ENCOUNTERS.r1.length === B.ENCOUNTERS.r1.length &&
+      JSON.stringify(T.ENCOUNTERS.r1[0]) === JSON.stringify(B.ENCOUNTERS.r1[1]) && Object.keys(T.ITEMS).pop() === 'tonic';
+    console.log((ok ? 'ok   ' : 'FAIL ') + 'merges a good mod (a new item, a one-field patch, shop and encounter edits)' + (ok ? '' : ': ' + JSON.stringify(errs.slice(0, 3))));
+    if (!ok) bad++;
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+  const total = cases.length + modCases.length + 1;
+  console.log(bad ? `${bad} self-test case(s) failed` : `content self-test: all ${total} cases pass`);
   return bad ? 1 : 0;
 }
 
 if (require.main === module) {
   if (process.argv.includes('--selftest')) process.exit(selftest());
-  let errs;
-  try { errs = check(readFiles()); } catch (e) { errs = [e.message]; }
+  const argv = process.argv.slice(2), dirs = [], emit = argv.includes('--emit') ? argv[argv.indexOf('--emit') + 1] : null;
+  argv.forEach((a, i) => { if (a === '--mod') dirs.push(argv[i + 1]); });
+  let errs, got;
+  try { got = readWithMods(dirs); errs = check(got.raw, got.mods, got.origin); } catch (e) { errs = [e.message]; }
   if (errs.length) { console.error(`content: ${errs.length} problem(s)\n  ` + errs.join('\n  ')); process.exit(1); }
-  const T = load();
-  console.log(`content: ${Object.keys(T.ITEMS).length} items, ${Object.keys(T.MONSTERS).length} monsters, ${Object.keys(T.SHOPS).length} shops, ${Object.keys(T.ENCOUNTERS).length}+${Object.keys(T.NIGHT_ENC).length} encounter tables check out`);
+  const T = tables(got.raw);
+  const mods = got.mods.map(m => ({ id: m.id, name: m.info.name, version: m.info.version }));
+  if (emit) fs.writeFileSync(emit, JSON.stringify({ tables: T, mods, src: got.mods.flatMap(m => m.src.map(f => path.resolve(f))) }));
+  console.log(`content: ${Object.keys(T.ITEMS).length} items, ${Object.keys(T.MONSTERS).length} monsters, ${Object.keys(T.SHOPS).length} shops, ${Object.keys(T.ENCOUNTERS).length}+${Object.keys(T.NIGHT_ENC).length} encounter tables check out` + (mods.length ? `, with ${mods.map(m => m.name + ' ' + m.version).join(', ')}` : ''));
 }
-module.exports = { load, readFiles, tables, check, validate };
+module.exports = { load, readFiles, readWithMods, tables, check, validate };

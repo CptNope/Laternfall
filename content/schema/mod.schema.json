@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mod.schema.json",
+  "title": "A Lanternfall mod's mod.json",
+  "description": "Every mod folder (mods/<id>/) has one. The folder's name is the mod's id.",
+  "type": "object",
+  "required": ["name", "version"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "name": { "type": "string", "minLength": 1, "description": "Shown on the title screen of a game built with this mod." },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "The mod's own version, like 1.0.0." },
+    "description": { "type": "string" },
+    "author": { "type": "string" }
+  }
+}

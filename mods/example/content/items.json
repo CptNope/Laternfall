@@ -1,0 +1,5 @@
+{
+  "items": {
+    "ember_tail": {"name": "Ember Tail", "price": 9000, "kind": "acc", "atk": 12, "spd": 6, "immune": ["berserk"], "desc": "ATK +12, SPD +6. Keeps a cool head: no Berserk."}
+  }
+}

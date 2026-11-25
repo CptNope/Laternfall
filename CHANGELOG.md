@@ -49,9 +49,13 @@ xychart-beta
 
 ## [Unreleased]
 
-Planned as **2.0.0 · *Lantern Engine***: separating the engine from Lanternfall's content (see the [roadmap](ROADMAP.md#20--lantern-engine)). It arrives in parts; this is the first, EN-1. The game plays exactly the same.
+Planned as **2.0.0 · *Lantern Engine***: separating the engine from Lanternfall's content (see the [roadmap](ROADMAP.md#20--lantern-engine)). It arrives in parts: EN-1 (content as data, #17) and EN-4 (mods). The game plays exactly the same.
 
 ### Added
+- **Mods** (EN-4). A mod is a folder in `mods/` with a `mod.json`, the content it adds or changes, and optionally code (a new monster drawing). `python3 build.py --mod mods/example` builds the game with it into `build/lanternfall-modded.html`; `index.html` is never touched. New items and monsters are added, existing ones patched field by field (`"goblin": {"steal": "hipotion"}`), and shop and encounter lists replaced or edited with `add` / `remove`. The merged content goes through the same checker, and a problem names the mod it came from. See `mods/README.md`.
+- **An example mod**, *The Ember Fox*: a new monster with its own drawing roaming the Ashen Isle, a new accessory sold in Lastlight, and a one-field change to Goblins.
+- The title screen of a modded game says which mods are in it, and saves record them. Loading a save in a game without its mods leaves the mods' items out (gear returns to the hero's starting gear) and tells the player, instead of breaking a menu later.
+- `mods` play-test scenario (11 checks), in CI; the content self-test now also plants 6 mod mistakes and checks a good mod merges.
 - **Content as data files.** Items, monsters, shops and random-battle tables moved out of `src/data.js` into `content/items.json`, `monsters.json`, `shops.json` and `encounters.json`, one entry per line. `build.py` writes them back into `index.html`, so the game is still one file. The tables the game sees are byte-for-byte the same as before, and the generated game guide is unchanged.
 - **A schema for each file** in `content/schema/`, describing every field. Editors that understand JSON Schema (VS Code and most others) underline mistakes and show what a field means as you type.
 - **A content checker** (`tools/content.js`, no packages needed). `build.py` runs it first and builds nothing if it finds a problem. It checks each file against its schema, then every reference: drops and shop stock are real items, encounter groups are real monsters, moves exist, every monster family has a drawing, every night table has a day table. It also checks what the code names: a town's shop, a dungeon's encounter table, the monsters in `startBattle([...])`, items in `addItem` / `hasItem`, recipes, treasure maps, meals, the arena and the black market. `--selftest` plants 15 typical mistakes and fails unless each is caught; CI runs both.
