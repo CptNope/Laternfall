@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "items.schema.json",
+  "title": "Lanternfall items",
+  "description": "Every item, weapon, armour, accessory, material, fish and key item. The order here is the order in menus and the guide.",
+  "type": "object",
+  "required": ["items"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "items": {
+      "type": "object",
+      "patternProperties": { "^//": { "$ref": "common.schema.json#/$defs/comment" }, "^[a-z][a-z0-9_]*$": { "$ref": "#/$defs/item" } },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "required": ["name", "price", "kind", "desc"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "Shown in menus." },
+        "price": { "type": "integer", "minimum": 0, "description": "Shop price in gold. Selling pays half. 0 means it isn't sold." },
+        "kind": { "enum": ["use", "weapon", "armor", "acc", "mat", "fish", "key"], "description": "use: consumable. weapon / armor: who can equip it is in `who`. acc: an accessory anyone can wear. mat: forging material. fish: a catch. key: a key item." },
+        "desc": { "type": "string", "minLength": 1, "description": "Shown under the item list." },
+        "effect": { "enum": ["hp", "mp", "cure", "revive", "tent", "elixir", "megalixir", "remedy", "bomb", "berserk"], "description": "What a `use` item does." },
+        "amount": { "type": "integer", "minimum": 1, "description": "HP or MP restored, or a bomb's damage. 9999 means all of it." },
+        "target": { "enum": ["ally", "allies", "enemies", "none"], "description": "Who a `use` item affects." },
+        "field": { "enum": ["world"], "description": "Only usable on the world map (the Tent)." },
+        "battleOnly": { "const": true, "description": "Only usable in battle." },
+        "elem": { "$ref": "common.schema.json#/$defs/element", "description": "A bomb's element." },
+        "fx": { "type": "string", "description": "The battle effect to play (see `fx` in SPELLS)." },
+        "who": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/id" }, "minItems": 1, "uniqueItems": true, "description": "Heroes who can equip this weapon or armour." },
+        "atk": { "type": "integer", "description": "Attack bonus when equipped." },
+        "def": { "type": "integer", "description": "Defence bonus when equipped." },
+        "mag": { "type": "integer", "description": "Magic bonus when equipped." },
+        "spd": { "type": "integer", "description": "Speed bonus when equipped." },
+        "hp": { "type": "integer", "description": "Max HP bonus when equipped." },
+        "all": { "type": "integer", "minimum": 1, "description": "An accessory's bonus to ATK, DEF, MAG and SPD at once." },
+        "immune": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/status" }, "uniqueItems": true, "description": "Statuses the wearer can't get." },
+        "reraise": { "const": true, "description": "Revives the wearer once per battle." },
+        "regen": { "const": true, "description": "The wearer regains a little HP each turn." },
+        "xp": { "type": "number", "exclusiveMinimum": 1, "description": "XP multiplier for the wearer." },
+        "goldx": { "type": "number", "exclusiveMinimum": 1, "description": "Gold multiplier for the party." },
+        "fewer": { "const": true, "description": "Half as many random battles." },
+        "thief": { "const": true, "description": "Better steal chances." },
+        "tmap": { "type": "integer", "minimum": 1, "description": "A treasure map: its number in TREASURES (data.js)." }
+      },
+      "allOf": [
+        { "if": { "properties": { "kind": { "const": "use" } } }, "then": { "required": ["effect", "target"] } },
+        { "if": { "properties": { "kind": { "enum": ["weapon", "armor"] } } }, "then": { "required": ["who"] } },
+        { "if": { "properties": { "kind": { "const": "weapon" } } }, "then": { "required": ["atk"] } },
+        { "if": { "properties": { "kind": { "const": "armor" } } }, "then": { "required": ["def"] } }
+      ]
+    }
+  }
+}

@@ -1,10 +1,10 @@
 """Regenerates docs/GAME_GUIDE.md from tools/game_guide.tpl.md and the game data.
 
 Usage:  python3 tools/gentables.py
-Needs:  node (to read src/data.js via tools/extract.js)
+Needs:  node (to read content/*.json and src/data.js via tools/extract.js)
 
 Every {{name}} placeholder in the template is replaced by a generated markdown table.
-Edit the template for prose and src/data.js for numbers; never edit docs/GAME_GUIDE.md by hand."""
+Edit the template for prose, and content/*.json or src/data.js for numbers; never edit docs/GAME_GUIDE.md by hand."""
 import json, re, subprocess, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 D = json.loads(subprocess.check_output(['node', str(ROOT / 'tools' / 'extract.js')]))

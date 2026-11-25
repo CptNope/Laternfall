@@ -13,8 +13,9 @@ Step-by-step recipes for adding things to Lanternfall: monsters, items, quests, 
 ```mermaid
 flowchart TD
     Q{What are you adding?}
-    Q -->|Numbers: stats, prices, drops| D[src/data.js]
-    Q -->|A drawing| A[src/art.js]
+    Q -->|An item, monster, shop list or encounter| CT[content/*.json]
+    Q -->|Other numbers: moves, heroes, recipes, meals| D[src/data.js]
+    Q -->|A drawing| A[src/monsters/, src/backgrounds/, src/art.js]
     Q -->|Dialogue, cutscene, quest logic| S[src/story.js]
     Q -->|A town layout or dungeon definition| M[src/maps.js]
     Q -->|A building's inside| I[src/interior.js]
@@ -56,34 +57,32 @@ flowchart TD
 
 ## Add a monster
 
-**Files:** `src/data.js`
+**Files:** `content/monsters.json`, `content/encounters.json`
 
-1. Add an entry to `MONSTERS`:
+1. Add an entry to `monsters` in `content/monsters.json`:
 
-```js
-emberfox: {
-  name: 'Ember Fox', fam: 'beast',              // which drawing to use (see art.js drawMonster)
-  c: ['#e8602a', '#7a2a10'],                    // colours; families read c[0], c[1], sometimes c[2]
-  size: 0.9,                                    // optional scale
-  hp: 900, atk: 150, def: 60, mag: 80, spd: 24,
-  xp: 400, gold: 300,
-  weak: ['ice'],                                // fire, ice, bolt, holy, dark, water: ×1.6
-  resist: ['fire'],                             // optional: ×0.5
-  absorb: ['water'],                            // optional: hits heal it instead
-  ai: 'weakest',                                // optional: 'weakest', 'magehunter' or 'healer' (see below)
-  acts: [{ w: 3, a: 'attack' }, { w: 1, a: 'e_blaze' }],  // weighted moves; 'attack' or an e_* skill
-  drop: ['hipotion', 0.2],                      // item and chance after the battle
-  mat: ['ember_core', 0.2],                     // forge material and chance (optional)
-  steal: 'ether',                               // what Kestrel can steal
-  rare: ['megalixir', 0.1],                     // optional ★ rare steal: tried first, with this chance
-  actions: 1                                    // optional: turns per round (late bosses use 2)
-},
+```json
+"emberfox": {"name": "Ember Fox", "fam": "beast", "c": ["#e8602a", "#7a2a10"], "size": 0.9, "hp": 900, "atk": 150, "def": 60, "mag": 80, "spd": 24, "xp": 400, "gold": 300, "weak": ["ice"], "resist": ["fire"], "ai": "weakest", "acts": [{"w": 3, "a": "attack"}, {"w": 1, "a": "e_blaze"}], "drop": ["hipotion", 0.2], "mat": ["ember_core", 0.2], "steal": "ether", "rare": ["megalixir", 0.1]},
 ```
 
-2. Put it in an encounter table in `ENCOUNTERS` (each entry is a weighted group):
+| Field | Meaning |
+| --- | --- |
+| `fam` | Which drawing to use: a file in `src/monsters/` (or a family in `deep_art.js`) |
+| `c` | Colours, `#rrggbb`: families read `c[0]`, `c[1]`, sometimes `c[2]` |
+| `size` | Optional drawing scale |
+| `weak` / `resist` / `absorb` | Elements (`fire`, `ice`, `bolt`, `water`, `holy`, `dark`) that do ×1.6, ×0.5, or heal it |
+| `ai` | Optional: `weakest`, `magehunter` or `healer` (see below) |
+| `acts` | Weighted moves: `"attack"` or an `e_` move from `SPELLS` in `data.js` |
+| `drop` / `mat` | An item, or a forging material, and its chance after the battle |
+| `steal` / `rare` | What Kestrel can steal; an optional ★ rare steal, tried first with its chance |
+| `actions` | Optional turns per round (late bosses use 2) |
 
-```js
-d3: [ ..., { w: 2, g: ['emberfox', 'emberfox'] } ],
+Every field is described in [`content/schema/monsters.schema.json`](../content/schema/monsters.schema.json), so an editor shows it as you type. `python3 build.py` stops if a field is misspelt or an id doesn't exist ([content/README.md](../content/README.md#checking)).
+
+2. Put it in an encounter table in `content/encounters.json`. Each entry is a weighted group; `day` tables are for regions and dungeons, `night` tables for regions after dark:
+
+```json
+"d3": [..., {"w": 2, "g": ["emberfox", "emberfox"]}],
 ```
 
 The bestiary picks it up automatically. Its total, the quest log and Sable's quests (45 creatures, then all of them) all count `MONSTERS`, so adding a monster raises the bar for the Bestiary Seal.
@@ -140,18 +139,16 @@ A family file runs at load time, so it can only use what's declared before it in
 
 ## Add an item, weapon, armour or accessory
 
-**Files:** `src/data.js` (and `SHOPS` to sell it)
+**Files:** `content/items.json` (and `content/shops.json` to sell it)
 
-```js
-// usable item
-sunpetal: { name: 'Sun Petal', price: 300, kind: 'use', effect: 'hp', amount: 400, target: 'ally', desc: 'Restores 400 HP.' },
-// weapon (who: heroes who can equip it)
-emberbrand: { name: 'Emberbrand', price: 12000, kind: 'weapon', who: ['arin'], atk: 50, mag: 6, desc: 'Warm to hold.' },
-// armour
-ember_coat: { name: 'Ember Coat', price: 9000, kind: 'armor', who: ['lyra', 'selene'], def: 18, mag: 8, desc: '...' },
-// accessory (anyone)
-ember_ring: { name: 'Ember Ring', price: 0, kind: 'acc', atk: 10, immune: ['poison'], regen: true, desc: '...' },
+```json
+"sunpetal": {"name": "Sun Petal", "price": 300, "kind": "use", "effect": "hp", "amount": 400, "target": "ally", "desc": "Restores 400 HP."},
+"emberbrand": {"name": "Emberbrand", "price": 12000, "kind": "weapon", "who": ["arin"], "atk": 50, "mag": 6, "desc": "Warm to hold."},
+"ember_coat": {"name": "Ember Coat", "price": 9000, "kind": "armor", "who": ["lyra", "selene"], "def": 18, "mag": 8, "desc": "..."},
+"ember_ring": {"name": "Ember Ring", "price": 0, "kind": "acc", "atk": 10, "immune": ["poison"], "regen": true, "desc": "..."},
 ```
+
+A `use` item needs `effect` and `target`; a weapon needs `who` and `atk`; armour needs `who` and `def`. The build checks it.
 
 | Field | Kinds | Meaning |
 | --- | --- | --- |
@@ -161,13 +158,13 @@ ember_ring: { name: 'Ember Ring', price: 0, kind: 'acc', atk: 10, immune: ['pois
 | `target` | use | `ally`, `allies`, `enemies`, `none` |
 | `battleOnly` | use | Hidden from the field item menu |
 | `atk` `def` `mag` `spd` `all` | gear | Stat bonuses (`all` adds to all four) |
-| `immune` | acc | Any of `poison`, `sleep`, `silence` |
+| `immune` | acc | Any of `poison`, `sleep`, `silence`, `blind`, `slow`, `berserk`, `stop` |
 | `regen` `reraise` `fewer` `xp` `goldx` | acc | Regen; revive once per battle; half encounters; EXP multiplier; +50% gold |
 | `kind: 'mat'` | material | A forge ingredient |
 | `kind: 'fish'` | fish | Caught by fishing; can be sold |
 | `kind: 'key'` | key item | Can't be sold; not carried into NG+ |
 
-Sell it by adding the id to a list in `SHOPS` (for example `lastlight_arms`), or hand it out with `addItem('ember_ring')` in a script or chest loot.
+Sell it by adding the id to a list in `content/shops.json` (for example `lastlight_arms`), or hand it out with `addItem('ember_ring')` in a script or chest loot.
 
 ---
 
@@ -312,13 +309,13 @@ if (f.q_scarf) q.push({ title: 'The Red Scarf', giver: 'Marta, Frostmere', done:
 
 ## Add a town
 
-**Files:** `src/maps.js`, `src/story.js`, `src/data.js` (shops), optionally `src/art.js` (an icon or theme) and `src/interior.js`
+**Files:** `src/maps.js`, `src/story.js`, `content/shops.json`, optionally `src/art.js` (an icon or theme) and `src/interior.js`
 
 ```mermaid
 flowchart TD
     T1[TOWN_DEFS entry: size, border, theme,<br/>buildings, paths, water, decor, exits, loc] --> T2[WORLD_LOC entry with a free letter]
     T2 --> T3[drawLocationIcon case for the letter]
-    T3 --> T4[SHOPS lists for any shop buildings]
+    T3 --> T4[content/shops.json lists for any shop buildings]
     T4 --> T5[townNpcs and interiorNpcs]
     T5 --> T6[onEnterTown first-visit lines<br/>mainObjective / worldMapView if gated]
 ```
@@ -346,7 +343,7 @@ TOWN_DEFS.saltmarsh = {
 
 ## Add a dungeon
 
-**Files:** `src/maps.js`, `src/data.js`, `src/art.js`, `src/story.js`, optionally `src/core.js` (music)
+**Files:** `src/maps.js`, `content/encounters.json`, `content/monsters.json`, `src/art.js`, `src/story.js`, optionally `src/core.js` (music)
 
 ```js
 // maps.js
@@ -361,7 +358,7 @@ DUNGEONS.reef = { name: 'Coral Labyrinth', theme: 'reef', floors: 3, w: 36, h: 2
 | 1 | `maps.js` | Add the `DUNGEONS` entry and a `WORLD_LOC` character (digits `1`–`9` are taken; widen `LOC_RE` for a new one) |
 | 2 | `art.js` | Add a `DTHEME.reef` palette (`wall`, `top`, `floor`, `floor2`, `acc`, `light`, `bg`) and optional details in `drawDungeonTile` |
 | 3 | `art.js` | Add a `drawLocationIcon` case for the digit; optionally a background file in `src/backgrounds/` |
-| 4 | `data.js` | Add `ENCOUNTERS.d8` and the boss in `MONSTERS` |
+| 4 | `content/` | Add a `d8` table to `encounters.json` and the boss to `monsters.json` |
 | 5 | `story.js` | Gate it in `canEnterDungeon` (return `false` with a message), add first-entry lines in `onEnterDungeon`, and the fight in `bossEncounter` |
 | 6 | `story.js` | Add the Lantern's name to `examineLantern`'s `names` map |
 | 7 | `field.js` | Choose the music in `Field.playMusic` (optional) |
@@ -386,12 +383,12 @@ if (did === 'reef') {
 }
 ```
 
-For **two phases**, start the first battle with `{ keepScene: true, noVictory: true }`, play a scene, then start the second (see `abyssFinale()`). Boss monsters need `boss: true` in `MONSTERS`, which blocks running and makes them immune to sleep and silence.
+For **two phases**, start the first battle with `{ keepScene: true, noVictory: true }`, play a scene, then start the second (see `abyssFinale()`). Boss monsters need `"boss": true` in `content/monsters.json`, which blocks running and makes them immune to sleep and silence.
 
 **Phases.** Give a boss `phases` to change its tactics as it gets hurt. When its HP falls to `hp` × max HP, it announces `msg` on its next turn and uses the new `acts` (and `actions`, if set) from then on:
 
-```js
-phases: [{ hp: 0.5, msg: 'The Reef Queen calls the tide!', acts: [{ w: 2, a: 'attack' }, { w: 3, a: 'e_tidal' }, { w: 1, a: 'e_slowall' }] }]
+```json
+"phases": [{"hp": 0.5, "msg": "The Reef Queen calls the tide!", "acts": [{"w": 2, "a": "attack"}, {"w": 3, "a": "e_tidal"}, {"w": 1, "a": "e_slowall"}]}]
 ```
 
 Swap moves rather than stacking damage: run `tools/balance_sim.py` afterwards and keep the win rates where they were.
@@ -437,9 +434,15 @@ TRACKS.reef = {
 
 ## Add a fish or a forge recipe
 
+The fish itself is an item, in `content/items.json`:
+
+```json
+"reefsnapper": {"name": "Reef Snapper", "price": 700, "kind": "fish", "desc": "Striped like the coral."},
+```
+
+How hard it is to catch, where, and recipes are in `data.js`:
+
 ```js
-// data.js: a fish
-ITEMS.reefsnapper = { name: 'Reef Snapper', price: 700, kind: 'fish', desc: 'Striped like the coral.' };
 FISH.reefsnapper = { diff: 2 };                          // 1–3: hits needed = diff + 1; narrower green zone
 FISH_SPOTS.reef = [{ w: 5, f: 'reefsnapper' }, { w: 5, f: 'eel' }];   // town id, dungeon id, 'sea', 'river' or 'ash'
 
@@ -539,7 +542,7 @@ A player is an entry in `CARD_FOES`: `name`, the `town`, a free tile `x`, `y` (c
 **Files:** `src/living.js`, `src/data.js`
 
 - `nightNpcs(id)` returns extra NPCs for town `id` when `isNight()`. Wandering townsfolk are removed at night, so shopkeepers and night NPCs are all that's left. Entities refresh when night starts or ends.
-- `NIGHT_ENC` in `data.js` maps an encounter table name (`r1`, `sea`, …) to night-only groups. At night half of the field's encounters come from it, so day monsters still appear.
+- The `night` tables in `content/encounters.json` map an encounter table name (`r1`, `sea`, …) to night-only groups. At night half of the field's encounters come from it, so day monsters still appear.
 
 ---
 
@@ -553,7 +556,7 @@ A player is an entry in `CARD_FOES`: `name`, the `town`, a free tile `x`, `y` (c
 
 ## Regenerating the guide tables
 
-[GAME_GUIDE.md](GAME_GUIDE.md) is generated. Its prose lives in `tools/game_guide.tpl.md`, and its tables come from `src/data.js`.
+[GAME_GUIDE.md](GAME_GUIDE.md) is generated. Its prose lives in `tools/game_guide.tpl.md`, and its tables come from `content/*.json` and `src/data.js`.
 
 ```bash
 python3 tools/gentables.py            # rewrites docs/GAME_GUIDE.md (needs node)
@@ -574,13 +577,13 @@ To add a table, write a function in `gentables.py` that stores markdown in `out[
 
 ## Pull request checklist
 
-- [ ] Edited `src/` and ran `python3 build.py` (it fails if the game would crash on load)
+- [ ] Edited `src/` or `content/` and ran `python3 build.py` (it fails on a content mistake, or if the game would crash on load)
 - [ ] New progress is stored in **new** flags; old saves still load
 - [ ] Works with the touch D-pad and A/B buttons, and a gamepad
 - [ ] New or changed bosses checked with `tools/balance_sim.py`
 - [ ] Save shape changed? Bump `SAVE_VERSION` and add a migration ([ARCHITECTURE.md](ARCHITECTURE.md#versioning-and-migrations))
 - [ ] `python3 tools/playtest.py` reports `ERRORS: 0` (add a scenario for big features; see [TESTING.md](TESTING.md))
-- [ ] `python3 tools/gentables.py` re-run if `data.js` changed
+- [ ] `python3 tools/gentables.py` re-run if `content/` or `data.js` changed
 - [ ] `tools/check_mermaid.sh` passes if you touched diagrams
 - [ ] [CHANGELOG.md](../CHANGELOG.md) has a line under `[Unreleased]`
 - [ ] README feature counts updated if they changed

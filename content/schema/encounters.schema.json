@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "encounters.schema.json",
+  "title": "Lanternfall encounter tables",
+  "description": "Random battles. World regions use r1 to r6 and sea; a dungeon or the sea floor names its table (enc in maps.js). At night half of a region's battles come from its night table.",
+  "type": "object",
+  "required": ["day", "night"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "day": { "$ref": "#/$defs/tables" },
+    "night": { "$ref": "#/$defs/tables" }
+  },
+  "$defs": {
+    "tables": {
+      "type": "object",
+      "patternProperties": {
+        "^//": { "$ref": "common.schema.json#/$defs/comment" },
+        "^[a-z][a-z0-9_]*$": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "required": ["w", "g"], "additionalProperties": false,
+            "properties": {
+              "w": { "type": "integer", "minimum": 1, "description": "Weight: how often, relative to the other groups." },
+              "g": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/id" }, "minItems": 1, "maxItems": 4, "description": "The monsters in the group, by id. Four at most fit the battle screen." }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

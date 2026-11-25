@@ -2,8 +2,8 @@
 
 Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
 
-- **Current release:** 1.6.0 *Deeper systems*. **Merged, not yet tagged:** 1.7.0 *The Drowned Kingdom* and 1.8.0 *Install anywhere*. **Merged, not yet tagged:** 1.9.0 *Living world*. **In review:** 1.10.0 *Foundations* (EN-5, TD-4, TD-7, and a load-order check). See [CHANGELOG.md](CHANGELOG.md#unreleased).
-- **Next up:** 2.0 *Lantern Engine*, starting with EN-1 (game data as JSON). ST-2 (a real phone test) still needs a person with a phone, and matters more now that TD-4 is meant for phones.
+- **Current release:** 1.6.0 *Deeper systems*. **Merged, not yet tagged:** 1.7.0 *The Drowned Kingdom* and 1.8.0 *Install anywhere*. **Merged, not yet tagged:** 1.9.0 *Living world* and 1.10.0 *Foundations*. **In review:** 2.0 part 1, EN-1 (content as JSON). See [CHANGELOG.md](CHANGELOG.md#unreleased).
+- **Next up:** the rest of 2.0: EN-4 (mod loader) builds directly on EN-1, then EN-3 (map editor) and EN-6 (string table). ST-2 (a real phone test) still needs a person with a phone, and matters more now that TD-4 is meant for phones.
 - ✅ marks items that are done.
 
 ## Contents
@@ -116,9 +116,9 @@ gantt
     section Living world
     1.9 Living world                 :done, m19, 2026-11-24, 1d
     section Foundations
-    1.10 Foundations                 :active, m110, 2026-11-24, 2w
+    1.10 Foundations                 :done, m110, 2026-11-24, 1d
     section Engine
-    2.0 Lantern Engine               :m20, after m17, 12w
+    2.0 Lantern Engine               :active, m20, 2026-11-24, 12w
 ```
 
 | Milestone | Theme | Headline | Target | Status |
@@ -129,8 +129,8 @@ gantt
 | **1.6** | Depth | Lantern Board progression, cooking, smarter enemy AI, more statuses | Nov 2026 | ✅ Done (1.6.0: DS-1 to DS-7; 1.9.0: DS-4's last part and DS-8 to DS-11) |
 | **1.7** | World | The Drowned Kingdom under the sea, the Ironhold Undercity, treasure maps | Jul 2027 | ✅ Done (1.7.0, merged in #13) |
 | **1.8** | Platform | Offline PWA install, desktop builds, achievements | Feb 2027 (parallel) | ✅ Done (1.8.0, merged in #14; PL-5 not started) |
-| **1.10** | Foundations | Per-family art files, a tile cache for phones, a load-order check | Nov 2026 | 🟡 In review (1.10.0: EN-5, TD-4, TD-7) |
-| **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 💭 Exploring |
+| **1.10** | Foundations | Per-family art files, a tile cache for phones, a load-order check | Nov 2026 | ✅ Done (1.10.0, merged in #16) |
+| **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | 🟡 Started (EN-1 in review; EN-2 and EN-5 done) |
 
 ```mermaid
 flowchart LR
@@ -325,7 +325,7 @@ flowchart TB
 
 | ID | Item | Size |
 | --- | --- | --- |
-| EN-1 | Move monsters, items, shops and encounters to JSON with a schema and a validator | L |
+| ✅ EN-1 | Move monsters, items, shops and encounters to JSON with a schema and a validator. **Done:** `content/*.json`, a JSON Schema each, and `tools/content.js` checking shape and every reference before each build | L |
 | ✅ EN-2 | **Save versioning** (done early, in 1.4): `version` in the save, plus an ordered list of migrations | M |
 | EN-3 | **In-browser map editor** for towns and fixed dungeon floors | L |
 | EN-4 | **Mod loader**: content folders merged at build time | M |

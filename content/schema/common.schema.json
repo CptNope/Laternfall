@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "common.schema.json",
+  "title": "Shared definitions for Lanternfall content",
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$", "description": "An id: lower case letters, digits and _, starting with a letter." },
+    "comment": { "type": "string", "description": "A key starting with // is a comment: the build ignores it. Use it to head a section." },
+    "element": { "enum": ["fire", "ice", "bolt", "water", "holy", "dark"] },
+    "status": { "enum": ["poison", "sleep", "silence", "blind", "slow", "berserk", "stop"] },
+    "chance": { "type": "array", "prefixItems": [{ "$ref": "#/$defs/id", "description": "an item id" }, { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "description": "chance per battle, 0 to 1" }], "minItems": 2, "maxItems": 2, "description": "[item, chance]: for example [\"potion\", 0.12]." }
+  }
+}

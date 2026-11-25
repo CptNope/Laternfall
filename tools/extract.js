@@ -1,9 +1,10 @@
-// Loads src/data.js (plus DUNGEONS and WORLD_LOC from src/maps.js) in a sandbox and prints the game data as JSON.
+// Loads content/*.json and src/data.js (plus DUNGEONS and WORLD_LOC from src/maps.js) in a sandbox and prints the game data as JSON.
 // Used by tools/gentables.py. Usage: node tools/extract.js > data.json
 const fs = require('fs'), vm = require('vm');
 const path = require('path');
 const src = p => fs.readFileSync(path.join(__dirname, '..', 'src', p), 'utf8');
-const ctx = { console, Math };
+// content/*.json first (items, monsters, shops, encounters), the way the game loads them
+const ctx = { console, Math, ...require('./content.js').load() };
 vm.createContext(ctx);
 vm.runInContext(src('data.js') + '\n;this.D={HEROES,SPELLS,ITEMS,MONSTERS,ENCOUNTERS,SHOPS,COMBOS,ARENA_CUPS,RECIPES,FISH,FISH_SPOTS,LIMITS,MAX_LEVEL,xpForLevel,MEALS,MEAL_BATTLES,BOARD_NODES,BOARD_HERO,BOARD_STATS,PASSIVES,STATUS_TURNS,TREASURES,BLACKMARKET_PRICES,BLACKMARKET_MARKUP,NIGHT_ENC};', ctx);
 const maps = src('maps.js');
