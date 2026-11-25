@@ -8,6 +8,10 @@ Step-by-step recipes for adding things to Lanternfall: monsters, items, quests, 
 > 3. Draw it in code. No image or audio files.
 > 4. Run the [play-test harness](TESTING.md) before opening a pull request, and add a line to [CHANGELOG.md](../CHANGELOG.md) under `[Unreleased]`.
 
+## Make a mod instead?
+
+To add or change items, monsters, shops or random battles **without editing the game's files**, make a mod: a folder in `mods/` with only your changes, built with `python3 build.py --mod mods/yours` into a separate copy of the game. See [mods/README.md](../mods/README.md) and the example mod. The walk-throughs below edit the game itself.
+
 ## Where does it go?
 
 ```mermaid

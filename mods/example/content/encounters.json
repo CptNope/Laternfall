@@ -1,0 +1,8 @@
+{
+  "day": {
+    "r6": {"add": [{"w": 2, "g": ["emberfox"]}, {"w": 1, "g": ["emberfox", "ashhound"]}]}
+  },
+  "night": {
+    "r6": {"add": [{"w": 2, "g": ["emberfox", "emberfox"]}]}
+  }
+}

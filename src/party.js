@@ -142,7 +142,7 @@ function readSlot(slot) {
 })();
 function saveData() {
   return {
-    version: SAVE_VERSION, savedAt: Date.now(),
+    version: SAVE_VERSION, savedAt: Date.now(), mods: MODS.map(m => m.id),
     party: G.party.map(m => ({ id: m.id, level: m.level, xp: m.xp, hp: m.hp, mp: m.mp, weapon: m.weapon, armor: m.armor, acc: m.acc || null, limit: m.limit || 0, board: m.board || [], embers: m.embers || 0, capxp: m.capxp || 0 })),
     meal: G.meal || null,
     seen: G.seen, killed: G.killed,
@@ -176,7 +176,22 @@ function loadGame(slot = latestSlot()) {
   G.ship = d.ship || null; G.onShip = !!d.onShip; G.lastInn = d.lastInn || null; G.airship = d.airship || null; G.inAir = !!d.inAir; G.carry = d.carry || null;
   G.meal = d.meal || null;
   G.slot = slot === 'auto' ? (G.slot || '1') : slot;
+  dropUnknownContent();
   return true;
+}
+// A save made with a mod can hold items this build doesn't have (2.0, EN-4). Drop them, and swap
+// unknown gear for the hero's starting gear, rather than crash in a menu later.
+function dropUnknownContent() {
+  let lost = 0;
+  for (const id of Object.keys(G.inv)) if (!ITEMS[id]) { delete G.inv[id]; lost++; }
+  for (const m of G.party) {
+    const start = HEROES[m.id] && HEROES[m.id].start;
+    if (m.weapon && !ITEMS[m.weapon]) { m.weapon = start ? start.weapon : null; lost++; }
+    if (m.armor && !ITEMS[m.armor]) { m.armor = start ? start.armor : null; lost++; }
+    if (m.acc && !ITEMS[m.acc]) { m.acc = null; lost++; }
+  }
+  if (lost) setTimeout(() => toast(`This save had ${lost} item${lost > 1 ? 's' : ''} from a mod that isn't here. ${lost > 1 ? 'They were' : 'It was'} left out.`), 400);
+  return lost;
 }
 // A short description of a save, for the slot menus
 function placeName(mapId) {

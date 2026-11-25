@@ -1,41 +1,65 @@
+"""Builds Lanternfall into one file.
+
+  python3 build.py                                  index.html (plus manifest.webmanifest and sw.js)
+  python3 build.py --mod mods/example [--mod …]     the game with mods, in build/lanternfall-modded.html
+  python3 build.py --mod mods/example --out x.html  …or wherever you like
+
+Mods (2.0, EN-4) are folders: see mods/README.md. A modded build never touches index.html.
+"""
 import pathlib, hashlib, json
 root=pathlib.Path(__file__).parent
-import subprocess, shutil, sys
+import subprocess, shutil, sys, argparse
+ap=argparse.ArgumentParser(description='Build Lanternfall into one HTML file.')
+ap.add_argument('--mod', action='append', default=[], metavar='DIR', help='a mod folder to build in (repeat for more; applied in order)')
+ap.add_argument('--out', metavar='FILE', help='where a modded build goes (default build/lanternfall-modded.html)')
+ARGS=ap.parse_args()
+MODDED=bool(ARGS.mod)
 # Source files in load order. They share one global scope, so a file may only use, at load time,
 # names declared in files before it (tools/load_check.js checks this). 'folder/*' takes every
 # .js file in that folder, sorted: each one registers itself (a monster family, a battle background).
 order=['core','content','data','art','monsters/*','backgrounds/*','deep_art','maps','party','field','tilecache','interior','battle','menu','crafts','hearts','deep','platform','living','cards','heist','story']
 
 # ---- content/*.json (2.0, EN-1): checked by tools/content.js, then written into the game as JS ----
+import tempfile
+MOD_SRC=[]; MODS=[]
 def check_content():
+    """Check content/ (and any mods); returns the merged tables when mods are given."""
     if not shutil.which('node'):
-        print('build.py: node not found, skipping the content check', file=sys.stderr); return
-    r=subprocess.run(['node',str(root/'tools'/'content.js')],cwd=root)
+        if MODDED: sys.exit('build.py: building with mods needs node (it merges and checks them)')
+        print('build.py: node not found, skipping the content check', file=sys.stderr); return None
+    emit=pathlib.Path(tempfile.gettempdir())/'lanternfall_merged.json'
+    cmd=['node',str(root/'tools'/'content.js')]+[a for m in ARGS.mod for a in ('--mod',m)]+(['--emit',str(emit)] if MODDED else [])
+    r=subprocess.run(cmd,cwd=root)
     if r.returncode: sys.exit('build.py: fix the content problems above; nothing was built')
-def content_js():
-    load=lambda f: json.loads((root/'content'/f).read_text())
-    strip=lambda o: {k: v for k, v in o.items() if not k.startswith('//')}   # '// …' keys are comments
-    enc=load('encounters.json')
-    tables={'ITEMS': strip(load('items.json')['items']), 'MONSTERS': strip(load('monsters.json')['monsters']),
-            'NIGHT_ENC': strip(enc['night']), 'ENCOUNTERS': strip(enc['day']), 'SHOPS': strip(load('shops.json')['shops'])}
+    return json.loads(emit.read_text()) if MODDED else None
+def content_js(merged=None):
+    if merged:
+        T=merged['tables']; tables={k: T[k] for k in ('ITEMS','MONSTERS','NIGHT_ENC','ENCOUNTERS','SHOPS')}
+    else:
+        load=lambda f: json.loads((root/'content'/f).read_text())
+        strip=lambda o: {k: v for k, v in o.items() if not k.startswith('//')}   # '// …' keys are comments
+        enc=load('encounters.json')
+        tables={'ITEMS': strip(load('items.json')['items']), 'MONSTERS': strip(load('monsters.json')['monsters']),
+                'NIGHT_ENC': strip(enc['night']), 'ENCOUNTERS': strip(enc['day']), 'SHOPS': strip(load('shops.json')['shops'])}
+    tables['MODS']=merged['mods'] if merged else []   # the mods built in: shown on the title screen, kept in saves
     out=['// ============================================================',
-         '//  CONTENT: written by build.py from content/*.json. Edit those files, not this.',
+         '//  CONTENT: written by build.py from content/*.json'+(' and mods' if merged else '')+'. Edit those files, not this.',
          '// ============================================================']
     for name, t in tables.items():
         body=json.dumps(t, ensure_ascii=False, separators=(',', ':'))
         body=body.replace('</', '<\\/').replace('\u2028', '\\u2028').replace('\u2029', '\\u2029')   # safe inside <script>
         out.append(f'const {name} = {body};')
     return '\n'.join(out)+'\n'
-check_content()
-import tempfile
+merged=check_content()
+if merged: MOD_SRC=[pathlib.Path(f) for f in merged['src']]; MODS=merged['mods']
 CONTENT=pathlib.Path(tempfile.gettempdir())/'lanternfall_content.js'
-CONTENT.write_text(content_js())
+CONTENT.write_text(content_js(merged))
 def sources():
     out=[]
     for n in order:
         if n=='content': out.append(CONTENT); continue
         out += sorted((root/'src').glob(n+'.js')) if n.endswith('*') else [root/'src'/f'{n}.js']
-    return out
+    return out+MOD_SRC   # a mod's code loads last: it can use anything the game defines
 js='\n'.join(p.read_text() for p in sources())
 html=f'''<!DOCTYPE html>
 <html lang="en">
@@ -80,14 +104,22 @@ canvas{{display:block;image-rendering:auto;box-shadow:0 0 60px rgba(120,90,200,.
 </body>
 </html>
 '''
-(root/'index.html').write_text(html)
+OUT=pathlib.Path(ARGS.out) if ARGS.out else root/'build'/'lanternfall-modded.html'
+if MODDED:
+    # a modded build is one file you can put anywhere, so it doesn't link the app manifest or icons
+    import re
+    html=re.sub(r'<link rel="(?:manifest|icon|apple-touch-icon)"[^>]*>\n', '', html)
+    OUT.parent.mkdir(parents=True, exist_ok=True); OUT.write_text(html)
+else: (root/'index.html').write_text(html)
 
 # ---- load-order check: run the joined script once in node, as a browser would on page load ----
 if shutil.which('node'):
     r=subprocess.run(['node',str(root/'tools'/'load_check.js'),*map(str,sources())],cwd=root)
-    if r.returncode: sys.exit('build.py: index.html was written, but it fails to load (see above)')
+    if r.returncode: sys.exit(f'build.py: {OUT if MODDED else "index.html"} was written, but it fails to load (see above)')
 else:
     print('build.py: node not found, skipping the load-order check', file=sys.stderr)
+if MODDED:   # the installable-app files belong to the real game only
+    print(f'build.py: wrote {OUT} with', ', '.join(f"{m['name']} {m['version']}" for m in MODS)); sys.exit(0)
 
 # ---- installable app (PWA): a manifest and an offline service worker beside index.html ----
 # index.html stays a single self-contained file; these only matter when it's served over http(s).
