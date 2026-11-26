@@ -15,8 +15,8 @@ timeline
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
     2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance : 1.5.0 Hearts of the Lamplighters : 1.6.0 Deeper systems
     2026-11-24 : 1.7.0 The Drowned Kingdom : 1.8.0 Install anywhere : 1.9.0 Living world : 1.10.0 Foundations
-    2026-11-25 : 2.0.0 Lantern Engine
-    Next : 2.1.0 Endless Lantern
+    2026-11-25 : 2.0.0 Lantern Engine : 2.1.0 Endless Lantern
+    Next : 2.2.0 Home and companions
 ```
 
 ```mermaid
@@ -45,13 +45,36 @@ xychart-beta
 | 1.9.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 94 (17) | 23 | 5 | [#15](https://github.com/CptNope/Laternfall/pull/15) |
 | 1.10.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 94 (17) | 23 | 5 | [#16](https://github.com/CptNope/Laternfall/pull/16) |
 | 2.0.0 | 2026-11-25 (not yet tagged) | 9 | 12 (32) | 94 (17) | 23 | 5 | [#17](https://github.com/CptNope/Laternfall/pull/17), [#19](https://github.com/CptNope/Laternfall/pull/19), [#20](https://github.com/CptNope/Laternfall/pull/20), [#21](https://github.com/CptNope/Laternfall/pull/21) |
-| 2.1.0 | next | 9 | 13 (32 + endless) | 94 (17) | 23 | 5 | in progress |
+| 2.1.0 | 2026-11-25 (not yet tagged) | 9 | 13 (32 + endless) | 94 (17) | 23 | 5 | [#22](https://github.com/CptNope/Laternfall/pull/22) |
+| 2.2.0 | next | 9 | 13 (32 + endless) | 94 (17) | 23 | 5 | in progress |
 
 ---
 
 ## [Unreleased]
 
-Planned as **2.1.0 · *Endless Lantern***: something to come back to after the ending (see the [roadmap](ROADMAP.md#21--endless-lantern)).
+Planned as **2.2.0 · *Home and companions***: four small things from the ideas parking lot that make Brightwater feel like home (see the [roadmap](ROADMAP.md#22--home-and-companions)).
+
+### Added
+- **Corwin the carpenter**, beside Arin's house in Brightwater, builds four upgrades into the house (new `src/home.js`):
+  - **A bed for Mittens** (250 G, after The Lost Cat);
+  - **a trophy shelf** (400 G, after a trophy), which shows your trophies and opens the trophy list;
+  - **a fish tank** (1,200 G, after a fish), where every kind you've caught swims;
+  - **a music box** (1,500 G, after the first Lantern).
+- **The music box** plays any song you've heard, whenever you're home. The game now records each song as it plays (`heard:<track>` flags). Older saves count the songs their progress implies.
+- **Mittens follows you** around Brightwater (and home) after The Lost Cat, if you ask her. She walks one step behind and never blocks the way.
+- **Compass hints.** With the Sailor's Compass carried or worn, a needle in dungeons points to the nearest unopened chest. A new Config switch, *Compass hints*, turns it off.
+- `home` play-test scenario (21 checks), in CI.
+- The guide has a section on Arin's house.
+
+### Changed
+- The Sailor's Compass description mentions the chests.
+- `tools/load_check.js` (run by `build.py`) now fails when two files declare a top-level function with the same name. That isn't an error in JavaScript: the later one silently replaces the earlier. It caught this release's carpenter, first named Tobin, whose `talkTobin` had replaced the existing Brightwater NPC's; he is Corwin now.
+
+---
+
+## [2.1.0] — 2026-11-25, merged (#22) but not yet tagged · *Endless Lantern*
+
+Something to come back to after the ending (see the [roadmap](ROADMAP.md#21--endless-lantern)).
 
 ### Added
 - **The Endless Lantern**, a post-game dungeon with no bottom. After the ending, Hesper waits by the well in Brightwater. Each floor is built by the existing floor generator from a seed, and each band of five floors borrows the look and monsters of an old dungeon (Whisperwood Hollow first, the Crownfall Abyss tenth, then round again).

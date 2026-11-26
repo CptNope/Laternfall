@@ -601,6 +601,7 @@ const Audio_ = {
   play(name, force) {
     if (!force && this.curName === name) return;
     this.curName = name;
+    heardSong(name);   // 2.2: the music box remembers it
     if (!this.ac) { this.pending = name; return; }
     this.stopMusic(true);
     const tr = TRACKS[name]; if (!tr) return;

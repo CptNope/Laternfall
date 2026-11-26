@@ -27,6 +27,18 @@ for (const f of files) {
   js += (js ? '\n' : '') + text;
   line += text.split('\n').length;
 }
+// Two top-level functions with the same name are not an error: the later one silently replaces
+// the earlier everywhere (2.2's talkTobin did exactly that to an older NPC's). Refuse it.
+{
+  const seen = new Map(), dups = [];
+  files.forEach(f => fs.readFileSync(f, 'utf8').split('\n').forEach((l, i) => {
+    const m = /^(?:async\s+)?function\s+([A-Za-z_$][\w$]*)/.exec(l);
+    if (!m) return;
+    const at = `${path.relative(process.cwd(), f)}:${i + 1}`;
+    if (seen.has(m[1])) dups.push(`${m[1]} (${seen.get(m[1])} and ${at})`); else seen.set(m[1], at);
+  }));
+  if (dups.length) { console.error('load_check: functions declared twice; the later one replaces the earlier:\n  ' + dups.join('\n  ')); process.exit(1); }
+}
 const where = n => { let s = starts[0]; for (const x of starts) if (x.line <= n) s = x; return `${s.f}:${n - s.line + 1}`; };
 
 // a value that is happy to be anything: called, constructed, read from, written to, compared

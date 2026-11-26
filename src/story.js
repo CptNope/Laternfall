@@ -31,7 +31,7 @@ function townNpcs(id) {
     N(15, 10, 6, { hair: '#a0a0a0', style: 'bald', beard: true, body: '#7a6a5a' }, talkBram),
     N(4, 16, 7, { style: 'bun', body: '#c05a7a' }, talkAda, { wander: true }),
     N(20, 15, 8, { skin: '#e8c8a8', hair: '#d8d8d0', style: 'bun', body: '#6a5a8a', accent: '#ffe9a8', robe: true }, talkIvy, { name: tl('Old Ivy'), mark: f.road_done && !hasItem('moth_whistle') }),
-    ...endlessNpcs()
+    ...endlessNpcs(), ...homeNpcs()
   ];
   if (id === 'halden') {
     const l = [
@@ -944,7 +944,7 @@ function interiorNpcs(m) {
   }
   if (m.ikind === 'study') out.push({ x: 3, y: 6, look: { style: 'spiky', body: '#3a3a6a', accent: '#e8d070' }, talk: async () => say(tl('Apprentice Pell'), tl('Wren lets me polish the lenses. It\'s the most important job in Frostmere. Probably.')) });
   if (m.ikind === 'house') {
-    if (t === 'brightwater' && b.id === 'arinhouse') { if (f.cat_done) out.push({ x: 4, y: 6, look: null, cat: true, talk: async () => say(tl('Mittens'), tl('Mrrp. (She has claimed your bed.)')) }); }
+    if (t === 'brightwater' && b.id === 'arinhouse') { const cat = homeCat(); if (cat) out.push(cat); }   // home.js
     else {
       const lines = {
         halden: [tl('My husband\'s out fishing. He\'s ALWAYS out fishing. I think the fish like him more than I do.'), tl('Harbor master Brann? Good man. Terrible singer.')],

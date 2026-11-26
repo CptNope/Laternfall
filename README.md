@@ -130,7 +130,7 @@ flowchart LR
 | Arena cups | **6** | Weapons, armour, accessories | **48**, **23**, **46** |
 | Fish | **13** | Forge recipes | **12** |
 | Music tracks | **21** | Image or audio files | **0** in the game (the app icons are drawn by a script) |
-| Level cap | **50**, then the Lantern Board | Source lines | ~9,750 across 58 files |
+| Level cap | **50**, then the Lantern Board | Source lines | ~9,950 across 59 files |
 | Trophies | **37** | Platforms | Browser, installable app (offline), Windows, macOS, Linux |
 | Lantern Board passives | **11** | Meals | **11** |
 | Ways to travel | **5**: foot, ship, airship, diving bell, lanternmoth | Treasure maps | **5** |
@@ -214,6 +214,8 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 - **Campfire talks** when you rest with a Tent
 - A **bestiary** with stats, weaknesses, resistances, AI, steals and drops (Sable rewards you at 45 and for every creature), and a **world map** with your next objective marked
 - **New Game+**: finish the story to replay with your levels and gear against stronger enemies
+- **The Endless Lantern** (2.1): a post-game dungeon with no bottom, an echo of an old boss every fifth floor, checkpoints and a depth record. **Hollow mode**: no healing at inns, no running, and bosses that rise a third time
+- **Arin's house** (2.2): Corwin the carpenter builds a trophy shelf, a fish tank, a music box that plays any song you've heard, and a bed for Mittens, who will follow you around Brightwater. The Sailor's Compass points to unopened chests
 
 **Comfort**
 - Three save slots and auto-save, with versioned saves that upgrade themselves
@@ -372,6 +374,7 @@ flowchart LR
 | `src/i18n.js` | 2.0: `tl()`, languages, the pseudo test language |
 | `src/editor.js` | 2.0: the town editor (`index.html?edit`) and the town walk check the build runs |
 | `src/story.js` | NPC dialogue, cutscenes, story flags, quests, the arena, boss events, the title screen, the endings, the main loop |
+| `src/home.js` | 2.2: Arin's house (Corwin's upgrades, the trophy shelf, fish tank and music box), Mittens following you, the songs you've heard, compass hints |
 | `src/endless.js` | 2.1: the Endless Lantern (the keeper, descents, echoes, checkpoints), foe scaling by depth, and Hollow mode |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Generated: the installable-app files (`build.py`, `tools/make_icons.py`) |
 | `src-tauri/` | The desktop app (Tauri): a native window around `index.html`, built by CI |
@@ -392,7 +395,7 @@ flowchart LR
 | [Modding guide](docs/MODDING.md) | Contributors | Step-by-step recipes for monsters, art, items, skills, combos, NPCs, quests, towns, dungeons, bosses, music, fish, recipes and cups |
 | [Making a mod](mods/README.md) | Modders | Change items, monsters, shops, battles and towns in a mod folder, without editing the game; the town editor is `index.html?edit` |
 | [Testing guide](docs/TESTING.md) | Contributors | The headless play-test harness and its scenarios, the boss balance simulator, CI, debugging tricks |
-| [Roadmap](ROADMAP.md) | Everyone | Milestones 1.3.x to 2.1, the backlog, technical debt, the release process |
+| [Roadmap](ROADMAP.md) | Everyone | Milestones 1.3.x to 2.2, the backlog, technical debt, the release process |
 | [Changelog](CHANGELOG.md) | Everyone | Every version since 1.0.0 |
 | [itch.io page copy](docs/itch/itch-page.md) | Store | Store text and assets |
 | [Project write-up](https://jeremyanderson.tech/project/lanternfall-browser-jrpg/) | Everyone | How the game was made, screenshots and help, on jeremyanderson.tech |
@@ -410,7 +413,8 @@ timeline
     Nov 2026 : 1.6 Depth ✓ : Lantern Board, cooking, smarter enemies
     Jul 2027 : 1.7 World : the Drowned Kingdom under the sea
     Nov 2026 : 2.0 Lantern Engine ✓ : content as data, mods, town editor, languages
-    Nov 2026 : 2.1 Endless Lantern : a dungeon with no bottom, Hollow mode
+    Nov 2026 : 2.1 Endless Lantern ✓ : a dungeon with no bottom, Hollow mode
+    Nov 2026 : 2.2 Home and companions : Arin's house, the music box, Mittens, compass hints
 ```
 
 The full plan, with priorities and technical debt, is in [ROADMAP.md](ROADMAP.md).

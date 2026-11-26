@@ -18,7 +18,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods', 'editor', 'i18n', 'endless']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods', 'editor', 'i18n', 'endless', 'home']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -260,6 +260,74 @@ async def main():
             await press('Enter', 1, 400); await shot('85_mode_menu')
             await press('ArrowDown', 1, 200); await press('Enter', 1, 300); await pg.wait_for_timeout(1500)
             check(await ev("G.flags.hollow === true && G.party.length === 2"), 'New Game → Hollow starts a Hollow journey')
+
+        if want('home'):
+            def check(ok, label):
+                print(('ok   ' if ok else 'FAIL ') + label)
+                if not ok: errs.append('check failed: ' + label)
+            s = json.loads(json.dumps(POST))
+            s['mapId'] = 'brightwater'; s['x'] = 9; s['y'] = 7; s['dir'] = 'up'
+            s['flags'].update({'q_cat': True, 'cat_found': True, 'cat_done': True, 'fish_minnow': True, 'fish_goldcarp': True, 'fish_icepike': True, 'fish_embereel': True})
+            await boot(s); await until_idle()
+            await ev("G.gold = 5000; Trophies.check()")
+            check(await ev("Field.map.entities.some(e => e.name === CARPENTER)"), 'Corwin the carpenter works by Arin\'s house')
+            # --- buying from Corwin: the menu, the gold, the flag ---
+            await run("await talkCorwin()", 600)
+            for _ in range(20):   # through his two lines, until the menu is up
+                if await ev("!!(UI.top() && UI.top().items)"): break
+                await press('Enter', 1, 350)
+            await shot('90_carpenter_menu')
+            check(await ev("UI.top() && UI.top().items && UI.top().items.length === 5"), 'his menu lists four things to build')
+            await press('Enter', 1, 400)
+            check(await ev("G.flags.home_catbed && G.gold === 5000 - 250"), 'choosing the first builds Mittens\' bed for 250 G')
+            await until_idle(40, 'Escape', 150); await until_idle()
+            check(await ev("homeNpcs()[0].x === 9 && (() => { const f = G.flags.lantern1; G.flags.lantern1 = false; const ok = !HOME_UPGRADES[3].need(G.flags); G.flags.lantern1 = f; return ok; })()"), 'the music box waits for the first Lantern')
+            await ev("G.flags.home_shelf = G.flags.home_tank = G.flags.home_musicbox = true; rebuildHome()")
+            # --- the house ---
+            await ev("Field.enter(HOME_ID, 6, 8, 'up')"); await pg.wait_for_timeout(600)
+            tiles = await ev("HOME_UPGRADES.map(u => Field.map.at(u.x, u.y)).join('')")
+            check(tiles == 'ZSQJ', f'the house has the bed, shelf, tank and music box ({tiles})')
+            check(await ev("Field.map.entities.some(e => e.catSprite && e.x === 2 && e.y === 4)"), 'Mittens sleeps in her bed')
+            await shot('91_home')
+            n = await ev("Trophies.count()")
+            check(n > 0, f'the shelf has trophies to show ({n})')
+            # --- the music box ---
+            await ev("G.flags['heard:crown'] = true")
+            check(await ev("heardSongs().includes('crown') && !heardSongs().includes('nerith') && heardSongs().includes('title')"), 'the music box knows the songs you have heard')
+            await ev("Audio_.play('ending')")
+            check(await ev("G.flags['heard:ending'] === true"), 'hearing a song adds it')
+            await ev("G.x = 11; G.y = 3; G.dir = 'up'")
+            await run("await musicBox()", 400); await shot('92_music_box'); await press('ArrowDown', 1, 150); await press('Enter', 1, 400); await until_idle()
+            song = await ev("G.flags.home_song")
+            check(bool(song) and await ev("Audio_.curName") == song, f'choosing a song plays it at home ({song})')
+            await ev("Field.enter('brightwater', 11, 6, 'down')"); await pg.wait_for_timeout(300)
+            check(await ev("Audio_.curName !== G.flags.home_song"), 'and Brightwater keeps its own song outside')
+            await ev("Field.enter(HOME_ID, 6, 8, 'up')"); await pg.wait_for_timeout(300)
+            check(await ev("Audio_.curName === G.flags.home_song"), 'the chosen song plays again when you come home')
+            # --- Mittens comes along ---
+            await ev("G.x = 3; G.y = 4; G.dir = 'left'")
+            await run("await talkMittens()", 1500); await press('ArrowDown', 1, 200); await press('Enter', 1, 500); await until_idle()
+            check(await ev("G.flags.cat_follow && Field.map.entities.filter(e => e.catSprite).length === 1 && Field.map.entities.some(e => e.follow)"), 'asked along, she follows (and leaves her bed)')
+            await ev("Field.enter('brightwater', 11, 6, 'down')"); await pg.wait_for_timeout(300)
+            await press('ArrowDown', 1, 260); await press('ArrowDown', 1, 260); await press('ArrowLeft', 1, 400)
+            pos = await ev("(() => { const c = Field.map.entities.find(e => e.follow); return [c.mv ? c.mv.tx : c.x, c.mv ? c.mv.ty : c.y, G.x, G.y]; })()")
+            check(pos[:2] == [11, 8] and pos[2:] == [10, 8], f'in town she trots one step behind ({pos})')
+            await shot('93_mittens_follows')
+            await press('ArrowRight', 1, 400)
+            check(await ev("G.x === 11 && G.y === 8"), 'and never blocks the way back')
+            check(await ev("(() => { const f = Field.map.id; return catFollower(getMap('halden')) === null; })()"), 'she stays in Brightwater')
+            await ev("G.flags.cat_follow = false; refreshEntities()")
+            check(await ev("!Field.map.entities.some(e => e.follow)"), 'sent home, she leaves the street')
+            # --- the Sailor's Compass ---
+            await ev("Field.enter('mine:0', getMap('mine:0').up.x, getMap('mine:0').up.y + 1, 'down'); G.flags.noEnc = true; CFG.noEnc = true")
+            await pg.wait_for_timeout(500)
+            await ev("G.inv.compass = 1")
+            tgt = await ev("(() => { const e = compassTarget(Field.map); return e && [e.x, e.y]; })()")
+            check(tgt is not None, f'with the compass, the nearest unopened chest is found ({tgt})')
+            await shot('94_compass')
+            await ev("Field.map.entities.filter(e => e.kind === 'chest').forEach(e => e.opened = true)")
+            check(await ev("compassTarget(Field.map) === null"), 'with every chest open the needle has nothing to point at')
+            check(await ev("(() => { const g = document.createElement('canvas').getContext('2d'); const on = drawCompassHint(g, Field.map, 0); CFG.compass = false; const off = drawCompassHint(g, Field.map, 0); CFG.compass = true; const town = drawCompassHint(g, getMap('brightwater'), 0); return on && !off && !town; })()"), 'the needle shows in dungeons, and can be switched off in Config')
 
         if want('readme'):
             s2 = json.loads(json.dumps(POST)); s2['flags'].update({'isle': True, 'q_crown': True, 'abyssOpen': True, 'visit_G': True, 'visit_7': True, 'q_fish': True}); s2['inv']['fishing_rod'] = 1

@@ -198,6 +198,7 @@ async function configMenu() {
       { label: tl('Language'), right: (languages().find(l => l[0] === LANG) || ['', 'English'])[1], help: tl('The language of the game. Changing it restarts the game.') },
       { label: tl('Encounters'), right: !G.flags.ending ? '—' : CFG.noEnc ? tl('Off') : tl('On'), disabled: !G.flags.ending, act: () => toggle('noEnc'), help: G.flags.ending ? tl('Turn random battles off for exploring. Bosses still fight.') : tl('Unlocked after you finish the story.') },
       { label: tl('Speedrun timer'), right: CFG.speedrun ? tl('On') : tl('Off'), act: () => toggle('speedrun'), help: tl('Show play time on screen, with splits at each Lantern.') },
+      { label: tl('Compass hints'), right: CFG.compass !== false ? tl('On') : tl('Off'), act: () => { CFG.compass = CFG.compass === false; saveCfg(); }, help: tl('With the Sailor\'s Compass, a needle in dungeons points to the nearest unopened chest.') },
       { label: tl('Battery saver'), right: CFG.battery ? tl('On') : tl('Off'), act: () => toggle('battery'), help: tl('Draw at 30 frames a second instead of 60. Easier on phones and laptops.') },
       { label: tl('Done'), help: '' }
     ];

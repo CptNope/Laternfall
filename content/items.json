@@ -64,7 +64,7 @@
     "pip_candle": {"name": "Pip's Candle", "price": 0, "kind": "acc", "mag": 4, "immune": ["sleep"], "desc": "MAG +4. Prevents sleep. \"It's very small.\""},
     "tide_pendant": {"name": "Tide Pendant", "price": 0, "kind": "acc", "def": 6, "mag": 6, "immune": ["poison"], "desc": "DEF +6, MAG +6. Prevents poison."},
     "dwarven_band": {"name": "Dwarven Band", "price": 0, "kind": "acc", "def": 12, "immune": ["sleep", "silence"], "desc": "DEF +12. Prevents sleep and silence."},
-    "compass": {"name": "Sailor's Compass", "price": 0, "kind": "acc", "spd": 4, "fewer": true, "desc": "SPD +4. Halves random encounters."},
+    "compass": {"name": "Sailor's Compass", "price": 0, "kind": "acc", "spd": 4, "fewer": true, "desc": "SPD +4. Halves random encounters. In dungeons, points to the nearest unopened chest."},
     "ember_heart": {"name": "Ember Heart", "price": 0, "kind": "acc", "atk": 5, "regen": true, "desc": "ATK +5. Restores HP every round."},
     "silk_ribbon": {"name": "Silk Ribbon", "price": 0, "kind": "acc", "def": 8, "mag": 8, "immune": ["poison", "sleep", "silence", "blind", "slow", "berserk", "stop"], "desc": "DEF +8, MAG +8. Prevents all ailments."},
     "fifth_flame": {"name": "The Fifth Flame", "price": 0, "kind": "acc", "all": 15, "regen": true, "immune": ["poison", "sleep", "silence", "blind", "slow", "berserk", "stop"], "desc": "All stats +15. Regen. Prevents all ailments."},
