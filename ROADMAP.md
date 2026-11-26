@@ -2,7 +2,7 @@
 
 Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
 
-- **Current release:** 1.6.0 *Deeper systems*. **Merged, not yet tagged:** 1.7.0 *The Drowned Kingdom* and 1.8.0 *Install anywhere*. **Merged, not yet tagged:** 1.9.0 *Living world* and 1.10.0 *Foundations*. **Merged:** 2.0 EN-1 (#17). **Also merged:** EN-4 (mods, #19) and EN-3 (the town editor, #20). **In review:** EN-6 (languages). See [CHANGELOG.md](CHANGELOG.md#unreleased).
+- **Current release:** 2.2.0 *Home and companions*. Every version from 1.0.0 to 2.2.0 is tagged and has a [GitHub Release](https://github.com/CptNope/Laternfall/releases). See [CHANGELOG.md](CHANGELOG.md).
 - **Next up:** EN-7 (the *Lanternfall II* design document), the last 2.0 item; and a first real translation, if there's a translator. ST-2 (a real phone test) still needs a person with a phone, and matters more now that TD-4 is meant for phones.
 - ✅ marks items that are done.
 
@@ -121,7 +121,7 @@ gantt
     2.0 Lantern Engine               :done, m20, 2026-11-24, 2d
     section Replay
     2.1 Endless Lantern              :done, m21, 2026-11-25, 1d
-    2.2 Home and companions          :active, m22, 2026-11-25, 1d
+    2.2 Home and companions          :done, m22, 2026-11-25, 1d
 ```
 
 | Milestone | Theme | Headline | Target | Status |
@@ -135,7 +135,7 @@ gantt
 | **1.10** | Foundations | Per-family art files, a tile cache for phones, a load-order check | Nov 2026 | ✅ Done (1.10.0, merged in #16) |
 | **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | ✅ Done (EN-1 to EN-6, merged in #17, #19, #20, #21; EN-7 open) |
 | **2.1** | Replay | The Endless Lantern post-game dungeon and Hollow mode | Nov 2026 | ✅ Done (#22) |
-| **2.2** | Home | Arin's house upgrades, the music box, Mittens following you, compass hints | Nov 2026 | 🟡 In review |
+| **2.2** | Home | Arin's house upgrades, the music box, Mittens following you, compass hints | Nov 2026 | ✅ Done (2.2.0, #23) |
 
 ```mermaid
 flowchart LR
@@ -526,7 +526,14 @@ flowchart LR
 | `v1.3.1` | `f837072` (merge of #5) |
 | `v1.4.0` | `4154a08` (merge of #6) |
 | `v1.5.0` | `a8abeb1` (merge of #7) |
-| `v1.6.0` | the merge of the 1.6.0 changelog pull request |
+| `v1.6.0` | `162f23f` (merge of #11, the 1.6.0 changelog) |
+| `v1.7.0` | `e29201e` (merge of #13) |
+| `v1.8.0` | `15936c9` (merge of #14) |
+| `v1.9.0` | `dbc9b34` (merge of #15) |
+| `v1.10.0` | `a8706f4` (merge of #16) |
+| `v2.0.0` | `3404b7b` (merge of #21, the last 2.0 part) |
+| `v2.1.0` | `dc3ad99` (merge of #22) |
+| `v2.2.0` | the merge of the 2.2.0 changelog pull request |
 
 ---
 
