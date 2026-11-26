@@ -110,7 +110,7 @@ const Field = {
     }
     const [dx, dy] = DIRS[G.dir];
     const tx = G.x + dx, ty = G.y + dy;
-    const e = this.entityAt(tx, ty) || this.map.entities.find(f => f.follow && f.x === tx && f.y === ty && !f.mv);
+    const e = this.entityAt(tx, ty) || this.map.entities.find(f => f.follow && !f.hidden && f.x === tx && f.y === ty && !f.mv);
     if (e) {
       if (e.talk) {
         if (e.kind === 'npc') e.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[G.dir];
@@ -360,6 +360,7 @@ const Field = {
   }
 };
 function drawEntity(g, e, sx, sy, t) {
+  if (e.follow) { if (!e.hidden) drawFollowerCat(g, sx, sy, t); return; }   // Mittens (home.js)
   if (e.kind === 'npc' && e.catSprite) { drawCat(g, sx, sy, t); return; }
   if (e.kind === 'npc') {
     const step = e.mv ? (Math.floor(t * 8) % 2 ? 1 : 2) : 0;

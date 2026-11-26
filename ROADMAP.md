@@ -122,6 +122,7 @@ gantt
     section Replay
     2.1 Endless Lantern              :done, m21, 2026-11-25, 1d
     2.2 Home and companions          :done, m22, 2026-11-25, 1d
+    2.3 Mittens                      :active, m23, 2026-11-26, 1d
 ```
 
 | Milestone | Theme | Headline | Target | Status |
@@ -136,6 +137,7 @@ gantt
 | **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | ✅ Done (EN-1 to EN-6, merged in #17, #19, #20, #21; EN-7 open) |
 | **2.1** | Replay | The Endless Lantern post-game dungeon and Hollow mode | Nov 2026 | ✅ Done (#22) |
 | **2.2** | Home | Arin's house upgrades, the music box, Mittens following you, compass hints | Nov 2026 | ✅ Done (2.2.0, #23) |
+| **2.3** | Mittens | The cat comes along everywhere, and into battle | Nov 2026 | 🟡 In review (#25) |
 
 ```mermaid
 flowchart LR
@@ -380,8 +382,16 @@ flowchart LR
 | --- | --- | --- |
 | HM-1 | **House upgrades**: Corwin builds Mittens' bed, a trophy shelf and a fish tank into Arin's house | M |
 | HM-2 | **Music box**: plays any song you've heard, whenever you're home | S |
-| HM-3 | **Mittens follows you** in Brightwater after The Lost Cat | S |
+| HM-3 | **Mittens follows you** in Brightwater after The Lost Cat (everywhere since [2.3](#23--mittens)) | S |
 | HM-4 | **Compass hints**: the Sailor's Compass points to the nearest unopened chest in dungeons | S |
+
+### 2.3 · Mittens
+
+Asked for after 2.2: the cat should be able to come anywhere.
+
+| ID | Item | Size |
+| --- | --- | --- |
+| MT-1 | **Everywhere**: towns, houses, the world map, dungeons, the sea floor (in a bubble); unseen aboard vehicles; catches up after cutscenes | S |
 
 ---
 

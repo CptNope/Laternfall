@@ -51,7 +51,11 @@ xychart-beta
 
 ## [Unreleased]
 
-Nothing yet.
+Planned as **2.3.0 · *Mittens***: the cat from The Lost Cat comes on the whole journey (see the [roadmap](ROADMAP.md#23--mittens)).
+
+### Added
+- **Mittens follows you everywhere** (#25), not just around Brightwater: towns, houses, the world map, dungeons and the sea floor, where she wears a bubble. Aboard the ship, the airship or a moth she rides along out of sight and hops off with you. When a cutscene moves the party she catches up at once instead of sliding across the map.
+- The `home` scenario checks her on every kind of map (30 checks).
 
 ---
 

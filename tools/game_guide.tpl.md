@@ -797,7 +797,7 @@ Added in 2.2. **Corwin**, a carpenter, works beside Arin's house in Brightwater.
 | Fish tank | 1,200 G | A caught fish | One of every kind of fish you've caught swims in it |
 | Music box | 1,500 G | The first Lantern | Plays any song you've heard, whenever you're home |
 
-**Mittens comes along.** After The Lost Cat, talk to Mittens at home and choose *Take her for a walk*. She follows one step behind you anywhere in Brightwater, never blocks your way, and goes home when you talk to her again.
+**Mittens comes along.** After The Lost Cat, talk to Mittens at home and choose *Take her for a walk*. She follows one step behind you **everywhere**: towns, houses, the world map, dungeons, even the sea floor (in a bubble). Aboard the ship, the airship or a moth she rides along out of sight and hops off with you. She never blocks your way, and goes home when you talk to her again.
 
 **The music box** lists the songs you've heard on your travels. Saves from before 2.2 count the songs your progress means you must have heard.
 
