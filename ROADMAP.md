@@ -137,7 +137,7 @@ gantt
 | **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | ✅ Done (EN-1 to EN-6, merged in #17, #19, #20, #21; EN-7 open) |
 | **2.1** | Replay | The Endless Lantern post-game dungeon and Hollow mode | Nov 2026 | ✅ Done (#22) |
 | **2.2** | Home | Arin's house upgrades, the music box, Mittens following you, compass hints | Nov 2026 | ✅ Done (2.2.0, #23) |
-| **2.3** | Mittens | The cat comes along everywhere, and into battle | Nov 2026 | 🟡 In review (#25, #26) |
+| **2.3** | Mittens | The cat comes along everywhere, and into battle | Nov 2026 | 🟡 In review (#25, #27) |
 
 ```mermaid
 flowchart LR
