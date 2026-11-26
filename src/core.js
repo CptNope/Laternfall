@@ -716,6 +716,7 @@ const Audio_ = {
       case 'boom': noise(0.8, 0.8, 300, 'lowpass'); tone('sine', 80, 30, 0.8, 0.2); break;
       case 'lantern': [392, 523, 659, 784, 1046, 1318].forEach((f, i) => tone('sine', f, 0, 0.5, 0.06, i * 0.12)); break;
       case 'splash': noise(0.35, 0.3, 700, 'lowpass'); tone('sine', 500, 180, 0.25, 0.05); break;
+      case 'meow': tone('triangle', 620, 900, 0.12, 0.08); tone('triangle', 900, 520, 0.22, 0.07, 0.11); break;   // Mittens (2.3)
       case 'bite': tone('square', 1500, 0, 0.05, 0.07); tone('square', 1800, 0, 0.06, 0.07, 0.07); break;
       case 'reel': for (let i = 0; i < 3; i++) tone('triangle', 700 + i * 140, 0, 0.04, 0.05, i * 0.03); break;
       case 'forge': noise(0.08, 0.6, 3000, 'highpass'); tone('square', 1320, 660, 0.35, 0.06); tone('triangle', 220, 0, 0.3, 0.08); break;

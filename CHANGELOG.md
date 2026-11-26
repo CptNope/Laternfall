@@ -55,7 +55,8 @@ Planned as **2.3.0 · *Mittens***: the cat from The Lost Cat comes on the whole 
 
 ### Added
 - **Mittens follows you everywhere** (#25), not just around Brightwater: towns, houses, the world map, dungeons and the sea floor, where she wears a bubble. Aboard the ship, the airship or a moth she rides along out of sight and hops off with you. When a cutscene moves the party she catches up at once instead of sliding across the map.
-- The `home` scenario checks her on every kind of map (30 checks).
+- **Mittens in battle** (MT-2). While she's with you she sits behind the party in every fight. Before each foe's action there's an 8% chance it gets busy with her and loses that action; after a win there's a 15% chance she brings back an item a foe dropped (or a Potion). Bosses ignore her. A new *meow* sound.
+- The `home` scenario checks her on every kind of map and in battle (35 checks). Balance-sim scenarios compare Endless trash fights with and without her: the difference is within the noise, which is the intent (she's company, not a party member).
 
 ---
 

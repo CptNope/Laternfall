@@ -799,6 +799,8 @@ Added in 2.2. **Corwin**, a carpenter, works beside Arin's house in Brightwater.
 
 **Mittens comes along.** After The Lost Cat, talk to Mittens at home and choose *Take her for a walk*. She follows one step behind you **everywhere**: towns, houses, the world map, dungeons, even the sea floor (in a bubble). Aboard the ship, the airship or a moth she rides along out of sight and hops off with you. She never blocks your way, and goes home when you talk to her again.
 
+**Mittens in battle** (2.3). While she's walking with you, she sits behind the party in every fight. She never fights, but before each foe's action there's an 8% chance it stops to deal with her and loses that action, and after a win there's a 15% chance she brings back something a foe was carrying (a Potion if none of them was). Bosses ignore her. Leave her at home and she stays out of fights.
+
 **The music box** lists the songs you've heard on your travels. Saves from before 2.2 count the songs your progress means you must have heard.
 
 **The Sailor's Compass**, Brann's reward for the whirlpool bounty, now does more than halve encounters. While you carry or wear it, a needle in the top right corner of every dungeon points to the nearest unopened chest on the floor. When none are left it spins and says *none*. Switch it off in Config → *Compass hints*.

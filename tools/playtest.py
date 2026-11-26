@@ -347,6 +347,16 @@ async def main():
             await ev("followStep(Field.map, { fx: G.x + 9, fy: G.y + 9, tx: G.x + 10, ty: G.y + 9, dur: 0.16 })")
             check(await ev("(() => { const c = Field.map.entities.find(e => e.follow); return !c.mv && c.x === G.x + 9; })()"), 'after a cutscene moves you, she catches up instead of sliding')
             await ev("Field.enter('brightwater', 11, 8, 'down')"); await pg.wait_for_timeout(200)
+            # --- Mittens in battle (2.3) ---
+            await run("await startBattle(['slime', 'slime'])", 2400)
+            check(await ev("G.scene.enemies && G.scene.cat === true"), 'walking with you, she sits in on fights')
+            r = await ev("(async () => { const b = G.scene, r = Math.random; Math.random = () => 0; const ok = await catDistract(b, b.enemies[0]); Math.random = r; return [ok, b.catDistracted]; })()")
+            check(r == [True, 1], f'now and then a foe loses its action to her ({r})')
+            await shot('97_mittens_battle')
+            check(await ev("(async () => { const b = G.scene, r = Math.random; Math.random = () => 0; const boss = { ...b.enemies[0], def: { ...b.enemies[0].def, boss: true } }; const ok = await catDistract(b, boss); Math.random = r; return ok === false; })()"), 'bosses ignore her')
+            check(await ev("(() => { const b = G.scene, r = Math.random; Math.random = () => 0; const a = catFind(b); Math.random = () => 0.99; const n = catFind(b); Math.random = r; return !!ITEMS[a] && n === null; })()"), 'after a win she sometimes brings something back')
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110)
+            check(await ev("(() => { const f = G.flags.cat_follow; G.flags.cat_follow = false; const c = new Battle(['slime'], {}).cat; G.flags.cat_follow = f; return c === false; })()"), 'left at home, she stays out of fights')
             await ev("G.flags.cat_follow = false; refreshEntities()")
             check(await ev("!Field.map.entities.some(e => e.follow)"), 'sent home, she leaves the street')
             # --- the Sailor's Compass ---
