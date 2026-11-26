@@ -1,6 +1,6 @@
 [package]
 name = "lanternfall"
-version = "1.8.0"
+version = "2.2.0"
 description = "Lanternfall — A Tale of the Four Flames (desktop build)"
 authors = ["CptNope"]
 license = "MIT"

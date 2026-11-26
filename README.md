@@ -50,7 +50,7 @@ A classic 16-bit-style JRPG where **every pixel and every note is generated in c
 
 **Install it as an app (1.8):** open **[cptnope.github.io/Laternfall](https://cptnope.github.io/Laternfall/)** and choose **Install** on the title screen (or your browser's install button; on iPhone and iPad, Share → *Add to Home Screen*). It opens in its own window and plays **offline**. The itch.io page can't install, because it runs the game inside a frame.
 
-**Desktop downloads (1.8):** each tagged release has Windows, macOS and Linux builds attached on the [Releases page](https://github.com/CptNope/Laternfall/releases). They're unsigned, so Windows SmartScreen and macOS Gatekeeper will ask you to confirm the first time (on macOS: right-click → Open).
+**Desktop downloads (1.8):** Windows, macOS and Linux builds are attached to [1.8.0](https://github.com/CptNope/Laternfall/releases/tag/v1.8.0) and to every release from [2.2.0](https://github.com/CptNope/Laternfall/releases/tag/v2.2.0) on, on the [Releases page](https://github.com/CptNope/Laternfall/releases). (1.9 to 2.1 were tagged after the fact, so they have the game file only.) They're unsigned, so Windows SmartScreen and macOS Gatekeeper will ask you to confirm the first time (on macOS: right-click → Open).
 
 **Moving your saves:** saves live in the browser or app you play in. **Transfer saves** on the title screen exports every slot, your settings and trophies to a file, and imports them on another device.
 
