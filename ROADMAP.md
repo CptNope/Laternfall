@@ -372,7 +372,7 @@ flowchart LR
     U --> S[Trophy shelf<br/>opens the trophy list]
     U --> Q[Fish tank<br/>every kind caught]
     U --> J[Music box<br/>any song heard]
-    M[Mittens] -->|take her for a walk| F[Follows you in Brightwater]
+    M[Mittens] -->|take her for a walk| F[Follows you everywhere]
     C[Sailor's Compass] --> N[Needle to the nearest<br/>unopened chest]
 ```
 
@@ -380,7 +380,7 @@ flowchart LR
 | --- | --- | --- |
 | HM-1 | **House upgrades**: Corwin builds Mittens' bed, a trophy shelf and a fish tank into Arin's house | M |
 | HM-2 | **Music box**: plays any song you've heard, whenever you're home | S |
-| HM-3 | **Mittens follows you** in Brightwater after The Lost Cat | S |
+| HM-3 | **Mittens follows you** everywhere after The Lost Cat (hidden aboard vehicles, in a bubble under the sea) | S |
 | HM-4 | **Compass hints**: the Sailor's Compass points to the nearest unopened chest in dungeons | S |
 
 ---

@@ -91,21 +91,36 @@ async function talkMittens() {
   }
   const where = f.home_catbed ? tl('Mrrp. (She is curled up in her new bed.)') : tl('Mrrp. (She has claimed your bed.)');
   const k = await choose(tl('Mittens'), where, [tl('Let her sleep'), tl('Take her for a walk')], 0);
-  if (k === 1) { f.cat_follow = true; refreshEntities(); await narrate(tl('Mittens stretches, yawns, and follows you. She will walk with you anywhere in Brightwater.')); }
+  if (k === 1) { f.cat_follow = true; refreshEntities(); await narrate(tl('Mittens stretches, yawns, and follows you. She will go wherever you go. Talk to her when you want her to head home.')); }
 }
-// Mittens follows the party around Brightwater (and home)
+// Mittens follows the party everywhere: towns, houses, the world map, dungeons, under the sea
+// (in a bubble). Aboard the ship, the airship or a moth she rides along out of sight.
+const riding = () => !!(G.onShip || G.inAir || G.onMoth);
 function catFollower(map) {
   const f = G.flags;
-  if (!f.cat_done || !f.cat_follow || !(map.id === 'brightwater' || map.id === HOME_ID)) return null;
-  return { kind: 'npc', x: G.x, y: G.y, dir: 'down', look: LOOKS.elder, catSprite: true, follow: true, talk: talkMittens, name: tl('Mittens') };
+  if (!f.cat_done || !f.cat_follow) return null;
+  return { kind: 'npc', x: G.x, y: G.y, dir: 'down', look: LOOKS.elder, catSprite: true, follow: true, hidden: riding(), talk: talkMittens, name: tl('Mittens') };
 }
 // called when the party starts a step: the follower takes the tile the party is leaving
 function followStep(map, anim) {
   for (const e of map.entities) {
     if (!e.follow) continue;
     if (e.mv) { e.x = e.mv.tx; e.y = e.mv.ty; }
+    if (riding()) { e.hidden = true; e.mv = null; e.x = anim.tx; e.y = anim.ty; continue; }   // aboard: she comes along unseen
+    if (e.hidden) { e.hidden = false; e.mv = null; e.x = anim.tx; e.y = anim.ty; continue; }   // hops off with you
+    // a cutscene moved the party: she catches up at once rather than sliding across the map
+    if (Math.abs(e.x - anim.fx) + Math.abs(e.y - anim.fy) > 1) { e.mv = null; e.x = anim.fx; e.y = anim.fy; continue; }
     e.mv = e.x === anim.fx && e.y === anim.fy ? null : { fx: e.x, fy: e.y, tx: anim.fx, ty: anim.fy, t: 0, dur: anim.dur };
     if (e.mv) e.dir = e.mv.tx > e.mv.fx ? 'right' : e.mv.tx < e.mv.fx ? 'left' : e.mv.ty > e.mv.fy ? 'down' : 'up';
+  }
+}
+// under the sea she wears a bubble
+function drawFollowerCat(g, sx, sy, t) {
+  drawCat(g, sx, sy, t);
+  const m = Field.map;
+  if (m && (m.kind === 'deep' || m.underwater)) {
+    circle(g, sx + 1, sy - 12, 14, 'rgba(170,220,255,.18)', 'rgba(220,245,255,.75)', 1.5);
+    circle(g, sx - 5, sy - 19, 2.5, 'rgba(255,255,255,.6)');
   }
 }
 
