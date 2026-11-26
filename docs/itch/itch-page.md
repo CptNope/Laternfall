@@ -38,11 +38,14 @@ You are Arin, the young lamplighter of Brightwater. When the Ember Lantern goes 
 - **Walk inside every building**: shopkeepers behind counters, inns, homes and a palace, plus barrels and pots to search for hidden treasure
 - **94 monsters** and **17 boss battles**, including two two-phase finales, a sea monster, a forgotten king, an optional superboss dragon, a solo duel, a drowned king and a secret superboss
 - **Fishing** (13 fish) and **forging** (12 recipes from monster materials)
+- **The Endless Lantern**: a dungeon with no bottom for after the ending, and **Hollow mode** for a hard run with no healing at inns
 - **A living world**: day and night with night-only monsters and people, and regional weather that changes battles
 - ***Lanterns & Lies***, a card game against eight players, and a night **heist** past patrolling guards
-- **23 side quests**, buried **treasure maps**, a **6-cup Arena**, a **bestiary**, a **world map**, 46 accessories, a **Lantern Board** for every hero, **cooking**, and **New Game+**
-- **Play anywhere**: in the browser, installed as an offline app from [cptnope.github.io/Laternfall](https://cptnope.github.io/Laternfall/), or as a Windows, macOS or Linux download. **34 trophies**, a **speedrun timer**, and save transfer between devices.
+- **A home of your own**: upgrade Arin's house with a fish tank, a trophy shelf and a music box that plays every song you've heard, and let Mittens the cat follow you around town
+- **23 side quests**, buried **treasure maps**, a **6-cup Arena**, a **bestiary**, a **world map**, dozens of accessories, a **Lantern Board** for every hero, **cooking**, and **New Game+**
+- **Play anywhere**: in the browser, installed as an offline app from [cptnope.github.io/Laternfall](https://cptnope.github.io/Laternfall/), or as a Windows, macOS or Linux download. **37 trophies**, a **speedrun timer**, and save transfer between devices.
 - **Comfortable to play**: 3 save slots and auto-save, battle speed up to 4×, repeat-last-turn, gamepad support, rebindable keys, large text and high contrast, a dialogue log
+- **Moddable**: game content lives in checked JSON files, with a mod system and an in-browser town editor (see GitHub)
 - An original chiptune soundtrack of 21 tracks and a full ending with an epilogue for every hero
 
 ### Controls
@@ -68,4 +71,5 @@ Source code on GitHub: [github.com/CptNope/Laternfall](https://github.com/CptNop
 ## Files to upload
 - **Game:** `lanternfall-web.zip`. Tick "This file will be played in the browser".
 - **Cover image:** `cover-630x500.png`
-- **Screenshots:** the `screenshot-*.png` files (battle, combo, interior-inn, airship, arena, overworld, town, astral-wyrm, world-map, desert)
+- **Screenshots:** the `screenshot-*.png` files (battle, combo, interior-inn, airship, arena, overworld, town, astral-wyrm, world-map, desert), plus `devlog-shots/nerith.png`, `lanterns-and-lies.png`, `endless-echo.png` and `brightwater-night.png` (added for 2.2)
+- **Devlogs:** one per release, each with a cover from `devlogN-cover-1600x900.png` and screenshots from `devlog-shots/`. Devlogs #1–#12 cover 1.0 to 2.2 (1.10 and 2.0 share #10).
