@@ -74,7 +74,7 @@ function townNpcs(id) {
     N(4, 16, 56, { ...LOOKS.guard, hair: '#a0a0a0', beard: true, body: '#7a3a3a' }, async () => say(tl('Old Champion'), tl('I won the Gold Cup once. Lost an ear to a Dread Knight. Tip: bring Remedies, and don\'t fight the Grand Champion cup until you\'ve seen a dragon and lived.')))
   ];
   if (id === 'frostmere') return [
-    N(12, 8, 31, { skin: '#e8c8a8', hair: '#c8c8d8', style: 'long', body: '#2a3a6a', accent: '#e8d070', robe: true, beard: true }, talkWren, { mark: !f.q_stars || (f.lantern3 && !f.chart), name: tl('Wren') }),
+    ...(GUESTS.wren.here(f) ? [] : [N(12, 8, 31, { skin: '#e8c8a8', hair: '#c8c8d8', style: 'long', body: '#2a3a6a', accent: '#e8d070', robe: true, beard: true }, talkWren, { mark: !f.q_stars || (f.lantern3 && !f.chart), name: tl('Wren') })]),   // 2.4: with you as a guest
     N(16, 13, 32, { skin: '#f1c9a0', hair: '#e8e0d0', style: 'bun', body: '#6a3a5a', accent: '#c0a040', robe: true }, talkSable, { mark: !f.q_scholar || (!f.scholar_done && seenCount() >= 30) || (f.scholar_done && !f.codex45 && seenCount() >= 45) || (f.codex45 && !f.codex_all && seenCount() >= Object.keys(MONSTERS).length), name: tl('Sable') }),
     N(14, 16, 33, { body: '#5a6a7a', hat: 'cap', accent: '#c0c0c0' }, talkFisher, { name: tl('Ice Fisher'), mark: !f.q_fish || (fishKinds() >= 6 && !f.fish_r1) || (fishKinds() >= Object.keys(FISH).length && !f.fish_r2) }),
     N(8, 11, 34, { style: 'spiky', body: '#3a6a9a' }, talkFrostKid, { wander: true }),
@@ -82,7 +82,7 @@ function townNpcs(id) {
     N(5, 8, 36, { ...LOOKS.guard, hair: '#a0a0a0', beard: true }, talkVeteran)
   ];
   if (id === 'lastlight') return [
-    N(13, 8, 61, { skin: '#e8c8a8', hair: '#d8d8e0', style: 'bun', body: '#5a3a3a', accent: '#ff8a4a', robe: true }, talkIone, { name: tl('Warden Ione'), mark: !f.q_crown || (f.boss_abyss && !f.ioneThanks) }),
+    ...(GUESTS.ione.here(f) ? [] : [N(13, 8, 61, { skin: '#e8c8a8', hair: '#d8d8e0', style: 'bun', body: '#5a3a3a', accent: '#ff8a4a', robe: true }, talkIone, { name: tl('Warden Ione'), mark: !f.q_crown || (f.boss_abyss && !f.ioneThanks) })]),   // 2.4: with you as a guest
     N(10, 10, 62, { skin: '#c98e62', hair: '#3a2a1a', style: 'long', body: '#7a4a3a', accent: '#ffb04a' }, async () => say(tl('Ember-tender Calla'), f.boss_abyss ? tl('I let the fire burn low last night. First time in a thousand years. I cried. Then I slept for eleven hours.') : tl('We kept this fire burning for a thousand years. Not a Lantern — just a fire. It turns out that\'s the same thing, if you\'re stubborn enough.'))),
     N(16, 8, 63, { hair: '#a0a0a0', style: 'bald', body: '#4a4a5a', beard: true }, async () => sayAll(f.boss_abyss ? [[tl('Old Fennick'), tl('He sang to the night, you know. Orun. My grandmother\'s grandmother heard him. She said the dark curled up at his feet like a dog.')]] : [[tl('Old Fennick'), tl('Ozymar sealed us under the sea in a bubble of his own light, so we\'d be here when the crown fell. A thousand years of fish faces pressed against the glass.')], [tl('Old Fennick'), tl('You\'d think we\'d have learned to fish. We did not. We are a very stubborn people.')]])),
     N(6, 15, 64, { style: 'spiky', body: '#5a7a8a' }, async () => say(tl('Wick'), G.flags.boss_abyss ? tl('Grandma Ione smiled today! I didn\'t know her face could DO that.') : tl('Are you the lamplighters? Grandma Ione said you\'d come in a flying ship. Or a boat. She hedged.')), { wander: true }),
@@ -205,6 +205,8 @@ async function talkBrann() {
   if (!f.bounty) {
     await sayAll([[tl('Brann'), tl('One more thing. There\'s a whirlpool out in the open sea, east and north of here. Fishermen swear something lives in it.')], [tl('Brann'), tl('The Leviathan. It\'s been eating boats. The harbor guild will pay 4,000 gold to whoever puts it down. Interested?')]]);
     f.bounty = true; toast(tl('New quest: Bounty — Leviathan'));
+    await say(tl('Brann'), tl('And I\'m coming with you. That thing sank my cousin\'s boat. I\'ll take the wheel at sea, you take the shore.'));
+    guestJoins('brann');
     await narrate(tl('The whirlpool is marked on your world map (Menu → Map).')); return;
   }
   if (f.leviathan && !f.bounty_done) {
@@ -402,7 +404,9 @@ async function canEnterDungeon(did) {
   }
   if (did === 'observatory') {
     if (!f.chart) { await narrate(tl('A domed door of pale stone, carved with constellations. One star is missing from the carving, as if someone pried it out.')); return false; }
-    if (!f.obsOpen) { await narrate(tl('You hold up Wren\'s Star Chart. The circled star glows — and so does the empty socket in the door. With a sound like a struck bell, the dome opens.')); Audio_.sfx('lantern'); f.obsOpen = true; }
+    if (!f.obsOpen) { await narrate(tl('You hold up Wren\'s Star Chart. The circled star glows — and so does the empty socket in the door. With a sound like a struck bell, the dome opens.')); Audio_.sfx('lantern'); f.obsOpen = true;
+      await say(tl('Wren'), tl('Wait! Wait for me! Forty years I\'ve looked at this dome through a telescope. You are not going in without me.'));
+      guestJoins('wren'); refreshEntities(); }
   }
   if (did === 'spire') {
     if (!f.dawnkey) { await narrate(tl('A door of black glass, with no handle. Only a keyhole shaped like a rising sun.')); return false; }
@@ -588,6 +592,7 @@ async function bossEncounter(did) {
     const r = await startBattle(['wyrm'], { boss: true, bg: 'astral' });
     if (r === 'lose') return gameOver();
     f.boss_observatory = true; refreshEntities();
+    guestLeaves('wren');
     await sayAll([
       [tl('Astral Wyrm'), tl('...Quiet. For the first time in a thousand years, the whispering is quiet.')],
       [tl('Astral Wyrm'), tl('Light it, little lamplighter. Light the one they could not. Then I may finally sleep.')]
@@ -675,6 +680,8 @@ async function talkIone() {
     await say(tl('Warden Ione'), tl('The mist in the crater eats any light it touches. Take this lamp. It was lit from our fire, which has not gone out in a thousand years. The mist will fear it.'));
     addItem('lastlight_lamp'); f.q_crown = true; Audio_.sfx('chest');
     await narrate(tl('Received the Lamp of Lastlight! The Crownfall Abyss lies inside the crater east of the village.'));
+    await say(tl('Warden Ione'), tl('And I am coming with you. A thousand years my family has watched that crater from the rim. I will not watch the end of it from there.'));
+    guestJoins('ione');
     await sayAll([
       [tl('Warden Ione'), tl('One thing more. Orun taught my ancestors a song for nights that would not end. Three voices: one of dawn, one of flame, one of dusk.')],
       [LY, withSelene(tl('Dawn, flame, dusk... Arin, me, and Selene.'), tl('Dawn, flame, dusk... Arin, me — and Selene. We should bring her.'))]
@@ -738,6 +745,7 @@ async function abyssFinale() {
   if (r2 === 'lose') { G.scene = Field; return gameOver(); }
   f.boss_abyss = true;
   G.scene = Field; refreshEntities();
+  guestLeaves('ione');
   Field.playMusic();
   await sayAll([
     [tl('Orun'), tl('...Light. I had forgotten what it feels like, to stand in it and not burn.')],
@@ -980,7 +988,7 @@ async function whirlpoolEvent() {
   if (r === 'lose') return gameOver();
   f.leviathan = true;
   await narrate(tl('The Leviathan sinks into the dark water. Slowly, the whirlpool falls still.'));
-  if (f.bounty) await say(OS, tl('Brann will want to hear about this. And pay for it, I hope.'));
+  if (f.bounty) { await say(tl('Brann'), tl('Ha! HA! Cousin, you\'re avenged! Drop me at the harbor, lamplighters. The guild owes you, and I want to watch them pay.')); guestLeaves('brann'); }
 }
 
 // ------------- quests -------------

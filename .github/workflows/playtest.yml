@@ -26,7 +26,7 @@ jobs:
       - name: Check the translators' template matches the game's text
         run: node tools/strings.js && git diff --exit-code content/lang/template.json
       - name: Play-test
-        run: python3 tools/playtest.py index.html shots chapter systems newgame comfort hearts depth drowned platform living tiles mods editor i18n endless home
+        run: python3 tools/playtest.py index.html shots chapter systems newgame comfort hearts depth drowned platform living tiles mods editor i18n endless home guests
       - uses: actions/upload-artifact@v4
         if: always()
         with: { name: playtest-screenshots, path: shots }

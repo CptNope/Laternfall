@@ -42,6 +42,8 @@ function populate(map) {
     for (const q of questEntities(map)) map.entities.push(q);
     if (map.extras.boss && !G.flags[bossFlag(map)]) map.entities.push({ kind: 'boss', x: map.extras.boss.x, y: map.extras.boss.y, did, def: MONSTERS[def.boss] });
   }
+  const guest = guestFollower(map);   // 2.4: a guest walks right behind you, Mittens behind them
+  if (guest) map.entities.push(guest);
   const cat = catFollower(map);   // 2.2: Mittens walks with you in Brightwater
   if (cat) map.entities.push(cat);
 }
@@ -360,7 +362,8 @@ const Field = {
   }
 };
 function drawEntity(g, e, sx, sy, t) {
-  if (e.follow) { if (!e.hidden) drawFollowerCat(g, sx, sy, t); return; }   // Mittens (home.js)
+  if (e.follow && e.hidden) return;
+  if (e.follow && !e.guest) { drawFollowerCat(g, sx, sy, t); return; }   // Mittens (home.js); a guest (guests.js) draws as a person
   if (e.kind === 'npc' && e.catSprite) { drawCat(g, sx, sy, t); return; }
   if (e.kind === 'npc') {
     const step = e.mv ? (Math.floor(t * 8) % 2 ? 1 : 2) : 0;

@@ -13,7 +13,8 @@ class Battle {
     this.weather = opts.weather || (G.scene === Field ? currentWeather() : 'clear');
     this.night = G.scene === Field && underSky(Field.map) && isNight();
     this.fx = []; this.nums = []; this.msg = null; this.active = -1; this.flash = null; this.shake = 0;
-    this.cat = catInBattle(opts);   // home.js: Mittens sits in when she's with you
+    this.cat = catInBattle(opts);   
+    this.guest = guestFor(opts);    // guests.js: a friend fighting beside you for one quest   // home.js: Mittens sits in when she's with you
     const counts = {};
     ids.forEach(id => counts[id] = (counts[id] || 0) + 1);
     const seen = {};
@@ -87,6 +88,7 @@ class Battle {
       if ((e.status.blind || e.status.slow || e.status.berserk || e.status.stop) && e.alive) { const c = this.enemyCenter(e); text(g, [e.status.blind && tl('BLD'), e.status.slow && tl('SLW'), e.status.berserk && tl('BSK'), e.status.stop && tl('STP')].filter(Boolean).join(' '), c.x, c.y + 44, { size: 11, bold: true, color: '#e8e0a0', align: 'center' }); }
       if (e.status.poison && e.alive) { const c = this.enemyCenter(e); circle(g, c.x + 18 + Math.sin(this.t * 4) * 3, c.y - 20 - (this.t * 20 % 20), 3, 'rgba(140,255,120,.8)'); }
     }
+    drawBattleGuest(g, this);
     drawBattleCat(g, this);
     // party
     BP().forEach((m, i) => {
@@ -410,13 +412,15 @@ class Battle {
       party.forEach((c, i) => { if (c && c.type !== 'partner') order.push({ side: 'p', i, c, spd: stat(BP()[i], 'spd') * this.spdMod(BP()[i].status) * rnd(0.8, 1.2) + (c.type === 'defend' ? 999 : 0) }); });
       // late bosses may act more than once per round (def.actions)
       if (!this.preempt) this.enemies.forEach((e, i) => { if (e.alive) for (let a = 0; a < ((e.phase && e.phase.actions) || e.def.actions || 1); a++) order.push({ side: 'e', i, spd: e.def.spd * this.spdMod(e.status) * rnd(0.8, 1.2) - a * 6 }); });
+      if (this.guest) order.push({ side: 'g', spd: guestStats(this).spd * rnd(0.8, 1.2) });
       this.preempt = false;
       order.sort((a, b) => b.spd - a.spd);
       this.pa.forEach(p => p.defend = false);
       party.forEach((c, i) => { if (c && c.type === 'defend') this.pa[i].defend = true; });
       for (const o of order) {
         if (this.liveEnemies().length === 0 || this.liveParty().length === 0) break;
-        if (o.side === 'p') {
+        if (o.side === 'g') await guestAct(this);
+        else if (o.side === 'p') {
           if (!alive(BP()[o.i])) continue;
           const r = await this.partyAct(o.i, o.c);
           if (r === 'escape') { result = 'run'; break; }

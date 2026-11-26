@@ -52,7 +52,20 @@ xychart-beta
 
 ## [Unreleased]
 
-Nothing yet.
+Planned as **2.4.0 · *Guests***: three friends fight beside you for one quest each (see the [roadmap](ROADMAP.md#24--guests)).
+
+### Added
+- **Guest party members** (new `src/guests.js`). A guest fights beside you on their own, once a round, in speed order with everyone else. They aren't party members: no menu, gear or EXP, and enemies can't target them. Their strength follows the party's (about half an average member), and their support moves (Ward, Slow Orbit) work once a fight.
+  - **Brann** sails with you while the Leviathan bounty is open: at sea only, since he keeps the ship. *Harpoon*, *Broadside* (a cannon volley, not water: the Leviathan drinks water) and *Ship's Grog*.
+  - **Wren** comes along from the moment the Observatory opens until the Astral Wyrm is quiet. *Starlight*, *Falling Stars*, *Slow Orbit*.
+  - **Warden Ione** comes along from the Lamp of Lastlight until the crown is broken. *Ember of Orun*, *Ashen Hymn*, *Ward*.
+- Wren and Ione walk right behind you on every map (and Mittens behind them), and are missing from Frostmere and Lastlight meanwhile. Each says something when they join; a toast marks joining and leaving.
+- Old saves already in the middle of one of these quests get the guest too: who is with you is worked out from story flags.
+- `guests` play-test scenario (19 checks), in CI. Balance-sim pairs for the three fights with and without each guest.
+- The guide has a section on guests.
+
+### Changed
+- Several followers walk in a line: each takes the tile the one ahead of it left.
 
 ---
 

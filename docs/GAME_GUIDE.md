@@ -36,6 +36,7 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 - [The Endless Lantern](#the-endless-lantern)
 - [Hollow mode](#hollow-mode)
 - [Arin's house](#arins-house)
+- [Guests](#guests)
 - [Trophies](#trophies)
 - [Speedrun mode](#speedrun-mode)
 
@@ -1400,6 +1401,22 @@ Added in 2.2. **Corwin**, a carpenter, works beside Arin's house in Brightwater.
 **The music box** lists the songs you've heard on your travels. Saves from before 2.2 count the songs your progress means you must have heard.
 
 **The Sailor's Compass**, Brann's reward for the whirlpool bounty, now does more than halve encounters. While you carry or wear it, a needle in the top right corner of every dungeon points to the nearest unopened chest on the floor. When none are left it spins and says *none*. Switch it off in Config → *Compass hints*.
+
+---
+
+## Guests
+
+Added in 2.4. Three friends fight beside you for one quest each. A guest acts on their own once a round, in speed order with everyone else. Enemies can't target them, they take no menu, gear or EXP, and their strength follows your party's. Their support moves (Ward, Slow Orbit) work once a fight.
+
+| Guest | With you | Where | Moves |
+| --- | --- | --- | --- |
+| **Brann** | From the Leviathan bounty until the Leviathan is beaten | At sea only (he keeps the ship) | *Harpoon* (hits the weakest foe), *Broadside* (a cannon volley on every foe), *Ship's Grog* (heals the most hurt, when someone is below half HP) |
+| **Wren** | From the moment the Observatory opens until the Astral Wyrm is quiet | Everywhere | *Starlight* (holy, the weakest foe), *Falling Stars* (holy, every foe), *Slow Orbit* (slows a foe for 3 turns) |
+| **Warden Ione** | From the Lamp of Lastlight until the crown is broken | Everywhere | *Ember of Orun* (fire, the weakest foe), *Ashen Hymn* (heals everyone, when someone is below half HP), *Ward* (DEF up for 3 turns) |
+
+Wren and Ione walk right behind you, with Mittens behind them if she's along. While they're with you, they aren't in Frostmere or Lastlight; talk to them on the road instead.
+
+In the balance simulator a guest adds about 5 to 15 points to the win rate of their quest's boss for a party at the expected level.
 
 ---
 
