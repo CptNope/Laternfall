@@ -15,8 +15,7 @@ timeline
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
     2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance : 1.5.0 Hearts of the Lamplighters : 1.6.0 Deeper systems
     2026-11-24 : 1.7.0 The Drowned Kingdom : 1.8.0 Install anywhere : 1.9.0 Living world : 1.10.0 Foundations
-    2026-11-25 : 2.0.0 Lantern Engine : 2.1.0 Endless Lantern
-    Next : 2.2.0 Home and companions
+    2026-11-25 : 2.0.0 Lantern Engine : 2.1.0 Endless Lantern : 2.2.0 Home and companions
 ```
 
 ```mermaid
@@ -40,19 +39,25 @@ xychart-beta
 | 1.4.0 | 2026-11-23 | 7 | 7 (20) | 63 (10) | 10 | 5 | [#6](https://github.com/CptNope/Laternfall/pull/6) |
 | 1.5.0 | 2026-11-23 | 7 | 10 (26) | 75 (15) | 16 | 5 | [#7](https://github.com/CptNope/Laternfall/pull/7) |
 | 1.6.0 | 2026-11-23 | 7 | 10 (26) | 75 (15) | 17 | 5 | [#8](https://github.com/CptNope/Laternfall/pull/8) |
-| 1.7.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 89 (17) | 21 | 5 | [#13](https://github.com/CptNope/Laternfall/pull/13) |
-| 1.8.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 89 (17) | 21 | 5 | [#14](https://github.com/CptNope/Laternfall/pull/14) |
-| 1.9.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 94 (17) | 23 | 5 | [#15](https://github.com/CptNope/Laternfall/pull/15) |
-| 1.10.0 | 2026-11-24 (not yet tagged) | 9 | 12 (32) | 94 (17) | 23 | 5 | [#16](https://github.com/CptNope/Laternfall/pull/16) |
-| 2.0.0 | 2026-11-25 (not yet tagged) | 9 | 12 (32) | 94 (17) | 23 | 5 | [#17](https://github.com/CptNope/Laternfall/pull/17), [#19](https://github.com/CptNope/Laternfall/pull/19), [#20](https://github.com/CptNope/Laternfall/pull/20), [#21](https://github.com/CptNope/Laternfall/pull/21) |
-| 2.1.0 | 2026-11-25 (not yet tagged) | 9 | 13 (32 + endless) | 94 (17) | 23 | 5 | [#22](https://github.com/CptNope/Laternfall/pull/22) |
-| 2.2.0 | next | 9 | 13 (32 + endless) | 94 (17) | 23 | 5 | in progress |
+| 1.7.0 | 2026-11-24 | 9 | 12 (32) | 89 (17) | 21 | 5 | [#13](https://github.com/CptNope/Laternfall/pull/13) |
+| 1.8.0 | 2026-11-24 | 9 | 12 (32) | 89 (17) | 21 | 5 | [#14](https://github.com/CptNope/Laternfall/pull/14) |
+| 1.9.0 | 2026-11-24 | 9 | 12 (32) | 94 (17) | 23 | 5 | [#15](https://github.com/CptNope/Laternfall/pull/15) |
+| 1.10.0 | 2026-11-24 | 9 | 12 (32) | 94 (17) | 23 | 5 | [#16](https://github.com/CptNope/Laternfall/pull/16) |
+| 2.0.0 | 2026-11-25 | 9 | 12 (32) | 94 (17) | 23 | 5 | [#17](https://github.com/CptNope/Laternfall/pull/17), [#19](https://github.com/CptNope/Laternfall/pull/19), [#20](https://github.com/CptNope/Laternfall/pull/20), [#21](https://github.com/CptNope/Laternfall/pull/21) |
+| 2.1.0 | 2026-11-25 | 9 | 13 (32 + endless) | 94 (17) | 23 | 5 | [#22](https://github.com/CptNope/Laternfall/pull/22) |
+| 2.2.0 | 2026-11-25 | 9 | 13 (32 + endless) | 94 (17) | 23 | 5 | [#23](https://github.com/CptNope/Laternfall/pull/23) |
 
 ---
 
 ## [Unreleased]
 
-Planned as **2.2.0 · *Home and companions***: four small things from the ideas parking lot that make Brightwater feel like home (see the [roadmap](ROADMAP.md#22--home-and-companions)).
+Nothing yet.
+
+---
+
+## [2.2.0] — 2026-11-25 · *Home and companions*
+
+Four small things from the ideas parking lot that make Brightwater feel like home (see the [roadmap](ROADMAP.md#22--home-and-companions)).
 
 ### Added
 - **Corwin the carpenter**, beside Arin's house in Brightwater, builds four upgrades into the house (new `src/home.js`):
@@ -72,7 +77,7 @@ Planned as **2.2.0 · *Home and companions***: four small things from the ideas 
 
 ---
 
-## [2.1.0] — 2026-11-25, merged (#22) but not yet tagged · *Endless Lantern*
+## [2.1.0] — 2026-11-25 · *Endless Lantern*
 
 Something to come back to after the ending (see the [roadmap](ROADMAP.md#21--endless-lantern)).
 
@@ -89,7 +94,7 @@ Something to come back to after the ending (see the [roadmap](ROADMAP.md#21--end
 
 ---
 
-## [2.0.0] — 2026-11-25, merged (#17, #19, #20, #21) but not yet tagged · *Lantern Engine*
+## [2.0.0] — 2026-11-25 · *Lantern Engine*
 
 Separating the engine from Lanternfall's content (see the [roadmap](ROADMAP.md#20--lantern-engine)). It arrived in parts: EN-1 (content as data, #17), EN-4 (mods, #19), EN-3 (the town editor, #20) and EN-6 (languages, #21). The game plays exactly the same.
 
@@ -115,7 +120,7 @@ Separating the engine from Lanternfall's content (see the [roadmap](ROADMAP.md#2
 
 ---
 
-## [1.10.0] — 2026-11-24, merged (#16) but not yet tagged · *Foundations*
+## [1.10.0] — 2026-11-24 · *Foundations*
 
 Groundwork for 2.0 and for phones. It finishes EN-5 and TD-4 from the [roadmap](ROADMAP.md#20--lantern-engine), and TD-7. The game plays the same; it draws faster.
 
@@ -135,7 +140,7 @@ Groundwork for 2.0 and for phones. It finishes EN-5 and TD-4 from the [roadmap](
 
 ---
 
-## [1.9.0] — 2026-11-24, merged (#15) but not yet tagged · *Living world*
+## [1.9.0] — 2026-11-24 · *Living world*
 
 It delivers the rest of the 1.6 *Deeper systems* list from the [roadmap](ROADMAP.md#16--deeper-systems): DS-4 (Berserk and Stop), DS-8 (day and night), DS-9 (weather), DS-10 (*Lanterns & Lies*) and DS-11 (stealth).
 
@@ -155,7 +160,7 @@ It delivers the rest of the 1.6 *Deeper systems* list from the [roadmap](ROADMAP
 
 ---
 
-## [1.8.0] — 2026-11-24, merged (#14) but not yet tagged · *Install anywhere*
+## [1.8.0] — 2026-11-24 · *Install anywhere*
 
 Delivers PL-1 to PL-4 from the [roadmap](ROADMAP.md#18--install-anywhere), and the first part of TD-4.
 
@@ -174,7 +179,7 @@ Delivers PL-1 to PL-4 from the [roadmap](ROADMAP.md#18--install-anywhere), and t
 
 ---
 
-## [1.7.0] — 2026-11-24, merged but not yet tagged · *The Drowned Kingdom*
+## [1.7.0] — 2026-11-24 · *The Drowned Kingdom*
 
 It delivers WD-1 to WD-6 from the [roadmap](ROADMAP.md#17--the-drowned-kingdom).
 
@@ -410,11 +415,14 @@ Shipped together with 1.0.0 in pull request #1.
 - Turn-based battles, shops, equipment, and saving and loading.
 - The full main story, with an ending.
 
-[Unreleased]: https://github.com/CptNope/Laternfall/compare/v1.6.0...HEAD
-[1.10.0]: https://github.com/CptNope/Laternfall/pull/16
-[1.9.0]: https://github.com/CptNope/Laternfall/pull/15
-[1.8.0]: https://github.com/CptNope/Laternfall/pull/14
-[1.7.0]: https://github.com/CptNope/Laternfall/pull/13
+[Unreleased]: https://github.com/CptNope/Laternfall/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/CptNope/Laternfall/releases/tag/v2.2.0
+[2.1.0]: https://github.com/CptNope/Laternfall/releases/tag/v2.1.0
+[2.0.0]: https://github.com/CptNope/Laternfall/releases/tag/v2.0.0
+[1.10.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.10.0
+[1.9.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.9.0
+[1.8.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.8.0
+[1.7.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.7.0
 [1.6.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.6.0
 [1.5.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.5.0
 [1.4.0]: https://github.com/CptNope/Laternfall/releases/tag/v1.4.0
