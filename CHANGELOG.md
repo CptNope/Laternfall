@@ -61,7 +61,7 @@ Planned as **2.2.0 · *Home and companions***: four small things from the ideas 
   - **a fish tank** (1,200 G, after a fish), where every kind you've caught swims;
   - **a music box** (1,500 G, after the first Lantern).
 - **The music box** plays any song you've heard, whenever you're home. The game now records each song as it plays (`heard:<track>` flags). Older saves count the songs their progress implies.
-- **Mittens follows you everywhere** after The Lost Cat, if you ask her: towns, houses, the world map, dungeons and the sea floor, where she wears a bubble. Aboard the ship, the airship or a moth she rides along out of sight. She walks one step behind, never blocks the way, and catches up at once when a cutscene moves you. (#23 kept her in Brightwater; #24 lets her go anywhere.)
+- **Mittens follows you everywhere** after The Lost Cat, if you ask her: towns, houses, the world map, dungeons and the sea floor, where she wears a bubble. Aboard the ship, the airship or a moth she rides along out of sight. She walks one step behind, never blocks the way, and catches up at once when a cutscene moves you. (#23 kept her in Brightwater; #25 lets her go anywhere.)
 - **Compass hints.** With the Sailor's Compass carried or worn, a needle in dungeons points to the nearest unopened chest. A new Config switch, *Compass hints*, turns it off.
 - `home` play-test scenario (21 checks), in CI.
 - The guide has a section on Arin's house.
