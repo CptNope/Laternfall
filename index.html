@@ -825,6 +825,7 @@ const Audio_ = {
       case 'boom': noise(0.8, 0.8, 300, 'lowpass'); tone('sine', 80, 30, 0.8, 0.2); break;
       case 'lantern': [392, 523, 659, 784, 1046, 1318].forEach((f, i) => tone('sine', f, 0, 0.5, 0.06, i * 0.12)); break;
       case 'splash': noise(0.35, 0.3, 700, 'lowpass'); tone('sine', 500, 180, 0.25, 0.05); break;
+      case 'meow': tone('triangle', 620, 900, 0.12, 0.08); tone('triangle', 900, 520, 0.22, 0.07, 0.11); break;   // Mittens (2.3)
       case 'bite': tone('square', 1500, 0, 0.05, 0.07); tone('square', 1800, 0, 0.06, 0.07, 0.07); break;
       case 'reel': for (let i = 0; i < 3; i++) tone('triangle', 700 + i * 140, 0, 0.04, 0.05, i * 0.03); break;
       case 'forge': noise(0.08, 0.6, 3000, 'highpass'); tone('square', 1320, 660, 0.35, 0.06); tone('triangle', 220, 0, 0.3, 0.08); break;
@@ -4742,6 +4743,7 @@ class Battle {
     this.weather = opts.weather || (G.scene === Field ? currentWeather() : 'clear');
     this.night = G.scene === Field && underSky(Field.map) && isNight();
     this.fx = []; this.nums = []; this.msg = null; this.active = -1; this.flash = null; this.shake = 0;
+    this.cat = catInBattle(opts);   // home.js: Mittens sits in when she's with you
     const counts = {};
     ids.forEach(id => counts[id] = (counts[id] || 0) + 1);
     const seen = {};
@@ -4815,6 +4817,7 @@ class Battle {
       if ((e.status.blind || e.status.slow || e.status.berserk || e.status.stop) && e.alive) { const c = this.enemyCenter(e); text(g, [e.status.blind && tl('BLD'), e.status.slow && tl('SLW'), e.status.berserk && tl('BSK'), e.status.stop && tl('STP')].filter(Boolean).join(' '), c.x, c.y + 44, { size: 11, bold: true, color: '#e8e0a0', align: 'center' }); }
       if (e.status.poison && e.alive) { const c = this.enemyCenter(e); circle(g, c.x + 18 + Math.sin(this.t * 4) * 3, c.y - 20 - (this.t * 20 % 20), 3, 'rgba(140,255,120,.8)'); }
     }
+    drawBattleCat(g, this);
     // party
     BP().forEach((m, i) => {
       const p = this.partyXY(i), a = this.pa[i];
@@ -5662,6 +5665,7 @@ class Battle {
     }
     if (e.status.sleep) { const c = this.enemyCenter(e); this.num(c.x, c.y, tl('Zzz'), '#c8b8ff'); await wait(350); return; }
     if (e.status.stop) { const c = this.enemyCenter(e); this.num(c.x, c.y, tl('Stopped'), '#d0d0d0'); await wait(350); return; }
+    if (await catDistract(this, e)) return;
     const acts = (e.phase && e.phase.acts) || e.def.acts || [{ w: 1, a: 'attack' }];
     let act = weighted(acts).a;
     // healers mend a hurt ally before anything else
@@ -5764,6 +5768,8 @@ class Battle {
     if (xp || gold) await narrate(tl`Victory! Gained ${xp} EXP and ${gold} gold.`);
     else await wait(2200);
     for (const d of drops) { addItem(d); Audio_.sfx('item'); await narrate(tl`Found ${ITEMS[d].name}!`); }
+    const cf = catFind(this);
+    if (cf) { addItem(cf); Audio_.sfx('meow'); await narrate(tl`Mittens found ${ITEMS[cf].name}!`); }
     for (const s of msgs) { Audio_.sfx(s.includes('learned') ? 'item' : 'levelup'); await narrate(s); }
     this.pa.forEach(p => { p.jump = 0; });
   }
@@ -8335,6 +8341,41 @@ function drawHomeTile(g, m, c, x, y, px, py, t) {
     ellipse(g, px + 16, py + 22, 9, 4, '#c04a4a');
     return;
   }
+}
+
+// -------- Mittens in battle (2.3) --------
+// When she's walking with you she sits behind the party in every fight. She never fights, but
+// now and then a foe stops to deal with her and loses its action, and after a win she sometimes
+// brings back something it dropped. Bosses ignore her. The sim's "with Mittens" scenarios measure it.
+const CAT_DISTRACT = 0.08, CAT_FIND = 0.15;
+const catInBattle = (opts = {}) => !!(G.flags && G.flags.cat_done && G.flags.cat_follow && !opts.noCat);
+const CAT_SEAT = { x: 592, y: 262 };
+// before a foe acts; true means she distracted it and it loses this action
+async function catDistract(b, e) {
+  if (!b.cat || e.def.boss || b.opts.boss || Math.random() >= CAT_DISTRACT) return false;
+  const c = b.enemyCenter(e);
+  b.catPounce = { t: b.t, x: c.x + 30, y: c.y + 30 }; Audio_.sfx('meow');
+  await wait(300);
+  b.num(c.x, c.y, tl('Distracted!'), '#ffd27a');
+  b.msg = tl`${e.name} is busy with Mittens!`; await wait(800); b.msg = null;
+  b.catDistracted = (b.catDistracted || 0) + 1;
+  return true;
+}
+// after a win: an item she found, or null
+function catFind(b) {
+  if (!b.cat || Math.random() >= CAT_FIND) return null;
+  const drops = b.enemies.map(e => e.def.drop && e.def.drop[0]).filter(d => d && ITEMS[d]);
+  return drops.length ? drops[Math.floor(Math.random() * drops.length)] : 'potion';
+}
+function drawBattleCat(g, b) {
+  if (!b.cat) return;
+  let x = CAT_SEAT.x + (1 - b.intro) * 200, y = CAT_SEAT.y;
+  const p = b.catPounce, k = p ? (b.t - p.t) / 0.9 : 1;
+  if (p && k < 1) {   // out to the foe and back, in a hop
+    const s = Math.sin(Math.min(1, k) * Math.PI);
+    x = lerp(x, p.x, s); y = lerp(y, p.y, s) - Math.sin(Math.min(1, k * 2) * Math.PI) * 26;
+  }
+  drawCat(g, x, y, b.t);
 }
 
 'use strict';

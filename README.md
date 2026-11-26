@@ -215,7 +215,7 @@ Every skill and the level it's learned at is in the [game guide](docs/GAME_GUIDE
 - A **bestiary** with stats, weaknesses, resistances, AI, steals and drops (Sable rewards you at 45 and for every creature), and a **world map** with your next objective marked
 - **New Game+**: finish the story to replay with your levels and gear against stronger enemies
 - **The Endless Lantern** (2.1): a post-game dungeon with no bottom, an echo of an old boss every fifth floor, checkpoints and a depth record. **Hollow mode**: no healing at inns, no running, and bosses that rise a third time
-- **Arin's house** (2.2): Corwin the carpenter builds a trophy shelf, a fish tank, a music box that plays any song you've heard, and a bed for Mittens, who will follow you anywhere. The Sailor's Compass points to unopened chests
+- **Arin's house** (2.2): Corwin the carpenter builds a trophy shelf, a fish tank, a music box that plays any song you've heard, and a bed for Mittens, who will follow you anywhere, even into battle. The Sailor's Compass points to unopened chests
 
 **Comfort**
 - Three save slots and auto-save, with versioned saves that upgrade themselves

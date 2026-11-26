@@ -13,6 +13,7 @@ class Battle {
     this.weather = opts.weather || (G.scene === Field ? currentWeather() : 'clear');
     this.night = G.scene === Field && underSky(Field.map) && isNight();
     this.fx = []; this.nums = []; this.msg = null; this.active = -1; this.flash = null; this.shake = 0;
+    this.cat = catInBattle(opts);   // home.js: Mittens sits in when she's with you
     const counts = {};
     ids.forEach(id => counts[id] = (counts[id] || 0) + 1);
     const seen = {};
@@ -86,6 +87,7 @@ class Battle {
       if ((e.status.blind || e.status.slow || e.status.berserk || e.status.stop) && e.alive) { const c = this.enemyCenter(e); text(g, [e.status.blind && tl('BLD'), e.status.slow && tl('SLW'), e.status.berserk && tl('BSK'), e.status.stop && tl('STP')].filter(Boolean).join(' '), c.x, c.y + 44, { size: 11, bold: true, color: '#e8e0a0', align: 'center' }); }
       if (e.status.poison && e.alive) { const c = this.enemyCenter(e); circle(g, c.x + 18 + Math.sin(this.t * 4) * 3, c.y - 20 - (this.t * 20 % 20), 3, 'rgba(140,255,120,.8)'); }
     }
+    drawBattleCat(g, this);
     // party
     BP().forEach((m, i) => {
       const p = this.partyXY(i), a = this.pa[i];
@@ -933,6 +935,7 @@ class Battle {
     }
     if (e.status.sleep) { const c = this.enemyCenter(e); this.num(c.x, c.y, tl('Zzz'), '#c8b8ff'); await wait(350); return; }
     if (e.status.stop) { const c = this.enemyCenter(e); this.num(c.x, c.y, tl('Stopped'), '#d0d0d0'); await wait(350); return; }
+    if (await catDistract(this, e)) return;
     const acts = (e.phase && e.phase.acts) || e.def.acts || [{ w: 1, a: 'attack' }];
     let act = weighted(acts).a;
     // healers mend a hurt ally before anything else
@@ -1035,6 +1038,8 @@ class Battle {
     if (xp || gold) await narrate(tl`Victory! Gained ${xp} EXP and ${gold} gold.`);
     else await wait(2200);
     for (const d of drops) { addItem(d); Audio_.sfx('item'); await narrate(tl`Found ${ITEMS[d].name}!`); }
+    const cf = catFind(this);
+    if (cf) { addItem(cf); Audio_.sfx('meow'); await narrate(tl`Mittens found ${ITEMS[cf].name}!`); }
     for (const s of msgs) { Audio_.sfx(s.includes('learned') ? 'item' : 'levelup'); await narrate(s); }
     this.pa.forEach(p => { p.jump = 0; });
   }

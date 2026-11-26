@@ -85,6 +85,10 @@ SCENARIOS = [
     ('Endless 10F trash Lv50 mid', P4(50), MID, [['drowned', 'drowned']], False, {'opts': {'depth': 9}}),
     ('Endless 25F Hollow King echo Lv50 hero weapons', P4(50), HEARTS, [['king']], False, {'opts': {'depth': 24}}),
     ('Endless 40F trash Lv50 hero weapons', P4(50), HEARTS, [['courtier', 'courtier']], False, {'opts': {'depth': 39}}),
+    # 2.3: Mittens in battle (foes sometimes lose an action to her; bosses ignore her)
+    ('Endless 40F trash Lv50 hero weapons, with Mittens', P4(50), HEARTS, [['courtier', 'courtier']], False, {'opts': {'depth': 39}, 'flags': {'cat_done': True, 'cat_follow': True}}),
+    ('Endless 50F trash Lv50 hero weapons', P4(50), HEARTS, [['crownshard', 'gloamknight']], False, {'opts': {'depth': 49}}),
+    ('Endless 50F trash Lv50 hero weapons, with Mittens', P4(50), HEARTS, [['crownshard', 'gloamknight']], False, {'opts': {'depth': 49}, 'flags': {'cat_done': True, 'cat_follow': True}}),
     ('Endless 50F Nereus echo Lv50 hero weapons', P4(50), HEARTS, [['nereus']], False, {'opts': {'depth': 49}}),
     # Hollow mode: the same fights as above, with a third boss phase
     ('Hollow: Chapter VI finale Lv45 mid', P4(45), MID, [['crown'], ['orun']], True, {'flags': {'hollow': True}}),

@@ -216,3 +216,38 @@ function drawHomeTile(g, m, c, x, y, px, py, t) {
     return;
   }
 }
+
+// -------- Mittens in battle (2.3) --------
+// When she's walking with you she sits behind the party in every fight. She never fights, but
+// now and then a foe stops to deal with her and loses its action, and after a win she sometimes
+// brings back something it dropped. Bosses ignore her. The sim's "with Mittens" scenarios measure it.
+const CAT_DISTRACT = 0.08, CAT_FIND = 0.15;
+const catInBattle = (opts = {}) => !!(G.flags && G.flags.cat_done && G.flags.cat_follow && !opts.noCat);
+const CAT_SEAT = { x: 592, y: 262 };
+// before a foe acts; true means she distracted it and it loses this action
+async function catDistract(b, e) {
+  if (!b.cat || e.def.boss || b.opts.boss || Math.random() >= CAT_DISTRACT) return false;
+  const c = b.enemyCenter(e);
+  b.catPounce = { t: b.t, x: c.x + 30, y: c.y + 30 }; Audio_.sfx('meow');
+  await wait(300);
+  b.num(c.x, c.y, tl('Distracted!'), '#ffd27a');
+  b.msg = tl`${e.name} is busy with Mittens!`; await wait(800); b.msg = null;
+  b.catDistracted = (b.catDistracted || 0) + 1;
+  return true;
+}
+// after a win: an item she found, or null
+function catFind(b) {
+  if (!b.cat || Math.random() >= CAT_FIND) return null;
+  const drops = b.enemies.map(e => e.def.drop && e.def.drop[0]).filter(d => d && ITEMS[d]);
+  return drops.length ? drops[Math.floor(Math.random() * drops.length)] : 'potion';
+}
+function drawBattleCat(g, b) {
+  if (!b.cat) return;
+  let x = CAT_SEAT.x + (1 - b.intro) * 200, y = CAT_SEAT.y;
+  const p = b.catPounce, k = p ? (b.t - p.t) / 0.9 : 1;
+  if (p && k < 1) {   // out to the foe and back, in a hop
+    const s = Math.sin(Math.min(1, k) * Math.PI);
+    x = lerp(x, p.x, s); y = lerp(y, p.y, s) - Math.sin(Math.min(1, k * 2) * Math.PI) * 26;
+  }
+  drawCat(g, x, y, b.t);
+}
