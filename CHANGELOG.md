@@ -15,7 +15,7 @@ timeline
     2026-11-21 : 1.2.0 Ultimate expansion : 1.2.1 Store and promo assets
     2026-11-23 : 1.3.0 Chapter VI, fishing, forging : 1.3.1 Docs, roadmap, test harness : 1.4.0 Comfort, save slots, balance : 1.5.0 Hearts of the Lamplighters : 1.6.0 Deeper systems
     2026-11-24 : 1.7.0 The Drowned Kingdom : 1.8.0 Install anywhere : 1.9.0 Living world : 1.10.0 Foundations
-    2026-11-25 : 2.0.0 Lantern Engine : 2.1.0 Endless Lantern : 2.2.0 Home and companions
+    2026-11-25 : 2.0.0 Lantern Engine : 2.1.0 Endless Lantern : 2.2.0 Home and companions : 2.3.0 Mittens
 ```
 
 ```mermaid
@@ -46,12 +46,19 @@ xychart-beta
 | 2.0.0 | 2026-11-25 | 9 | 12 (32) | 94 (17) | 23 | 5 | [#17](https://github.com/CptNope/Laternfall/pull/17), [#19](https://github.com/CptNope/Laternfall/pull/19), [#20](https://github.com/CptNope/Laternfall/pull/20), [#21](https://github.com/CptNope/Laternfall/pull/21) |
 | 2.1.0 | 2026-11-25 | 9 | 13 (32 + endless) | 94 (17) | 23 | 5 | [#22](https://github.com/CptNope/Laternfall/pull/22) |
 | 2.2.0 | 2026-11-25 | 9 | 13 (32 + endless) | 94 (17) | 23 | 5 | [#23](https://github.com/CptNope/Laternfall/pull/23) |
+| 2.3.0 | 2026-11-25 | 9 | 13 (32 + endless) | 94 (17) | 23 | 5 | [#25](https://github.com/CptNope/Laternfall/pull/25), [#27](https://github.com/CptNope/Laternfall/pull/27) |
 
 ---
 
 ## [Unreleased]
 
-Planned as **2.3.0 · *Mittens***: the cat from The Lost Cat comes on the whole journey (see the [roadmap](ROADMAP.md#23--mittens)).
+Nothing yet.
+
+---
+
+## [2.3.0] — 2026-11-25 · *Mittens*
+
+The cat from The Lost Cat comes on the whole journey (see the [roadmap](ROADMAP.md#23--mittens)).
 
 ### Added
 - **Mittens follows you everywhere** (#25), not just around Brightwater: towns, houses, the world map, dungeons and the sea floor, where she wears a bubble. Aboard the ship, the airship or a moth she rides along out of sight and hops off with you. When a cutscene moves the party she catches up at once instead of sliding across the map.
@@ -420,7 +427,8 @@ Shipped together with 1.0.0 in pull request #1.
 - Turn-based battles, shops, equipment, and saving and loading.
 - The full main story, with an ending.
 
-[Unreleased]: https://github.com/CptNope/Laternfall/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/CptNope/Laternfall/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/CptNope/Laternfall/releases/tag/v2.3.0
 [2.2.0]: https://github.com/CptNope/Laternfall/releases/tag/v2.2.0
 [2.1.0]: https://github.com/CptNope/Laternfall/releases/tag/v2.1.0
 [2.0.0]: https://github.com/CptNope/Laternfall/releases/tag/v2.0.0

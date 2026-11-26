@@ -2,7 +2,7 @@
 
 Where Lanternfall could go next. This is a **plan, not a promise**: milestones are ordered by priority, the dates are targets, and anything can move. Finished work moves to [CHANGELOG.md](CHANGELOG.md).
 
-- **Current release:** 2.2.0 *Home and companions*. Every version from 1.0.0 to 2.2.0 is tagged and has a [GitHub Release](https://github.com/CptNope/Laternfall/releases). See [CHANGELOG.md](CHANGELOG.md).
+- **Current release:** 2.3.0 *Mittens*. Every version from 1.0.0 to 2.3.0 is tagged and has a [GitHub Release](https://github.com/CptNope/Laternfall/releases). See [CHANGELOG.md](CHANGELOG.md).
 - **Next up:** EN-7 (the *Lanternfall II* design document), the last 2.0 item; and a first real translation, if there's a translator. ST-2 (a real phone test) still needs a person with a phone, and matters more now that TD-4 is meant for phones.
 - ✅ marks items that are done.
 
@@ -122,7 +122,7 @@ gantt
     section Replay
     2.1 Endless Lantern              :done, m21, 2026-11-25, 1d
     2.2 Home and companions          :done, m22, 2026-11-25, 1d
-    2.3 Mittens                      :active, m23, 2026-11-26, 1d
+    2.3 Mittens                      :done, m23, 2026-11-25, 1d
 ```
 
 | Milestone | Theme | Headline | Target | Status |
@@ -137,7 +137,7 @@ gantt
 | **2.0** | Engine | Data-driven content, a map editor, mod support, save migration | H2 2027 | ✅ Done (EN-1 to EN-6, merged in #17, #19, #20, #21; EN-7 open) |
 | **2.1** | Replay | The Endless Lantern post-game dungeon and Hollow mode | Nov 2026 | ✅ Done (#22) |
 | **2.2** | Home | Arin's house upgrades, the music box, Mittens following you, compass hints | Nov 2026 | ✅ Done (2.2.0, #23) |
-| **2.3** | Mittens | The cat comes along everywhere, and into battle | Nov 2026 | 🟡 In review (#25, #27) |
+| **2.3** | Mittens | The cat comes along everywhere, and into battle | Nov 2026 | ✅ Done (2.3.0, #25 and #27) |
 
 ```mermaid
 flowchart LR
@@ -544,7 +544,8 @@ flowchart LR
 | `v1.10.0` | `a8706f4` (merge of #16) |
 | `v2.0.0` | `3404b7b` (merge of #21, the last 2.0 part) |
 | `v2.1.0` | `dc3ad99` (merge of #22) |
-| `v2.2.0` | the merge of the 2.2.0 changelog pull request |
+| `v2.2.0` | `f8e17e2` (merge of #24, the 2.2.0 changelog) |
+| `v2.3.0` | the merge of the 2.3.0 changelog pull request |
 
 ---
 
