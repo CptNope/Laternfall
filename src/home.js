@@ -102,16 +102,20 @@ function catFollower(map) {
   return { kind: 'npc', x: G.x, y: G.y, dir: 'down', look: LOOKS.elder, catSprite: true, follow: true, hidden: riding(), talk: talkMittens, name: tl('Mittens') };
 }
 // called when the party starts a step: the follower takes the tile the party is leaving
+// With more than one follower (2.4: a guest, then Mittens) each takes the tile the one ahead left.
 function followStep(map, anim) {
+  let to = { x: anim.fx, y: anim.fy };
   for (const e of map.entities) {
     if (!e.follow) continue;
     if (e.mv) { e.x = e.mv.tx; e.y = e.mv.ty; }
+    const was = { x: e.x, y: e.y };
     if (riding()) { e.hidden = true; e.mv = null; e.x = anim.tx; e.y = anim.ty; continue; }   // aboard: she comes along unseen
     if (e.hidden) { e.hidden = false; e.mv = null; e.x = anim.tx; e.y = anim.ty; continue; }   // hops off with you
     // a cutscene moved the party: she catches up at once rather than sliding across the map
-    if (Math.abs(e.x - anim.fx) + Math.abs(e.y - anim.fy) > 1) { e.mv = null; e.x = anim.fx; e.y = anim.fy; continue; }
-    e.mv = e.x === anim.fx && e.y === anim.fy ? null : { fx: e.x, fy: e.y, tx: anim.fx, ty: anim.fy, t: 0, dur: anim.dur };
+    if (Math.abs(e.x - to.x) + Math.abs(e.y - to.y) > 1) { e.mv = null; e.x = to.x; e.y = to.y; to = was; continue; }
+    e.mv = e.x === to.x && e.y === to.y ? null : { fx: e.x, fy: e.y, tx: to.x, ty: to.y, t: 0, dur: anim.dur };
     if (e.mv) e.dir = e.mv.tx > e.mv.fx ? 'right' : e.mv.tx < e.mv.fx ? 'left' : e.mv.ty > e.mv.fy ? 'down' : 'up';
+    to = was;
   }
 }
 // under the sea she wears a bubble

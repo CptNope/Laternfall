@@ -3890,6 +3890,8 @@ function populate(map) {
     for (const q of questEntities(map)) map.entities.push(q);
     if (map.extras.boss && !G.flags[bossFlag(map)]) map.entities.push({ kind: 'boss', x: map.extras.boss.x, y: map.extras.boss.y, did, def: MONSTERS[def.boss] });
   }
+  const guest = guestFollower(map);   // 2.4: a guest walks right behind you, Mittens behind them
+  if (guest) map.entities.push(guest);
   const cat = catFollower(map);   // 2.2: Mittens walks with you in Brightwater
   if (cat) map.entities.push(cat);
 }
@@ -4208,7 +4210,8 @@ const Field = {
   }
 };
 function drawEntity(g, e, sx, sy, t) {
-  if (e.follow) { if (!e.hidden) drawFollowerCat(g, sx, sy, t); return; }   // Mittens (home.js)
+  if (e.follow && e.hidden) return;
+  if (e.follow && !e.guest) { drawFollowerCat(g, sx, sy, t); return; }   // Mittens (home.js); a guest (guests.js) draws as a person
   if (e.kind === 'npc' && e.catSprite) { drawCat(g, sx, sy, t); return; }
   if (e.kind === 'npc') {
     const step = e.mv ? (Math.floor(t * 8) % 2 ? 1 : 2) : 0;
@@ -4743,7 +4746,8 @@ class Battle {
     this.weather = opts.weather || (G.scene === Field ? currentWeather() : 'clear');
     this.night = G.scene === Field && underSky(Field.map) && isNight();
     this.fx = []; this.nums = []; this.msg = null; this.active = -1; this.flash = null; this.shake = 0;
-    this.cat = catInBattle(opts);   // home.js: Mittens sits in when she's with you
+    this.cat = catInBattle(opts);   
+    this.guest = guestFor(opts);    // guests.js: a friend fighting beside you for one quest   // home.js: Mittens sits in when she's with you
     const counts = {};
     ids.forEach(id => counts[id] = (counts[id] || 0) + 1);
     const seen = {};
@@ -4817,6 +4821,7 @@ class Battle {
       if ((e.status.blind || e.status.slow || e.status.berserk || e.status.stop) && e.alive) { const c = this.enemyCenter(e); text(g, [e.status.blind && tl('BLD'), e.status.slow && tl('SLW'), e.status.berserk && tl('BSK'), e.status.stop && tl('STP')].filter(Boolean).join(' '), c.x, c.y + 44, { size: 11, bold: true, color: '#e8e0a0', align: 'center' }); }
       if (e.status.poison && e.alive) { const c = this.enemyCenter(e); circle(g, c.x + 18 + Math.sin(this.t * 4) * 3, c.y - 20 - (this.t * 20 % 20), 3, 'rgba(140,255,120,.8)'); }
     }
+    drawBattleGuest(g, this);
     drawBattleCat(g, this);
     // party
     BP().forEach((m, i) => {
@@ -5140,13 +5145,15 @@ class Battle {
       party.forEach((c, i) => { if (c && c.type !== 'partner') order.push({ side: 'p', i, c, spd: stat(BP()[i], 'spd') * this.spdMod(BP()[i].status) * rnd(0.8, 1.2) + (c.type === 'defend' ? 999 : 0) }); });
       // late bosses may act more than once per round (def.actions)
       if (!this.preempt) this.enemies.forEach((e, i) => { if (e.alive) for (let a = 0; a < ((e.phase && e.phase.actions) || e.def.actions || 1); a++) order.push({ side: 'e', i, spd: e.def.spd * this.spdMod(e.status) * rnd(0.8, 1.2) - a * 6 }); });
+      if (this.guest) order.push({ side: 'g', spd: guestStats(this).spd * rnd(0.8, 1.2) });
       this.preempt = false;
       order.sort((a, b) => b.spd - a.spd);
       this.pa.forEach(p => p.defend = false);
       party.forEach((c, i) => { if (c && c.type === 'defend') this.pa[i].defend = true; });
       for (const o of order) {
         if (this.liveEnemies().length === 0 || this.liveParty().length === 0) break;
-        if (o.side === 'p') {
+        if (o.side === 'g') await guestAct(this);
+        else if (o.side === 'p') {
           if (!alive(BP()[o.i])) continue;
           const r = await this.partyAct(o.i, o.c);
           if (r === 'escape') { result = 'run'; break; }
@@ -8228,16 +8235,20 @@ function catFollower(map) {
   return { kind: 'npc', x: G.x, y: G.y, dir: 'down', look: LOOKS.elder, catSprite: true, follow: true, hidden: riding(), talk: talkMittens, name: tl('Mittens') };
 }
 // called when the party starts a step: the follower takes the tile the party is leaving
+// With more than one follower (2.4: a guest, then Mittens) each takes the tile the one ahead left.
 function followStep(map, anim) {
+  let to = { x: anim.fx, y: anim.fy };
   for (const e of map.entities) {
     if (!e.follow) continue;
     if (e.mv) { e.x = e.mv.tx; e.y = e.mv.ty; }
+    const was = { x: e.x, y: e.y };
     if (riding()) { e.hidden = true; e.mv = null; e.x = anim.tx; e.y = anim.ty; continue; }   // aboard: she comes along unseen
     if (e.hidden) { e.hidden = false; e.mv = null; e.x = anim.tx; e.y = anim.ty; continue; }   // hops off with you
     // a cutscene moved the party: she catches up at once rather than sliding across the map
-    if (Math.abs(e.x - anim.fx) + Math.abs(e.y - anim.fy) > 1) { e.mv = null; e.x = anim.fx; e.y = anim.fy; continue; }
-    e.mv = e.x === anim.fx && e.y === anim.fy ? null : { fx: e.x, fy: e.y, tx: anim.fx, ty: anim.fy, t: 0, dur: anim.dur };
+    if (Math.abs(e.x - to.x) + Math.abs(e.y - to.y) > 1) { e.mv = null; e.x = to.x; e.y = to.y; to = was; continue; }
+    e.mv = e.x === to.x && e.y === to.y ? null : { fx: e.x, fy: e.y, tx: to.x, ty: to.y, t: 0, dur: anim.dur };
     if (e.mv) e.dir = e.mv.tx > e.mv.fx ? 'right' : e.mv.tx < e.mv.fx ? 'left' : e.mv.ty > e.mv.fy ? 'down' : 'up';
+    to = was;
   }
 }
 // under the sea she wears a bubble
@@ -8377,6 +8388,127 @@ function drawBattleCat(g, b) {
   }
   drawCat(g, x, y, b.t);
 }
+
+// =====================================================================
+//  GUESTS — 2.4: friends who fight beside you for one quest
+// =====================================================================
+// Brann sails with you while the Leviathan bounty is open (at sea only: he's the captain). Wren
+// comes along from the moment the Observatory opens until the Astral Wyrm is quiet, and Warden
+// Ione from the moment she gives you the lamp until the crown is broken: those two walk behind
+// you on every map, fight in every battle, and are missing from their towns meanwhile. A guest isn't a party member: they
+// take no menu, gear or EXP, enemies can't target them (they keep to the back), and they act on
+// their own once a round. Their strength follows the party's, so they matter at any level.
+// Whether a guest is with you is worked out from story flags, so old saves mid-quest get them too.
+const GUESTS = {
+  brann: {
+    name: tl('Brann'), look: () => LOOKS.sailor,
+    // at sea while the bounty is open (and in the Leviathan fight)
+    here: f => f.bounty && !f.leviathan && G.onShip,
+    moves: [
+      { w: 5, name: tl('Harpoon'), kind: 'phys', mult: 1.25, fx: 'hit' },
+      { w: 2, name: tl('Broadside'), kind: 'phys', all: true, mult: 0.6, fx: 'hit' },   // cannon, not water: the Leviathan drinks water
+      { w: 2, name: tl('Ship\'s Grog'), kind: 'heal', share: 0.2, fx: 'heal' }
+    ]
+  },
+  wren: {
+    name: tl('Wren'), look: () => ({ skin: '#e8c8a8', hair: '#c8c8d8', style: 'long', body: '#2a3a6a', accent: '#e8d070', robe: true, beard: true, weapon: 'staff' }),
+    // from the Observatory's opening until the Astral Wyrm is quiet
+    here: f => f.obsOpen && !f.boss_observatory,
+    moves: [
+      { w: 4, name: tl('Starlight'), kind: 'mag', power: 80, elem: 'holy', fx: 'holy' },
+      { w: 2, name: tl('Falling Stars'), kind: 'mag', all: true, power: 50, elem: 'holy', fx: 'flare' },
+      { w: 2, name: tl('Slow Orbit'), kind: 'slow', turns: 3, fx: 'sleep', once: true }
+    ]
+  },
+  ione: {
+    name: tl('Warden Ione'), look: () => ({ skin: '#e8c8a8', hair: '#d8d8e0', style: 'bun', body: '#5a3a3a', accent: '#ff8a4a', robe: true, weapon: 'mace' }),
+    // from the lamp until the crown is broken
+    here: f => f.q_crown && !f.boss_abyss,
+    moves: [
+      { w: 4, name: tl('Ember of Orun'), kind: 'mag', power: 80, elem: 'fire', fx: 'fire' },
+      { w: 2, name: tl('Ashen Hymn'), kind: 'heal', all: true, share: 0.1, fx: 'heal' },
+      { w: 2, name: tl('Ward'), kind: 'barrier', turns: 3, fx: 'buff', once: true }
+    ]
+  }
+};
+const GUEST_SEAT = { x: 606, y: 210 };
+const GUEST_POWER = 0.5;   // a guest hits like half of the party's average member (tuned with the balance sim)
+// which guest (if any) fights in a battle started now; opts.guest forces one, opts.noGuest none
+function guestFor(opts = {}) {
+  if (opts.noGuest || !G.flags) return null;
+  if (opts.guest) return GUESTS[opts.guest] ? opts.guest : null;
+  for (const id in GUESTS) if (GUESTS[id].here(G.flags)) return id;
+  return null;
+}
+// the guest's stats, from the live party's averages
+function guestStats(b) {
+  const P = b.liveParty().length ? b.liveParty() : BP(), avg = s => P.reduce((t, m) => t + stat(m, s), 0) / P.length;
+  return { str: avg('str') * GUEST_POWER, mag: avg('mag') * GUEST_POWER, spd: avg('spd') };
+}
+function pickGuestMove(b, G_) {
+  const hurt = b.liveParty().some(m => m.hp < maxHp(m) * 0.5);
+  // Ward and Slow Orbit once a fight: a guest helps, but the fight stays yours
+  const used = b.guestUsed || (b.guestUsed = {});
+  const ok = G_.moves.filter(mv => (mv.kind !== 'heal' || hurt) && (!mv.once || !used[mv.name]) && (mv.kind !== 'slow' || b.liveEnemies().some(e => !e.status.slow)));
+  let r = Math.random() * ok.reduce((t, mv) => t + mv.w, 0);
+  for (const mv of ok) if ((r -= mv.w) < 0) return mv;
+  return ok[0];
+}
+// one action, once a round, in speed order with everyone else
+async function guestAct(b) {
+  const id = b.guest, G_ = GUESTS[id], s = guestStats(b), mv = pickGuestMove(b, G_);
+  const foes = b.liveEnemies(); if (!foes.length) return;
+  b.guestPose = { t: b.t };
+  if (mv.once) (b.guestUsed || (b.guestUsed = {}))[mv.name] = true;
+  b.msg = tl`${G_.name}: ${mv.name}`; await wait(450);
+  if (mv.kind === 'phys' || mv.kind === 'mag') {
+    const ts = mv.all ? foes : [foes.reduce((a, e) => e.hp < a.hp ? e : a)];   // single hits go for the weakest
+    await b.playFx(mv.fx, ts.map(e => b.enemyCenter(e)));
+    for (const e of ts) {
+      if (!e.alive) continue;
+      const d = mv.kind === 'phys' ? b.physDamage(s.str, e.def.def, mv.mult)
+        : Math.max(1, Math.round((mv.power + s.mag) * rnd(0.95, 1.05) * b.elemMult(e.def, mv.elem) * (mv.all ? 0.7 : 1) - e.def.mag * 0.4));
+      b.damageEnemy(e, d, '#fff', false, mv.elem || null);
+    }
+  } else if (mv.kind === 'heal') {
+    const P = b.liveParty(), ts = mv.all ? P : [P.reduce((a, m) => m.hp / maxHp(m) < a.hp / maxHp(a) ? m : a)];
+    await b.playFx('heal', ts.map(m => b.memberCenter(BP().indexOf(m))));
+    for (const m of ts) { const h = Math.min(maxHp(m) - m.hp, Math.round(maxHp(m) * mv.share)); m.hp += h; const c = b.memberCenter(BP().indexOf(m)); b.num(c.x, c.y, h, '#7aff9a'); }
+  } else if (mv.kind === 'barrier') {
+    await b.playFx('buff', BP().map((m, i) => b.memberCenter(i)));
+    b.buffs.barrier = Math.max(b.buffs.barrier || 0, mv.turns);
+  } else if (mv.kind === 'slow') {
+    const e = foes.find(e => !e.status.slow) || foes[0];
+    await b.playFx('sleep', [b.enemyCenter(e)]);
+    e.status.slow = mv.turns; const c = b.enemyCenter(e); b.num(c.x, c.y, tl('Slow'), '#c8b8ff');
+  }
+  b.guestActs = (b.guestActs || 0) + 1;
+  await wait(350); b.msg = null;
+}
+function drawBattleGuest(g, b) {
+  if (!b.guest) return;
+  const G_ = GUESTS[b.guest], p = b.guestPose, k = p ? (b.t - p.t) / 0.6 : 1;
+  const x = GUEST_SEAT.x + (1 - b.intro) * 200 - (k < 1 ? Math.sin(k * Math.PI) * 14 : 0);
+  drawChar(g, G_.look(), x, GUEST_SEAT.y, 'left', 0, 1.42, k < 1 ? 'cast' : null, b.t);
+  text(g, G_.name, x, GUEST_SEAT.y + 6, { size: 11, bold: true, align: 'center', color: '#ffe9a8' });
+}
+// on the field the guest walks right behind the party (and ahead of Mittens)
+function guestFollower(map) {
+  for (const id in GUESTS) {
+    if (id === 'brann' || !GUESTS[id].here(G.flags)) continue;   // Brann is at the wheel of the ship
+    const G_ = GUESTS[id];
+    return { kind: 'npc', x: G.x, y: G.y, dir: 'down', look: G_.look(), follow: true, guest: id, name: G_.name,
+      talk: async () => say(G_.name, GUEST_LINES[id]()) };
+  }
+  return null;
+}
+const GUEST_LINES = {
+  wren: () => G.mapId.startsWith('observatory') ? tl('Forty years I\'ve looked at this place through a telescope. Don\'t mind me, I\'ll just be over here weeping a little.') : tl('The Observatory is on the island west of Frostmere. I\'ve been waiting forty years; I can wait while you shop.'),
+  ione: () => G.mapId.startsWith('abyss') ? tl('Keep the lamp high. The mist remembers every light it has eaten.') : tl('The Abyss lies east, inside the crater. Four floors down, to where the crown fell.')
+};
+// joining and leaving: a toast so the player knows who is with them
+function guestJoins(id) { toast(tl`${GUESTS[id].name} joins you for this quest`); }
+function guestLeaves(id) { toast(tl`${GUESTS[id].name} has left the party`); }
 
 'use strict';
 // ============================================================
@@ -8840,7 +8972,7 @@ function townNpcs(id) {
     N(4, 16, 56, { ...LOOKS.guard, hair: '#a0a0a0', beard: true, body: '#7a3a3a' }, async () => say(tl('Old Champion'), tl('I won the Gold Cup once. Lost an ear to a Dread Knight. Tip: bring Remedies, and don\'t fight the Grand Champion cup until you\'ve seen a dragon and lived.')))
   ];
   if (id === 'frostmere') return [
-    N(12, 8, 31, { skin: '#e8c8a8', hair: '#c8c8d8', style: 'long', body: '#2a3a6a', accent: '#e8d070', robe: true, beard: true }, talkWren, { mark: !f.q_stars || (f.lantern3 && !f.chart), name: tl('Wren') }),
+    ...(GUESTS.wren.here(f) ? [] : [N(12, 8, 31, { skin: '#e8c8a8', hair: '#c8c8d8', style: 'long', body: '#2a3a6a', accent: '#e8d070', robe: true, beard: true }, talkWren, { mark: !f.q_stars || (f.lantern3 && !f.chart), name: tl('Wren') })]),   // 2.4: with you as a guest
     N(16, 13, 32, { skin: '#f1c9a0', hair: '#e8e0d0', style: 'bun', body: '#6a3a5a', accent: '#c0a040', robe: true }, talkSable, { mark: !f.q_scholar || (!f.scholar_done && seenCount() >= 30) || (f.scholar_done && !f.codex45 && seenCount() >= 45) || (f.codex45 && !f.codex_all && seenCount() >= Object.keys(MONSTERS).length), name: tl('Sable') }),
     N(14, 16, 33, { body: '#5a6a7a', hat: 'cap', accent: '#c0c0c0' }, talkFisher, { name: tl('Ice Fisher'), mark: !f.q_fish || (fishKinds() >= 6 && !f.fish_r1) || (fishKinds() >= Object.keys(FISH).length && !f.fish_r2) }),
     N(8, 11, 34, { style: 'spiky', body: '#3a6a9a' }, talkFrostKid, { wander: true }),
@@ -8848,7 +8980,7 @@ function townNpcs(id) {
     N(5, 8, 36, { ...LOOKS.guard, hair: '#a0a0a0', beard: true }, talkVeteran)
   ];
   if (id === 'lastlight') return [
-    N(13, 8, 61, { skin: '#e8c8a8', hair: '#d8d8e0', style: 'bun', body: '#5a3a3a', accent: '#ff8a4a', robe: true }, talkIone, { name: tl('Warden Ione'), mark: !f.q_crown || (f.boss_abyss && !f.ioneThanks) }),
+    ...(GUESTS.ione.here(f) ? [] : [N(13, 8, 61, { skin: '#e8c8a8', hair: '#d8d8e0', style: 'bun', body: '#5a3a3a', accent: '#ff8a4a', robe: true }, talkIone, { name: tl('Warden Ione'), mark: !f.q_crown || (f.boss_abyss && !f.ioneThanks) })]),   // 2.4: with you as a guest
     N(10, 10, 62, { skin: '#c98e62', hair: '#3a2a1a', style: 'long', body: '#7a4a3a', accent: '#ffb04a' }, async () => say(tl('Ember-tender Calla'), f.boss_abyss ? tl('I let the fire burn low last night. First time in a thousand years. I cried. Then I slept for eleven hours.') : tl('We kept this fire burning for a thousand years. Not a Lantern — just a fire. It turns out that\'s the same thing, if you\'re stubborn enough.'))),
     N(16, 8, 63, { hair: '#a0a0a0', style: 'bald', body: '#4a4a5a', beard: true }, async () => sayAll(f.boss_abyss ? [[tl('Old Fennick'), tl('He sang to the night, you know. Orun. My grandmother\'s grandmother heard him. She said the dark curled up at his feet like a dog.')]] : [[tl('Old Fennick'), tl('Ozymar sealed us under the sea in a bubble of his own light, so we\'d be here when the crown fell. A thousand years of fish faces pressed against the glass.')], [tl('Old Fennick'), tl('You\'d think we\'d have learned to fish. We did not. We are a very stubborn people.')]])),
     N(6, 15, 64, { style: 'spiky', body: '#5a7a8a' }, async () => say(tl('Wick'), G.flags.boss_abyss ? tl('Grandma Ione smiled today! I didn\'t know her face could DO that.') : tl('Are you the lamplighters? Grandma Ione said you\'d come in a flying ship. Or a boat. She hedged.')), { wander: true }),
@@ -8971,6 +9103,8 @@ async function talkBrann() {
   if (!f.bounty) {
     await sayAll([[tl('Brann'), tl('One more thing. There\'s a whirlpool out in the open sea, east and north of here. Fishermen swear something lives in it.')], [tl('Brann'), tl('The Leviathan. It\'s been eating boats. The harbor guild will pay 4,000 gold to whoever puts it down. Interested?')]]);
     f.bounty = true; toast(tl('New quest: Bounty — Leviathan'));
+    await say(tl('Brann'), tl('And I\'m coming with you. That thing sank my cousin\'s boat. I\'ll take the wheel at sea, you take the shore.'));
+    guestJoins('brann');
     await narrate(tl('The whirlpool is marked on your world map (Menu → Map).')); return;
   }
   if (f.leviathan && !f.bounty_done) {
@@ -9168,7 +9302,9 @@ async function canEnterDungeon(did) {
   }
   if (did === 'observatory') {
     if (!f.chart) { await narrate(tl('A domed door of pale stone, carved with constellations. One star is missing from the carving, as if someone pried it out.')); return false; }
-    if (!f.obsOpen) { await narrate(tl('You hold up Wren\'s Star Chart. The circled star glows — and so does the empty socket in the door. With a sound like a struck bell, the dome opens.')); Audio_.sfx('lantern'); f.obsOpen = true; }
+    if (!f.obsOpen) { await narrate(tl('You hold up Wren\'s Star Chart. The circled star glows — and so does the empty socket in the door. With a sound like a struck bell, the dome opens.')); Audio_.sfx('lantern'); f.obsOpen = true;
+      await say(tl('Wren'), tl('Wait! Wait for me! Forty years I\'ve looked at this dome through a telescope. You are not going in without me.'));
+      guestJoins('wren'); refreshEntities(); }
   }
   if (did === 'spire') {
     if (!f.dawnkey) { await narrate(tl('A door of black glass, with no handle. Only a keyhole shaped like a rising sun.')); return false; }
@@ -9354,6 +9490,7 @@ async function bossEncounter(did) {
     const r = await startBattle(['wyrm'], { boss: true, bg: 'astral' });
     if (r === 'lose') return gameOver();
     f.boss_observatory = true; refreshEntities();
+    guestLeaves('wren');
     await sayAll([
       [tl('Astral Wyrm'), tl('...Quiet. For the first time in a thousand years, the whispering is quiet.')],
       [tl('Astral Wyrm'), tl('Light it, little lamplighter. Light the one they could not. Then I may finally sleep.')]
@@ -9441,6 +9578,8 @@ async function talkIone() {
     await say(tl('Warden Ione'), tl('The mist in the crater eats any light it touches. Take this lamp. It was lit from our fire, which has not gone out in a thousand years. The mist will fear it.'));
     addItem('lastlight_lamp'); f.q_crown = true; Audio_.sfx('chest');
     await narrate(tl('Received the Lamp of Lastlight! The Crownfall Abyss lies inside the crater east of the village.'));
+    await say(tl('Warden Ione'), tl('And I am coming with you. A thousand years my family has watched that crater from the rim. I will not watch the end of it from there.'));
+    guestJoins('ione');
     await sayAll([
       [tl('Warden Ione'), tl('One thing more. Orun taught my ancestors a song for nights that would not end. Three voices: one of dawn, one of flame, one of dusk.')],
       [LY, withSelene(tl('Dawn, flame, dusk... Arin, me, and Selene.'), tl('Dawn, flame, dusk... Arin, me — and Selene. We should bring her.'))]
@@ -9504,6 +9643,7 @@ async function abyssFinale() {
   if (r2 === 'lose') { G.scene = Field; return gameOver(); }
   f.boss_abyss = true;
   G.scene = Field; refreshEntities();
+  guestLeaves('ione');
   Field.playMusic();
   await sayAll([
     [tl('Orun'), tl('...Light. I had forgotten what it feels like, to stand in it and not burn.')],
@@ -9746,7 +9886,7 @@ async function whirlpoolEvent() {
   if (r === 'lose') return gameOver();
   f.leviathan = true;
   await narrate(tl('The Leviathan sinks into the dark water. Slowly, the whirlpool falls still.'));
-  if (f.bounty) await say(OS, tl('Brann will want to hear about this. And pay for it, I hope.'));
+  if (f.bounty) { await say(tl('Brann'), tl('Ha! HA! Cousin, you\'re avenged! Drop me at the harbor, lamplighters. The guild owes you, and I want to watch them pay.')); guestLeaves('brann'); }
 }
 
 // ------------- quests -------------

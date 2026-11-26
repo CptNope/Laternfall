@@ -49,6 +49,12 @@ HEARTS = {  # the five hero weapons, forged armour, the Crown of Nerith and Hear
     'kestrel': {'weapon': 'pickpocket', 'armor': 'marlin_garb', 'acc': 'silk_ribbon'},
     'selene': {'weapon': 'duskstar', 'armor': 'pearl_veil', 'acc': 'sage_circlet'},
 }
+EARLY = {  # 2.4: shop gear around the Leviathan bounty (Lv 16+)
+    'arin': {'weapon': 'steel_sword', 'armor': 'chain_mail'},
+    'lyra': {'weapon': 'rune_staff', 'armor': 'sage_robe'},
+    'oswin': {'weapon': 'steel_mace', 'armor': 'chain_mail'},
+    'kestrel': {'weapon': 'steel_dagger', 'armor': 'thief_vest'},
+}
 ITEMS = {'xpotion': 8, 'hiether': 6, 'plume': 6, 'elixir': 3, 'megalixir': 2, 'remedy': 6}
 P4 = lambda lv, ids=('arin', 'lyra', 'oswin', 'selene'): [[i, lv] for i in ids]
 
@@ -94,6 +100,11 @@ SCENARIOS = [
     ('Hollow: Chapter VI finale Lv45 mid', P4(45), MID, [['crown'], ['orun']], True, {'flags': {'hollow': True}}),
     ('Hollow: Chapter VI finale Lv50 best', P4(50), BEST, [['crown'], ['orun']], True, {'flags': {'hollow': True}}),
     ('Hollow: Nereus Lv48 mid', P4(48), MID, [['nereus']], False, {'flags': {'hollow': True}}),
+    # 2.4: guests (opts.guest forces one; story flags pick them in the game)
+    ('Leviathan Lv18 early', P4(18, ('arin', 'lyra', 'oswin')), EARLY, [['leviathan']], False),
+    ('Leviathan Lv18 early, with Brann', P4(18, ('arin', 'lyra', 'oswin')), EARLY, [['leviathan']], False, {'opts': {'guest': 'brann'}}),
+    ('Astral Wyrm Lv36 mid, with Wren', P4(36), MID, [['wyrm']], False, {'opts': {'guest': 'wren'}}),
+    ('Chapter VI finale Lv42 mid, with Ione', P4(42), MID, [['crown'], ['orun']], True, {'opts': {'guest': 'ione'}}),
 ]
 
 async def main():

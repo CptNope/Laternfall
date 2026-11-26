@@ -18,7 +18,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods', 'editor', 'i18n', 'endless', 'home']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods', 'editor', 'i18n', 'endless', 'home', 'guests']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -369,6 +369,50 @@ async def main():
             await ev("Field.map.entities.filter(e => e.kind === 'chest').forEach(e => e.opened = true)")
             check(await ev("compassTarget(Field.map) === null"), 'with every chest open the needle has nothing to point at')
             check(await ev("(() => { const g = document.createElement('canvas').getContext('2d'); const on = drawCompassHint(g, Field.map, 0); CFG.compass = false; const off = drawCompassHint(g, Field.map, 0); CFG.compass = true; const town = drawCompassHint(g, getMap('brightwater'), 0); return on && !off && !town; })()"), 'the needle shows in dungeons, and can be switched off in Config')
+
+        if want('guests'):
+            def check(ok, label):
+                print(('ok   ' if ok else 'FAIL ') + label)
+                if not ok: errs.append('check failed: ' + label)
+            s = json.loads(json.dumps(POST))
+            s['mapId'] = 'frostmere'; s['x'] = 12; s['y'] = 11; s['dir'] = 'up'
+            s['flags'].update({'obsOpen': True, 'boss_observatory': False, 'cat_done': True, 'cat_follow': True})
+            await boot(s); await until_idle()
+            # --- who is with you comes from story flags ---
+            check(await ev("guestFor() === 'wren'"), 'with the Observatory open and the Wyrm awake, Wren is your guest')
+            check(await ev("!Field.map.entities.some(e => e.name === tl('Wren') && !e.follow)"), 'so he is not in Frostmere')
+            check(await ev("(() => { const F = Field.map.entities.filter(e => e.follow); return F.length === 2 && F[0].guest === 'wren' && !F[1].guest; })()"), 'he walks right behind you, Mittens behind him')
+            await press('ArrowDown', 1, 300); await press('ArrowDown', 1, 450)
+            pos = await ev("(() => { const F = Field.map.entities.filter(e => e.follow).map(e => e.mv ? [e.mv.tx, e.mv.ty] : [e.x, e.y]); return [F, [G.x, G.y]]; })()")
+            check(pos[0][0] == [pos[1][0], pos[1][1] - 1] and pos[0][1] == [pos[1][0], pos[1][1] - 2], f'in a line: you, Wren, Mittens ({pos})')
+            await shot('100_wren_follows')
+            # --- in battle ---
+            await run("await startBattle(['slime', 'slime'])", 2400)
+            check(await ev("G.scene.guest === 'wren'"), 'Wren fights beside you')
+            r = await ev("(async () => { const b = G.scene, hp = b.enemies.map(e => e.hp), r = Math.random; Math.random = () => 0; await guestAct(b); Math.random = r; return [b.guestActs, hp.some((h, i) => b.enemies[i].hp < h)]; })()")
+            check(r == [1, True], f'his Starlight hurts a foe ({r})')
+            await shot('101_wren_battle')
+            r = await ev("(async () => { const b = G.scene, r = Math.random; Math.random = () => 0.99; await guestAct(b); Math.random = r; const slowed = b.enemies.some(e => e.status.slow); const again = pickGuestMove(b, GUESTS.wren).kind; return [slowed, b.guestUsed[tl('Slow Orbit')] === true]; })()")
+            check(r == [True, True], f'Slow Orbit slows a foe, once a fight ({r})')
+            check(await ev("(() => { const b = G.scene, r = Math.random; let n = 0; for (let k = 0; k < 40; k++) { Math.random = () => k / 40; if (pickGuestMove(b, GUESTS.wren).kind === 'slow') n++; } Math.random = r; return n === 0; })()"), 'and not a second time')
+            check(await ev("!BP().some(m => m.id === 'wren') && BP().length <= 4"), 'he is not in the party list: no menu, gear or EXP')
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110)
+            # --- Ione: heals only when someone is hurt; Ward once ---
+            await ev("Object.assign(G.flags, { boss_observatory: true, q_crown: true, boss_abyss: false }); refreshEntities()")
+            check(await ev("guestFor() === 'ione' && Field.map.entities.find(e => e.follow).guest === 'ione'"), 'after the Wyrm, Wren goes home; with the lamp, Ione comes along')
+            await run("await startBattle(['slime'])", 2400)
+            r = await ev("(() => { const b = G.scene, r = Math.random, kinds = new Set(); for (let k = 0; k < 40; k++) { Math.random = () => k / 40; kinds.add(pickGuestMove(b, GUESTS.ione).kind); } Math.random = r; return [...kinds].sort(); })()")
+            check(r == ['barrier', 'mag'], f'with everyone healthy Ione never heals ({r})')
+            r = await ev("(async () => { const b = G.scene; BP().forEach(m => m.hp = Math.ceil(maxHp(m) * 0.3)); const before = BP().map(m => m.hp); const r = Math.random; b.guestUsed = { [tl('Ward')]: true }; Math.random = () => 0.99; await guestAct(b); Math.random = r; return BP().every((m, i) => m.hp > before[i]); })()")
+            check(r, 'with the party hurt, her Ashen Hymn heals everyone')
+            await ev("G.scene.enemies.forEach(e => e.hp = 1)"); await until_idle(300, 'Enter', 110)
+            # --- Brann: at sea only ---
+            await ev("Object.assign(G.flags, { boss_abyss: true, bounty: true, leviathan: false }); refreshEntities()")
+            check(await ev("guestFor() === null && !Field.map.entities.some(e => e.guest)"), 'on land, Brann is not with you (he keeps the ship)')
+            check(await ev("(() => { G.onShip = true; const g = guestFor(); G.onShip = false; return g === 'brann'; })()"), 'at sea, he fights beside you')
+            check(await ev("(() => { G.onShip = true; G.flags.leviathan = true; const g = guestFor(); G.onShip = false; return g === null; })()"), 'and not after the Leviathan')
+            check(await ev("GUESTS.brann.moves.every(m => m.elem !== 'water')"), 'none of his moves feed the Leviathan (it absorbs water)')
+            check(await ev("guestFor({ noGuest: true }) === null && guestFor({ guest: 'ione' }) === 'ione'"), 'battles can ask for a guest or none')
 
         if want('readme'):
             s2 = json.loads(json.dumps(POST)); s2['flags'].update({'isle': True, 'q_crown': True, 'abyssOpen': True, 'visit_G': True, 'visit_7': True, 'q_fish': True}); s2['inv']['fishing_rod'] = 1

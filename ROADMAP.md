@@ -123,6 +123,7 @@ gantt
     2.1 Endless Lantern              :done, m21, 2026-11-25, 1d
     2.2 Home and companions          :done, m22, 2026-11-25, 1d
     2.3 Mittens                      :done, m23, 2026-11-25, 1d
+    2.4 Guests                       :active, m24, 2026-11-26, 1d
 ```
 
 | Milestone | Theme | Headline | Target | Status |
@@ -138,6 +139,7 @@ gantt
 | **2.1** | Replay | The Endless Lantern post-game dungeon and Hollow mode | Nov 2026 | ✅ Done (#22) |
 | **2.2** | Home | Arin's house upgrades, the music box, Mittens following you, compass hints | Nov 2026 | ✅ Done (2.2.0, #23) |
 | **2.3** | Mittens | The cat comes along everywhere, and into battle | Nov 2026 | ✅ Done (2.3.0, #25 and #27) |
+| **2.4** | Guests | Brann, Wren and Ione fight beside you for one quest each | Nov 2026 | 🟡 In review |
 
 ```mermaid
 flowchart LR
@@ -394,6 +396,26 @@ Asked for after 2.2: the cat should be able to come anywhere.
 | MT-1 | **Everywhere**: towns, houses, the world map, dungeons, the sea floor (in a bubble); unseen aboard vehicles; catches up after cutscenes | S |
 | MT-2 | **In battle**: she sits behind the party; foes sometimes lose an action to her and she sometimes finds an item after a win; bosses ignore her | S |
 
+### 2.4 · Guests
+
+From the parking lot. A guest fights on their own for one quest and then goes home.
+
+```mermaid
+flowchart LR
+    B[Brann gives the bounty] -->|at sea| BL[Leviathan beaten]
+    W[Observatory opens] -->|everywhere| WL[Astral Wyrm quiet]
+    I[Ione gives the lamp] -->|everywhere| IL[Crown broken]
+```
+
+| ID | Item | Size |
+| --- | --- | --- |
+| GU-1 | **Guests in battle**: act once a round on their own, can't be targeted, strength from the party's averages, support moves once a fight | M |
+| GU-2 | **Brann, Wren and Ione**, each with three moves, a joining line, and a scope worked out from story flags | M |
+| GU-3 | **On the field**: Wren and Ione walk behind you (several followers in a line) and are missing from their towns meanwhile | S |
+| GU-4 | **Balance**: sim pairs for the three fights with and without the guest | S |
+
+Not in 2.4: guests who can be targeted and knocked out (enemy AI only ever targets party members), and Brann on land.
+
 ---
 
 ## Prioritised backlog
@@ -488,7 +510,7 @@ Not scheduled. Each needs a reason to exist (see [Guiding principles](#guiding-p
 - ✅ ~~🌙 **A "Hollow" hard mode**~~: in [2.1](#21--endless-lantern) (RP-4).
 - ✅ ~~🧭 **Compass hints**~~: in [2.2](#22--home-and-companions) (HM-4).
 - 📜 **Old Bram's verses**: collect verse fragments to complete the Lantern rhyme. The reward is a new title-screen song.
-- 🤝 **Guest party members** for single quests: Brann at sea, Wren in the Observatory, Ione in the Abyss.
+- ✅ ~~🤝 **Guest party members**~~: in [2.4](#24--guests).
 - 🎨 **Photo mode**: hide the UI and pan the camera.
 - 🧪 **Alchemy**: turn spare materials into consumables.
 - ✅ ~~🗺️ **Procedural "Endless Lantern"**~~: in [2.1](#21--endless-lantern) (RP-1 to RP-3).

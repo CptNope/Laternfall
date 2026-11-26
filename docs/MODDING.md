@@ -69,6 +69,7 @@ flowchart TD
 - [Change the Lantern Board](#change-the-lantern-board)
 - [Add a trophy](#add-a-trophy)
 - [Add something to Arin's house](#add-something-to-arins-house)
+- [Add a guest](#add-a-guest)
 - [Draw a new tile](#draw-a-new-tile)
 - [Add a card or a card player](#add-a-card-or-a-card-player)
 - [Add a night NPC or night monsters](#add-a-night-npc-or-night-monsters)
@@ -583,6 +584,34 @@ Keep `id` stable: it's the key in the player's stored trophies. Keep each entry 
 | 3 | `home.js` | Draw it in `drawHomeTile`, and give it something to say in `homeInteract` |
 
 The flag `home_<id>` is set when Corwin builds it, and `homeTiles` puts the tile in the house from then on. Keep a path from the door to every upgrade: the town check in `build.py` doesn't walk interiors.
+
+---
+
+## Add a guest
+
+**File:** `src/guests.js` (2.4)
+
+```js
+// GUESTS: a friend who fights beside you for one quest
+pip: {
+  name: tl('Pip'), look: () => ({ style: 'short', body: '#c8a040' }),
+  here: f => f.q_cat && !f.cat_found,          // when Pip is with you, from story flags
+  moves: [
+    { w: 4, name: tl('Slingshot'), kind: 'phys', mult: 1.1, fx: 'hit' },
+    { w: 1, name: tl('Candle Song'), kind: 'heal', all: true, share: 0.1, fx: 'heal' },
+    { w: 1, name: tl('Pocket Sand'), kind: 'slow', turns: 2, fx: 'sand', once: true }
+  ]
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `here(flags)` | True while the guest is with you. Only one guest at a time: the first that matches wins |
+| `moves[].kind` | `phys` (`mult` × the party's average STR), `mag` (`power` + the party's average MAG, with `elem`), `heal` (`share` of max HP; only offered when someone is below half), `barrier`, `slow` |
+| `all` | Hit every foe (magic at 70%) or heal everyone |
+| `once` | Usable once a fight |
+
+A guest also walks behind you on the field unless you skip them in `guestFollower` (Brann does: he's at the wheel). If they have a town NPC, hide it while `GUESTS.<id>.here(f)` is true, as Frostmere does for Wren. Add a line to `GUEST_LINES` for when the player talks to them, and call `guestJoins(id)` and `guestLeaves(id)` where the story starts and ends their quest. Then add a with/without pair to `tools/balance_sim.py`.
 
 ---
 
