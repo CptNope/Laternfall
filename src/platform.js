@@ -97,6 +97,8 @@ const TROPHIES = [
   { id: 'tide_boss', name: tl('Unforgettable'), desc: '???', secret: tl('Defeat the Tide That Remembers.'), test: f => f.tide_done },
   { id: 'champion', name: tl('Grand Champion'), desc: tl('Win the first five cups at the Aerie Arena.'), test: f => f.cup_champion },
   { id: 'eclipse', name: tl('Eclipse'), desc: tl('Win the Eclipse Cup.'), test: f => f.cup_eclipse },
+  { id: 'alchemist', name: tl('Alchemist'), desc: tl('Brew 10 times at the alchemy bench.'), test: f => (f.brewed_total || 0) >= 10 },
+  { id: 'rhyme', name: tl('The Whole Rhyme'), desc: tl('Bring Old Bram every verse of the Lantern rhyme.'), test: f => f.rhyme_done },
   { id: 'endless10', name: tl('Down the Well'), desc: tl('Reach 10F in the Endless Lantern.'), test: f => (f.endless_best || 0) >= 10 },
   { id: 'endless30', name: tl('The Long Dark'), desc: tl('Reach 30F in the Endless Lantern.'), test: f => (f.endless_best || 0) >= 30 },
   { id: 'hollow', name: tl('Hollow Walker'), desc: tl('Finish the story in Hollow mode.'), test: f => f.hollow && f.ending },

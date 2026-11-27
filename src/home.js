@@ -20,7 +20,10 @@ const HOME_UPGRADES = [
   { id: 'tank', name: tl('Fish tank'), price: 1200, tile: 'Q', x: 10, y: 5, need: () => fishKinds() > 0, why: tl('Catch a fish first.'),
     desc: tl('A glass tank. One of every kind of fish you have caught will swim in it.') },
   { id: 'musicbox', name: tl('Music box'), price: 1500, tile: 'J', x: 11, y: 2, need: f => f.lantern1, why: tl('Light the first Lantern first.'),
-    desc: tl('A music box that plays any song you have heard on your travels.') }
+    desc: tl('A music box that plays any song you have heard on your travels.') },
+  // 2.5 (alchemy.js)
+  { id: 'bench', name: tl('Alchemy bench'), price: 800, tile: 'V', x: 11, y: 4, need: f => f.forged > 0 || ALCHEMY.some(r => G.inv[Object.keys(r.needs)[0]] && ITEMS[Object.keys(r.needs)[0]].kind === 'mat'), why: tl('Bring home a forge material first.'),
+    desc: tl('Your mother\'s old recipes, and a bench to brew them on. Spare materials and fish become potions and flasks.') }
 ];
 // called by buildInterior for Arin's house
 function homeTiles(tiles) {
@@ -74,6 +77,7 @@ async function homeInteract(m, c) {
     return true;
   }
   if (c === 'J') { await musicBox(); return true; }
+  if (c === 'V') { await alchemyBench(); return true; }
   return false;
 }
 function homeCat() {
@@ -134,7 +138,7 @@ const TRACK_NAMES = {
   battle: tl('Steel and Sparks'), boss: tl('Something Old'), victory: tl('Victory'), spire: tl('The Spire'), desert: tl('Mirage'),
   sky: tl('Above the Clouds'), ash: tl('The Ashen Isle'), ashtown: tl('Lastlight'), deep: tl('Under the Sea'), nerith: tl('Nerith'),
   undermarket: tl('The Undermarket'), abyss: tl('Crownfall Abyss'), crown: tl('The Hollow Crown'), final: tl('The Last Flame'),
-  ending: tl('Dawn'), gameover: tl('Lights Out')
+  ending: tl('Dawn'), gameover: tl('Lights Out'), rhyme: tl('The Lantern Rhyme')
 };
 const ALWAYS_HEARD = ['title', 'town', 'world', 'dungeon', 'battle', 'victory'];
 // Audio_.play calls this; it can run before this file has loaded (the title song), hence the try
@@ -214,6 +218,7 @@ function drawHomeTile(g, m, c, x, y, px, py, t) {
     if (G.flags.home_song) for (let i = 0; i < 2; i++) { const k = (t * 0.6 + i * 0.5) % 1; text(g, '♪', px + 12 + i * 8 + Math.sin(k * 6) * 2, py + 6 - k * 10, { size: 10, color: `rgba(255,230,150,${1 - k})` }); }
     return;
   }
+  if (c === 'V') { drawBench(g, px, py, t); return; }   // 2.5
   if (c === 'Z') {   // Mittens' basket
     ellipse(g, px + 16, py + 24, 12, 6, '#a0703a', OUT, 1.2);
     ellipse(g, px + 16, py + 22, 9, 4, '#c04a4a');

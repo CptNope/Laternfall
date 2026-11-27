@@ -5,8 +5,8 @@
 // Legend: # wall top, = wall face, w window, F fireplace, X shelf, M banner/painting
 //         . floor, R rug, K counter, B bed, T table, c chair, b barrel, p pot, P plant,
 //         x crate, A altar, W pew, I bars, O telescope, a anvil, E exit door
-//         2.2, Arin's house only (home.js): S trophy shelf, Q fish tank, J music box, Z Mittens' bed
-const INT_SOLID = new Set(['#', '=', 'w', 'F', 'X', 'M', 'K', 'B', 'T', 'b', 'p', 'P', 'x', 'A', 'W', 'I', 'O', 'a', 'S', 'Q', 'J', 'Z']);
+//         2.2, Arin's house only (home.js): S trophy shelf, Q fish tank, J music box, Z Mittens' bed, V alchemy bench (2.5)
+const INT_SOLID = new Set(['#', '=', 'w', 'F', 'X', 'M', 'K', 'B', 'T', 'b', 'p', 'P', 'x', 'A', 'W', 'I', 'O', 'a', 'S', 'Q', 'J', 'Z', 'V']);
 const INT_TEMPLATES = {
   inn: ['#############', '#X=w=F=w=X=M#', '#B.B........#', '#.......KKKK#', '#...........#', '#.TT....b..p#', '#.TT........#', '#.....RRR...#', '#.P...RRR..P#', '######E######'],
   shop: ['#############', '#X=X=w=X=X=X#', '#x....k....x#', '#KKKKKKKKKKK#', '#...........#', '#.b.......x.#', '#...RRRRR...#', '#.p.RRRRR.P.#', '#...........#', '######E######'],
@@ -130,7 +130,7 @@ function drawInteriorTile(g, m, x, y, px, py, t) {
   }
   if (c === 'E') { g.fillStyle = P.top; g.fillRect(px, py, TS, TS); rrect(g, px + 4, py, TS - 8, TS - 2, 2, '#e8d8a8', null); g.fillStyle = 'rgba(255,240,200,.5)'; g.fillRect(px + 6, py + 2, TS - 12, TS - 6); poly(g, [px + 11, py + 12, px + 21, py + 12, px + 16, py + 20], '#8a6038'); return; }
   floor();
-  if ('QJZ'.includes(c)) { drawHomeTile(g, m, c, x, y, px, py, t); return; }
+  if ('QJZV'.includes(c)) { drawHomeTile(g, m, c, x, y, px, py, t); return; }
   switch (c) {
     case 'R': { g.fillStyle = '#a03a3a'; g.fillRect(px, py, TS, TS); g.strokeStyle = '#e8c24a'; g.lineWidth = 1.5; const L = m.at(x - 1, y) !== 'R', Rr = m.at(x + 1, y) !== 'R', U = m.at(x, y - 1) !== 'R', D = m.at(x, y + 1) !== 'R'; g.beginPath(); if (L) { g.moveTo(px + 3, py); g.lineTo(px + 3, py + TS); } if (Rr) { g.moveTo(px + TS - 3, py); g.lineTo(px + TS - 3, py + TS); } if (U) { g.moveTo(px, py + 3); g.lineTo(px + TS, py + 3); } if (D) { g.moveTo(px, py + TS - 3); g.lineTo(px + TS, py + TS - 3); } g.stroke(); break; }
     case 'K': { rrect(g, px, py + 6, TS, 24, 1, '#8a5a2a', OUT, 1); g.fillStyle = '#b07a3a'; g.fillRect(px, py + 6, TS, 7); if (hash(x, y, 2) < 0.4) { rrect(g, px + 8, py - 2, 8, 9, 3, '#3ab0e0', OUT, 1); } break; }

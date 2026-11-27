@@ -70,6 +70,7 @@ flowchart TD
 - [Add a trophy](#add-a-trophy)
 - [Add something to Arin's house](#add-something-to-arins-house)
 - [Add a guest](#add-a-guest)
+- [Add an alchemy recipe](#add-an-alchemy-recipe)
 - [Draw a new tile](#draw-a-new-tile)
 - [Add a card or a card player](#add-a-card-or-a-card-player)
 - [Add a night NPC or night monsters](#add-a-night-npc-or-night-monsters)
@@ -612,6 +613,19 @@ pip: {
 | `once` | Usable once a fight |
 
 A guest also walks behind you on the field unless you skip them in `guestFollower` (Brann does: he's at the wheel). If they have a town NPC, hide it while `GUESTS.<id>.here(f)` is true, as Frostmere does for Wren. Add a line to `GUEST_LINES` for when the player talks to them, and call `guestJoins(id)` and `guestLeaves(id)` where the story starts and ends their quest. Then add a with/without pair to `tools/balance_sim.py`.
+
+---
+
+## Add an alchemy recipe
+
+**File:** `src/alchemy.js` (2.5)
+
+```js
+// ALCHEMY: what the bench brews. The first ingredient decides when the recipe shows up.
+{ out: 'antidote', n: 4, needs: { koi: 1, potion: 2 } }
+```
+
+`out` and every key of `needs` must be item ids from `content/items.json`, and a new item goes there first. Recipes appear on the bench in list order. A new brewed item with an existing `effect` (`hp`, `mp`, `bomb` and so on) needs no code.
 
 ---
 

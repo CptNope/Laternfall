@@ -39,6 +39,8 @@ function populate(map) {
       map.entities.push({ kind: 'chest', x: c.x, y: c.y, key, loot: c.loot, opened: !!G.flags[key] });
     }
     if (map.extras.lantern && !def.noLantern) map.entities.push({ kind: 'lantern', x: map.extras.lantern.x, y: map.extras.lantern.y, did, lit: !!G.flags['lantern_' + did], col: def.lanternCol });
+    const verse = verseEntity(map);   // 2.5: a verse of Bram's rhyme beside a relit Lantern
+    if (verse) map.entities.push(verse);
     for (const q of questEntities(map)) map.entities.push(q);
     if (map.extras.boss && !G.flags[bossFlag(map)]) map.entities.push({ kind: 'boss', x: map.extras.boss.x, y: map.extras.boss.y, did, def: MONSTERS[def.boss] });
   }
@@ -119,6 +121,7 @@ const Field = {
         runScript(async () => { await e.talk(e); refreshEntities(); });
       } else if (e.kind === 'chest') runScript(() => openChest(e));
       else if (e.kind === 'lantern') runScript(() => examineLantern(e));
+      else if (e.kind === 'verse') runScript(() => pickVerse(e));
       else if (e.kind === 'boss') runScript(() => bossEncounter(e.did));
       return;
     }
@@ -371,6 +374,7 @@ function drawEntity(g, e, sx, sy, t) {
     if (e.mark) { const b = Math.sin(t * 5) * 2; rrect(g, sx - 8, sy - 74 + b, 16, 20, 6, '#fff8d0', OUT, 1.5); poly(g, [sx - 3, sy - 55 + b, sx + 3, sy - 55 + b, sx, sy - 50 + b], '#fff8d0'); text(g, '!', sx, sy - 72 + b, { size: 15, bold: true, align: 'center', color: '#c0302a', shadow: false }); }
   } else if (e.kind === 'chest') drawChest(g, sx, sy + 1, e.opened);
   else if (e.kind === 'lantern') drawLantern(g, sx, sy + 2, e.lit, t, e.col);
+  else if (e.kind === 'verse') drawVerse(g, sx, sy, t);
   else if (e.kind === 'cat') drawCat(g, sx, sy, t);
   else if (e.kind === 'glint') drawGlint(g, sx, sy, t);
   else if (e.kind === 'roadlamp') { drawRoadLamp(g, sx, sy, e.lit, t); if (e.moths) drawLampMoths(g, sx, sy, t); }
