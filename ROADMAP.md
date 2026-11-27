@@ -123,7 +123,8 @@ gantt
     2.1 Endless Lantern              :done, m21, 2026-11-25, 1d
     2.2 Home and companions          :done, m22, 2026-11-25, 1d
     2.3 Mittens                      :done, m23, 2026-11-25, 1d
-    2.4 Guests                       :active, m24, 2026-11-26, 1d
+    2.4 Guests                       :done, m24, 2026-11-26, 1d
+    2.5 Alchemy and verses           :active, m25, 2026-11-27, 1d
 ```
 
 | Milestone | Theme | Headline | Target | Status |
@@ -139,7 +140,8 @@ gantt
 | **2.1** | Replay | The Endless Lantern post-game dungeon and Hollow mode | Nov 2026 | ✅ Done (#22) |
 | **2.2** | Home | Arin's house upgrades, the music box, Mittens following you, compass hints | Nov 2026 | ✅ Done (2.2.0, #23) |
 | **2.3** | Mittens | The cat comes along everywhere, and into battle | Nov 2026 | ✅ Done (2.3.0, #25 and #27) |
-| **2.4** | Guests | Brann, Wren and Ione fight beside you for one quest each | Nov 2026 | 🟡 In review |
+| **2.4** | Guests | Brann, Wren and Ione fight beside you for one quest each | Nov 2026 | ✅ Done (#30, not yet released) |
+| **2.5** | Alchemy and verses | An alchemy bench at home; Old Bram's verses and a new title song | Nov 2026 | 🟡 In review |
 
 ```mermaid
 flowchart LR
@@ -416,6 +418,25 @@ flowchart LR
 
 Not in 2.4: guests who can be targeted and knocked out (enemy AI only ever targets party members), and Brann on land.
 
+
+### 2.5 · Alchemy and Bram's verses
+
+The last two game ideas in the parking lot. Both give old things a new use: spare materials, and the rhyme Old Bram has been half-singing since 1.0.
+
+```mermaid
+flowchart LR
+    M[Spare forge materials<br/>and fish] --> B[Alchemy bench<br/>Corwin builds it] --> C[Flasks, draughts,<br/>elixirs, potions]
+    L[A relit Lantern] --> V[A verse beside it] --> R[Old Bram sings it]
+    R -->|all seven| T[The Lantern Rhyme<br/>on the title screen]
+```
+
+| ID | Item | Size |
+| --- | --- | --- |
+| AV-1 | **Alchemy bench**: Corwin's fifth upgrade; twelve recipes from materials and fish, no gold; recipes show once you hold the first ingredient | M |
+| AV-2 | **Five new items**: Ember, Frost and Dusk Flasks; Golden and Pearl Draughts | S |
+| AV-3 | **Seven verses** beside the seven relit Lanterns, sung by Old Bram; a quest-log entry | M |
+| AV-4 | **The Lantern Rhyme**: a new track, the title song once all seven are sung, and in the music box | S |
+
 ---
 
 ## Prioritised backlog
@@ -509,10 +530,10 @@ Not scheduled. Each needs a reason to exist (see [Guiding principles](#guiding-p
 - ✅ ~~🐈 **Mittens follows you**~~: in [2.2](#22--home-and-companions) (HM-3).
 - ✅ ~~🌙 **A "Hollow" hard mode**~~: in [2.1](#21--endless-lantern) (RP-4).
 - ✅ ~~🧭 **Compass hints**~~: in [2.2](#22--home-and-companions) (HM-4).
-- 📜 **Old Bram's verses**: collect verse fragments to complete the Lantern rhyme. The reward is a new title-screen song.
+- ✅ ~~📜 **Old Bram's verses**~~: in [2.5](#25--alchemy-and-brams-verses).
 - ✅ ~~🤝 **Guest party members**~~: in [2.4](#24--guests).
 - 🎨 **Photo mode**: hide the UI and pan the camera.
-- 🧪 **Alchemy**: turn spare materials into consumables.
+- ✅ ~~🧪 **Alchemy**~~: in [2.5](#25--alchemy-and-brams-verses).
 - ✅ ~~🗺️ **Procedural "Endless Lantern"**~~: in [2.1](#21--endless-lantern) (RP-1 to RP-3).
 
 ---

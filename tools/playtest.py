@@ -18,7 +18,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PATH = str(pathlib.Path(sys.argv[1]).resolve()) if len(sys.argv) > 1 else str(ROOT / 'index.html')
 OUT = sys.argv[2] if len(sys.argv) > 2 else str(ROOT / 'playtest-shots')
-SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods', 'editor', 'i18n', 'endless', 'home', 'guests']
+SCEN = sys.argv[3:] or ['chapter', 'orun', 'systems', 'newgame', 'comfort', 'hearts', 'depth', 'drowned', 'platform', 'living', 'tiles', 'mods', 'editor', 'i18n', 'endless', 'home', 'guests', 'verses']
 os.makedirs(OUT, exist_ok=True)
 
 def member(i, lv, w, a, acc=None):
@@ -277,7 +277,7 @@ async def main():
                 if await ev("!!(UI.top() && UI.top().items)"): break
                 await press('Enter', 1, 350)
             await shot('90_carpenter_menu')
-            check(await ev("UI.top() && UI.top().items && UI.top().items.length === 5"), 'his menu lists four things to build')
+            check(await ev("UI.top() && UI.top().items && UI.top().items.length === 6"), 'his menu lists five things to build')
             await press('Enter', 1, 400)
             check(await ev("G.flags.home_catbed && G.gold === 5000 - 250"), 'choosing the first builds Mittens\' bed for 250 G')
             await until_idle(40, 'Escape', 150); await until_idle()
@@ -285,7 +285,7 @@ async def main():
             await ev("G.flags.home_shelf = G.flags.home_tank = G.flags.home_musicbox = true; rebuildHome()")
             # --- the house ---
             await ev("Field.enter(HOME_ID, 6, 8, 'up')"); await pg.wait_for_timeout(600)
-            tiles = await ev("HOME_UPGRADES.map(u => Field.map.at(u.x, u.y)).join('')")
+            tiles = await ev("HOME_UPGRADES.slice(0, 4).map(u => Field.map.at(u.x, u.y)).join('')")
             check(tiles == 'ZSQJ', f'the house has the bed, shelf, tank and music box ({tiles})')
             check(await ev("Field.map.entities.some(e => e.catSprite && e.x === 2 && e.y === 4)"), 'Mittens sleeps in her bed')
             await shot('91_home')
@@ -413,6 +413,57 @@ async def main():
             check(await ev("(() => { G.onShip = true; G.flags.leviathan = true; const g = guestFor(); G.onShip = false; return g === null; })()"), 'and not after the Leviathan')
             check(await ev("GUESTS.brann.moves.every(m => m.elem !== 'water')"), 'none of his moves feed the Leviathan (it absorbs water)')
             check(await ev("guestFor({ noGuest: true }) === null && guestFor({ guest: 'ione' }) === 'ione'"), 'battles can ask for a guest or none')
+
+        if want('verses'):
+            def check(ok, label):
+                print(('ok   ' if ok else 'FAIL ') + label)
+                if not ok: errs.append('check failed: ' + label)
+            s = json.loads(json.dumps(POST))
+            s['mapId'] = 'brightwater'; s['x'] = 15; s['y'] = 11; s['dir'] = 'up'
+            s['inv'].update({'ember_core': 2, 'bomb': 4, 'minnow': 2, 'potion': 5})
+            for k in [k for k in s['flags'] if k.startswith('verse_') or k.startswith('sung_')]: del s['flags'][k]
+            await boot(s); await until_idle()
+            await ev("G.gold = 5000; G.flags.forged = 3")
+            # --- the alchemy bench: Corwin builds it, it brews ---
+            check(await ev("HOME_UPGRADES.find(u => u.id === 'bench').need(G.flags)"), 'with a forge material, Corwin can build the alchemy bench')
+            await ev("G.flags.home_bench = true; rebuildHome(); Field.enter(HOME_ID, 10, 5, 'right')"); await pg.wait_for_timeout(500)
+            check(await ev("Field.map.at(11, 4) === 'V'"), 'the bench stands in Arin\'s house')
+            await ev("G.x = 10; G.y = 4; G.dir = 'right'")
+            await shot('110_bench')
+            check(await ev("brewKnown(ALCHEMY[0]) && !brewKnown(ALCHEMY[2]) && brewReady(ALCHEMY[0])"), 'recipes show once you hold their first ingredient')
+            await run("await alchemyBench()", 500); await shot('111_bench_menu'); await press('Enter', 1, 2200)
+            for _ in range(10):   # through "Brewed ...!" and back to the bench menu, then out
+                if await ev("!!(UI.top() && UI.top().items)"): break
+                await press('Enter', 1, 300)
+            await press('Escape', 1, 400); await until_idle()
+            check(await ev("G.inv.ember_flask === 2 && G.inv.ember_core === 1 && G.inv.bomb === 2 && G.flags.brewed_ember_flask && G.flags.brewed_total === 1"), f'brewing turns an Ember Core and two bombs into two Ember Flasks ({await ev("[G.inv.ember_flask, G.inv.ember_core, G.inv.bomb]")})')
+            check(await ev("(async () => { const r = ALCHEMY.find(r => r.out === 'hipotion'), h = G.inv.hipotion || 0; await brew(r); return G.inv.hipotion === h + 3 && !G.inv.minnow; })()"), 'two Minnows and three Potions make three Hi-Potions')
+            check(await ev("ALCHEMY.every(r => ITEMS[r.out] && Object.keys(r.needs).every(m => ITEMS[m]))"), 'every recipe uses real items')
+            check(await ev("['ember_flask', 'frost_flask', 'dusk_flask'].every(id => ITEMS[id].effect === 'bomb' && ITEMS[id].amount > ITEMS.bomb.amount)"), 'the flasks hit harder than a plain bomb')
+            await ev("G.flags.brewed_total = 10; Trophies.check()")
+            check(await ev("!!Trophies.got.alchemist"), 'ten brews earn Alchemist')
+            # --- a verse beside a relit Lantern ---
+            await ev("G.flags.lantern_hollow = true; const m = getMap('hollow:1'); Field.enter('hollow:1', m.extras.lantern.x, m.extras.lantern.y + 3, 'up'); CFG.noEnc = true")
+            await pg.wait_for_timeout(500)
+            v = await ev("(() => { const e = Field.map.entities.find(e => e.kind === 'verse'); return e && [e.x, e.y, e.verse]; })()")
+            check(v is not None and v[2] == 'ember', f'the verse of Ember lies beside the relit Ember Lantern ({v})')
+            check(await ev("(() => { const f = G.flags.lantern_spire; G.flags.lantern_spire = false; const m = getMap('spire:2'); refreshEntities(); const e = verseEntity(m); G.flags.lantern_spire = f; return e === null; })()"), 'no verse beside a Lantern still dark')
+            await shot('112_verse')
+            await run("await pickVerse(Field.map.entities.find(e => e.kind === 'verse'))", 400); await until_idle(30, 'Enter', 200); await until_idle()
+            check(await ev("G.flags.verse_ember && G.flags.q_verses && !Field.map.entities.some(e => e.kind === 'verse')"), 'picking it up records the verse and starts the quest')
+            check(await ev("questList().some(q => q.title === tl('Old Bram\\'s Verses') && !q.done)"), 'the quest log lists Old Bram\'s Verses')
+            # --- Bram sings it; with all seven, the whole rhyme ---
+            await ev("Field.enter('brightwater', 15, 11, 'up')"); await pg.wait_for_timeout(400)
+            await run("await talkBram()", 400); await until_idle(60, 'Enter', 220); await until_idle()
+            check(await ev("G.flags.sung_ember && !G.flags.rhyme_done"), 'Bram sings the verse you brought')
+            await ev("VERSES.forEach(v => G.flags['verse_' + v.id] = true)")
+            await run("await talkBram()", 400); await until_idle(90, 'Enter', 220); await until_idle()
+            check(await ev("G.flags.rhyme_done && VERSES.every(v => G.flags['sung_' + v.id]) && rhymeUnlocked()"), 'with every verse he sings the whole rhyme, and it unlocks')
+            check(await ev("Trophies.check(), !!Trophies.got.rhyme"), 'The Whole Rhyme trophy')
+            check(await ev("heardSongs().includes('rhyme')"), 'the music box knows the rhyme')
+            check(await ev("questList().find(q => q.title === tl('Old Bram\\'s Verses')).done"), 'the quest is done')
+            await pg.goto('file://' + PATH); await pg.wait_for_timeout(1200)
+            check(await ev("Audio_.curName === 'rhyme'"), f'the title screen plays the rhyme now ({await ev("Audio_.curName")})')
 
         if want('readme'):
             s2 = json.loads(json.dumps(POST)); s2['flags'].update({'isle': True, 'q_crown': True, 'abyssOpen': True, 'visit_G': True, 'visit_7': True, 'q_fish': True}); s2['inv']['fishing_rod'] = 1

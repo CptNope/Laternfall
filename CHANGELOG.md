@@ -52,9 +52,15 @@ xychart-beta
 
 ## [Unreleased]
 
-Planned as **2.4.0 · *Guests***: three friends fight beside you for one quest each (see the [roadmap](ROADMAP.md#24--guests)).
+Two milestones are waiting for a release: **2.4 · *Guests*** (#30) and **2.5 · *Alchemy and Bram's verses***. They can ship together as 2.4.0, or as 2.4.0 and 2.5.0 (see the roadmap: [2.4](ROADMAP.md#24--guests), [2.5](ROADMAP.md#25--alchemy-and-brams-verses)).
 
-### Added
+### Added in 2.5
+- **The alchemy bench** (new `src/alchemy.js`), Corwin's fifth upgrade for Arin's house (800 G, once you've brought home a forge material). Twelve recipes turn spare forge materials and fish into consumables, with no gold: Ember, Frost and Dusk Flasks (320 elemental damage to all foes), Star Bombs, a Golden Draught (the party's HP) and a Pearl Draught (the party's MP), Elixirs and Megalixirs, Hi-Potions, Hi-Ethers, Phoenix Plumes and Remedies. A recipe shows once you hold its first ingredient.
+- **Old Bram's verses** (new `src/verses.js`). After a Lantern is relit, a scrap of the old rhyme lies beside it on the dungeon's last floor: seven verses, Ember to Night. Bring them to Old Bram and he sings each one. With all seven he sings the whole rhyme, which becomes **the title-screen song** (a new track, *The Lantern Rhyme*) on this device, and joins the music box. A quest-log entry tracks them.
+- Five new items (the three flasks and two draughts) and two trophies: *Alchemist* (10 brews) and *The Whole Rhyme*.
+- `verses` play-test scenario (19 checks), in CI. The guide has sections on both.
+
+### Added in 2.4
 - **Guest party members** (new `src/guests.js`). A guest fights beside you on their own, once a round, in speed order with everyone else. They aren't party members: no menu, gear or EXP, and enemies can't target them. Their strength follows the party's (about half an average member), and their support moves (Ward, Slow Orbit) work once a fight.
   - **Brann** sails with you while the Leviathan bounty is open: at sea only, since he keeps the ship. *Harpoon*, *Broadside* (a cannon volley, not water: the Leviathan drinks water) and *Ship's Grog*.
   - **Wren** comes along from the moment the Observatory opens until the Astral Wyrm is quiet. *Starlight*, *Falling Stars*, *Slow Orbit*.

@@ -435,6 +435,14 @@ const TRACKS = {
       { w: 'triangle', g: 0.05, s: 'G4:2 C5:2 E5:2 C5:2 G4:2 C5:2 E5:2 C5:2 | G4:2 B4:2 E5:2 B4:2 G4:2 B4:2 E5:2 B4:2 | A4:2 C5:2 F5:2 C5:2 A4:2 C5:2 F5:2 C5:2 | G4:2 B4:2 D5:2 B4:2 G4:2 B4:2 D5:2 B4:2 | G4:2 C5:2 E5:2 C5:2 G4:2 C5:2 E5:2 C5:2 | G4:2 B4:2 E5:2 B4:2 G4:2 B4:2 E5:2 B4:2 | A4:2 C5:2 F5:2 C5:2 G4:2 B4:2 D5:2 B4:2 | G4:2 C5:2 E5:2 G5:2 E5:2 C5:2 G4:4' }
     ]
   },
+  // 2.5: Old Bram's Lantern rhyme, unlocked as the title song once he has sung every verse
+  rhyme: {
+    bpm: 76, voices: [
+      { w: 'square', g: 0.04, s: 'D4:4 F#4:4 A4:6 G4:2 | F#4:4 E4:4 D4:8 | G4:4 A4:4 B4:6 A4:2 | F#4:8 E4:8 | D4:4 F#4:4 A4:6 D5:2 | C#5:4 B4:4 A4:8 | B4:4 A4:2 G4:2 F#4:4 E4:4 | D4:12 r:4' },
+      { w: 'triangle', g: 0.13, s: 'D3:8 A2:8 | D3:8 A2:8 | G2:8 D3:8 | D3:8 A2:8 | D3:8 F#2:8 | A2:8 E3:8 | G2:8 A2:8 | D3:16' },
+      { w: 'triangle', g: 0.04, s: 'D4:2 A4:2 F#4:2 A4:2 D4:2 A4:2 F#4:2 A4:2 | D4:2 A4:2 F#4:2 A4:2 D4:2 A4:2 F#4:2 A4:2 | G4:2 B4:2 D5:2 B4:2 G4:2 B4:2 D5:2 B4:2 | D4:2 A4:2 F#4:2 A4:2 D4:2 A4:2 F#4:2 A4:2 | D4:2 A4:2 F#4:2 A4:2 D4:2 A4:2 F#4:2 A4:2 | E4:2 A4:2 C#5:2 A4:2 E4:2 A4:2 C#5:2 A4:2 | G4:2 B4:2 D5:2 B4:2 E4:2 A4:2 C#5:2 A4:2 | D4:2 A4:2 F#4:2 A4:2 D4:2 A4:2 F#4:2 A4:2' }
+    ]
+  },
   world: {
     bpm: 118, voices: [
       { w: 'square', g: 0.04, s: 'G4:4 B4:2 D5:2 G5:6 F#5:2 | E5:4 D5:4 B4:8 | C5:4 E5:2 G5:2 A5:6 G5:2 | F#5:4 E5:4 D5:8 | G4:4 B4:2 D5:2 G5:6 A5:2 | B5:4 A5:4 G5:4 E5:4 | C5:4 D5:4 E5:4 F#5:4 | G5:12 r:4' },

@@ -37,6 +37,8 @@ A complete guide to Lanternfall 1.3: the walkthrough, every hero, skill, monster
 - [Hollow mode](#hollow-mode)
 - [Arin's house](#arins-house)
 - [Guests](#guests)
+- [Alchemy](#alchemy)
+- [Old Bram's verses](#old-brams-verses)
 - [Trophies](#trophies)
 - [Speedrun mode](#speedrun-mode)
 
@@ -1282,6 +1284,11 @@ Anyone can wear any accessory. Only one is worn at a time.
 | **Remedy** | 60 | Cures every ailment, berserk and stop included. |
 | **Rage Tonic** | 400 | Berserks an ally for 3 rounds: ATK ×1.5, but they attack on their own. |
 | **Ember Bomb** | 90 | Deals fire damage to all foes. |
+| **Ember Flask** | 300 | Brewed at the alchemy bench. Fire on all foes, hotter than a bomb. |
+| **Frost Flask** | 300 | Brewed at the alchemy bench. Bursts into ice on all foes. |
+| **Dusk Flask** | 300 | Brewed at the alchemy bench. Shadow spills over all foes. |
+| **Golden Draught** | 500 | Brewed at the alchemy bench. Fully restores the whole party's HP. |
+| **Pearl Draught** | 600 | Brewed at the alchemy bench. Fully restores the whole party's MP. |
 | **Star Bomb** | 900 | Bursts with holy light on all foes. |
 
 ### Key items
@@ -1420,6 +1427,47 @@ In the balance simulator a guest adds about 5 to 15 points to the win rate of th
 
 ---
 
+## Alchemy
+
+Added in 2.5. **Corwin** builds an **alchemy bench** in Arin's house (800 G) once you've brought home a forge material. It turns spare materials and fish into consumables, with no gold. A recipe shows on the bench once you hold its first ingredient, or after you've brewed it once.
+
+| Brew | Makes | From |
+| --- | --- | --- |
+| Ember Flask | 2 | Ember Core, 2 Ember Bombs |
+| Frost Flask | 2 | Frost Crystal, 2 Ember Bombs |
+| Dusk Flask | 2 | Dusk Silk, 2 Ember Bombs |
+| Star Bomb | 1 | Star Shard, 2 Ember Bombs |
+| Golden Draught | 1 | Sun Gold, X-Potion |
+| Pearl Draught | 1 | Deep Pearl, Hi-Ether |
+| Elixir | 1 | Abyss Ash, 2 Hi-Potions, 2 Ethers |
+| Megalixir | 1 | Deep Pearl, Abyss Ash, Elixir |
+| Hi-Potion | 3 | 2 Brook Minnows, 3 Potions |
+| Hi-Ether | 1 | Mirage Pearlfish, 2 Ethers |
+| Phoenix Plume | 2 | Ember Eel, Hi-Potion |
+| Remedy | 3 | River Trout, 3 Antidotes |
+
+The flasks deal 320 fire, ice or shadow damage to every foe (an Ember Bomb deals 90). The Golden Draught restores the whole party's HP, and the Pearl Draught their MP. Ten brews earn the *Alchemist* trophy.
+
+---
+
+## Old Bram's verses
+
+Added in 2.5. Old Bram in Brightwater has always half-sung a rhyme about the Lanterns. Each Lantern kept its own verse: after you relight one, a scrap of the song lies beside it on the dungeon's last floor (go back for the ones you've already lit).
+
+| Verse | Beside the Lantern in |
+| --- | --- |
+| Ember | Whisperwood Hollow |
+| Tide | the Sunken Shrine |
+| Stone | the Emberdeep Mines |
+| Dawn | the Hollow Spire |
+| Sun | the Tomb of the First King |
+| Stars | the Starfall Observatory |
+| Night | the Crownfall Abyss |
+
+Bring each scrap to Bram and he sings it. With all seven he sings the whole rhyme, and **The Lantern Rhyme** becomes the title-screen song on this device (for every save, like trophies). It joins the music box too, and earns *The Whole Rhyme*. The quest log tracks how many you've found and he's sung.
+
+---
+
 ## Trophies
 
 Trophies (added in 1.8) belong to you, not to a save: earn one once and it stays, whichever slot you play and through New Game+. A toast appears when you earn one. See them from **Trophies** on the title screen, or ask **Scribe Tam** in Elder Maren's hall in Brightwater.
@@ -1441,6 +1489,8 @@ Trophies (added in 1.8) belong to you, not to a save: earn one once and it stays
 | 🏆 **Unforgettable** | Defeat the Tide That Remembers. *(hidden in the game until earned)* |
 | 🏆 **Grand Champion** | Win the first five cups at the Aerie Arena. |
 | 🏆 **Eclipse** | Win the Eclipse Cup. |
+| 🏆 **Alchemist** | Brew 10 times at the alchemy bench. |
+| 🏆 **The Whole Rhyme** | Bring Old Bram every verse of the Lantern rhyme. |
 | 🏆 **Down the Well** | Reach 10F in the Endless Lantern. |
 | 🏆 **The Long Dark** | Reach 30F in the Endless Lantern. |
 | 🏆 **Hollow Walker** | Finish the story in Hollow mode. |

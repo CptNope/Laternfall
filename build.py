@@ -17,7 +17,7 @@ MODDED=bool(ARGS.mod)
 # Source files in load order. They share one global scope, so a file may only use, at load time,
 # names declared in files before it (tools/load_check.js checks this). 'folder/*' takes every
 # .js file in that folder, sorted: each one registers itself (a monster family, a battle background).
-order=['lang','i18n','core','content','data','art','monsters/*','backgrounds/*','deep_art','maps','party','field','tilecache','interior','battle','menu','crafts','hearts','deep','platform','living','cards','heist','home','guests','editor','story','endless']
+order=['lang','i18n','core','content','data','art','monsters/*','backgrounds/*','deep_art','maps','party','field','tilecache','interior','battle','menu','crafts','hearts','deep','platform','living','cards','heist','home','guests','alchemy','verses','editor','story','endless']
 
 # ---- content/*.json (2.0, EN-1): checked by tools/content.js, then written into the game as JS ----
 import tempfile

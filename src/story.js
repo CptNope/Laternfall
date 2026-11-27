@@ -168,7 +168,8 @@ async function talkBram() {
     [tl('Old Bram'), tl('That\'s the old rhyme. Four Lanterns, lit by the first kings to chain the Hollow Night beneath the world. Nobody remembers where Dawn burns anymore.')],
     [tl('Old Bram'), G.flags.lantern5 ? tl('And the fifth verse! "...and one among the stars, that no king could keep." You found it. You found the TUNE.') : tl('My grandmother swore there was a fifth verse, about a flame among the stars. Nobody sings it now. Nobody remembers the tune.')]
   ]);
-  if (G.flags.lantern_abyss) await say(tl('Old Bram'), tl('Now I\'m making up a sixth. "...and Night, kept gently, sleeps at last." It needs work. Everything good needs work.'));
+  if (G.flags.lantern_abyss && !G.flags.verse_night) await say(tl('Old Bram'), tl('Now I\'m making up a sixth. "...and Night, kept gently, sleeps at last." It needs work. Everything good needs work.'));
+  await bramVerses();   // verses.js (2.5)
 }
 // ------------- Port Halden -------------
 async function joinOswin() {
@@ -1021,6 +1022,7 @@ function questList() {
   if (f.arenaMet) { const n = ARENA_CUPS.slice(0, 5).filter(c => f['cup_' + c.id]).length; q.push({ title: tl('Arena Legend'), giver: tl('Arena Master, Aerie'), done: !!f.cup_champion, reward: tl('Lantern Crown'), desc: f.cup_champion ? tl('Grand Champions of the Aerie Arena!') : tl`Win all five cups at the Aerie Arena. (${n}/5 won)` }); }
   if (f.q_scholar) q.push({ title: tl('Monster Scholar'), giver: tl('Sable, Frostmere'), done: !!f.scholar_done, reward: tl('Silk Ribbon'), desc: f.scholar_done ? tl('Your notes are in Sable\'s bestiary.') : tl`Record 30 different creatures in your bestiary, then visit Sable. (${seenCount()}/30)` });
   if (f.scholar_done) { const tot = Object.keys(MONSTERS).length, goal = f.codex45 ? tot : 45; q.push({ title: tl('The Complete Bestiary'), giver: tl('Sable, Frostmere'), done: !!f.codex_all, reward: f.codex45 ? tl('Bestiary Seal') : tl('Scholar\'s Monocle'), desc: f.codex_all ? tl('Every creature is recorded. Sable\'s book is finished.') : tl`Record ${f.codex45 ? 'every creature' : '45 creatures'}, then visit Sable. (${seenCount()}/${goal})` }); }
+  q.push(...versesQuest());
   return q;
 }
 function mainObjective() {
@@ -1063,7 +1065,7 @@ const TitleScene = {
 };
 async function titleMenu() {
   G.scene = TitleScene; TitleScene.t = 0;
-  Audio_.play('title');
+  Audio_.play(rhymeUnlocked() ? 'rhyme' : 'title');   // 2.5: Bram's rhyme, once he has sung it
   await fadeTo(0, 600);
   let idx = hasSave() ? 1 : 0;
   while (true) {
